@@ -1,1 +1,1 @@
-./bin/Calculator.out
+./bin/calculator.out

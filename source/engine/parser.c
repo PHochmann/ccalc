@@ -180,10 +180,10 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
 		// II. Does glue-op need to be inserted?
 		if (!await_subexpression && ctx->glue_op != NULL)
 		{
-			if (!is_closing_parenthesis(token[0]) &&
-				!is_delimiter(token[0]) &&
-				search_op(token, OP_PLACE_INFIX) == NULL &&
-				search_op(token, OP_PLACE_POSTFIX) == NULL)
+			if (!is_closing_parenthesis(token[0])
+				&& !is_delimiter(token[0])
+				&& search_op(token, OP_PLACE_INFIX) == NULL
+				&& search_op(token, OP_PLACE_POSTFIX) == NULL)
 			{
 				if (!op_push(ctx->glue_op)) goto exit;
 				await_subexpression = true;

@@ -64,7 +64,7 @@ double arith_eval(Node *node)
 				case 10:
 					return sqrt(arith_eval(node->children[0]));
 				case 11:
-					return pow(arith_eval(node->children[0]), 1 / arith_eval(node->children[0]));
+					return pow(arith_eval(node->children[0]), 1 / arith_eval(node->children[1]));
 				case 12:
 					return log(arith_eval(node->children[0])) / log(arith_eval(node->children[1]));
 				case 13:
