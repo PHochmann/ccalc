@@ -35,4 +35,4 @@ Node get_operator_node(Operator *op);
 bool tree_contains_variable(Node* node);
 Node tree_copy(ParsingContext *ctx, Node *node);
 void tree_free(Node* node);
-int tree_substitute(ParsingContext *ctx, Node *dest_tree, Node *tree, char* var_name);
+int tree_substitute(ParsingContext *ctx, Node **dest_tree, Node *tree, char* var_name, bool copy);

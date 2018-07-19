@@ -109,32 +109,44 @@ void tree_free(Node *tree)
 	free(tree);
 }
 
-int tree_substitute(ParsingContext *ctx, Node *dest_tree, Node *tree, char* var_name)
+/*
+Summary: Substitutes any occurence of a variable with certain name with a given subtree
+When copy is set to true, 'tree' is copied each time. When set to false, a pointer is bent to 'tree'.
+Double frees might occur when using free_tree
+*/
+int tree_substitute(ParsingContext *ctx, Node **dest_tree, Node *tree, char* var_name, bool copy)
 {
-	if (dest_tree == NULL) return 0;
+	if (dest_tree == NULL || *dest_tree == NULL) return 0;
 	
 	int res = 0;
 	
-	switch(dest_tree->type)
+	switch((*dest_tree)->type)
 	{
 		case NTYPE_OPERATOR:
-			for (int i = 0; i < dest_tree->num_children; i++)
+			for (int i = 0; i < (*dest_tree)->num_children; i++)
 			{
-				res += tree_substitute(ctx, dest_tree->children[i], tree, var_name);
+				res += tree_substitute(ctx, &(*dest_tree)->children[i], tree, var_name, copy);
 			}
-			break;
+			return res;
 			
 		case NTYPE_VARIABLE:
-			if (strcmp(var_name, dest_tree->var_name) == 0)
+			if (strcmp(var_name, (*dest_tree)->var_name) == 0)
 			{
-				*dest_tree = tree_copy(ctx, tree);
+				if (copy)
+				{
+					**dest_tree = tree_copy(ctx, tree);
+				}
+				else
+				{
+					*dest_tree = tree;
+				}
+				return 1;
 			}
-			res = 1;
 			break;
 			
 		default:
 			break;
 	}
 	
-	return res;
+	return 0;
 }

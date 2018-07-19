@@ -4,7 +4,7 @@
 #include "constants.h"
 #include "tokenizer.h"
 
-bool begins_with(char prefix[], char string[])
+bool begins_with(char *prefix, char *string)
 {
 	size_t prefix_length = strlen(prefix);
 	size_t string_length = strlen(string);
@@ -23,7 +23,7 @@ bool add_token(char** tokens, char* position, int* num_tokens)
 Summary: Splits input string into several tokens to be parsed
 Returns: True if method succeeded, False if MAX_TOKENS was exceeded
 */
-bool tokenize(char *input, char *keywords[], int num_keyw, char ***out_tokens, int *out_num_tokens)
+bool tokenize(char *input, char **keywords, int num_keyw, char ***out_tokens, int *out_num_tokens)
 {
 	char *token_markers[MAX_TOKENS];
 	

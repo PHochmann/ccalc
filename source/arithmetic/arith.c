@@ -6,7 +6,7 @@
 #include "arith.h"
 
 #define ARITH_STRING_LENGTH 30
-#define ARITH_NUM_OPS 31
+#define ARITH_NUM_OPS 37
 
 ParsingContext arith_ctx;
 
@@ -77,8 +77,14 @@ double arith_eval(Node *node)
 					return cos(arith_eval(node->children[0]));
 				case 17:
 					return tan(arith_eval(node->children[0]));
-					
 				case 18:
+					return asin(arith_eval(node->children[0]));
+				case 19:
+					return acos(arith_eval(node->children[0]));
+				case 20:
+					return atan(arith_eval(node->children[0]));
+					
+				case 21:
 					d_res = -INFINITY;
 					for (int i = 0; i < node->num_children; i++)
 					{
@@ -87,7 +93,7 @@ double arith_eval(Node *node)
 					}
 					return d_res;
 					
-				case 19:
+				case 22:
 					d_res = INFINITY;
 					for (int i = 0; i < node->num_children; i++)
 					{
@@ -96,47 +102,55 @@ double arith_eval(Node *node)
 					}
 					return d_res;
 					
-				case 20:
-					return fabs(arith_eval(node->children[0]));
-				case 21:
-					return round(arith_eval(node->children[0]));
-				case 22:
-					return trunc(arith_eval(node->children[0]));
 				case 23:
-					return ceil(arith_eval(node->children[0]));
+					return fabs(arith_eval(node->children[0]));
 				case 24:
+					return round(arith_eval(node->children[0]));
+				case 25:
+					return trunc(arith_eval(node->children[0]));
+				case 26:
+					return ceil(arith_eval(node->children[0]));
+				case 27:
 					return floor(arith_eval(node->children[0]));
 					
-				case 25:
+				case 28:
 					d_res = 0;
 					for (int i = 0; i < node->num_children; i++) d_res += arith_eval(node->children[i]);
 					return d_res;
 					
-				case 26:
+				case 29:
 					d_res = 1;
 					for (int i = 0; i < node->num_children; i++) d_res *= arith_eval(node->children[i]);
 					return d_res;
 					
-				case 27:
+				case 30:
 					d_res = 0;
 					for (int i = 0; i < node->num_children; i++) d_res += arith_eval(node->children[i]);
 					return d_res / node->num_children;
 				
-				case 28:
+				case 31:
 					return (double)binomial(
 						abs(round(arith_eval(node->children[0]))),
 						abs(round(arith_eval(node->children[1]))));
+						
+				case 32:
+					return fmod(arith_eval(node->children[0]), arith_eval(node->children[1]));
+				case 33:
+					return tgamma(arith_eval(node->children[0]));
 				
-				case 29:
+				case 34:
 					return 3.14159265359;
-				case 30:
+				case 35:
 					return 2.71828182846;
+				case 36:
+					return 1.61803398874;
+					
 				default:
-					return -666;
+					return 0;
 			}
 			
 		default:
-			return -333;
+			return 0;
 	}
 }
 
@@ -178,6 +192,9 @@ ParsingContext arith_get_ctx()
 	add_op(&arith_ctx, op_get_function("sin", 1));
 	add_op(&arith_ctx, op_get_function("cos", 1));
 	add_op(&arith_ctx, op_get_function("tan", 1));
+	add_op(&arith_ctx, op_get_function("asin", 1));
+	add_op(&arith_ctx, op_get_function("acos", 1));
+	add_op(&arith_ctx, op_get_function("atan", 1));
 	add_op(&arith_ctx, op_get_function("max", DYNAMIC_ARITY));
 	add_op(&arith_ctx, op_get_function("min", DYNAMIC_ARITY));
 	add_op(&arith_ctx, op_get_function("abs", 1));
@@ -190,9 +207,13 @@ ParsingContext arith_get_ctx()
 	add_op(&arith_ctx, op_get_function("avg", DYNAMIC_ARITY));
 	
 	add_op(&arith_ctx, op_get_infix("C", 1, OP_ASSOC_LEFT));
+	add_op(&arith_ctx, op_get_infix("mod", 1, OP_ASSOC_LEFT));
+	
+	add_op(&arith_ctx, op_get_function("gamma", 1));
 	
 	add_op(&arith_ctx, op_get_constant("pi"));
 	add_op(&arith_ctx, op_get_constant("e"));
+	add_op(&arith_ctx, op_get_constant("phi"));
 	
 	set_glue_op(&arith_ctx, &arith_ctx.operators[0]);
 	

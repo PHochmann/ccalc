@@ -1,15 +1,17 @@
 #include <stdlib.h>
-#include <stdio.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "engine/constants.h"
 #include "engine/node.h"
 #include "engine/output.h"
+#include "engine/tokenizer.h"
+#include "engine/parser.h"
 
 #include "arithmetic/arith.h"
 
-#define VERSION "0.0.3"
+#define VERSION "0.0.4"
 #define MAX_LINE_LENGTH 256
 
 ParsingContext ctx;
@@ -27,7 +29,7 @@ void parse_input(char *input)
 	
 	if (perr == PERR_SUCCESS)
 	{
-		if (ans != NULL) tree_substitute(&ctx, res, ans, "ans");
+		if (ans != NULL) tree_substitute(&ctx, &res, ans, "ans", true);
 		show_tree(&ctx, res);
 		
 		if (!tree_contains_variable(res))
@@ -76,10 +78,17 @@ int main(int argc, char *argv[])
 			{
 				input[strlen(input) - 1] = '\0';
 				
-				if (strcmp(input, "exit") == 0) return 0;
-				if (strcmp(input, "help") == 0)
+				if (strcmp(input, "exit") == 0) break;
+				if (begins_with("help", input))
 				{
-					print_ops(&ctx);
+					if (strlen(input) > 5)
+					{
+						print_op_info(&ctx, input + 5);
+					}
+					else
+					{
+						print_ops(&ctx);
+					}
 					continue;
 				}
 				

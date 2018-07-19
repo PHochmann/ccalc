@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <stdbool.h>
 
 #include "constants.h"
@@ -64,6 +65,23 @@ void show_tree(ParsingContext *ctx, Node *node)
 	show_tree_rec(ctx, node, 0, 0, true);
 }
 
+char* opplace_to_string(Op_Placement place)
+{
+	switch (place)
+	{
+		case OP_PLACE_PREFIX:
+			return "PREFIX";
+		case OP_PLACE_INFIX:
+			return "INFIX";
+		case OP_PLACE_POSTFIX:
+			return "POSTFIX";
+		case OP_PLACE_FUNCTION:
+			return "FUNCTION";
+		default:
+			return "UNKNOWN";
+	}
+}
+
 char* perr_to_string(ParserError perr)
 {
 	switch (perr)
@@ -103,5 +121,142 @@ void print_ops(ParsingContext *ctx)
 	{
 		printf(OP_COLOR "%s" COL_RESET " ", ctx->operators[i].name);
 	}
-	printf("\n(%d available operators)\n\n", ctx->num_ops);
+	printf("\n(%d available operators. Further help with 'help <op>')\n\n", ctx->num_ops);
+}
+
+void print_op_info(ParsingContext *ctx, char *name)
+{
+	int res = 0;
+	int IDs[ctx->num_ops];
+	
+	for (int i = 0; i < ctx->num_ops; i++)
+	{
+		if (strcmp(ctx->operators[i].name, name) == 0 || strcmp(name, "all") == 0)
+		{
+			IDs[res++] = i;
+		}
+	}
+	
+	int header = 5;
+	
+	char** cells = malloc(sizeof(char*) * (res + 1) * header);
+	for (int i = header; i < (res + 1) * header; i++) cells[i] = malloc(sizeof(char) * 10);
+	
+	cells[0] = "ID";
+	cells[1] = "Name";
+	cells[2] = "Arity";
+	cells[3] = "Placement";
+	cells[4] = "Precedence";
+	for (int i = 0; i < res; i++)
+	{
+		sprintf(cells[header * (i + 1) + 0], "%d", IDs[i]);
+		strcpy(cells[header * (i + 1) + 1], ctx->operators[IDs[i]].name);
+		sprintf(cells[header * (i + 1) + 2], "%d", ctx->operators[IDs[i]].arity);
+		strcpy(cells[header * (i + 1) + 3], opplace_to_string(ctx->operators[IDs[i]].placement));
+		sprintf(cells[header * (i + 1) + 4], "%d", ctx->operators[IDs[i]].precedence);
+	}
+	print_table(res + 1, header, cells);
+	for (int i = header; i < (res + 1) * header; i++) free(cells[i]);
+	free(cells);
+}
+
+/*
+Summary: Calculates max width of string that contains line break characters
+*/
+int text_len(char* text)
+{
+	int res = 0;
+	int curr_res = 0;
+	size_t i = 0;
+	
+	while (text[i] != '\0')
+	{
+		if (text[i] == '\n')
+		{
+			if (curr_res > res) res = curr_res;
+			curr_res = 0;
+		}
+		else
+		{
+			curr_res++;
+		}
+		
+		i++;
+	}
+	if (curr_res > res) res = curr_res;
+	
+	return res;
+}
+
+void print_padded(char *string, int total_length)
+{
+	for (int i = strlen(string); i < total_length; i++) printf(" ");
+	printf("%s", string);
+}
+
+void print_repeated(char* string, int amount)
+{
+	for (int i = 0; i < amount; i++) printf("%s", string);
+}
+
+void print_table(int num_rows, int num_cols, char** cells)
+{
+	int width[num_cols];
+	for (int i = 0; i < num_cols; i++) width[i] = 0;
+	
+	// Calculate col width
+	for (int i = 0; i < num_rows; i++)
+	{
+		for (int j = 0; j < num_cols; j++)
+		{
+			int len = text_len(cells[i * num_cols + j]);
+			if (width[j] < len) width[j] = len;
+		}
+	}
+	// - - -
+	
+	// Print top border
+	printf("┌");
+	for (int i = 0; i < num_cols; i++)
+	{
+		print_repeated("─", width[i] + 2);
+		if (i != num_cols - 1) printf("┬");
+	}
+	printf("┐\n");
+	// - - -
+	
+	// Print cells
+	for (int i = 0; i < num_rows; i++)
+	{
+		if (i == 1 && num_rows > 1) // Print table head border
+		{
+			printf("├");
+			for (int i = 0; i < num_cols; i++)
+			{
+				print_repeated("─", width[i] + 2);
+				if (i != num_cols - 1) printf("┼");
+			}
+			printf("┤\n");
+		}
+		
+		printf("│");
+		for (int j = 0; j < num_cols; j++)
+		{
+			printf(" ");
+			print_padded(cells[i * num_cols + j], width[j]);
+			printf(" │");
+		}
+		printf("\n");
+	}
+	// - - -
+	
+	// Print bottom border
+	printf("└");
+	for (int i = 0; i < num_cols; i++)
+	{
+		print_repeated("─", width[i] + 2);
+		if (i != num_cols - 1) printf("┴");
+	}
+	printf("┘\n");
+	// - - -
 }

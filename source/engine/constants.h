@@ -21,19 +21,19 @@
 // - - -
 
 // Maximum number of tokens reserved before tokenization
-#define MAX_TOKENS 256
+#define MAX_TOKENS 128
 
 // Maximum number of operator/node instances the parser can handle at once
-#define MAX_STACK_SIZE 256
+#define MAX_STACK_SIZE 128
 
 // Maximum length of name of an operator
 #define MAX_OP_LENGTH 8
 
 // Maximum length of a variable's name
-#define MAX_VAR_LENGTH 16
+#define MAX_VAR_LENGTH 8
 
 // Maximum arity of an operator (Max. number of children a node can have)
-#define MAX_CHILDREN 16
+#define MAX_CHILDREN 8
 
 // Used to indicate arbitrary amount of operands (0 up to MAX_CHILDREN)
 #define DYNAMIC_ARITY -1
