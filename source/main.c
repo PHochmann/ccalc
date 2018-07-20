@@ -18,7 +18,7 @@
 #define VERSION "0.0.5"
 #define MAX_LINE_LENGTH 256
 
-bool debug = false;
+bool debug = true;
 ParsingContext ctx;
 Node *ans;
 
@@ -34,7 +34,6 @@ void print_help()
 		printf(OP_COLOR "%s" COL_RESET " ", ctx.operators[i].name);
 	}
 	printf("\n(%d available operators)\n", ctx.num_ops);
-	printf("Use 'ans' as a variable to refer to previous result.\n\n");
 }
 
 void parse_input(char *input)
@@ -71,7 +70,6 @@ void parse_input(char *input)
 	{
 		printf("Error: %s\n", perr_to_string(perr));
 	}
-	printf("\n");
 }
 
 int main(int argc, char *argv[])
@@ -84,19 +82,21 @@ int main(int argc, char *argv[])
 	
 	if (argc > 1)
 	{
+		debug = false;
 		for (int i = 1; i < argc; i++)
 		{
 			parse_input(argv[i]);
 		}
+		printf("\n");
 	}
 	else
 	{
-		printf("Calculator %s (c) 2018, Philipp Hochmann\n(Available commands: exit, help)\n\n", VERSION);
+		printf("Calculator %s (c) 2018, Philipp Hochmann\n", VERSION);
 		char input[MAX_LINE_LENGTH];
 		
 		while (true)
 		{
-			printf("> ");
+			printf("\n> ");
 			
 			if (fgets(input, MAX_LINE_LENGTH, stdin) != NULL)
 			{
@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
 				if (strcmp(input, "debug") == 0)
 				{
 					debug = !debug;
-					printf("toggled debug\n\n");
+					printf("toggled debug\n");
 					continue;
 				}
 				

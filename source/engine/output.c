@@ -126,12 +126,14 @@ void inline_tree_rec(ParsingContext *ctx, Node *node, bool needs_p)
 					
 				case OP_PLACE_INFIX:
 					if (node->children[0]->type == NTYPE_OPERATOR
-						&& (node->children[0]->op->precedence < node->op->precedence
+						&& (node->children[0]->op->placement == OP_PLACE_POSTFIX
+							|| node->children[0]->op->precedence < node->op->precedence
 							|| (node->children[0]->op->precedence == node->op->precedence
 								&& node->op->assoc == OP_ASSOC_RIGHT))) l_needs = true;
 
 					if (node->children[1]->type == NTYPE_OPERATOR
 						&& (node->children[1]->op->precedence < node->op->precedence
+							|| node->children[1]->op->placement == OP_PLACE_PREFIX
 							|| (node->children[1]->op->precedence == node->op->precedence
 								&& node->op->assoc == OP_ASSOC_LEFT))) r_needs = true;
 				
