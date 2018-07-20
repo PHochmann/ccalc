@@ -1,8 +1,7 @@
 #include <string.h>
 
-#include <stdio.h>
-
 #include "node.h"
+#include "memory.h"
 
 Node get_node(NodeType type)
 {
@@ -87,61 +86,28 @@ Node tree_copy(ParsingContext *ctx, Node *tree)
 	return res;
 }
 
-/* Summary: Calls free() on each node within tree, including variable's names and constant's values */
-void tree_free(Node *tree)
-{
-	switch (tree->type)
-	{
-		case NTYPE_OPERATOR:
-			for (int i = 0; i < tree->num_children; i++)
-			{
-				tree_free(tree->children[i]);
-			}
-			break;
-			
-		case NTYPE_CONSTANT:
-			free(tree->const_value);
-			break;
-			
-		case NTYPE_VARIABLE:
-			free(tree->var_name);
-			break;
-	}
-	
-	free(tree);
-}
-
 /*
 Summary: Substitutes any occurence of a variable with certain name with a given subtree
-When copy is set to true, 'tree' is copied each time. When set to false, a pointer is bent to 'tree'.
-Double frees might occur when using free_tree
 */
-int tree_substitute(ParsingContext *ctx, Node **dest_tree, Node *tree, char* var_name, bool copy)
+int tree_substitute(ParsingContext *ctx, Node *dest_tree, Node *tree, char *var_name)
 {
-	if (dest_tree == NULL || *dest_tree == NULL) return 0;
+	if (dest_tree == NULL) return 0;
 	
 	int res = 0;
 	
-	switch((*dest_tree)->type)
+	switch(dest_tree->type)
 	{
 		case NTYPE_OPERATOR:
-			for (int i = 0; i < (*dest_tree)->num_children; i++)
+			for (int i = 0; i < dest_tree->num_children; i++)
 			{
-				res += tree_substitute(ctx, &(*dest_tree)->children[i], tree, var_name, copy);
+				res += tree_substitute(ctx, dest_tree->children[i], tree, var_name);
 			}
 			return res;
 			
 		case NTYPE_VARIABLE:
-			if (strcmp(var_name, (*dest_tree)->var_name) == 0)
+			if (strcmp(var_name, dest_tree->var_name) == 0)
 			{
-				if (copy)
-				{
-					**dest_tree = tree_copy(ctx, tree);
-				}
-				else
-				{
-					*dest_tree = tree;
-				}
+				*dest_tree = tree_copy(ctx, tree);
 				return 1;
 			}
 			break;
@@ -189,4 +155,20 @@ bool tree_equals(ParsingContext *ctx, Node *a, Node *b)
 		}
 	}
 	return true;
+}
+
+/*
+Summary: frees all child-trees and replaces root value-wise
+*/
+void tree_replace(Node *destination, Node new_node)
+{
+	if (destination->type == NTYPE_OPERATOR)
+	{
+		for (int i = 0; i < destination->num_children; i++)
+		{
+			free_tree(destination->children[i]);
+		}
+	}
+	
+	*destination = new_node;
 }

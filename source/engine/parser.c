@@ -2,8 +2,6 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include <stdio.h>
-
 #include "constants.h"
 #include "context.h"
 #include "node.h"

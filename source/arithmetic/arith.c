@@ -6,7 +6,7 @@
 #include "arith.h"
 
 #define ARITH_STRING_LENGTH 30
-#define ARITH_NUM_OPS 37
+#define ARITH_NUM_OPS (37+10)
 
 ParsingContext arith_ctx;
 

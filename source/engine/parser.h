@@ -1,6 +1,4 @@
 #pragma once
-#include <stdbool.h>
-
 #include "context.h"
 
 typedef enum {

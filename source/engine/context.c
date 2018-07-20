@@ -21,11 +21,6 @@ ParsingContext get_context(size_t val_size, size_t min_strbuf_length, int max_op
 	return res;
 }
 
-void free_context(ParsingContext *ctx)
-{
-	free(ctx->operators);
-}
-
 int add_op(ParsingContext *ctx, Operator op)
 {
 	if (ctx->num_ops == ctx->max_ops) return -1; // Buffer too small
