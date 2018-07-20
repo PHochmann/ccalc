@@ -106,11 +106,17 @@ void inline_tree_rec(ParsingContext *ctx, Node *node, bool needs_p)
 			{
 				case OP_PLACE_PREFIX:
 					printf("%s", node->op->name);
-					inline_tree_rec(ctx, node->children[0], true);
+					if (node->op->arity != 0)
+					{
+						inline_tree_rec(ctx, node->children[0], true);
+					}
 					break;
 					
 				case OP_PLACE_POSTFIX:
-					inline_tree_rec(ctx, node->children[0], true);
+					if (node->op->arity != 0)
+					{
+						inline_tree_rec(ctx, node->children[0], true);
+					}
 					printf("%s", node->op->name);
 					break;
 					
@@ -132,6 +138,7 @@ void inline_tree_rec(ParsingContext *ctx, Node *node, bool needs_p)
 								&& node->op->assoc == OP_ASSOC_RIGHT))) l_needs = true;
 
 					if (node->children[1]->type == NTYPE_OPERATOR
+						&& node->op->arity != 0
 						&& (node->children[1]->op->precedence < node->op->precedence
 							|| node->children[1]->op->placement == OP_PLACE_PREFIX
 							|| (node->children[1]->op->precedence == node->op->precedence

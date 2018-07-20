@@ -18,7 +18,8 @@
 #define VERSION "0.0.5"
 #define MAX_LINE_LENGTH 256
 
-bool debug = true;
+bool debug = false;
+bool silent = false;
 ParsingContext ctx;
 Node *ans;
 
@@ -38,6 +39,19 @@ void print_help()
 
 void parse_input(char *input)
 {
+	if (strcmp(input, "exit") == 0) exit(0);
+	if (strcmp(input, "help") == 0)
+	{
+		print_help();
+		return;
+	}
+	if (strcmp(input, "debug") == 0)
+	{
+		debug = !debug;
+		if (!silent) printf("toggled debug\n");
+		return;
+	}
+	
 	Node *res;
 	ParserError perr = parse_node(&ctx, input, &res);
 	
@@ -47,7 +61,6 @@ void parse_input(char *input)
 		
 		if (debug)
 		{
-			printf("\n");
 			show_tree(&ctx, res);
 			printf("= ");
 			inline_tree(&ctx, res);
@@ -62,6 +75,7 @@ void parse_input(char *input)
 			ctx.to_string((void*)(&eval), result_str, ctx.min_strbuf_length);
 			printf("= %s\n", result_str);
 		}
+		if (debug) printf("\n");
 		
 		if (ans != NULL) free_tree(ans);
 		ans = res;
@@ -82,12 +96,9 @@ int main(int argc, char *argv[])
 	
 	if (argc > 1)
 	{
-		debug = false;
-		for (int i = 1; i < argc; i++)
-		{
-			parse_input(argv[i]);
-		}
-		printf("\n");
+		silent = true;
+		for (int i = 1; i < argc; i++) parse_input(argv[i]);
+		if (!debug) printf("\n");
 	}
 	else
 	{
@@ -101,20 +112,6 @@ int main(int argc, char *argv[])
 			if (fgets(input, MAX_LINE_LENGTH, stdin) != NULL)
 			{
 				input[strlen(input) - 1] = '\0';
-				
-				if (strcmp(input, "exit") == 0) break;
-				if (strcmp(input, "help") == 0)
-				{
-					print_help();
-					continue;
-				}
-				if (strcmp(input, "debug") == 0)
-				{
-					debug = !debug;
-					printf("toggled debug\n");
-					continue;
-				}
-				
 				parse_input(input);
 			}
 			else
