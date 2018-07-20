@@ -121,7 +121,8 @@ void print_ops(ParsingContext *ctx)
 	{
 		printf(OP_COLOR "%s" COL_RESET " ", ctx->operators[i].name);
 	}
-	printf("\n(%d available operators. Further help with 'help <op>')\n\n", ctx->num_ops);
+	printf("\n(%d available operators. Further help with 'help <op>' or 'help all')\n", ctx->num_ops);
+	printf("\nUse 'ans' as a variable to refer to previous result.\n\n");
 }
 
 void print_op_info(ParsingContext *ctx, char *name)
@@ -152,40 +153,12 @@ void print_op_info(ParsingContext *ctx, char *name)
 		sprintf(cells[header * (i + 1) + 0], "%d", IDs[i]);
 		strcpy(cells[header * (i + 1) + 1], ctx->operators[IDs[i]].name);
 		sprintf(cells[header * (i + 1) + 2], "%d", ctx->operators[IDs[i]].arity);
-		strcpy(cells[header * (i + 1) + 3], opplace_to_string(ctx->operators[IDs[i]].placement));
+		strcpy(cells[header * (i + 1) + 3], ctx->operators[IDs[i]].arity != 0 ? opplace_to_string(ctx->operators[IDs[i]].placement) : "CONSTANT");
 		sprintf(cells[header * (i + 1) + 4], "%d", ctx->operators[IDs[i]].precedence);
 	}
 	print_table(res + 1, header, cells);
 	for (int i = header; i < (res + 1) * header; i++) free(cells[i]);
 	free(cells);
-}
-
-/*
-Summary: Calculates max width of string that contains line break characters
-*/
-int text_len(char* text)
-{
-	int res = 0;
-	int curr_res = 0;
-	size_t i = 0;
-	
-	while (text[i] != '\0')
-	{
-		if (text[i] == '\n')
-		{
-			if (curr_res > res) res = curr_res;
-			curr_res = 0;
-		}
-		else
-		{
-			curr_res++;
-		}
-		
-		i++;
-	}
-	if (curr_res > res) res = curr_res;
-	
-	return res;
 }
 
 void print_padded(char *string, int total_length)
@@ -209,7 +182,7 @@ void print_table(int num_rows, int num_cols, char** cells)
 	{
 		for (int j = 0; j < num_cols; j++)
 		{
-			int len = text_len(cells[i * num_cols + j]);
+			int len = strlen(cells[i * num_cols + j]);
 			if (width[j] < len) width[j] = len;
 		}
 	}
@@ -257,6 +230,6 @@ void print_table(int num_rows, int num_cols, char** cells)
 		print_repeated("─", width[i] + 2);
 		if (i != num_cols - 1) printf("┴");
 	}
-	printf("┘\n");
+	printf("┘\n\n");
 	// - - -
 }

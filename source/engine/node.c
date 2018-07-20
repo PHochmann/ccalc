@@ -1,5 +1,7 @@
 #include <string.h>
 
+#include <stdio.h>
+
 #include "node.h"
 
 Node get_node(NodeType type)
@@ -149,4 +151,42 @@ int tree_substitute(ParsingContext *ctx, Node **dest_tree, Node *tree, char* var
 	}
 	
 	return 0;
+}
+
+bool node_equals(ParsingContext *ctx, Node *a, Node *b)
+{
+	if (a->type != b->type) return false;
+	
+	switch (a->type)
+	{
+		case NTYPE_OPERATOR:
+			if (a->op != b->op) return false;
+			if (a->num_children != b->num_children) return false;
+			break;
+			
+		case NTYPE_CONSTANT:
+			for (int i = 0; i < ctx->value_size; i++)
+			{
+				if (((char*)a->const_value)[i] != ((char*)b->const_value)[i]) return false;
+			}
+			break;
+			
+		case NTYPE_VARIABLE:
+			if (strcmp(a->var_name, b->var_name) != 0) return false;
+	}
+	
+	return true;
+}
+
+bool tree_equals(ParsingContext *ctx, Node *a, Node *b)
+{
+	if (!node_equals(ctx, a, b)) return false;
+	if (a->type == NTYPE_OPERATOR)
+	{
+		for (size_t i = 0; i < a->num_children; i++)
+		{
+			if (!tree_equals(ctx, a->children[i], b->children[i])) return false;
+		}
+	}
+	return true;
 }

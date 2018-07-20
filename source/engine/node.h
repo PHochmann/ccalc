@@ -36,3 +36,5 @@ bool tree_contains_variable(Node* node);
 Node tree_copy(ParsingContext *ctx, Node *node);
 void tree_free(Node* node);
 int tree_substitute(ParsingContext *ctx, Node **dest_tree, Node *tree, char* var_name, bool copy);
+bool node_equals(ParsingContext *ctx, Node *a, Node *b);
+bool tree_equals(ParsingContext *ctx, Node *a, Node *b);

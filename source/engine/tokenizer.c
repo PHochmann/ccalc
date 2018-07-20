@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <stdio.h>
+
 #include "constants.h"
 #include "tokenizer.h"
 
@@ -12,7 +14,7 @@ bool begins_with(char *prefix, char *string)
 	return strncmp(prefix, string, prefix_length) == 0;
 }
 
-bool add_token(char** tokens, char* position, int* num_tokens)
+bool add_token(char **tokens, char *position, int *num_tokens)
 {
 	if (*num_tokens == MAX_TOKENS) return false;
 	tokens[(*num_tokens)++] = position;
@@ -78,23 +80,21 @@ bool tokenize(char *input, char **keywords, int num_keyw, char ***out_tokens, in
 	}
 	
 	if (!add_token(token_markers, input + strlen(input), &num_markers)) return false; // Sentinel marker at \0
-
 	// Build \0-terminated strings from pointers and out_num_tokens (might be less than num_markers due to whitespaces tokens that are removed)
 	*out_tokens = malloc(sizeof(char*) * (num_markers - 1));
 	*out_num_tokens = 0;
 	for (int i = 0; i < num_markers - 1; i++)
 	{
-		int len = (int)(token_markers[i + 1] - token_markers[i]);
-		
 		// Check for whitespace-token and empty token (only when input itself is empty)
 		if (token_markers[i][0] == ' ' || token_markers[i] == token_markers[i + 1]) continue;
+		
+		int len = (int)(token_markers[i + 1] - token_markers[i]);
 		
 		(*out_tokens)[*out_num_tokens] = malloc(len + 1);
 		for (int j = 0; j < len; j++) (*out_tokens)[*out_num_tokens][j] = token_markers[i][j];
 		(*out_tokens)[*out_num_tokens][len] = '\0';
 		(*out_num_tokens)++;
 	}
-	
 	return true;
 }
 

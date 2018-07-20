@@ -8,9 +8,11 @@
 #include "engine/output.h"
 #include "engine/tokenizer.h"
 #include "engine/parser.h"
+#include "engine/rule.h"
 
 #include "arithmetic/arith.h"
 
+#define DEBUG true
 #define VERSION "0.0.4"
 #define MAX_LINE_LENGTH 256
 
@@ -30,7 +32,23 @@ void parse_input(char *input)
 	if (perr == PERR_SUCCESS)
 	{
 		if (ans != NULL) tree_substitute(&ctx, &res, ans, "ans", true);
-		show_tree(&ctx, res);
+		
+		if (DEBUG)
+		{
+			// DEBUG REWRITING
+			printf("FIRST MATCHED SUBTREE FROM x*x:\n");
+			Matching matching;
+			Node *pattern;
+			parse_node(&ctx, "x*x", &pattern);
+			if (find_matching(&ctx, res, pattern, &matching))
+			{
+				show_tree(&ctx, matching.mapped_nodes[0]);
+			}
+			printf(" - - - - -\n");
+			// - - -
+			
+			show_tree(&ctx, res);
+		}
 		
 		if (!tree_contains_variable(res))
 		{
@@ -47,7 +65,6 @@ void parse_input(char *input)
 	{
 		printf("Error: %s\n", perr_to_string(perr));
 	}
-	
 	printf("\n");
 }
 
@@ -68,7 +85,7 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		printf("Calculator %s (c) 2018, Philipp Hochmann\n(Commands: help)\n\n", VERSION);
+		printf("Calculator %s (c) 2018, Philipp Hochmann\n(Type 'help' for operator list)\n\n", VERSION);
 		char input[MAX_LINE_LENGTH];
 		
 		while (true)
@@ -91,7 +108,6 @@ int main(int argc, char *argv[])
 					}
 					continue;
 				}
-				
 				parse_input(input);
 			}
 			else

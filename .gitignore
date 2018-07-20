@@ -1,2 +1,3 @@
-# Ignore 'bin' directory
+# Ignore 'bin' and 'unused' directory
 bin/
+unused/

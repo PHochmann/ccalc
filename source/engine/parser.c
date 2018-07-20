@@ -12,7 +12,7 @@
 
 // Global vars while parsing
 bool initialized = false;
-ParsingContext *ctx;
+ParsingContext *cttx;
 Node **node_stack = NULL;
 Operator **op_stack = NULL;
 char *arities = NULL;
@@ -130,11 +130,11 @@ bool op_push(Operator *op)
 
 Operator* search_op(char *name, Op_Placement placement)
 {
-	for (int i = 0; i < ctx->num_ops; i++)
+	for (int i = 0; i < cttx->num_ops; i++)
 	{
-		if (ctx->operators[i].placement == placement && strcmp(ctx->operators[i].name, name) == 0)
+		if (cttx->operators[i].placement == placement && strcmp(cttx->operators[i].name, name) == 0)
 		{
-			return &(ctx->operators[i]);
+			return &(cttx->operators[i]);
 		}
 	}
 	
@@ -160,13 +160,15 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
 	{
 		keywords[i] = context->operators[i].name;
 	}
-	if (!tokenize(input, keywords, context->num_ops, &tokens, &num_tokens)) return PERR_MAX_TOKENS_EXCEEDED;
 	
+	if (!tokenize(input, keywords, context->num_ops, &tokens, &num_tokens)) return PERR_MAX_TOKENS_EXCEEDED;
+
 	// 2. Initialize data structures
-	ctx = context;
+	cttx = context;
 	error = PERR_SUCCESS;
 	num_ops = 0;
 	num_nodes = 0;
+
 	
 	// 3. Process each token
 	bool await_subexpression = true;
@@ -178,14 +180,14 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
 		size_t tok_len = strlen(token);
 		
 		// II. Does glue-op need to be inserted?
-		if (!await_subexpression && ctx->glue_op != NULL)
+		if (!await_subexpression && cttx->glue_op != NULL)
 		{
 			if (!is_closing_parenthesis(token[0])
 				&& !is_delimiter(token[0])
 				&& search_op(token, OP_PLACE_INFIX) == NULL
 				&& search_op(token, OP_PLACE_POSTFIX) == NULL)
 			{
-				if (!op_push(ctx->glue_op)) goto exit;
+				if (!op_push(cttx->glue_op)) goto exit;
 				await_subexpression = true;
 			}
 		}
@@ -286,8 +288,8 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
 		
 		// VI. Token must be variable or constant (leaf)
 		Node *node = malloc(sizeof(Node));
-		void *constant = malloc(ctx->value_size);
-		if (ctx->try_parse(token, constant)) // Is token constant?
+		void *constant = malloc(cttx->value_size);
+		if (cttx->try_parse(token, constant)) // Is token constant?
 		{
 			*node = get_constant_node(constant);
 		}

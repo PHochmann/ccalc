@@ -1,12 +1,14 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#include <stdio.h>
+
 #include "context.h"
 
-ParsingContext get_context(size_t value_size, size_t min_strbuf_length, int max_ops, TryParseHandler try_parse, ToStringHandler to_string)
+ParsingContext get_context(size_t val_size, size_t min_strbuf_length, int max_ops, TryParseHandler try_parse, ToStringHandler to_string)
 {
 	ParsingContext res = (ParsingContext){
-		.value_size = value_size,
+		.value_size = val_size,
 		.min_strbuf_length = min_strbuf_length,
 		.max_ops = max_ops,
 		.num_ops = 0,
@@ -15,7 +17,7 @@ ParsingContext get_context(size_t value_size, size_t min_strbuf_length, int max_
 		.operators = malloc(sizeof(Operator) * max_ops),
 		.glue_op = NULL,
 	};
-	
+
 	return res;
 }
 

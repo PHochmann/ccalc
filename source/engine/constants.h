@@ -37,3 +37,5 @@
 
 // Used to indicate arbitrary amount of operands (0 up to MAX_CHILDREN)
 #define DYNAMIC_ARITY -1
+
+#define MAPPING_MAX_VAR_COUNT 16

@@ -22,7 +22,7 @@ typedef struct {
 
 } ParsingContext;
 
-ParsingContext get_context(size_t value_size, size_t min_strbuf_length, int max_ops, TryParseHandler try_parse, ToStringHandler to_string);
+ParsingContext get_context(size_t val_size, size_t min_strbuf_length, int max_ops, TryParseHandler try_parse, ToStringHandler to_string);
 void free_context(ParsingContext *ctx);
 int add_op(ParsingContext *ctx, Operator op);
 bool set_glue_op(ParsingContext *ctx, Operator *op);
