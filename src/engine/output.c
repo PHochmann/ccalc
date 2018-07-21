@@ -82,6 +82,7 @@ Summary: Draws coloured tree of node to stdout
 */
 void show_tree(ParsingContext *ctx, Node *node)
 {
+	if (ctx == NULL || node == NULL) return;
 	show_tree_rec(ctx, node, 0, 0, true);
 }
 
@@ -159,5 +160,6 @@ Summary: Prints expression of node to stdout
 */
 void inline_tree(ParsingContext *ctx, Node *node)
 {
+	if (ctx == NULL || node == NULL) return;
 	inline_tree_rec(ctx, node, false);
 }

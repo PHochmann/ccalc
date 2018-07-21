@@ -23,6 +23,8 @@ ParsingContext get_context(size_t val_size, size_t min_strbuf_length, int max_op
 
 int add_op(ParsingContext *ctx, Operator op)
 {
+	if (ctx == NULL) return -1;
+	
 	if (ctx->num_ops == ctx->max_ops) return -1; // Buffer too small
 	
 	ctx->operators[ctx->num_ops++] = op;
@@ -32,6 +34,8 @@ int add_op(ParsingContext *ctx, Operator op)
 
 bool set_glue_op(ParsingContext *ctx, Operator *op)
 {
+	if (ctx == NULL) return false;
+	
 	if (op->placement != OP_PLACE_INFIX) return false; // Must be infix to "glue" subtrees together
 	ctx->glue_op = op;
 	return true;
@@ -39,5 +43,7 @@ bool set_glue_op(ParsingContext *ctx, Operator *op)
 
 void remove_glue_op(ParsingContext *ctx)
 {
+	if (ctx == NULL) return;
+	
 	ctx->glue_op = NULL;
 }

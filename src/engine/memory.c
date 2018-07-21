@@ -3,6 +3,8 @@
 /* Summary: Calls free() on each node within tree, including variable's names and constant's values */
 void free_tree(Node *tree)
 {
+	if (tree == NULL) return;
+	
 	switch (tree->type)
 	{
 		case NTYPE_OPERATOR:
@@ -43,5 +45,6 @@ void free_rule(RewriteRule rule)
 
 void free_context(ParsingContext *ctx)
 {
+	if (ctx == NULL) return;
 	free(ctx->operators);
 }

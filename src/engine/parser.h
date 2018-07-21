@@ -6,7 +6,9 @@ typedef enum {
 	PERR_SUCCESS,
 	// Not initialized
 	PERR_NOT_INIT,
-	// Checked at pre-processing (todo)
+	// NULL-Pointer in arguments
+	PERR_ARGS_MALFORMED,
+	// Checked at pre-processing
 	PERR_CTX_MALFORMED,
 	// Token buffer overflow
 	PERR_MAX_TOKENS_EXCEEDED,

@@ -146,8 +146,9 @@ Returns: Error code to indicate whether string was parsed successfully or which 
 ParserError parse_node(ParsingContext *context, char *input, Node **res)
 {
 	// 0. Early outs
-	// Glue-op must be infix to "glue" two subtrees together
+	if (context == NULL || input == NULL || res == NULL) return PERR_ARGS_MALFORMED;
 	if (!initialized) return PERR_NOT_INIT;
+	// Glue-op must be infix to "glue" two subtrees together
 	if (context->glue_op != NULL && context->glue_op->placement != OP_PLACE_INFIX) return PERR_CTX_MALFORMED;
 	
 	// 1. Tokenize input

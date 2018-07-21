@@ -25,6 +25,7 @@ Node *ans;
 
 void _exit()
 {
+	if (ans != NULL) free_tree(ans);
 	uninit_parser();
 }
 

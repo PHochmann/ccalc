@@ -40,6 +40,8 @@ Node get_operator_node(Operator *op)
    False indicates save evaluation */
 bool tree_contains_variable(Node* tree)
 {
+	if (tree == NULL) return false;
+	
 	switch (tree->type)
 	{
 		case NTYPE_CONSTANT:
@@ -91,7 +93,7 @@ Summary: Substitutes any occurence of a variable with certain name with a given 
 */
 int tree_substitute(ParsingContext *ctx, Node *dest_tree, Node *tree, char *var_name)
 {
-	if (dest_tree == NULL) return 0;
+	if (ctx == NULL || dest_tree == NULL || tree == NULL || var_name == NULL) return 0;
 	
 	int res = 0;
 	
@@ -121,6 +123,8 @@ int tree_substitute(ParsingContext *ctx, Node *dest_tree, Node *tree, char *var_
 
 bool node_equals(ParsingContext *ctx, Node *a, Node *b)
 {
+	if (ctx == NULL || a == NULL || b == NULL) return false;
+	
 	if (a->type != b->type) return false;
 	
 	switch (a->type)
@@ -146,6 +150,8 @@ bool node_equals(ParsingContext *ctx, Node *a, Node *b)
 
 bool tree_equals(ParsingContext *ctx, Node *a, Node *b)
 {
+	if (ctx == NULL || a == NULL || b == NULL) return false;
+	
 	if (!node_equals(ctx, a, b)) return false;
 	if (a->type == NTYPE_OPERATOR)
 	{
@@ -162,6 +168,8 @@ Summary: frees all child-trees and replaces root value-wise
 */
 void tree_replace(Node *destination, Node new_node)
 {
+	if (destination == NULL) return;
+	
 	if (destination->type == NTYPE_OPERATOR)
 	{
 		for (int i = 0; i < destination->num_children; i++)
