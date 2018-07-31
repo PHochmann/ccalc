@@ -3,6 +3,7 @@ Simple parser and calculator written in C
 
 ## Setup guide
 1. Clone repository
+<<<<<<< HEAD
 
 2. In root directory, run
     chmod +x make.sh; ./make.sh
