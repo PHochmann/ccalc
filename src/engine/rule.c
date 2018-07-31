@@ -113,9 +113,8 @@ bool find_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out
 
 /*
 Summary: Constructs rule from pattern-string (before) and transformation-string (after)
-int tree_substitute(ParsingContext *ctx, Node *dest_tree, Node *tree, char* var_name)
 */
-bool parse_rule(ParsingContext *ctx, char *before, char* after, RewriteRule *out_rule)
+bool parse_rule(ParsingContext *ctx, char *before, char *after, RewriteRule *out_rule)
 {
 	if (ctx == NULL || before == NULL || after == NULL || out_rule == NULL) return false;
 	

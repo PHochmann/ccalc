@@ -54,7 +54,7 @@ double arith_eval(Node *node)
 					
 				case 7:
 					i_res = 1;
-					for (long i = labs((long)round(arith_eval(node->children[0]))); i > 1; i--) i_res *= i;
+					for (long i = labs((long)trunc(arith_eval(node->children[0]))); i > 1; i--) i_res *= i;
 					return (double)i_res;
 					
 				case 8:
@@ -130,8 +130,8 @@ double arith_eval(Node *node)
 				
 				case 31:
 					return (double)binomial(
-						fabs(round(arith_eval(node->children[0]))),
-						fabs(round(arith_eval(node->children[1]))));
+						labs((long)trunc(arith_eval(node->children[0]))),
+						labs((long)trunc(arith_eval(node->children[1]))));
 						
 				case 32:
 					return fmod(arith_eval(node->children[0]), arith_eval(node->children[1]));

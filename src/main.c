@@ -76,7 +76,6 @@ void parse_input(char *input)
 			ctx.to_string((void*)(&eval), result_str, ctx.min_strbuf_length);
 			printf("= %s\n", result_str);
 		}
-		if (debug) printf("\n");
 		
 		if (ans != NULL) free_tree(ans);
 		ans = res;
@@ -99,7 +98,6 @@ int main(int argc, char *argv[])
 	{
 		silent = true;
 		for (int i = 1; i < argc; i++) parse_input(argv[i]);
-		if (!debug) printf("\n");
 	}
 	else
 	{
@@ -108,7 +106,7 @@ int main(int argc, char *argv[])
 		
 		while (true)
 		{
-			printf("\n> ");
+			printf("> ");
 			
 			if (fgets(input, MAX_LINE_LENGTH, stdin) != NULL)
 			{
