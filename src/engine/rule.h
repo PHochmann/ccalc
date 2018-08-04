@@ -20,8 +20,8 @@ typedef struct {
 	
 } Matching;
 
-bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *result);
-bool find_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *result);
+bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_matching);
+bool find_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_matching);
 bool parse_rule(ParsingContext *ctx, char *before, char* after, RewriteRule *out_rule);
 void transform_by_rule(RewriteRule *rule, Matching *matching);
 bool apply_rule(Node *tree, RewriteRule *rule);

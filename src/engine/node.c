@@ -57,6 +57,65 @@ bool tree_contains_variable(Node* tree)
 	return false;
 }
 
+/*
+Summary: Lists all variable names in tree.
+Params
+	out_variables must hold at least MAX_VAR_COUNT char*
+	out_variables' pointers must not be dereferenced after tree is freed.
+*/
+int list_variables(Node *tree, char **out_variables)
+{
+	if (tree == NULL) return -1;
+	
+	int res_count = 0;
+	
+	Node *node_stack[MAX_STACK_SIZE];
+	node_stack[0] = tree;
+	int stack_count = 1;
+	
+	while (stack_count > 0)
+	{
+		Node *curr_node = node_stack[--stack_count];
+		bool flag = false; // To break twice
+		switch (curr_node->type)
+		{
+			case NTYPE_VARIABLE:
+				for (int i = 0; i < res_count; i++)
+				{
+					// Don't add variable if we already found it
+					if (strcmp(out_variables[i], curr_node->var_name) == 0)
+					{
+						flag = true;
+						break;
+					}
+				}
+				if (flag) break;
+				
+				// Buffer overflow protection
+				if (res_count == MAX_VAR_COUNT) return -1;
+				
+				out_variables[res_count++] = curr_node->var_name;
+				break;
+				
+			case NTYPE_OPERATOR:
+				for (int i = curr_node->num_children - 1; i >= 0; i--)
+				{
+					// Buffer overflow protection
+					if (stack_count == MAX_STACK_SIZE) return -1;
+					
+					node_stack[stack_count] = curr_node->children[i];
+					stack_count++;
+				}
+				break;
+				
+			case NTYPE_CONSTANT:
+				break;
+		}
+	}
+	
+	return res_count;
+}
+
 Node tree_copy(ParsingContext *ctx, Node *tree)
 {
 	Node res = *tree;

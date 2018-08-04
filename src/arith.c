@@ -146,7 +146,8 @@ double arith_eval(Node *node)
 					return 1.61803398874;
 					
 				default:
-					return 0;
+					printf("Encountered operator without evaluation rule\n");
+					return -1;
 			}
 			
 		default:

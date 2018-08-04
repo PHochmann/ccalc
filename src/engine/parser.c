@@ -168,7 +168,6 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
 	num_ops = 0;
 	num_nodes = 0;
 
-	
 	// 3. Process each token
 	bool await_subexpression = true;
 	for (int i = 0; i < num_tokens; i++)
@@ -255,7 +254,7 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
 		{
 			op = search_op(token, OP_PLACE_FUNCTION);
 			if (op == NULL) op = search_op(token, OP_PLACE_PREFIX);
-			if (op != NULL) // Prefix operator found
+			if (op != NULL) // Function operator found
 			{
 				if (!op_push(op)) goto exit;
 				await_subexpression = op->arity != 0; // Constants don't await subexpr.

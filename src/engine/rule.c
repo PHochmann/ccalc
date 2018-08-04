@@ -1,22 +1,21 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include <stdio.h>
-
 #include "rule.h"
 #include "constants.h"
 #include "parser.h"
 #include "node.h"
 
 /*
-Summary: Tries to construct matching in root node
+Summary: Tries to match 'tree' against 'pattern' (only in root)
+Returns: true, if matching is found, false if NULL-pointers given in arguments or no matching found
 */
-bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *result)
+bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_matching)
 {
-	if (ctx == NULL || tree == NULL || pattern == NULL || result == NULL) return false;
+	if (ctx == NULL || tree == NULL || pattern == NULL || out_matching == NULL) return false;
 	
-	char *mapped_vars[MAPPING_MAX_VAR_COUNT];
-	Node *mapped_nodes[MAPPING_MAX_VAR_COUNT];
+	char *mapped_vars[MAX_VAR_COUNT];
+	Node *mapped_nodes[MAX_VAR_COUNT];
 	int num_mapped_vars = 0;
 	
 	Node *tree_stack[MAX_STACK_SIZE];
@@ -78,16 +77,16 @@ bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *resu
 	}
 	
 	// We successfully found matching! Construct it:
-	result->matched_tree = tree;
-	result->mapped_vars = malloc(sizeof(char*) * num_mapped_vars);
-	result->mapped_nodes = malloc(sizeof(Node*) * num_mapped_vars);
+	out_matching->matched_tree = tree;
+	out_matching->mapped_vars = malloc(sizeof(char*) * num_mapped_vars);
+	out_matching->mapped_nodes = malloc(sizeof(Node*) * num_mapped_vars);
 	
 	for (int i = 0; i < num_mapped_vars; i++)
 	{
-		result->mapped_vars[i] = mapped_vars[i];
-		result->mapped_nodes[i] = mapped_nodes[i];
+		out_matching->mapped_vars[i] = mapped_vars[i];
+		out_matching->mapped_nodes[i] = mapped_nodes[i];
 	}
-	result->num_mapped = num_mapped_vars;
+	out_matching->num_mapped = num_mapped_vars;
 	return true;
 }
 
@@ -113,6 +112,7 @@ bool find_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out
 
 /*
 Summary: Constructs rule from pattern-string (before) and transformation-string (after)
+Returns: true, if rule was successfully constructed from supplied strings, false otherwise
 */
 bool parse_rule(ParsingContext *ctx, char *before, char *after, RewriteRule *out_rule)
 {

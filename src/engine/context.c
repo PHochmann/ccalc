@@ -21,6 +21,10 @@ ParsingContext get_context(size_t val_size, size_t min_strbuf_length, int max_op
 	return res;
 }
 
+/*
+Summary: adds operator to context
+Returns: ID of new operator, -1 if buffer is full
+*/
 int add_op(ParsingContext *ctx, Operator op)
 {
 	if (ctx == NULL) return -1;

@@ -1,18 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <stdio.h>
-
 #include "constants.h"
 #include "tokenizer.h"
-
-bool begins_with(char *prefix, char *string)
-{
-	size_t prefix_length = strlen(prefix);
-	size_t string_length = strlen(string);
-	if (prefix_length > string_length) return false;
-	return strncmp(prefix, string, prefix_length) == 0;
-}
 
 bool add_token(char **tokens, char *position, int *num_tokens)
 {
@@ -56,10 +46,13 @@ bool tokenize(char *input, char **keywords, int num_keyw, char ***out_tokens, in
 		{
 			for (size_t j = 0; j < num_keyw; j++)
 			{
+				size_t keyw_len = strlen(keywords[j]);
+				if (keyw_len == 0) continue;
+				
 				if (begins_with(keywords[j], current))
 				{
 					if (state != 0 && !add_token(token_markers, current, &num_markers)) return false;
-					current += strlen(keywords[j]) - 1;
+					current += keyw_len - 1;
 					token = true;
 					next_state = 4;
 					break;
@@ -96,6 +89,14 @@ bool tokenize(char *input, char **keywords, int num_keyw, char ***out_tokens, in
 		(*out_num_tokens)++;
 	}
 	return true;
+}
+
+bool begins_with(char *prefix, char *string)
+{
+	size_t prefix_length = strlen(prefix);
+	size_t string_length = strlen(string);
+	if (prefix_length > string_length) return false;
+	return strncmp(prefix, string, prefix_length) == 0;
 }
 
 bool is_digit(char c)
