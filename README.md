@@ -7,5 +7,13 @@ Simple parser and calculator written in C
 2. In root directory, run ```chmod +x make.sh; ./make.sh``` to compile sources.
 
 3. Add alias such as ```c="~/Calculator/bin/calculator.out $@"``` in ~/.bash_aliases (when using the bash) to run program from anywhere. Arguments can be any expression as in interactive mode, which is started when program is executed without additional arguments.
-  
-Type 'debug' to visually see parsed abstract syntax tree, or 'help' to list available operators.
+
+## Available commands  
+| Command | Description |
+| --- | --- |
+| debug | Display parsed abstract syntax tree after normal expression |
+| help | List all available operators |
+| def_func \<name\> \<arity\> | Add new function operator (arity of -1 is dynamic arity up to MAX_CHILDREN) |
+| def_rule \<before\> -> \<after\> | Define new rule, e.g. to eliminate custom functions |
+
+'ans' can be used to reference previous result.
