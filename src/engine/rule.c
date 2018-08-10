@@ -1,10 +1,14 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "str_util.h"
 #include "rule.h"
 #include "constants.h"
 #include "parser.h"
 #include "node.h"
+
+#define VAR_PREFIX "var_"
+#define CONST_PREFIX "const_"
 
 /*
 Summary: Tries to match 'tree' against 'pattern' (only in root)
@@ -48,6 +52,10 @@ bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_
 				
 				if (!found)
 				{
+					// Check special rules
+					if (begins_with(CONST_PREFIX, curr_pattern_n->var_name) && curr_tree_n->type != NTYPE_CONSTANT) return false;
+					if (begins_with(VAR_PREFIX, curr_pattern_n->var_name) && curr_tree_n->type != NTYPE_VARIABLE) return false;
+					
 					mapped_vars[num_mapped_vars] = malloc(sizeof(char) * strlen(curr_pattern_n->var_name));
 					strcpy(mapped_vars[num_mapped_vars], curr_pattern_n->var_name);
 					mapped_nodes[num_mapped_vars] = malloc(sizeof(Node));
@@ -156,4 +164,33 @@ bool apply_rule(Node *tree, RewriteRule *rule)
 	// If matching is found, transform tree with it
 	transform_by_rule(rule, &matching);
 	return true;
+}
+
+/*
+Summary: Tries to apply rules in round-robin fashion until no rule can be applied any more
+Returns: Number of successful appliances
+*/
+int apply_ruleset(Node *tree, RewriteRule *rules, int num_rules, int max_iterations)
+{
+	int i = 0;
+	int res = 0;
+	
+	while (i < max_iterations || max_iterations == -1)
+	{
+		bool applied_flag = false;
+		
+		for (int j = 0; j < num_rules; j++)
+		{
+			if (apply_rule(tree, &rules[j]))
+			{
+				res++;
+				applied_flag = true;
+			}
+		}
+		
+		i++;
+		if (!applied_flag) return res;
+	}
+	
+	return res;
 }

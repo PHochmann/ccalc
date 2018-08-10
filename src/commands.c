@@ -14,6 +14,7 @@
 #include "engine/rule.h"
 #include "engine/memory.h"
 #include "engine/console_util.h"
+#include "engine/str_util.h"
 
 #define MAX_LINE_LENGTH 256
 #define NUM_MAX_RULES 16
@@ -256,10 +257,8 @@ bool parse_node_wrapper(char *input, Node **out_res, bool apply_rules, bool appl
 	if (apply_ans && ans != NULL) tree_substitute(&ctx, *out_res, ans, "ans");
 	if (apply_rules)
 	{
-		for (int i = 0; i < num_rules; i++)
-		{
-			while (apply_rule(*out_res, &rules[i]));
-		}
+		int applied_rules = apply_ruleset(*out_res, rules, num_rules, 100);
+		if (applied_rules != 0) message(0, "%d rules applied\n", applied_rules);
 	}
 	
 	return true;

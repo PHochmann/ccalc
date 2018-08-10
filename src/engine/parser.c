@@ -254,7 +254,7 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
 		{
 			op = search_op(token, OP_PLACE_FUNCTION);
 			if (op == NULL) op = search_op(token, OP_PLACE_PREFIX);
-			if (op != NULL) // Function operator found
+			if (op != NULL) // Function or prefix operator found (handled the same)
 			{
 				if (!op_push(op)) goto exit;
 				await_subexpression = op->arity != 0; // Constants don't await subexpr.

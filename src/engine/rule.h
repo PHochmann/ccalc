@@ -25,3 +25,4 @@ bool find_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out
 bool parse_rule(ParsingContext *ctx, char *before, char* after, RewriteRule *out_rule);
 void transform_by_rule(RewriteRule *rule, Matching *matching);
 bool apply_rule(Node *tree, RewriteRule *rule);
+int apply_ruleset(Node *tree, RewriteRule *rules, int num_rules, int max_iterations);

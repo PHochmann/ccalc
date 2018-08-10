@@ -3,6 +3,7 @@
 
 #include "constants.h"
 #include "tokenizer.h"
+#include "str_util.h"
 
 bool add_token(char **tokens, char *position, int *num_tokens)
 {
@@ -79,7 +80,7 @@ bool tokenize(char *input, char **keywords, int num_keyw, char ***out_tokens, in
 	for (int i = 0; i < num_markers - 1; i++)
 	{
 		// Check for whitespace-token and empty token (only when input itself is empty)
-		if (token_markers[i][0] == ' ' || token_markers[i] == token_markers[i + 1]) continue;
+		if (is_space(token_markers[i][0]) || token_markers[i] == token_markers[i + 1]) continue;
 		
 		int len = (int)(token_markers[i + 1] - token_markers[i]);
 		
@@ -91,12 +92,9 @@ bool tokenize(char *input, char **keywords, int num_keyw, char ***out_tokens, in
 	return true;
 }
 
-bool begins_with(char *prefix, char *string)
+bool is_space(char c)
 {
-	size_t prefix_length = strlen(prefix);
-	size_t string_length = strlen(string);
-	if (prefix_length > string_length) return false;
-	return strncmp(prefix, string, prefix_length) == 0;
+	return c == ' ';
 }
 
 bool is_digit(char c)
@@ -116,7 +114,7 @@ bool is_closing_parenthesis(char c)
 
 bool is_letter(char c)
 {
-	return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+	return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_';
 }
 
 bool is_delimiter(char c)
