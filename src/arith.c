@@ -8,7 +8,7 @@
 #define ARITH_STRING_LENGTH 30
 #define ARITH_NUM_OPS (37+10)
 
-ParsingContext arith_ctx;
+static ParsingContext arith_ctx;
 
 long binomial(long n, long k)
 {
@@ -37,54 +37,72 @@ double arith_eval(Node *node)
 		case NTYPE_OPERATOR:
 			switch ((size_t)(node->op - arith_ctx.operators))
 			{
-				case 0:
+				case 0: // x*y
 					return arith_eval(node->children[0]) * arith_eval(node->children[1]);
-				case 1:
+					
+				case 1: // x/y
 					return arith_eval(node->children[0]) / arith_eval(node->children[1]);
-				case 2:
+					
+				case 2: // x+y
 					return arith_eval(node->children[0]) + arith_eval(node->children[1]);
-				case 3:
+					
+				case 3: // x-y
 					return arith_eval(node->children[0]) - arith_eval(node->children[1]);
-				case 4:
+					
+				case 4: // x^y
 					return pow(arith_eval(node->children[0]), arith_eval(node->children[1]));
-				case 5:
+					
+				case 5: // -x
 					return -arith_eval(node->children[0]);
-				case 6:
+					
+				case 6: // +x
 					return arith_eval(node->children[0]);
 					
-				case 7:
+				case 7: // x!
 					i_res = 1;
 					for (long i = labs((long)trunc(arith_eval(node->children[0]))); i > 1; i--) i_res *= i;
 					return (double)i_res;
 					
-				case 8:
+				case 8: // x%
 					return arith_eval(node->children[0]) / 100;
-				case 9:
+					
+				case 9: // exp(x)
 					return exp(arith_eval(node->children[0]));
-				case 10:
+					
+				case 10: // sqrt(x)
 					return sqrt(arith_eval(node->children[0]));
-				case 11:
+					
+				case 11: // root(x, y)
 					return pow(arith_eval(node->children[0]), 1 / arith_eval(node->children[1]));
-				case 12:
+					
+				case 12: // log(x, y)
 					return log(arith_eval(node->children[0])) / log(arith_eval(node->children[1]));
-				case 13:
+					
+				case 13: // ln(x)
 					return log(arith_eval(node->children[0]));
-				case 14:
+					
+				case 14: // log(x)
 					return log10(arith_eval(node->children[0]));
-				case 15:
+					
+				case 15: // sin(x)
 					return sin(arith_eval(node->children[0]));
-				case 16:
+					
+				case 16: // cos(x)
 					return cos(arith_eval(node->children[0]));
-				case 17:
+					
+				case 17: // tan(x)
 					return tan(arith_eval(node->children[0]));
-				case 18:
+					
+				case 18: // asin(x)
 					return asin(arith_eval(node->children[0]));
-				case 19:
+					
+				case 19: // acos(x)
 					return acos(arith_eval(node->children[0]));
-				case 20:
+					
+				case 20: // atan(x)
 					return atan(arith_eval(node->children[0]));
 					
-				case 21:
+				case 21: // max(x, y, ...)
 					d_res = -INFINITY;
 					for (int i = 0; i < node->num_children; i++)
 					{
@@ -93,7 +111,7 @@ double arith_eval(Node *node)
 					}
 					return d_res;
 					
-				case 22:
+				case 22: // min(x, y, ...)
 					d_res = INFINITY;
 					for (int i = 0; i < node->num_children; i++)
 					{
@@ -102,48 +120,64 @@ double arith_eval(Node *node)
 					}
 					return d_res;
 					
-				case 23:
+				case 23: // abs(x)
 					return fabs(arith_eval(node->children[0]));
-				case 24:
+					
+				case 24: // round(x)
 					return round(arith_eval(node->children[0]));
-				case 25:
+					
+				case 25: // trunc(x)
 					return trunc(arith_eval(node->children[0]));
-				case 26:
+					
+				case 26: // ceil(x)
 					return ceil(arith_eval(node->children[0]));
-				case 27:
+					
+				case 27: // floor(x)
 					return floor(arith_eval(node->children[0]));
 					
-				case 28:
+				case 28: // sum(x, y, ...)
 					d_res = 0;
 					for (int i = 0; i < node->num_children; i++) d_res += arith_eval(node->children[i]);
 					return d_res;
 					
-				case 29:
+				case 29: // prod(x, y, ...)
 					d_res = 1;
 					for (int i = 0; i < node->num_children; i++) d_res *= arith_eval(node->children[i]);
 					return d_res;
 					
-				case 30:
+				case 30: // avg(x, y, ...)
 					d_res = 0;
 					for (int i = 0; i < node->num_children; i++) d_res += arith_eval(node->children[i]);
 					return d_res / node->num_children;
 				
-				case 31:
+				case 31: // x C y
 					return (double)binomial(
 						labs((long)trunc(arith_eval(node->children[0]))),
 						labs((long)trunc(arith_eval(node->children[1]))));
 						
-				case 32:
+				case 32: // x mod y
 					return fmod(arith_eval(node->children[0]), arith_eval(node->children[1]));
-				case 33:
+					
+				case 33: // gamma(x)
 					return tgamma(arith_eval(node->children[0]));
 				
-				case 34:
+				case 34: // pi
 					return 3.14159265359;
-				case 35:
+					
+				case 35: // e
 					return 2.71828182846;
-				case 36:
+					
+				case 36: // phi
 					return 1.61803398874;
+					
+				case 37: // test(x)
+					return 1;
+					
+				case 38: // test(x, y)
+					return 2;
+					
+				case 39: // text(DYNAMIC_ARITY)
+					return -1;
 					
 				default:
 					printf("Encountered operator without evaluation rule\n");
@@ -177,13 +211,10 @@ ParsingContext arith_get_ctx()
 	add_op(&arith_ctx, op_get_infix("+", 1, OP_ASSOC_BOTH));
 	add_op(&arith_ctx, op_get_infix("-", 1, OP_ASSOC_LEFT));
 	add_op(&arith_ctx, op_get_infix("^", 3, OP_ASSOC_RIGHT));
-	
 	add_op(&arith_ctx, op_get_prefix("-", 5));
 	add_op(&arith_ctx, op_get_prefix("+", 5));
-	
 	add_op(&arith_ctx, op_get_postfix("!", 4));
 	add_op(&arith_ctx, op_get_postfix("%", 4));
-	
 	add_op(&arith_ctx, op_get_function("exp", 1));
 	add_op(&arith_ctx, op_get_function("sqrt", 1));
 	add_op(&arith_ctx, op_get_function("root", 2));
@@ -206,15 +237,17 @@ ParsingContext arith_get_ctx()
 	add_op(&arith_ctx, op_get_function("sum", DYNAMIC_ARITY));
 	add_op(&arith_ctx, op_get_function("prod", DYNAMIC_ARITY));
 	add_op(&arith_ctx, op_get_function("avg", DYNAMIC_ARITY));
-	
 	add_op(&arith_ctx, op_get_infix("C", 1, OP_ASSOC_LEFT));
 	add_op(&arith_ctx, op_get_infix("mod", 1, OP_ASSOC_LEFT));
-	
 	add_op(&arith_ctx, op_get_function("gamma", 1));
-	
 	add_op(&arith_ctx, op_get_constant("pi"));
 	add_op(&arith_ctx, op_get_constant("e"));
 	add_op(&arith_ctx, op_get_constant("phi"));
+	
+	// Test operators:
+	add_op(&arith_ctx, op_get_function("test", 1));
+	add_op(&arith_ctx, op_get_function("test", 2));
+	add_op(&arith_ctx, op_get_function("test", DYNAMIC_ARITY));
 	
 	set_glue_op(&arith_ctx, &arith_ctx.operators[0]);
 	

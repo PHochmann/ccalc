@@ -8,31 +8,72 @@
 #include "tokenizer.h"
 #include "parser.h"
 
-// Global vars while parsing
-bool initialized = false;
-ParsingContext *cttx;
-Node **node_stack = NULL;
-Operator **op_stack = NULL;
-char *arities = NULL;
-int num_nodes = 0;
-int num_ops = 0;
-ParserError error;
-// - - -
 
+#include <stdio.h>
+
+// Global vars while parsing
+static bool initialized = false;
+static ParsingContext *ctx;
+static Node **node_stack = NULL;
+static Operator **op_stack = NULL;
+static int *arities = NULL;
+static int num_nodes = 0;
+static int num_ops = 0;
+static ParserError error;
+
+/*
+Summary: Reserves memory for buffers used while parsing
+*/
 void init_parser()
 {
 	if (op_stack == NULL) op_stack = malloc(MAX_STACK_SIZE * sizeof(Operator*));
 	if (node_stack == NULL) node_stack = malloc(MAX_STACK_SIZE * sizeof(Node*));
-	if (arities == NULL) arities = malloc(MAX_STACK_SIZE * sizeof(char));
+	if (arities == NULL) arities = malloc(MAX_STACK_SIZE * sizeof(int));
 	initialized = true;
 }
 
+/*
+Summary: Frees memory of buffers used while parsing
+*/
 void uninit_parser()
 {
 	if (op_stack != NULL) free(node_stack);
 	if (node_stack != NULL) free(op_stack);
 	if (arities != NULL) free(arities);
 	initialized = false;
+}
+
+Operator* search_op(char *name, Op_Placement placement)
+{
+	for (int i = 0; i < ctx->num_ops; i++)
+	{
+		Operator *curr_op = &ctx->operators[i];
+		
+		if (curr_op->placement == placement
+			&& strcmp(curr_op->name, name) == 0)
+		{
+			return curr_op;
+		}
+	}
+	
+	return NULL;
+}
+
+Operator* search_function(char *name, int arity)
+{
+	for (int i = 0; i < ctx->num_ops; i++)
+	{
+		Operator *curr_op = &ctx->operators[i];
+		
+		if (curr_op->placement == OP_PLACE_FUNCTION
+			&& strcmp(curr_op->name, name) == 0
+			&& curr_op->arity == arity)
+		{
+			return curr_op;
+		}
+	}
+	
+	return NULL;
 }
 
 bool node_push(Node *value)
@@ -71,12 +112,36 @@ bool op_pop_and_insert()
 		return false;
 	}
 	
-	Operator *current_op = op_stack[num_ops - 1];
-	if (current_op != NULL) // Construct operator-node and append children
+	Operator *op = op_stack[num_ops - 1];
+	bool is_function = (op != NULL && op->placement == OP_PLACE_FUNCTION);
+	
+	// Function overloading: Find function with suitable arity
+	if (is_function)
+	{
+		if (op->arity != arities[num_ops - 1])
+		{
+			char *name = op->name;
+			op = search_function(name, arities[num_ops - 1]);
+			
+			// Fallback: Find function of dynamic aritiy
+			if (op == NULL)
+			{
+				op = search_function(name, DYNAMIC_ARITY);
+			}
+			
+			if (op == NULL)
+			{
+				error = PERR_FUNCTION_WRONG_ARITY;
+				return false;
+			}
+		}
+	}
+	
+	if (op != NULL) // Construct operator-node and append children
 	{
 		Node *op_node = malloc(sizeof(Node));
-		*op_node = get_operator_node(current_op);
-		op_node->num_children = arities[num_ops - 1] == -1 ? current_op->arity : arities[num_ops - 1];
+		*op_node = get_operator_node(op);
+		op_node->num_children = is_function ? arities[num_ops - 1] : op->arity;
 		
 		if (op_node->num_children > MAX_CHILDREN)
 		{
@@ -98,9 +163,11 @@ bool op_pop_and_insert()
 
 bool op_push(Operator *op)
 {
+	bool is_function = (op != NULL && op->placement == OP_PLACE_FUNCTION);
+	
 	if (op != NULL)
 	{
-		if (op->placement != OP_PLACE_PREFIX && op->placement != OP_PLACE_FUNCTION)
+		if (op->placement != OP_PLACE_PREFIX && !is_function)
 		{
 			while (
 				num_ops > 0 &&
@@ -120,23 +187,11 @@ bool op_push(Operator *op)
 		return false;
 	}
 	
-	arities[num_ops] = (op != NULL && op->arity == DYNAMIC_ARITY) ? 0 : -1;
+	
+	arities[num_ops] = (is_function ? 0 : -1);
 	op_stack[num_ops] = op;
 	num_ops++;
 	return true;
-}
-
-Operator* search_op(char *name, Op_Placement placement)
-{
-	for (int i = 0; i < cttx->num_ops; i++)
-	{
-		if (cttx->operators[i].placement == placement && strcmp(cttx->operators[i].name, name) == 0)
-		{
-			return &(cttx->operators[i]);
-		}
-	}
-	
-	return NULL;
 }
 
 /*
@@ -163,7 +218,7 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
 	if (!tokenize(input, keywords, context->num_ops, &tokens, &num_tokens)) return PERR_MAX_TOKENS_EXCEEDED;
 
 	// 2. Initialize data structures
-	cttx = context;
+	ctx = context;
 	error = PERR_SUCCESS;
 	num_ops = 0;
 	num_nodes = 0;
@@ -178,14 +233,14 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
 		size_t tok_len = strlen(token);
 		
 		// II. Does glue-op need to be inserted?
-		if (!await_subexpression && cttx->glue_op != NULL)
+		if (!await_subexpression && ctx->glue_op != NULL)
 		{
 			if (!is_closing_parenthesis(token[0])
 				&& !is_delimiter(token[0])
 				&& search_op(token, OP_PLACE_INFIX) == NULL
 				&& search_op(token, OP_PLACE_POSTFIX) == NULL)
 			{
-				if (!op_push(cttx->glue_op)) goto exit;
+				if (!op_push(ctx->glue_op)) goto exit;
 				await_subexpression = true;
 			}
 		}
@@ -196,6 +251,12 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
 			if (!op_push(NULL)) goto exit;
 			await_subexpression = true;
 			continue;
+		}
+		
+		// Special case for unary functions without parenthesis (like sin 2)
+		if (num_ops > 0 && op_stack[num_ops - 1] != NULL && op_stack[num_ops - 1]->placement == OP_PLACE_FUNCTION)
+		{
+			arities[num_ops - 1] = 1;
 		}
 		
 		// IV. Is token closing parenthesis or argument delimiter?
@@ -220,10 +281,12 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
 				goto exit;
 			}
 			
-			if (num_ops > 0 && arities[num_ops - 1] != -1)
+			bool empty_params = (i > 0 && is_opening_parenthesis(tokens[i - 1][0]));
+			if (num_ops > 0 && arities[num_ops - 1] != -1 && !empty_params)
 			{
 				arities[num_ops - 1]++;
 			}
+			
 			await_subexpression = false;
 			
 			continue;
@@ -240,8 +303,12 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
 				}
 			}
 			
-			// Add operand if function with dynamic arity
-			if (num_ops > 1 && arities[num_ops - 2] != -1) arities[num_ops - 2]++;
+			// Increase operand counter
+			if (num_ops > 1 && arities[num_ops - 2] != -1)
+			{
+				arities[num_ops - 2]++;
+			}
+			
 			await_subexpression = true;
 			
 			continue;
@@ -286,8 +353,8 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
 		
 		// VI. Token must be variable or constant (leaf)
 		Node *node = malloc(sizeof(Node));
-		void *constant = malloc(cttx->value_size);
-		if (cttx->try_parse(token, constant)) // Is token constant?
+		void *constant = malloc(ctx->value_size);
+		if (ctx->try_parse(token, constant)) // Is token constant?
 		{
 			*node = get_constant_node(constant);
 		}
@@ -314,7 +381,7 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
 		if (!op_pop_and_insert()) goto exit;
 	}
 	
-	// 6. Cleanup, build result and return value
+	// 6. Build result and return value
 	switch (num_nodes)
 	{
 		case 0:

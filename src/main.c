@@ -7,7 +7,7 @@
 
 #include "engine/parser.h"
 
-#define VERSION "0.0.6"
+#define VERSION "0.0.7"
 
 void _exit()
 {
@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
 	else
 	{
 		printf("Calculator %s (c) 2018, Philipp Hochmann\n", VERSION);
+		printf("Commands: help, def_func, def_rule\n");
 		main_interactive();
 	}
 	

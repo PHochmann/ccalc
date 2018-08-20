@@ -1,3 +1,2 @@
-# Ignore 'bin' and 'unused' directory
+# Ignore 'bin' directory
 bin/
-doxygen/

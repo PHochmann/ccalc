@@ -46,6 +46,8 @@ char* perr_to_string(ParserError perr)
 			return "MISSING OPERAND";
 		case PERR_EXCEEDED_MAX_CHILDREN:
 			return "TOO MANY OPERANDS";
+		case PERR_FUNCTION_WRONG_ARITY:
+			return "WRONG NUMBER OF OPERANDS FOR FUNCTION";
 		case PERR_EMPTY:
 			return "EMPTY EXPRESSION";
 		default:

@@ -81,7 +81,6 @@ bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_
 				num_stack += curr_pattern_n->num_children;
 				break;
 		}
-		
 	}
 	
 	// We successfully found matching! Construct it:
@@ -168,6 +167,8 @@ bool apply_rule(Node *tree, RewriteRule *rule)
 
 /*
 Summary: Tries to apply rules in round-robin fashion until no rule can be applied any more
+Params
+	max_iterations: maximal number of times the set is iterated, -1 for no cap (this makes non-termination possible)
 Returns: Number of successful appliances
 */
 int apply_ruleset(Node *tree, RewriteRule *rules, int num_rules, int max_iterations)

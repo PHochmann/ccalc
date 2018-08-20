@@ -34,7 +34,7 @@
 #define MAX_VAR_LENGTH 8
 
 // Maximum arity of an operator (Max. number of children a node can have)
-#define MAX_CHILDREN 8
+#define MAX_CHILDREN 16
 
 // Used to indicate arbitrary amount of operands (0 up to MAX_CHILDREN)
 #define DYNAMIC_ARITY -1

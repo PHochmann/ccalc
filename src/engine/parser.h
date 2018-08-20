@@ -28,6 +28,8 @@ typedef enum {
 	PERR_MISSING_OPERAND,
 	// Arity too high (maybe dynamic)
 	PERR_EXCEEDED_MAX_CHILDREN,
+	// Function of wrong arity
+	PERR_FUNCTION_WRONG_ARITY,
 	// Not a single node
 	PERR_EMPTY,
 } ParserError;

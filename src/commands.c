@@ -26,14 +26,14 @@ bool parse_node_wrapper(char *input, Node **out_res, bool apply_rules, bool appl
 void add_function(char *input);
 void add_rule(char *input);
 
-bool debug; // When set to true, a tree and string representation is printed
-int min_prio; // Minimal priority of messages that are printed
+static bool debug; // When set to true, a tree and string representation is printed
+static int min_prio; // Minimal priority of messages that are printed
 
-ParsingContext ctx; // ParsingContext to use while parsing strings
-Node *ans; // Last parsed tree 'ans' is substituted with
+static ParsingContext ctx; // ParsingContext to use while parsing strings
+static Node *ans; // Last parsed tree 'ans' is substituted with
 
-RewriteRule rules[NUM_MAX_RULES];
-int num_rules;
+static RewriteRule rules[NUM_MAX_RULES];
+static int num_rules;
 
 /*
 Summary: Sets parsing context and prepares global vars
