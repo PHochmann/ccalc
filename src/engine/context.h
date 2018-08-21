@@ -5,6 +5,7 @@
 
 typedef bool (*TryParseHandler)(char *in, void *out);
 typedef void (*ToStringHandler)(void *in, char *out, size_t buff_size);
+typedef bool (*EqualsHandler)(void *a, void *b);
 
 typedef struct {
 
@@ -16,6 +17,7 @@ typedef struct {
 		
 	TryParseHandler try_parse;
 	ToStringHandler to_string;
+	EqualsHandler equals;
 	
 	Operator *glue_op;
 	Operator *operators; // On heap!
@@ -27,7 +29,8 @@ ParsingContext get_context(
 	size_t min_strbuf_length,
 	int max_ops,
 	TryParseHandler try_parse,
-	ToStringHandler to_string);
+	ToStringHandler to_string,
+	EqualsHandler handler);
 	
 int add_op(ParsingContext *ctx, Operator op);
 bool set_glue_op(ParsingContext *ctx, Operator *op);

@@ -41,3 +41,6 @@ int tree_substitute(ParsingContext *ctx, Node *dest_tree, Node *tree, char* var_
 bool node_equals(ParsingContext *ctx, Node *a, Node *b);
 bool tree_equals(ParsingContext *ctx, Node *a, Node *b);
 void tree_replace(Node *destination, Node new_node);
+
+void print_tree_visual(ParsingContext *ctx, Node *node);
+void print_tree_inline(ParsingContext *ctx, Node *node);

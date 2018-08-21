@@ -1,15 +1,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-
+//#include <stdio.h>
 #include "constants.h"
 #include "context.h"
 #include "node.h"
 #include "tokenizer.h"
 #include "parser.h"
-
-
-#include <stdio.h>
 
 // Global vars while parsing
 static bool initialized = false;
@@ -114,6 +111,8 @@ bool op_pop_and_insert()
 	
 	Operator *op = op_stack[num_ops - 1];
 	bool is_function = (op != NULL && op->placement == OP_PLACE_FUNCTION);
+	
+	//if (is_function) printf("popped function! arity: %d ", arities[num_ops-1]);
 	
 	// Function overloading: Find function with suitable arity
 	if (is_function)
@@ -252,13 +251,7 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
 			await_subexpression = true;
 			continue;
 		}
-		
-		// Special case for unary functions without parenthesis (like sin 2)
-		if (num_ops > 0 && op_stack[num_ops - 1] != NULL && op_stack[num_ops - 1]->placement == OP_PLACE_FUNCTION)
-		{
-			arities[num_ops - 1] = 1;
-		}
-		
+
 		// IV. Is token closing parenthesis or argument delimiter?
 		if (is_closing_parenthesis(token[0]))
 		{
@@ -271,7 +264,7 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
 				}
 			}
 			
-			if (num_ops > 0) 
+			if (num_ops > 0)
 			{
 				op_pop_and_insert();
 			}
@@ -319,12 +312,32 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
 		Operator *op = NULL;
 		if (await_subexpression)
 		{
+			bool function_flag = false;
 			op = search_op(token, OP_PLACE_FUNCTION);
-			if (op == NULL) op = search_op(token, OP_PLACE_PREFIX);
+			if (op != NULL) function_flag = true;
+			
+			if (op == NULL)
+			{
+				op = search_op(token, OP_PLACE_PREFIX);
+			}
+			
 			if (op != NULL) // Function or prefix operator found (handled the same)
 			{
 				if (!op_push(op)) goto exit;
 				await_subexpression = op->arity != 0; // Constants don't await subexpr.
+				
+				// Handle unary functions without parenthesis (e.g. sin2)
+				if (function_flag)
+				{
+					if (i != num_tokens - 1)
+					{
+						if (!is_opening_parenthesis(tokens[i + 1][0]))
+						{
+							arities[num_ops - 1] = 1;
+						}
+					}
+				}
+				
 				continue;
 			}
 		}
@@ -398,6 +411,5 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
 	exit:
 	for (int i = 0; i < num_tokens; i++) free(tokens[i]);
 	free(tokens);
-	
 	return error;
 }

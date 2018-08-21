@@ -3,7 +3,7 @@
 
 #include "constants.h"
 #include "tokenizer.h"
-#include "str_util.h"
+#include "console_util.h"
 
 bool add_token(char **tokens, char *position, int *num_tokens)
 {

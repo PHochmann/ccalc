@@ -1,11 +1,11 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "str_util.h"
 #include "rule.h"
 #include "constants.h"
 #include "parser.h"
 #include "node.h"
+#include "console_util.h"
 
 #define VAR_PREFIX "var_"
 #define CONST_PREFIX "const_"

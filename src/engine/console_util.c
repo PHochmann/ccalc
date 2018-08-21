@@ -55,6 +55,14 @@ char* perr_to_string(ParserError perr)
 	}
 }
 
+bool begins_with(char *prefix, char *string)
+{
+	size_t prefix_length = strlen(prefix);
+	size_t string_length = strlen(string);
+	if (prefix_length > string_length) return false;
+	return strncmp(prefix, string, prefix_length) == 0;
+}
+
 void print_padded(char *string, int total_length)
 {
 	for (int i = strlen(string); i < total_length; i++) printf(" ");

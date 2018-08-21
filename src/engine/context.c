@@ -5,7 +5,12 @@
 
 #include "context.h"
 
-ParsingContext get_context(size_t val_size, size_t min_strbuf_length, int max_ops, TryParseHandler try_parse, ToStringHandler to_string)
+ParsingContext get_context(size_t val_size,
+	size_t min_strbuf_length,
+	int max_ops,
+	TryParseHandler try_parse,
+	ToStringHandler to_string,
+	EqualsHandler equals)
 {
 	ParsingContext res = (ParsingContext){
 		.value_size = val_size,
@@ -14,6 +19,7 @@ ParsingContext get_context(size_t val_size, size_t min_strbuf_length, int max_op
 		.num_ops = 0,
 		.try_parse = try_parse,
 		.to_string = to_string,
+		.equals = equals,
 		.operators = malloc(sizeof(Operator) * max_ops),
 		.glue_op = NULL,
 	};

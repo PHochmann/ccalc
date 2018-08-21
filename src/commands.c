@@ -8,13 +8,11 @@
 #include "engine/constants.h"
 #include "engine/node.h"
 #include "engine/operator.h"
-#include "engine/output.h"
 #include "engine/tokenizer.h"
 #include "engine/parser.h"
 #include "engine/rule.h"
 #include "engine/memory.h"
 #include "engine/console_util.h"
-#include "engine/str_util.h"
 
 #define MAX_LINE_LENGTH 256
 #define NUM_MAX_RULES 16
@@ -87,7 +85,7 @@ bool ask_input(char *out_input)
 
 void parse_input(char *input)
 {
-	if (strcmp(input, "exit") == 0) exit(0);
+	if (strcmp(input, "quit") == 0) exit(0);
 	
 	if (strcmp(input, "help") == 0)
 	{
@@ -200,9 +198,9 @@ void parse_evaluation(char *input)
 	{
 		if (debug)
 		{
-			show_tree(&ctx, res);
+			print_tree_visual(&ctx, res);
 			printf("= ");
-			inline_tree(&ctx, res);
+			print_tree_inline(&ctx, res);
 			printf("\n");
 		}
 		
@@ -257,8 +255,7 @@ bool parse_node_wrapper(char *input, Node **out_res, bool apply_rules, bool appl
 	if (apply_ans && ans != NULL) tree_substitute(&ctx, *out_res, ans, "ans");
 	if (apply_rules)
 	{
-		int applied_rules = apply_ruleset(*out_res, rules, num_rules, 100);
-		if (applied_rules != 0) message(0, "%d rules applied\n", applied_rules);
+		apply_ruleset(*out_res, rules, num_rules, 100);
 	}
 	
 	return true;
