@@ -7,7 +7,7 @@
 
 #include "engine/parser.h"
 
-#define VERSION "0.0.8"
+#define VERSION "0.0.8a"
 
 void _exit()
 {

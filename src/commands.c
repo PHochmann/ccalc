@@ -205,7 +205,7 @@ void parse_evaluation(char *input)
 		}
 		
 		char *vars[MAX_VAR_COUNT];
-		int num_variables = list_variables(res, vars);
+		int num_variables = tree_list_variables(res, vars);
 		for (int i = 0; i < num_variables; i++)
 		{
 			printf(" %s? ", vars[i]);

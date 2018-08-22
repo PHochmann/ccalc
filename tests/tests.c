@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "../src/engine/constants.h"
 #include "../src/engine/context.h"
@@ -8,44 +9,56 @@
 
 #include "../src/arith.h"
 
-#define EPSILON 0.0001
-#define NUM_TESTS 10
+#define EPSILON 0.000001
+#define NUM_TESTS 17
 
 char *inputs[] = {
-	"1+1",
-	"cos(0)+2",
+	"1",
+	"1.1",
+	" ( 9.0 *  0)",
+	"1+2",
+	"2 2",
+	"-1",
+	"1%",
+	"1+2*3+4",
+	"sin(0)",
+	"sin0+2",
 	"sum()",
-	"sum(--1--1, 0, 0)+1",
-	"sin0",
-	"sin0+1",
-	"(((2^3^4)))",
-	"-cos0%",
-	"2*(1+1)*3",
-	"2*1+1*3"
+	"1+sum()*2",
+	"sum(1, 2, 3)*2",
+	"pi",
+	"-pi e",
+	"((--1)) sum2 !%",
+	"--(1+sum(ld--8, --1%+--1%, 2 2))%+1",
 };
 
 double results[] = {
-	2,
-	3,
+	1,
+	1.1,
 	0,
 	3,
+	4,
+	-1,
+	0.01,
+	11,
+	0,
+	2,
 	0,
 	1,
-	2417851639229258349412352.0,
-	-0.01,
 	12,
-	5,
+	3.14159265359,
+	-8.5397342226,
+	0.02,
+	1.0802,
 };
 
-bool almost_equal(double a, double b)
+bool almost_equals(double a, double b)
 {
-	return ((a - b) < EPSILON);
+	return (fabs(a - b) < EPSILON);
 }
 
-bool perform_tests()
+int perform_tests()
 {
-	init_parser();
-	
 	ParsingContext context = arith_get_ctx();
 	Node *node = NULL;
 	
@@ -53,30 +66,32 @@ bool perform_tests()
 	{
 		if (parse_node(&context, inputs[i], &node) != PERR_SUCCESS)
 		{
-			return false;
+			return i;
 		}
 		
-		if (!almost_equal(arith_eval(node), results[i]))
+		if (!almost_equals(arith_eval(node), results[i]))
 		{
-			printf("%d ", i);
-			return false;
+			return i;
 		}
 	}
 	
-	uninit_parser();
 	
-	return true;
+	return -1;
 }
 
 int main(int argc, char *argv[])
 {
-	if (perform_tests())
+	init_parser();
+	int error_index = perform_tests();
+	uninit_parser();
+	
+	if (error_index == -1)
 	{
 		return 0;
 	}
 	else
 	{
-		printf(F_RED "Error in tests!" COL_RESET "\n");
+		printf(F_RED "Error in test case %d: '%s'" COL_RESET "\n", error_index, inputs[error_index]);
 		return 1;
 	}
 }

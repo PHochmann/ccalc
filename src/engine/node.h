@@ -35,7 +35,7 @@ Node get_constant_node(void *value);
 Node get_operator_node(Operator *op);
 
 bool tree_contains_variable(Node* node);
-int list_variables(Node *tree, char **out_variables);
+int tree_list_variables(Node *tree, char **out_variables);
 Node tree_copy(ParsingContext *ctx, Node *node);
 int tree_substitute(ParsingContext *ctx, Node *dest_tree, Node *tree, char* var_name);
 bool node_equals(ParsingContext *ctx, Node *a, Node *b);

@@ -77,7 +77,7 @@ Params
 	out_variables must hold at least MAX_VAR_COUNT char*
 	out_variables' pointers must not be dereferenced after tree is freed.
 */
-int list_variables(Node *tree, char **out_variables)
+int tree_list_variables(Node *tree, char **out_variables)
 {
 	if (tree == NULL) return -1;
 	
@@ -340,7 +340,7 @@ void print_tree_visual(ParsingContext *ctx, Node *node)
 	print_tree_visual_rec(ctx, node, 0, 0, true);
 }
 
-void print_tree_inline_rec(ParsingContext *ctx, Node *node, bool needs_p)
+void print_tree_inline_rec(ParsingContext *ctx, Node *node, bool l, bool r)
 {
 	switch (node->type)
 	{
@@ -353,33 +353,37 @@ void print_tree_inline_rec(ParsingContext *ctx, Node *node, bool needs_p)
 			break;
 			
 		case NTYPE_OPERATOR:
-			if (needs_p) printf("(");
-			bool l_needs = false;
-			bool r_needs = false;
-			
 			switch (node->op->placement)
 			{
 				case OP_PLACE_PREFIX:
+					if (l) printf("(");
 					printf("%s", node->op->name);
+					
 					if (node->op->arity != 0)
 					{
-						print_tree_inline_rec(ctx, node->children[0], true);
+						print_tree_inline_rec(ctx, node->children[0], true, !l && r);
 					}
+					
+					if (l) printf(")");
 					break;
 					
 				case OP_PLACE_POSTFIX:
+					if (r) printf("(");
+					
 					if (node->op->arity != 0)
 					{
-						print_tree_inline_rec(ctx, node->children[0], true);
+						print_tree_inline_rec(ctx, node->children[0], !r && l, true);
 					}
+					
 					printf("%s", node->op->name);
+					if (r) printf(")");
 					break;
 					
 				case OP_PLACE_FUNCTION:
 					printf("%s(", node->op->name);
 					for (size_t i = 0; i < node->num_children; i++)
 					{
-						print_tree_inline_rec(ctx, node->children[i], false);
+						print_tree_inline_rec(ctx, node->children[i], false, false);
 						if (i != node->num_children - 1) printf(", ");
 					}
 					printf(")");
@@ -387,25 +391,36 @@ void print_tree_inline_rec(ParsingContext *ctx, Node *node, bool needs_p)
 					
 				case OP_PLACE_INFIX:
 					if (node->children[0]->type == NTYPE_OPERATOR
-						&& node->children[0]->op->arity != 0
-						&& (node->children[0]->op->placement == OP_PLACE_POSTFIX
-							|| node->children[0]->op->precedence < node->op->precedence
+						&& (node->children[0]->op->precedence < node->op->precedence
 							|| (node->children[0]->op->precedence == node->op->precedence
-								&& node->op->assoc == OP_ASSOC_RIGHT))) l_needs = true;
+								&& node->op->assoc == OP_ASSOC_RIGHT)))
+					{
+						printf("(");
+						print_tree_inline_rec(ctx, node->children[0], false, false);
+						printf(")");
+					}
+					else
+					{
+						print_tree_inline_rec(ctx, node->children[0], l, true);
+					}
 
-					if (node->children[1]->type == NTYPE_OPERATOR
-						&& node->children[1]->op->arity != 0
-						&& (node->children[1]->op->precedence < node->op->precedence
-							|| node->children[1]->op->placement == OP_PLACE_PREFIX
-							|| (node->children[1]->op->precedence == node->op->precedence
-								&& node->op->assoc == OP_ASSOC_LEFT))) r_needs = true;
-				
-					print_tree_inline_rec(ctx, node->children[0], l_needs);
 					printf("%s", node->op->name);
-					print_tree_inline_rec(ctx, node->children[1], r_needs);
+					
+					if (node->children[1]->type == NTYPE_OPERATOR
+						&& (node->children[1]->op->precedence < node->op->precedence
+							|| (node->children[1]->op->precedence == node->op->precedence
+								&& node->op->assoc == OP_ASSOC_LEFT)))
+					{
+						printf("(");
+						print_tree_inline_rec(ctx, node->children[1], false, false);
+						printf(")");
+					}
+					else
+					{
+						print_tree_inline_rec(ctx, node->children[1], true, r);
+					}
 			}
 			
-			if (needs_p) printf(")");
 			break;
 	}
 }
@@ -416,5 +431,5 @@ Summary: Prints expression of node to stdout
 void print_tree_inline(ParsingContext *ctx, Node *node)
 {
 	if (ctx == NULL || node == NULL) return;
-	print_tree_inline_rec(ctx, node, false);
+	print_tree_inline_rec(ctx, node, false, false);
 }

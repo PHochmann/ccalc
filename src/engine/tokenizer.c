@@ -74,7 +74,9 @@ bool tokenize(char *input, char **keywords, int num_keyw, char ***out_tokens, in
 	}
 	
 	if (!add_token(token_markers, input + strlen(input), &num_markers)) return false; // Sentinel marker at \0
-	// Build \0-terminated strings from pointers and out_num_tokens (might be less than num_markers due to whitespaces tokens that are removed)
+	
+	// Build \0-terminated strings from pointers and out_num_tokens
+	// (might be less than num_markers due to whitespace-tokens that are removed)
 	*out_tokens = malloc(sizeof(char*) * (num_markers - 1));
 	*out_num_tokens = 0;
 	for (int i = 0; i < num_markers - 1; i++)
