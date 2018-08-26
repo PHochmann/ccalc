@@ -7,14 +7,14 @@ typedef enum {
 	OP_ASSOC_RIGHT,
 	OP_ASSOC_LEFT,
 	OP_ASSOC_BOTH
-} Op_Associativity;
+} OpAssociativity;
 
 typedef enum {
 	OP_PLACE_PREFIX,
 	OP_PLACE_INFIX,
 	OP_PLACE_POSTFIX,
 	OP_PLACE_FUNCTION,
-} Op_Placement;
+} OpPlacement;
 
 typedef struct {
 	
@@ -22,13 +22,13 @@ typedef struct {
 	unsigned int arity;
 	unsigned int precedence;
 	
-	Op_Associativity assoc;
-	Op_Placement placement;
+	OpAssociativity assoc;
+	OpPlacement placement;
 
 } Operator;
 
 Operator op_get_function(char *name, unsigned int arity);
 Operator op_get_prefix(char *name, unsigned int precedence);
-Operator op_get_infix(char *name, unsigned int precedence, Op_Associativity assoc);
+Operator op_get_infix(char *name, unsigned int precedence, OpAssociativity assoc);
 Operator op_get_postfix(char *name, unsigned int precedence);
 Operator op_get_constant(char *name);

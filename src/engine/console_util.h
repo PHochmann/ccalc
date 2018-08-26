@@ -2,7 +2,7 @@
 #include "node.h"
 #include "parser.h"
 
-char* opplace_to_string(Op_Placement place);
+char* opplace_to_string(OpPlacement place);
 char* perr_to_string(ParserError perr);
 
 bool begins_with(char *prefix, char *string);

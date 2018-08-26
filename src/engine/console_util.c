@@ -3,7 +3,7 @@
 
 #include "console_util.h"
 
-char* opplace_to_string(Op_Placement place)
+char* opplace_to_string(OpPlacement place)
 {
 	switch (place)
 	{

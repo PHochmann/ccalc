@@ -32,7 +32,7 @@ Operator op_get_prefix(char *name, unsigned int precedence)
 	return res;
 }
 
-Operator op_get_infix(char *name, unsigned int precedence, Op_Associativity assoc)
+Operator op_get_infix(char *name, unsigned int precedence, OpAssociativity assoc)
 {
 	Operator res;
 	

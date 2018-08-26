@@ -356,6 +356,7 @@ void print_tree_inline_rec(ParsingContext *ctx, Node *node, bool l, bool r)
 			switch (node->op->placement)
 			{
 				case OP_PLACE_PREFIX:
+					if (node->op->arity == 0) l = false;
 					if (l) printf("(");
 					printf("%s", node->op->name);
 					
@@ -372,7 +373,7 @@ void print_tree_inline_rec(ParsingContext *ctx, Node *node, bool l, bool r)
 					
 					if (node->op->arity != 0)
 					{
-						print_tree_inline_rec(ctx, node->children[0], !r && l, true);
+						print_tree_inline_rec(ctx, node->children[0], l && !r, true);
 					}
 					
 					printf("%s", node->op->name);

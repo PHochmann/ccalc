@@ -40,7 +40,7 @@ void uninit_parser()
 	initialized = false;
 }
 
-Operator* search_op(char *name, Op_Placement placement)
+Operator* search_op(char *name, OpPlacement placement)
 {
 	for (int i = 0; i < ctx->num_ops; i++)
 	{
