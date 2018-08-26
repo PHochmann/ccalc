@@ -280,7 +280,14 @@ void print_help()
 				break;
 				
 			case OP_PLACE_INFIX:
-				printf("x %s y", ctx.operators[i].name);
+				if (strlen(ctx.operators[i].name) == 1)
+				{
+					printf("x%sy", ctx.operators[i].name);
+				}
+				else
+				{
+					printf("x %s y", ctx.operators[i].name);
+				}
 				break;
 				
 			case OP_PLACE_POSTFIX:
@@ -288,7 +295,14 @@ void print_help()
 				break;
 				
 			case OP_PLACE_FUNCTION:
-				printf("%s(%d)", ctx.operators[i].name, ctx.operators[i].arity);
+				if (ctx.operators[i].arity != DYNAMIC_ARITY)
+				{
+					printf("%s(%d)", ctx.operators[i].name, ctx.operators[i].arity);
+				}
+				else
+				{
+					printf("%s(0..%d)", ctx.operators[i].name, MAX_CHILDREN);
+				}
 				break;
 		}
 		printf(COL_RESET " ");
