@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-//#include <stdio.h>
+
 #include "constants.h"
 #include "context.h"
 #include "node.h"
@@ -112,8 +112,6 @@ bool op_pop_and_insert()
 	Operator *op = op_stack[num_ops - 1];
 	bool is_function = (op != NULL && op->placement == OP_PLACE_FUNCTION);
 	
-	//if (is_function) printf("popped function! arity: %d ", arities[num_ops-1]);
-	
 	// Function overloading: Find function with suitable arity
 	if (is_function)
 	{
@@ -168,12 +166,11 @@ bool op_push(Operator *op)
 	{
 		if (op->placement != OP_PLACE_PREFIX && !is_function)
 		{
-			while (
-				num_ops > 0 &&
-				op_stack[num_ops - 1] != NULL &&
-				(op->precedence < op_stack[num_ops - 1]->precedence ||
-					(op->precedence == op_stack[num_ops - 1]->precedence &&
-					(op->assoc == OP_ASSOC_LEFT || op->assoc == OP_ASSOC_BOTH))))
+			while (num_ops > 0
+				&& op_stack[num_ops - 1] != NULL
+				&& (op->precedence < op_stack[num_ops - 1]->precedence
+					|| (op->precedence == op_stack[num_ops - 1]->precedence
+					&& (op->assoc == OP_ASSOC_LEFT || op->assoc == OP_ASSOC_BOTH))))
 			{
 				if (!op_pop_and_insert()) return false;
 			}
@@ -185,7 +182,6 @@ bool op_push(Operator *op)
 		error = PERR_STACK_EXCEEDED;
 		return false;
 	}
-	
 	
 	arities[num_ops] = (is_function ? 0 : -1);
 	op_stack[num_ops] = op;
@@ -312,32 +308,29 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
 		Operator *op = NULL;
 		if (await_subexpression)
 		{
-			bool function_flag = false;
 			op = search_op(token, OP_PLACE_FUNCTION);
-			if (op != NULL) function_flag = true;
-			
-			if (op == NULL)
-			{
-				op = search_op(token, OP_PLACE_PREFIX);
-			}
-			
-			if (op != NULL) // Function or prefix operator found (handled the same)
+			if (op != NULL) // Function operator found
 			{
 				if (!op_push(op)) goto exit;
-				await_subexpression = op->arity != 0; // Constants don't await subexpr.
+				await_subexpression = true;
 				
-				// Handle unary functions without parenthesis (e.g. sin2)
-				if (function_flag)
+				// Handle unary functions without parenthesis (e.g. "sin2")
+				if (i != num_tokens - 1)
 				{
-					if (i != num_tokens - 1)
+					if (!is_opening_parenthesis(tokens[i + 1][0]))
 					{
-						if (!is_opening_parenthesis(tokens[i + 1][0]))
-						{
-							arities[num_ops - 1] = 1;
-						}
+						arities[num_ops - 1] = 1;
 					}
 				}
 				
+				continue;
+			}
+			
+			op = search_op(token, OP_PLACE_PREFIX);
+			if (op != NULL) // Prefix operator found
+			{
+				if (!op_push(op)) goto exit;
+				await_subexpression = (op->arity != 0);
 				continue;
 			}
 		}
@@ -360,7 +353,7 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
 			}
 			
 			// We can fail here: no more tokens processable (no glue-op)
-			error = PERR_UNEXPECTED_TOKEN;
+			error = PERR_UNEXPECTED_SUBEXPRESSION;
 			goto exit;
 		}
 		

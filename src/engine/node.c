@@ -362,7 +362,17 @@ void print_tree_inline_rec(ParsingContext *ctx, Node *node, bool l, bool r)
 					
 					if (node->op->arity != 0)
 					{
-						print_tree_inline_rec(ctx, node->children[0], true, !l && r);
+						if (node->children[0]->type == NTYPE_OPERATOR
+							&& node->children[0]->op->precedence <= node->op->precedence)
+						{
+							printf("(");
+							print_tree_inline_rec(ctx, node->children[0], false, false);
+							printf(")");
+						}
+						else
+						{
+							print_tree_inline_rec(ctx, node->children[0], true, !l && r);
+						}
 					}
 					
 					if (l) printf(")");
@@ -373,7 +383,17 @@ void print_tree_inline_rec(ParsingContext *ctx, Node *node, bool l, bool r)
 					
 					if (node->op->arity != 0)
 					{
-						print_tree_inline_rec(ctx, node->children[0], l && !r, true);
+						if (node->children[0]->type == NTYPE_OPERATOR
+							&& node->children[0]->op->precedence < node->op->precedence)
+						{
+							printf("(");
+							print_tree_inline_rec(ctx, node->children[0], false, false);
+							printf(")");
+						}
+						else
+						{
+							print_tree_inline_rec(ctx, node->children[0], l && !r, true);
+						}
 					}
 					
 					printf("%s", node->op->name);

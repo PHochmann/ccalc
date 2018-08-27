@@ -7,7 +7,11 @@
 
 #include "engine/parser.h"
 
-#define VERSION "1.0.0"
+#ifdef DEBUG
+	#define VERSION "1.0.0a DEBUG"
+#else
+	#define VERSION "1.0.0a"
+#endif
 
 void _exit()
 {

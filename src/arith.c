@@ -239,13 +239,6 @@ ParsingContext arith_get_ctx()
 	add_op(&arith_ctx, op_get_constant("e"));
 	add_op(&arith_ctx, op_get_constant("phi"));
 	
-	// Test operators:
-	/*
-	add_op(&arith_ctx, op_get_function("test", 1));
-	add_op(&arith_ctx, op_get_function("test", 2));
-	add_op(&arith_ctx, op_get_function("test", DYNAMIC_ARITY));
-	*/
-	
 	set_glue_op(&arith_ctx, &arith_ctx.operators[0]);
 	
 	return arith_ctx;

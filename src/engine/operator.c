@@ -4,8 +4,6 @@
 
 Operator op_get_function(char *name, unsigned int arity)
 {
-	if (arity == 0) return op_get_constant(name);
-	
 	Operator res;
 	
 	res.name = name;

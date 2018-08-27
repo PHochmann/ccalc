@@ -15,7 +15,7 @@ typedef enum {
 	// op-stack or node-stack overflow
 	PERR_STACK_EXCEEDED,
 	// Only without glue-op
-	PERR_UNEXPECTED_TOKEN,
+	PERR_UNEXPECTED_SUBEXPRESSION,
 	// There are opening parenthesis on op-stack after all tokens are processed
 	PERR_UNEXPECTED_OPENING_PARENTHESIS,
 	// Mismatch: no opening parenthesis found
