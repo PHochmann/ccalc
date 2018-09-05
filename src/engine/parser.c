@@ -330,7 +330,7 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
 			if (op != NULL) // Prefix operator found
 			{
 				if (!op_push(op)) goto exit;
-				await_subexpression = (op->arity != 0);
+				await_subexpression = (op->arity != 0); // Constants don't await subexpression
 				continue;
 			}
 		}

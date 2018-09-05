@@ -10,7 +10,7 @@
 #include "../src/arith.h"
 
 #define EPSILON 0.000001
-#define NUM_TESTS 23
+#define NUM_TESTS 25
 
 char *inputs[] = {
 	"1",
@@ -36,6 +36,9 @@ char *inputs[] = {
 	"1/2/2",
 	"1/(2/2)",
 	"2*3^2",
+	
+	"count(1, 2)",
+	"sqrt(abs(--2!!*--count(1, 2, 3, 4)*--2!!))"
 };
 
 double results[] = {
@@ -61,7 +64,9 @@ double results[] = {
 	0,
 	0.25,
 	1,
-	18
+	18,
+	2,
+	4
 };
 
 bool almost_equals(double a, double b)

@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 
 #include "commands.h"
 #include "arith.h"
@@ -19,7 +21,7 @@
 
 void parse_evaluation(char *input);
 void print_help();
-bool ask_input(char *out_input);
+bool ask_input(char *prompt, char **out_input);
 bool parse_node_wrapper(char *input, Node **out_res, bool apply_rules, bool apply_ans);
 void add_function(char *input);
 void add_rule(char *input);
@@ -56,31 +58,26 @@ Summary: Endless loop to ask user for input
 */
 void main_interactive()
 {
-	char input[MAX_LINE_LENGTH];
-
+	char *input;
+    rl_bind_key('\t', rl_insert); // Disable tab completion
+	
 	while (true)
 	{
-		if (ask_input(input))
+		if (ask_input("> ", &input))
 		{
 			parse_input(input);
+			free(input);
 		}
 		else return;
 	}
 }
 
-bool ask_input(char *out_input)
+bool ask_input(char *prompt, char **out_input)
 {
-	printf("> ");
-		
-	if (fgets(out_input, MAX_LINE_LENGTH, stdin) != NULL)
-	{
-		out_input[strlen(out_input) - 1] = '\0';
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+	*out_input = readline(prompt);
+	if (!(*out_input)) return false;
+	add_history(*out_input);
+	return true;
 }
 
 void parse_input(char *input)
@@ -209,16 +206,18 @@ void parse_evaluation(char *input)
 		for (int i = 0; i < num_variables; i++)
 		{
 			printf(" %s? ", vars[i]);
-			char input[MAX_LINE_LENGTH];
-			if (ask_input(input))
+			char *input;
+			if (ask_input("> ", &input))
 			{
 				Node *res_var;
 				if (!parse_node_wrapper(input, &res_var, true, true))
 				{
 					// Error while parsing - ask again
+					free(input);
 					i--;
 					continue;
 				}
+				free(input);
 				
 				if (tree_contains_variable(res_var))
 				{

@@ -425,7 +425,14 @@ void print_tree_inline_rec(ParsingContext *ctx, Node *node, bool l, bool r)
 						print_tree_inline_rec(ctx, node->children[0], l, true);
 					}
 
-					printf("%s", node->op->name);
+					if (strlen(node->op->name) == 1)
+					{
+						printf("%s", node->op->name);
+					}
+					else
+					{
+						printf(" %s ", node->op->name);
+					}
 					
 					if (node->children[1]->type == NTYPE_OPERATOR
 						&& (node->children[1]->op->precedence < node->op->precedence
