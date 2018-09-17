@@ -7,11 +7,7 @@
 
 #include "engine/parser.h"
 
-#ifdef DEBUG
-	#define VERSION "1.0.0a DEBUG"
-#else
-	#define VERSION "1.0.0a"
-#endif
+#define VERSION "1.0.1"
 
 void _exit()
 {
@@ -32,7 +28,12 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
+#ifdef DEBUG
+		printf("Calculator %s Debug build (c) 2018, Philipp Hochmann\n", VERSION);
+#else
 		printf("Calculator %s (c) 2018, Philipp Hochmann\n", VERSION);
+#endif
+
 		printf("Commands: debug, help, def_func <name> <arity>, def_rule <before> -> <after>\n");
 		main_interactive();
 	}

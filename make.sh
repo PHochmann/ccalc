@@ -28,6 +28,6 @@ else
 
 	echo -e "${GREEN}Compiling Calculator (Release)${NC}"
 	# Compiling calculator (stripped and optimised)
-	gcc -O3 -s -std=c99 -Wall -Werror -pedantic ${BASEDIR}/src/engine/*.c ${BASEDIR}/src/*.c -o ${BASEDIR}/bin/calculator.out -lm -lreadline
+	gcc -std=c99 -Wall -Werror -pedantic ${BASEDIR}/src/engine/*.c ${BASEDIR}/src/*.c -o ${BASEDIR}/bin/calculator.out -lm -lreadline
 	
 fi

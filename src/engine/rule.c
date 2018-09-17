@@ -7,9 +7,6 @@
 #include "node.h"
 #include "console_util.h"
 
-#define VAR_PREFIX "var_"
-#define CONST_PREFIX "const_"
-
 /*
 Summary: Tries to match 'tree' against 'pattern' (only in root)
 Returns: true, if matching is found, false if NULL-pointers given in arguments or no matching found
@@ -56,6 +53,7 @@ bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_
 					if (begins_with(CONST_PREFIX, curr_pattern_n->var_name) && curr_tree_n->type != NTYPE_CONSTANT) return false;
 					if (begins_with(VAR_PREFIX, curr_pattern_n->var_name) && curr_tree_n->type != NTYPE_VARIABLE) return false;
 					
+					// Bind variable	
 					mapped_vars[num_mapped_vars] = malloc(sizeof(char) * strlen(curr_pattern_n->var_name));
 					strcpy(mapped_vars[num_mapped_vars], curr_pattern_n->var_name);
 					mapped_nodes[num_mapped_vars] = malloc(sizeof(Node));

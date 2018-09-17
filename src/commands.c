@@ -170,6 +170,7 @@ void add_function(char *input)
 		name[i++] = input[0];
 		input++;
 	}
+	name[i] = '\0';
 	
 	int arity = atoi(input);
 	
@@ -184,6 +185,10 @@ void add_function(char *input)
 	{
 		printf("Max. number of operators exceeded");
 		return;
+	}
+	else
+	{
+		printf("Added function %s\n", name);
 	}
 }
 
@@ -254,7 +259,7 @@ bool parse_node_wrapper(char *input, Node **out_res, bool apply_rules, bool appl
 	if (apply_ans && ans != NULL) tree_substitute(&ctx, *out_res, ans, "ans");
 	if (apply_rules)
 	{
-		apply_ruleset(*out_res, rules, num_rules, 100);
+		apply_ruleset(*out_res, rules, num_rules, 50);
 	}
 	
 	return true;

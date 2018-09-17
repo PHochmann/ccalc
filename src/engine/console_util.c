@@ -74,7 +74,7 @@ void print_repeated(char* string, int amount)
 	for (int i = 0; i < amount; i++) printf("%s", string);
 }
 
-void print_table(int num_rows, int num_cols, char** cells)
+void print_table(int num_rows, int num_cols, char **cells, bool head_border)
 {
 	int width[num_cols];
 	for (int i = 0; i < num_cols; i++) width[i] = 0;
@@ -103,7 +103,7 @@ void print_table(int num_rows, int num_cols, char** cells)
 	// Print cells
 	for (int i = 0; i < num_rows; i++)
 	{
-		if (i == 1 && num_rows > 1) // Print table head border
+		if (i == 1 && head_border) // Print table head border
 		{
 			printf("├");
 			for (int i = 0; i < num_cols; i++)
