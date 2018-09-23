@@ -7,26 +7,26 @@
 
 typedef enum
 {
-	NTYPE_OPERATOR,
-	NTYPE_CONSTANT,
-	NTYPE_VARIABLE
+    NTYPE_OPERATOR,
+    NTYPE_CONSTANT,
+    NTYPE_VARIABLE
 
 } NodeType;
 
 typedef struct Node
 {
-	NodeType type;
-	
-	/* For NTYPE_VARIABLE: */
-	char *var_name;
-	
-	/* For NTYPE_CONSTANT: */
-	void *const_value;
-	
-	/* For NTYPE_OPERATOR: */
-	Operator *op;
-	int num_children;
-	struct Node *children[MAX_CHILDREN];
+    NodeType type;
+
+    /* For NTYPE_VARIABLE: */
+    char *var_name;
+
+    /* For NTYPE_CONSTANT: */
+    void *const_value;
+
+    /* For NTYPE_OPERATOR: */
+    Operator *op;
+    int num_children;
+    struct Node *children[MAX_CHILDREN];
 
 } Node;
 

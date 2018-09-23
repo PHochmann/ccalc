@@ -9,106 +9,107 @@
 
 #include "../src/arith.h"
 
-#define EPSILON 0.000001
+#define EPSILON 0.0000001
 #define NUM_TESTS 25
 
 char *inputs[] = {
-	"1",
-	"1.1",
-	"1+2",
-	"2 2",
-	"-1",
-	"1%",
-	"1+2*3+4",
-	" ( 9.0 *  0)",
-	"sin(0)",
-	"sin0+2",
-	"sum()",
-	"1+sum()*2",
-	"sum(1, 2, 3)*2",
-	"pi",
-	"-pi e",
-	"((--1)) sum2 !%",
-	"--(1+sum(ld--8, --1%+--1%, 2 2))%+1",
-	"2^2^3",
-	"(2^2)^3",
-	"2^2^3 - 2^(2^3)",
-	"1/2/2",
-	"1/(2/2)",
-	"2*3^2",
-	
-	"count(1, 2)",
-	"sqrt(abs(--2!!*--count(1, 2, 3, 4)*--2!!))"
+    "1",
+    "1.1",
+    "1+2",
+    "2 2",
+    "-1",
+    "1%",
+    "1+2*3+4",
+    " ( 9.0 *  0)",
+    "sin(0)",
+    "sin0+2",
+    "sum()",
+    "1+sum()*2",
+    "sum(1, 2, 3)*2",
+    "pi",
+    "-pi e",
+    "((--1)) sum2 !%",
+    "--(1+sum(ld--8, --1%+--1%, 2 2))%+1",
+    "2^2^3",
+    "(2^2)^3",
+    "2^2^3 - 2^(2^3)",
+    "1/2/2",
+    "1/(2/2)",
+    "2*3^2",
+    
+    "count(1, 2)",
+    "sqrt(abs(--2!!*--count(1, 2, 3, 4)*--2!!))"
 };
 
 double results[] = {
-	1,
-	1.1,
-	3,
-	4,
-	-1,
-	0.01,
-	11,
-	0,
-	0,
-	2,
-	0,
-	1,
-	12,
-	3.14159265359,
-	-8.5397342226,
-	0.02,
-	1.0802,
-	256,
-	64,
-	0,
-	0.25,
-	1,
-	18,
-	2,
-	4
+    1,
+    1.1,
+    3,
+    4,
+    -1,
+    0.01,
+    11,
+    0,
+    0,
+    2,
+    0,
+    1,
+    12,
+    3.14159265359,
+    -8.5397342226,
+    0.02,
+    1.0802,
+    256,
+    64,
+    0,
+    0.25,
+    1,
+    18,
+    2,
+    4
 };
 
 bool almost_equals(double a, double b)
 {
-	return (fabs(a - b) < EPSILON);
+    return (fabs(a - b) < EPSILON);
 }
 
 int perform_tests()
 {
-	ParsingContext context = arith_get_ctx();
-	Node *node = NULL;
-	
-	for (int i = 0; i < NUM_TESTS; i++)
-	{
-		if (parse_node(&context, inputs[i], &node) != PERR_SUCCESS)
-		{
-			return i;
-		}
-		
-		if (!almost_equals(arith_eval(node), results[i]))
-		{
-			return i;
-		}
-	}
-	
-	
-	return -1;
+    ParsingContext context = arith_get_ctx();
+    Node *node = NULL;
+    
+    for (int i = 0; i < NUM_TESTS; i++)
+    {
+        if (parse_node(&context, inputs[i], &node) != PERR_SUCCESS)
+        {
+            return i;
+        }
+        
+        if (!almost_equals(arith_eval(node), results[i]))
+        {
+            return i;
+        }
+    }
+    
+    
+    return -1;
 }
 
 int main(int argc, char *argv[])
 {
-	init_parser();
-	int error_index = perform_tests();
-	uninit_parser();
-	
-	if (error_index == -1)
-	{
-		return 0;
-	}
-	else
-	{
-		printf(F_RED "Error in test case %d: '%s'" COL_RESET "\n", error_index, inputs[error_index]);
-		return 1;
-	}
+    init_parser();
+    int error_index = perform_tests();
+    uninit_parser();
+    
+    if (error_index == -1)
+    {
+        printf(F_GREEN "passed" COL_RESET "\n");
+        return 0;
+    }
+    else
+    {
+        printf(F_RED "\nError in test case %d: '%s'" COL_RESET "\n", error_index, inputs[error_index]);
+        return 1;
+    }
 }

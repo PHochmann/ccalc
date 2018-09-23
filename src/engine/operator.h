@@ -4,26 +4,26 @@
 #include "constants.h"
 
 typedef enum {
-	OP_ASSOC_RIGHT,
-	OP_ASSOC_LEFT,
-	OP_ASSOC_BOTH
+    OP_ASSOC_RIGHT,
+    OP_ASSOC_LEFT,
+    OP_ASSOC_BOTH
 } OpAssociativity;
 
 typedef enum {
-	OP_PLACE_PREFIX,
-	OP_PLACE_INFIX,
-	OP_PLACE_POSTFIX,
-	OP_PLACE_FUNCTION,
+    OP_PLACE_PREFIX,
+    OP_PLACE_INFIX,
+    OP_PLACE_POSTFIX,
+    OP_PLACE_FUNCTION,
 } OpPlacement;
 
 typedef struct {
-	
-	char *name;
-	unsigned int arity;
-	unsigned int precedence;
-	
-	OpAssociativity assoc;
-	OpPlacement placement;
+    
+    char *name;
+    unsigned int arity;
+    unsigned int precedence;
+    
+    OpAssociativity assoc;
+    OpPlacement placement;
 
 } Operator;
 

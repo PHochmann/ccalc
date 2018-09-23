@@ -6,21 +6,21 @@
 #define CONST_PREFIX "const_"
 
 typedef struct {
-	
-	ParsingContext *context;
-	Node *before;
-	Node *after;
-	
+    
+    ParsingContext *context;
+    Node *before;
+    Node *after;
+    
 } RewriteRule;
 
 typedef struct {
-	
-	Node *matched_tree;
+    
+    Node *matched_tree;
 
-	char **mapped_vars;
-	Node **mapped_nodes;
-	size_t num_mapped;
-	
+    char **mapped_vars;
+    Node **mapped_nodes;
+    size_t num_mapped;
+    
 } Matching;
 
 bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_matching);
