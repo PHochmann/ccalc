@@ -88,7 +88,10 @@ bool ask_input(char *prompt, char **out_input)
 
 void parse_input(char *input)
 {
-    if (strcmp(input, "quit") == 0) exit(0);
+    if (strcmp(input, "quit") == 0)
+    {
+        exit(0);
+    }
     
     if (strcmp(input, "help") == 0)
     {
@@ -234,11 +237,14 @@ void parse_evaluation(char *input)
                 {
                     // Not a constant given - ask again
                     printf("Not a constant expression\n");
+                    free_tree(res_var, true);
                     i--;
                     continue;
                 }
                 
                 tree_substitute(&ctx, res, res_var, vars[i]);
+                free(vars[i]);
+                free_tree(res_var, false);
             }
             else return;
         }
@@ -248,7 +254,7 @@ void parse_evaluation(char *input)
         ctx.to_string((void*)(&eval), result_str, ctx.min_str_len);
         printf("= %s\n", result_str);
         
-        if (ans != NULL) free_tree(ans);
+        if (ans != NULL) free_tree(ans, false);
         ans = res;
     }
 }

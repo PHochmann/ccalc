@@ -3,6 +3,7 @@
 #include <stdbool.h>
 
 #include "constants.h"
+#include "memory.h"
 #include "context.h"
 #include "node.h"
 #include "tokenizer.h"
@@ -77,6 +78,7 @@ bool node_push(Node *value)
 {
     if (num_nodes == MAX_STACK_SIZE)
     {
+        free(value);
         error = PERR_STACK_EXCEEDED;
         return false;
     }
@@ -143,12 +145,22 @@ bool op_pop_and_insert()
         if (op_node->num_children > MAX_CHILDREN)
         {
             error = PERR_EXCEEDED_MAX_CHILDREN;
+            free(op_node);
             return false;
         }
         
         for (int i = 0; i < op_node->num_children; i++)
         {
-            if (!node_pop(&(op_node->children[op_node->num_children - i - 1]))) return false;
+            if (!node_pop(&(op_node->children[op_node->num_children - i - 1])))
+            {
+                // Free already appended children and new node
+                for (int j = op_node->num_children - 1; j > op_node->num_children - i - 1; j--)
+                {
+                    free_tree(op_node->children[j], false);
+                }
+                free(op_node);
+                return false;
+            }
         }
         
         if (!node_push(op_node)) return false;
@@ -402,6 +414,17 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
     }
     
     exit:
+    
+    // If parsing wasn't successful, free partial results:
+    if (error != PERR_SUCCESS)
+    {
+        while (num_nodes > 0)
+        {
+            free_tree(node_stack[num_nodes - 1], false);
+            num_nodes--;
+        }
+    }
+    
     for (int i = 0; i < num_tokens; i++) free(tokens[i]);
     free(tokens);
     return error;

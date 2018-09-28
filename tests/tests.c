@@ -12,61 +12,38 @@
 #define EPSILON 0.0000001
 #define NUM_TESTS 25
 
-char *inputs[] = {
-    "1",
-    "1.1",
-    "1+2",
-    "2 2",
-    "-1",
-    "1%",
-    "1+2*3+4",
-    " ( 9.0 *  0)",
-    "sin(0)",
-    "sin0+2",
-    "sum()",
-    "1+sum()*2",
-    "sum(1, 2, 3)*2",
-    "pi",
-    "-pi e",
-    "((--1)) sum2 !%",
-    "--(1+sum(ld--8, --1%+--1%, 2 2))%+1",
-    "2^2^3",
-    "(2^2)^3",
-    "2^2^3 - 2^(2^3)",
-    "1/2/2",
-    "1/(2/2)",
-    "2*3^2",
-    
-    "count(1, 2)",
-    "sqrt(abs(--2!!*--count(1, 2, 3, 4)*--2!!))"
-};
+typedef struct {
+    char *input;
+    double result; 
+} TestCase;
 
-double results[] = {
-    1,
-    1.1,
-    3,
-    4,
-    -1,
-    0.01,
-    11,
-    0,
-    0,
-    2,
-    0,
-    1,
-    12,
-    3.14159265359,
-    -8.5397342226,
-    0.02,
-    1.0802,
-    256,
-    64,
-    0,
-    0.25,
-    1,
-    18,
-    2,
-    4
+static TestCase cases[NUM_TESTS] = {
+    { "1", 1 },
+    { "1.1", 1.1 },
+    { "1+2", 3 },
+    { "2 2", 4 },
+    { "-1", -1 },
+    { "1%", 0.01 },
+    { "1+2*3+4", 11 },
+    { " ( 9.0 *  0)", 0 },
+    { "sin(0)", 0 },
+    { "sin0+2", 2 },
+    { "sum()", 0 },
+    { "1+sum()*2", 1 },
+    { "sum(1, 2, 3)*2", 12 },
+    { "pi", 3.14159265359 },
+    { "-pi e", -8.5397342226 },
+    { "((--1)) sum2 !%", 0.02 },
+    { "--(1+sum(ld--8, --1%+--1%, 2 .2))%+1", 1.0442 },
+    { "2^2^3", 256 },
+    { "(2^2)^3", 64 },
+    { "2^2^3 - 2^(2^3)", 0 },
+    { "1/2/2", 0.25 },
+    { "1/(2/2)", 1 },
+    { "2*3^2", 18 },
+    
+    { "count(1, 2)", 2 },
+    { "sqrt(abs(--2!!*--count(1, 2, 3, 4)*--2!!))", 4 }
 };
 
 bool almost_equals(double a, double b)
@@ -81,12 +58,12 @@ int perform_tests()
     
     for (int i = 0; i < NUM_TESTS; i++)
     {
-        if (parse_node(&context, inputs[i], &node) != PERR_SUCCESS)
+        if (parse_node(&context, cases[i].input, &node) != PERR_SUCCESS)
         {
             return i;
         }
         
-        if (!almost_equals(arith_eval(node), results[i]))
+        if (!almost_equals(arith_eval(node), cases[i].result))
         {
             return i;
         }
@@ -109,7 +86,7 @@ int main(int argc, char *argv[])
     }
     else
     {
-        printf(F_RED "\nError in test case %d: '%s'" COL_RESET "\n", error_index, inputs[error_index]);
+        printf(F_RED "\nError in test case %d: '%s'" COL_RESET "\n", error_index, cases[error_index].input);
         return 1;
     }
 }

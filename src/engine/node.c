@@ -74,8 +74,8 @@ bool tree_contains_variable(Node* tree)
 /*
 Summary: Lists all variable names in tree.
 Params
-    out_variables must hold at least MAX_VAR_COUNT char*
-    out_variables' pointers must not be dereferenced after tree is freed.
+    out_variables must hold at least MAX_VAR_COUNT char-pointers
+        (strings are copied, don't forget to call free on each of out_variables' items)
 */
 int tree_list_variables(Node *tree, char **out_variables)
 {
@@ -91,6 +91,7 @@ int tree_list_variables(Node *tree, char **out_variables)
     {
         Node *curr_node = node_stack[--stack_count];
         bool flag = false; // To break twice
+        
         switch (curr_node->type)
         {
             case NTYPE_VARIABLE:
@@ -108,7 +109,8 @@ int tree_list_variables(Node *tree, char **out_variables)
                 // Buffer overflow protection
                 if (res_count == MAX_VAR_COUNT) return -1;
                 
-                out_variables[res_count++] = curr_node->var_name;
+                out_variables[res_count] = malloc(strlen(curr_node->var_name) + 1);
+                strcpy(out_variables[res_count++], curr_node->var_name);
                 break;
                 
             case NTYPE_OPERATOR:
@@ -117,8 +119,7 @@ int tree_list_variables(Node *tree, char **out_variables)
                     // Buffer overflow protection
                     if (stack_count == MAX_STACK_SIZE) return -1;
                     
-                    node_stack[stack_count] = curr_node->children[i];
-                    stack_count++;
+                    node_stack[stack_count++] = curr_node->children[i];
                 }
                 break;
                 
@@ -164,25 +165,25 @@ Node tree_copy(ParsingContext *ctx, Node *tree)
 /*
 Summary: Substitutes any occurence of a variable with certain name with a given subtree
 */
-int tree_substitute(ParsingContext *ctx, Node *dest_tree, Node *tree, char *var_name)
+int tree_substitute(ParsingContext *ctx, Node *dest_tree, Node *tree_to_copy, char *var_name)
 {
-    if (ctx == NULL || dest_tree == NULL || tree == NULL || var_name == NULL) return 0;
+    if (ctx == NULL || dest_tree == NULL || tree_to_copy == NULL || var_name == NULL) return 0;
     
     int res = 0;
     
-    switch(dest_tree->type)
+    switch (dest_tree->type)
     {
         case NTYPE_OPERATOR:
             for (int i = 0; i < dest_tree->num_children; i++)
             {
-                res += tree_substitute(ctx, dest_tree->children[i], tree, var_name);
+                res += tree_substitute(ctx, dest_tree->children[i], tree_to_copy, var_name);
             }
             return res;
             
         case NTYPE_VARIABLE:
             if (strcmp(var_name, dest_tree->var_name) == 0)
             {
-                *dest_tree = tree_copy(ctx, tree);
+                tree_replace(dest_tree, tree_copy(ctx, tree_to_copy));
                 return 1;
             }
             break;
@@ -246,20 +247,13 @@ Summary: frees all child-trees and replaces root value-wise
 void tree_replace(Node *destination, Node new_node)
 {
     if (destination == NULL) return;
-    
-    if (destination->type == NTYPE_OPERATOR)
-    {
-        for (int i = 0; i < destination->num_children; i++)
-        {
-            free_tree(destination->children[i]);
-        }
-    }
-    
+    free_tree(destination, true);
     *destination = new_node;
 }
 
-
+// ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 // The following functions are used to print nodes or trees to console
+// ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
 void print_constant(ParsingContext *ctx, Node *node)
 {
@@ -279,11 +273,11 @@ void print_variable(Node *node)
     }
 }
 
-void print_tree_visual_rec(ParsingContext *ctx, Node *node, int layer, unsigned int vertical_lines, bool last_child)
+void print_tree_visual_rec(ParsingContext *ctx, Node *node, int layer, unsigned int vert_lines, bool last_child)
 {
     for (int i = 0; i < layer - 1; i++)
     {
-        if (vertical_lines & (1 << i))
+        if (vert_lines & (1 << i))
         {
             printf("│   "); // Bit at i=1
         }
@@ -314,7 +308,7 @@ void print_tree_visual_rec(ParsingContext *ctx, Node *node, int layer, unsigned 
                 bool is_last = i == node->num_children - 1;
                 print_tree_visual_rec(
                     ctx,
-                    node->children[i], layer + 1, is_last ? vertical_lines : vertical_lines | (1 << layer),
+                    node->children[i], layer + 1, is_last ? vert_lines : vert_lines | (1 << layer),
                     is_last);
             }
             break;

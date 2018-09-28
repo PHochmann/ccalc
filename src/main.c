@@ -1,13 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 
-#include "arith.h"
 #include "commands.h"
-
 #include "engine/parser.h"
 
-#define VERSION "1.0.1"
+#define VERSION "1.0.2"
 
 void _exit()
 {
