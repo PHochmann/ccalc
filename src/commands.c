@@ -188,7 +188,7 @@ void add_function(char *input)
         printf("Max. arity is %d\n", MAX_CHILDREN);
     }
     
-    int id = add_op(&ctx, op_get_function(name, arity));
+    int id = ctx_add_op(&ctx, op_get_function(name, arity));
     
     if (id == -1)
     {

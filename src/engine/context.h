@@ -1,4 +1,5 @@
 #pragma once
+#include <stdarg.h>
 #include <stdbool.h>
 
 #include "operator.h"
@@ -12,26 +13,29 @@ typedef struct {
     size_t value_size; // e.g. sizeof(bool) for propositional logic, sizeof(double) for arithmetic
     size_t min_str_len; // Needed to let external functions know how much data to allocate for stringed value
     
-    int num_ops;
-    int max_ops;
+    int num_ops; // Current count of operators 
+    int max_ops; // Maximum count of operators (limited by buffer size)
         
-    TryParseHandler try_parse;
-    ToStringHandler to_string;
-    EqualsHandler equals;
+    TryParseHandler try_parse; // Used to detect a literal token
+    ToStringHandler to_string; // Used to print trees
+    EqualsHandler equals; // Only relevant for rule.c
     
-    Operator *glue_op;
+    Operator *glue_op; // Points to op in operators
     Operator *operators; // On heap!
 
 } ParsingContext;
 
 ParsingContext get_context(
-    size_t val_size,
+    size_t value_size,
     size_t min_strbuf_length,
     int max_ops,
     TryParseHandler try_parse,
     ToStringHandler to_string,
     EqualsHandler handler);
-    
-int add_op(ParsingContext *ctx, Operator op);
-bool set_glue_op(ParsingContext *ctx, Operator *op);
-void remove_glue_op(ParsingContext *ctx);
+
+bool ctx_add_ops(ParsingContext *ctx, int count, ...);    
+int ctx_add_op(ParsingContext *ctx, Operator op);
+bool ctx_set_glue_op(ParsingContext *ctx, Operator *op);
+void ctx_remove_glue_op(ParsingContext *ctx);
+Operator* ctx_lookup_op(ParsingContext *ctx, char *name, OpPlacement placement);
+Operator* ctx_lookup_function(ParsingContext *ctx, char *name, int arity);

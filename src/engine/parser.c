@@ -4,8 +4,6 @@
 
 #include "constants.h"
 #include "memory.h"
-#include "context.h"
-#include "node.h"
 #include "tokenizer.h"
 #include "parser.h"
 
@@ -39,39 +37,6 @@ void uninit_parser()
     if (node_stack != NULL) free(op_stack);
     if (arities != NULL) free(arities);
     initialized = false;
-}
-
-Operator* search_op(char *name, OpPlacement placement)
-{
-    for (int i = 0; i < ctx->num_ops; i++)
-    {
-        Operator *curr_op = &ctx->operators[i];
-        
-        if (curr_op->placement == placement
-            && strcmp(curr_op->name, name) == 0)
-        {
-            return curr_op;
-        }
-    }
-    
-    return NULL;
-}
-
-Operator* search_function(char *name, int arity)
-{
-    for (int i = 0; i < ctx->num_ops; i++)
-    {
-        Operator *curr_op = &ctx->operators[i];
-        
-        if (curr_op->placement == OP_PLACE_FUNCTION
-            && strcmp(curr_op->name, name) == 0
-            && curr_op->arity == arity)
-        {
-            return curr_op;
-        }
-    }
-    
-    return NULL;
 }
 
 bool node_push(Node *value)
@@ -120,12 +85,12 @@ bool op_pop_and_insert()
         if (op->arity != arities[num_ops - 1])
         {
             char *name = op->name;
-            op = search_function(name, arities[num_ops - 1]);
+            op = ctx_lookup_function(ctx, name, arities[num_ops - 1]);
             
             // Fallback: Find function of dynamic aritiy
             if (op == NULL)
             {
-                op = search_function(name, DYNAMIC_ARITY);
+                op = ctx_lookup_function(ctx, name, DYNAMIC_ARITY);
             }
             
             if (op == NULL)
@@ -244,8 +209,8 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
         {
             if (!is_closing_parenthesis(token[0])
                 && !is_delimiter(token[0])
-                && search_op(token, OP_PLACE_INFIX) == NULL
-                && search_op(token, OP_PLACE_POSTFIX) == NULL)
+                && ctx_lookup_op(ctx, token, OP_PLACE_INFIX) == NULL
+                && ctx_lookup_op(ctx, token, OP_PLACE_POSTFIX) == NULL)
             {
                 if (!op_push(ctx->glue_op)) goto exit;
                 await_subexpression = true;
@@ -320,7 +285,7 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
         Operator *op = NULL;
         if (await_subexpression)
         {
-            op = search_op(token, OP_PLACE_FUNCTION);
+            op = ctx_lookup_op(ctx, token, OP_PLACE_FUNCTION);
             if (op != NULL) // Function operator found
             {
                 if (!op_push(op)) goto exit;
@@ -338,7 +303,7 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
                 continue;
             }
             
-            op = search_op(token, OP_PLACE_PREFIX);
+            op = ctx_lookup_op(ctx, token, OP_PLACE_PREFIX);
             if (op != NULL) // Prefix operator found
             {
                 if (!op_push(op)) goto exit;
@@ -348,7 +313,7 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
         }
         else
         {
-            op = search_op(token, OP_PLACE_INFIX);
+            op = ctx_lookup_op(ctx, token, OP_PLACE_INFIX);
             if (op != NULL) // Infix operator found
             {
                 if (!op_push(op)) goto exit;
@@ -356,7 +321,7 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
                 continue;
             }
             
-            op = search_op(token, OP_PLACE_POSTFIX);
+            op = ctx_lookup_op(ctx, token, OP_PLACE_POSTFIX);
             if (op != NULL) // Postfix operator found
             {
                 if (!op_push(op)) goto exit;

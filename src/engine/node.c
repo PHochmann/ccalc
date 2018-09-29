@@ -5,11 +5,11 @@
 #include "memory.h"
 
 /*
-Summary: Fallback that is used when no EqualsHandler is defined in context
+Summary: Fallback in node_equals that is used when no EqualsHandler is defined in context
 */
 bool bytewise_equals(void *a, void *b, size_t value_size)
 {
-    for (int i = 0; i < value_size; i++)
+    for (size_t i = 0; i < value_size; i++)
     {
         if (((char*)a)[i] != ((char*)b)[i]) return false;
     }
@@ -165,25 +165,25 @@ Node tree_copy(ParsingContext *ctx, Node *tree)
 /*
 Summary: Substitutes any occurence of a variable with certain name with a given subtree
 */
-int tree_substitute(ParsingContext *ctx, Node *dest_tree, Node *tree_to_copy, char *var_name)
+int tree_substitute(ParsingContext *ctx, Node *tree, Node *tree_to_copy, char *var_name)
 {
-    if (ctx == NULL || dest_tree == NULL || tree_to_copy == NULL || var_name == NULL) return 0;
+    if (ctx == NULL || tree == NULL || tree_to_copy == NULL || var_name == NULL) return 0;
     
     int res = 0;
     
-    switch (dest_tree->type)
+    switch (tree->type)
     {
         case NTYPE_OPERATOR:
-            for (int i = 0; i < dest_tree->num_children; i++)
+            for (int i = 0; i < tree->num_children; i++)
             {
-                res += tree_substitute(ctx, dest_tree->children[i], tree_to_copy, var_name);
+                res += tree_substitute(ctx, tree->children[i], tree_to_copy, var_name);
             }
             return res;
             
         case NTYPE_VARIABLE:
-            if (strcmp(var_name, dest_tree->var_name) == 0)
+            if (strcmp(var_name, tree->var_name) == 0)
             {
-                tree_replace(dest_tree, tree_copy(ctx, tree_to_copy));
+                tree_replace(tree, tree_copy(ctx, tree_to_copy));
                 return 1;
             }
             break;

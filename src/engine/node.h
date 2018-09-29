@@ -37,7 +37,7 @@ Node get_operator_node(Operator *op);
 bool tree_contains_variable(Node* node);
 int tree_list_variables(Node *tree, char **out_variables);
 Node tree_copy(ParsingContext *ctx, Node *node);
-int tree_substitute(ParsingContext *ctx, Node *dest_tree, Node *tree, char* var_name);
+int tree_substitute(ParsingContext *ctx, Node *tree, Node *tree_to_copy, char* var_name);
 bool node_equals(ParsingContext *ctx, Node *a, Node *b);
 bool tree_equals(ParsingContext *ctx, Node *a, Node *b);
 void tree_replace(Node *destination, Node new_node);

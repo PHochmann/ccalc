@@ -6,7 +6,8 @@
 #include "arith.h"
 
 #define ARITH_STRING_LENGTH 30
-#define ARITH_NUM_OPS (38+10)
+#define ARITH_NUM_OPS 38
+#define ARITH_CUSTOM_BUFFER 10
 
 static ParsingContext arith_ctx;
 
@@ -212,55 +213,63 @@ void _arith_to_string(void *in, char *str, size_t buff_size)
 
 ParsingContext arith_get_ctx()
 {
-    arith_ctx = get_context(sizeof(double), ARITH_STRING_LENGTH + 1, ARITH_NUM_OPS, _arith_try_parse, _arith_to_string, NULL);
+    arith_ctx = get_context(
+        sizeof(double),
+        ARITH_STRING_LENGTH + 1,
+        ARITH_NUM_OPS + ARITH_CUSTOM_BUFFER,
+        _arith_try_parse,
+        _arith_to_string,
+        NULL); // Uses bytewise equals
     
-    add_op(&arith_ctx, op_get_infix("*", 2, OP_ASSOC_BOTH));
-    add_op(&arith_ctx, op_get_infix("/", 2, OP_ASSOC_LEFT));
-    add_op(&arith_ctx, op_get_infix("+", 1, OP_ASSOC_BOTH));
-    add_op(&arith_ctx, op_get_infix("-", 1, OP_ASSOC_LEFT));
-    add_op(&arith_ctx, op_get_infix("^", 3, OP_ASSOC_RIGHT));
-    add_op(&arith_ctx, op_get_prefix("-", 5));
-    add_op(&arith_ctx, op_get_prefix("+", 5));
-    add_op(&arith_ctx, op_get_postfix("!", 4));
-    add_op(&arith_ctx, op_get_postfix("%", 4));
-    add_op(&arith_ctx, op_get_function("exp", 1));
-    add_op(&arith_ctx, op_get_function("sqrt", 1));
-    add_op(&arith_ctx, op_get_function("root", 2));
-    add_op(&arith_ctx, op_get_function("log", 2));
-    add_op(&arith_ctx, op_get_function("ln", 1));
-    add_op(&arith_ctx, op_get_function("ld", 1));
-    add_op(&arith_ctx, op_get_function("lg", 1));
-    add_op(&arith_ctx, op_get_function("sin", 1));
-    add_op(&arith_ctx, op_get_function("cos", 1));
-    add_op(&arith_ctx, op_get_function("tan", 1));
-    add_op(&arith_ctx, op_get_function("asin", 1));
-    add_op(&arith_ctx, op_get_function("acos", 1));
-    add_op(&arith_ctx, op_get_function("atan", 1));
-    add_op(&arith_ctx, op_get_function("max", DYNAMIC_ARITY));
-    add_op(&arith_ctx, op_get_function("min", DYNAMIC_ARITY));
-    add_op(&arith_ctx, op_get_function("abs", 1));
-    add_op(&arith_ctx, op_get_function("round", 1));
-    add_op(&arith_ctx, op_get_function("trunc", 1));
-    add_op(&arith_ctx, op_get_function("ceil", 1));
-    add_op(&arith_ctx, op_get_function("floor", 1));
-    add_op(&arith_ctx, op_get_function("sum", DYNAMIC_ARITY));
-    add_op(&arith_ctx, op_get_function("prod", DYNAMIC_ARITY));
-    add_op(&arith_ctx, op_get_function("avg", DYNAMIC_ARITY));
-    add_op(&arith_ctx, op_get_infix("C", 1, OP_ASSOC_LEFT));
-    add_op(&arith_ctx, op_get_infix("mod", 1, OP_ASSOC_LEFT));
-    add_op(&arith_ctx, op_get_function("gamma", 1));
-    add_op(&arith_ctx, op_get_constant("pi"));
-    add_op(&arith_ctx, op_get_constant("e"));
-    add_op(&arith_ctx, op_get_constant("phi"));
+    ctx_add_ops(&arith_ctx, ARITH_NUM_OPS,
+        op_get_infix("*", 2, OP_ASSOC_BOTH),
+        op_get_infix("/", 2, OP_ASSOC_LEFT),
+        op_get_infix("+", 1, OP_ASSOC_BOTH),
+        op_get_infix("-", 1, OP_ASSOC_LEFT),
+        op_get_infix("^", 3, OP_ASSOC_RIGHT),
+        op_get_prefix("-", 5),
+        op_get_prefix("+", 5),
+        op_get_postfix("!", 4),
+        op_get_postfix("%", 4),
+        op_get_function("exp", 1),
+        op_get_function("sqrt", 1),
+        op_get_function("root", 2),
+        op_get_function("log", 2),
+        op_get_function("ln", 1),
+        op_get_function("ld", 1),
+        op_get_function("lg", 1),
+        op_get_function("sin", 1),
+        op_get_function("cos", 1),
+        op_get_function("tan", 1),
+        op_get_function("asin", 1),
+        op_get_function("acos", 1),
+        op_get_function("atan", 1),
+        op_get_function("max", DYNAMIC_ARITY),
+        op_get_function("min", DYNAMIC_ARITY),
+        op_get_function("abs", 1),
+        op_get_function("round", 1),
+        op_get_function("trunc", 1),
+        op_get_function("ceil", 1),
+        op_get_function("floor", 1),
+        op_get_function("sum", DYNAMIC_ARITY),
+        op_get_function("prod", DYNAMIC_ARITY),
+        op_get_function("avg", DYNAMIC_ARITY),
+        op_get_infix("C", 1, OP_ASSOC_LEFT),
+        op_get_infix("mod", 1, OP_ASSOC_LEFT),
+        op_get_function("gamma", 1),
+        op_get_constant("pi"),
+        op_get_constant("e"),
+        op_get_constant("phi"));
     
     #ifdef DEBUG
-    add_op(&arith_ctx, op_get_function("count", DYNAMIC_ARITY));
-    add_op(&arith_ctx, op_get_function("count", 1));
-    add_op(&arith_ctx, op_get_function("count", 2));
-    add_op(&arith_ctx, op_get_function("count", 3));
+    ctx_add_ops(&arith_ctx, 4,
+        op_get_function("count", DYNAMIC_ARITY),
+        op_get_function("count", 1),
+        op_get_function("count", 2),
+        op_get_function("count", 3));
     #endif
     
-    set_glue_op(&arith_ctx, &arith_ctx.operators[0]);
+    ctx_set_glue_op(&arith_ctx, &arith_ctx.operators[0]);
     
     return arith_ctx;
 }
