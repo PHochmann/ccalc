@@ -13,9 +13,9 @@ Simple parser and calculator written in C
 ## Available commands  
 | Command | Description |
 | --- | --- |
-| debug | Display parsed abstract syntax tree after normal expression |
-| help | List all available operators |
-| def_func \<name\> \<arity\> | Add new function operator (arity of -1 is dynamic arity up to MAX_CHILDREN) |
-| def_rule \<before\> -> \<after\> | Define new rule, e.g. to eliminate custom functions |
+| debug | Toggles debug mode. In debug mode, an abstract syntax tree is shown before evaluation |
+| help | Lists all available operators |
+| def_func \<name\> \<arity\> | Adds new function operator (arity of -1 is dynamic arity up to MAX_CHILDREN) |
+| def_rule \<before\> -> \<after\> | Defines new rule, e.g. to eliminate custom functions |
 
 'ans' can be used to reference previous result.
