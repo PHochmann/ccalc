@@ -35,12 +35,13 @@ Node get_constant_node(void *value);
 Node get_operator_node(Operator *op);
 
 bool tree_contains_variable(Node* node);
-int tree_list_variables(Node *tree, char **out_variables);
+int tree_get_variable_instances(Node *tree, char *variable, Node *out_instances[MAX_VAR_COUNT]);
+int tree_list_variables(Node *tree, char *out_variables[MAX_VAR_COUNT]);
+int tree_substitute_variable(ParsingContext *ctx, Node *tree, Node *tree_to_copy, char* var_name);
+void tree_replace(Node *destination, Node new_node);
 Node tree_copy(ParsingContext *ctx, Node *node);
-int tree_substitute(ParsingContext *ctx, Node *tree, Node *tree_to_copy, char* var_name);
 bool node_equals(ParsingContext *ctx, Node *a, Node *b);
 bool tree_equals(ParsingContext *ctx, Node *a, Node *b);
-void tree_replace(Node *destination, Node new_node);
 
 void print_tree_visual(ParsingContext *ctx, Node *node);
 void print_tree_inline(ParsingContext *ctx, Node *node);

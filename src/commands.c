@@ -237,12 +237,12 @@ void parse_evaluation(char *input)
                 {
                     // Not a constant given - ask again
                     printf("Not a constant expression\n");
-                    free_tree(res_var, true);
+                    free_tree(res_var, false);
                     i--;
                     continue;
                 }
                 
-                tree_substitute(&ctx, res, res_var, vars[i]);
+                tree_substitute_variable(&ctx, res, res_var, vars[i]);
                 free(vars[i]);
                 free_tree(res_var, false);
             }
@@ -268,7 +268,7 @@ bool parse_node_wrapper(char *input, Node **out_res, bool apply_rules, bool appl
         return false;
     }
     
-    if (apply_ans && ans != NULL) tree_substitute(&ctx, *out_res, ans, "ans");
+    if (apply_ans && ans != NULL) tree_substitute_variable(&ctx, *out_res, ans, "ans");
     if (apply_rules)
     {
         apply_ruleset(*out_res, rules, num_rules, 50);

@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "memory.h"
 #include "rule.h"
 #include "constants.h"
 #include "parser.h"
@@ -53,11 +54,9 @@ bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_
                     if (begins_with(CONST_PREFIX, curr_pattern_n->var_name) && curr_tree_n->type != NTYPE_CONSTANT) return false;
                     if (begins_with(VAR_PREFIX, curr_pattern_n->var_name) && curr_tree_n->type != NTYPE_VARIABLE) return false;
                     
-                    // Bind variable    
-                    mapped_vars[num_mapped_vars] = malloc(sizeof(char) * strlen(curr_pattern_n->var_name));
-                    strcpy(mapped_vars[num_mapped_vars], curr_pattern_n->var_name);
-                    mapped_nodes[num_mapped_vars] = malloc(sizeof(Node));
-                    *(mapped_nodes[num_mapped_vars]) = tree_copy(ctx, curr_tree_n);
+                    // Bind variable
+                    mapped_vars[num_mapped_vars] = curr_pattern_n->var_name;
+                    mapped_nodes[num_mapped_vars] = curr_tree_n;
                     num_mapped_vars++;
                 }
                 
@@ -83,15 +82,17 @@ bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_
     
     // We successfully found matching! Construct it:
     out_matching->matched_tree = tree;
+    out_matching->num_mapped = num_mapped_vars;
     out_matching->mapped_vars = malloc(sizeof(char*) * num_mapped_vars);
     out_matching->mapped_nodes = malloc(sizeof(Node*) * num_mapped_vars);
     
     for (int i = 0; i < num_mapped_vars; i++)
     {
-        out_matching->mapped_vars[i] = mapped_vars[i];
+        out_matching->mapped_vars[i] = malloc(sizeof(char) * (strlen(mapped_vars[i]) + 1));
+        strcpy(out_matching->mapped_vars[i], mapped_vars[i]);
         out_matching->mapped_nodes[i] = mapped_nodes[i];
     }
-    out_matching->num_mapped = num_mapped_vars;
+    
     return true;
 }
 
@@ -140,14 +141,22 @@ void transform_by_rule(RewriteRule *rule, Matching *matching)
 {
     if (rule == NULL || matching == NULL) return;
     
+    // We need to save all variable instances in "after" before we substitute because variable names are not sanitized
     Node transformed = tree_copy(rule->context, rule->after);
+    Node *var_instances[matching->num_mapped][MAX_VAR_COUNT];
+    int num_instances[matching->num_mapped];
+
+    for (size_t i = 0; i < matching->num_mapped; i++)
+    {
+        num_instances[i] = tree_get_variable_instances(&transformed, matching->mapped_vars[i], var_instances[i]);
+    }
     
     for (size_t i = 0; i < matching->num_mapped; i++)
     {
-        tree_substitute(rule->context,
-            &transformed,
-            matching->mapped_nodes[i],
-            matching->mapped_vars[i]);
+        for (size_t j = 0; j < num_instances[i]; j++)
+        {
+            tree_replace(var_instances[i][j], tree_copy(rule->context, matching->mapped_nodes[i]));
+        }
     }
     
     tree_replace(matching->matched_tree, transformed);
@@ -160,6 +169,7 @@ bool apply_rule(Node *tree, RewriteRule *rule)
     if (!find_matching(rule->context, tree, rule->before, &matching)) return false;
     // If matching is found, transform tree with it
     transform_by_rule(rule, &matching);
+    free_matching(matching);
     return true;
 }
 

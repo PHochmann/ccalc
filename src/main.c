@@ -1,20 +1,12 @@
-#include <stdlib.h>
 #include <stdio.h>
 
 #include "commands.h"
 #include "engine/parser.h"
 
-#define VERSION "1.1.0"
-
-void _exit()
-{
-    uninit_parser();
-}
+#define VERSION "1.1.1"
 
 int main(int argc, char *argv[])
 {
-    atexit(_exit);
-
     init_parser();
     init_commands();
     

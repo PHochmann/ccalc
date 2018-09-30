@@ -31,7 +31,6 @@ void free_matching(Matching matching)
     for (int i = 0; i < matching.num_mapped; i++)
     {
         free(matching.mapped_vars[i]);
-        free_tree(matching.mapped_nodes[i], false);
     }
     free(matching.mapped_vars);
     free(matching.mapped_nodes);

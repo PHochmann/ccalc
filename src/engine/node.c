@@ -4,19 +4,6 @@
 #include "node.h"
 #include "memory.h"
 
-/*
-Summary: Fallback in node_equals that is used when no EqualsHandler is defined in context
-*/
-bool bytewise_equals(void *a, void *b, size_t value_size)
-{
-    for (size_t i = 0; i < value_size; i++)
-    {
-        if (((char*)a)[i] != ((char*)b)[i]) return false;
-    }
-    
-    return true;
-}
-
 Node get_node(NodeType type)
 {
     Node res;
@@ -65,10 +52,57 @@ bool tree_contains_variable(Node* tree)
             return true;
             
         case NTYPE_OPERATOR:
-            for (int i = 0; i < tree->num_children; i++) if (tree_contains_variable(tree->children[i])) return true;
+            for (int i = 0; i < tree->num_children; i++)
+            {
+                if (tree_contains_variable(tree->children[i])) return true;
+            }
             return false;
     }
+    
     return false;
+}
+
+/*
+Summary: Lists all variable nodes of given names (e.g. to replace them)
+*/
+int tree_get_variable_instances(Node *tree, char *variable, Node *out_instances[MAX_VAR_COUNT])
+{
+    if (tree == NULL) return -1;
+    
+    int res_count = 0;
+    
+    Node *node_stack[MAX_STACK_SIZE];
+    node_stack[0] = tree;
+    int stack_count = 1;
+    
+    while (stack_count > 0)
+    {
+        Node *curr_node = node_stack[--stack_count];
+        switch (curr_node->type)
+        {
+            case NTYPE_VARIABLE:
+                if (strcmp(curr_node->var_name, variable) == 0)
+                {
+                    if (res_count == MAX_VAR_COUNT) return -1;
+                    out_instances[res_count] = curr_node;
+                    res_count++;
+                }
+                break;
+                
+            case NTYPE_OPERATOR:
+                for (int i = curr_node->num_children - 1; i >= 0; i--)
+                {
+                    if (stack_count == MAX_STACK_SIZE) return -1;
+                    node_stack[stack_count++] = curr_node->children[i];
+                }
+                break;
+                
+            case NTYPE_CONSTANT:
+                break;
+        }
+    }
+    
+    return res_count;
 }
 
 /*
@@ -77,7 +111,7 @@ Params
     out_variables must hold at least MAX_VAR_COUNT char-pointers
         (strings are copied, don't forget to call free on each of out_variables' items)
 */
-int tree_list_variables(Node *tree, char **out_variables)
+int tree_list_variables(Node *tree, char *out_variables[MAX_VAR_COUNT])
 {
     if (tree == NULL) return -1;
     
@@ -131,6 +165,37 @@ int tree_list_variables(Node *tree, char **out_variables)
     return res_count;
 }
 
+/*
+Summary: Substitutes any occurence of a variable with certain name with a given subtree
+Returns: Number of occurences of variable
+*/
+int tree_substitute_variable(ParsingContext *ctx, Node *tree, Node *tree_to_copy, char *var_name)
+{
+    if (tree == NULL || tree_to_copy == NULL || var_name == NULL) return 0;
+    
+    Node *var_instances[MAX_VAR_COUNT];
+    int inst_count = tree_get_variable_instances(tree, var_name, var_instances);
+    
+    for (int i = 0; i < inst_count; i++)
+    {
+        tree_replace(var_instances[i], tree_copy(ctx, tree_to_copy));
+    }
+    
+    return inst_count;
+}
+
+/*
+Summary: frees all child-trees and replaces root value-wise
+Params
+    new_node: Tree 'destination' is replaced with. You may want to copy it before.
+*/
+void tree_replace(Node *destination, Node new_node)
+{
+    if (destination == NULL) return;
+    free_tree(destination, true);
+    *destination = new_node;
+}
+
 Node tree_copy(ParsingContext *ctx, Node *tree)
 {
     Node res = *tree;
@@ -163,36 +228,16 @@ Node tree_copy(ParsingContext *ctx, Node *tree)
 }
 
 /*
-Summary: Substitutes any occurence of a variable with certain name with a given subtree
+Summary: Fallback in node_equals that is used when no EqualsHandler is defined in context
 */
-int tree_substitute(ParsingContext *ctx, Node *tree, Node *tree_to_copy, char *var_name)
+bool bytewise_equals(void *a, void *b, size_t value_size)
 {
-    if (ctx == NULL || tree == NULL || tree_to_copy == NULL || var_name == NULL) return 0;
-    
-    int res = 0;
-    
-    switch (tree->type)
+    for (size_t i = 0; i < value_size; i++)
     {
-        case NTYPE_OPERATOR:
-            for (int i = 0; i < tree->num_children; i++)
-            {
-                res += tree_substitute(ctx, tree->children[i], tree_to_copy, var_name);
-            }
-            return res;
-            
-        case NTYPE_VARIABLE:
-            if (strcmp(var_name, tree->var_name) == 0)
-            {
-                tree_replace(tree, tree_copy(ctx, tree_to_copy));
-                return 1;
-            }
-            break;
-            
-        default:
-            break;
+        if (((char*)a)[i] != ((char*)b)[i]) return false;
     }
     
-    return 0;
+    return true;
 }
 
 bool node_equals(ParsingContext *ctx, Node *a, Node *b)
@@ -239,16 +284,6 @@ bool tree_equals(ParsingContext *ctx, Node *a, Node *b)
         }
     }
     return true;
-}
-
-/*
-Summary: frees all child-trees and replaces root value-wise
-*/
-void tree_replace(Node *destination, Node new_node)
-{
-    if (destination == NULL) return;
-    free_tree(destination, true);
-    *destination = new_node;
 }
 
 // ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
