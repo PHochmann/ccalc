@@ -3,7 +3,7 @@
 #include <float.h>
 #include <math.h>
 
-#include "arith.h"
+#include "arith_ctx.h"
 
 #define ARITH_STRING_LENGTH 30
 #define ARITH_NUM_OPS 38
@@ -211,7 +211,7 @@ void _arith_to_string(void *in, char *str, size_t buff_size)
     sprintf(str, "%.30g", *((double*)in));
 }
 
-ParsingContext arith_get_ctx()
+ParsingContext* arith_get_ctx()
 {
     arith_ctx = get_context(
         sizeof(double),
@@ -271,5 +271,5 @@ ParsingContext arith_get_ctx()
     
     ctx_set_glue_op(&arith_ctx, &arith_ctx.operators[0]);
     
-    return arith_ctx;
+    return &arith_ctx;
 }

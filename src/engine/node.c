@@ -192,7 +192,7 @@ Params
 void tree_replace(Node *destination, Node new_node)
 {
     if (destination == NULL) return;
-    free_tree(destination, true);
+    free_tree(destination);
     *destination = new_node;
 }
 

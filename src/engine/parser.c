@@ -15,7 +15,7 @@ static Operator **op_stack = NULL;
 static int *arities = NULL;
 static int num_nodes = 0;
 static int num_ops = 0;
-static ParserError error;
+static ParserError result;
 
 /*
 Summary: Reserves memory for buffers used while parsing
@@ -44,7 +44,7 @@ bool node_push(Node *value)
     if (num_nodes == MAX_STACK_SIZE)
     {
         free(value);
-        error = PERR_STACK_EXCEEDED;
+        result = PERR_STACK_EXCEEDED;
         return false;
     }
     
@@ -58,7 +58,7 @@ bool node_pop(Node **out)
 {
     if (num_nodes == 0)
     {
-        error = PERR_MISSING_OPERAND;
+        result = PERR_MISSING_OPERAND;
         return false;
     }
     
@@ -72,7 +72,7 @@ bool op_pop_and_insert()
 {
     if (num_ops == 0)
     {
-        error = PERR_MISSING_OPERATOR;
+        result = PERR_MISSING_OPERATOR;
         return false;
     }
     
@@ -95,7 +95,7 @@ bool op_pop_and_insert()
             
             if (op == NULL)
             {
-                error = PERR_FUNCTION_WRONG_ARITY;
+                result = PERR_FUNCTION_WRONG_ARITY;
                 return false;
             }
         }
@@ -109,7 +109,7 @@ bool op_pop_and_insert()
         
         if (op_node->num_children > MAX_CHILDREN)
         {
-            error = PERR_EXCEEDED_MAX_CHILDREN;
+            result = PERR_EXCEEDED_MAX_CHILDREN;
             free(op_node);
             return false;
         }
@@ -121,7 +121,7 @@ bool op_pop_and_insert()
                 // Free already appended children and new node
                 for (int j = op_node->num_children - 1; j > op_node->num_children - i - 1; j--)
                 {
-                    free_tree(op_node->children[j], false);
+                    free_tree(op_node->children[j]);
                 }
                 free(op_node);
                 return false;
@@ -156,7 +156,7 @@ bool op_push(Operator *op)
     
     if (num_ops == MAX_STACK_SIZE)
     {
-        error = PERR_STACK_EXCEEDED;
+        result = PERR_STACK_EXCEEDED;
         return false;
     }
     
@@ -168,30 +168,22 @@ bool op_push(Operator *op)
 
 /*
 Summary: Parses string to abstract syntax tree with operators of given context
-Returns: Error code to indicate whether string was parsed successfully or which error occured
+Returns: result code to indicate whether string was parsed successfully or which result occured
 */
 ParserError parse_node(ParsingContext *context, char *input, Node **res)
 {
     // 0. Early outs
     if (context == NULL || input == NULL || res == NULL) return PERR_ARGS_MALFORMED;
     if (!initialized) return PERR_NOT_INIT;
-    // Glue-op must be infix to "glue" two subtrees together
-    if (context->glue_op != NULL && context->glue_op->placement != OP_PLACE_INFIX) return PERR_CTX_MALFORMED;
     
     // 1. Tokenize input
     int num_tokens = 0;
     char **tokens;
-    char *keywords[context->num_ops];
-    for (int i = 0; i < context->num_ops; i++)
-    {
-        keywords[i] = context->operators[i].name;
-    }
-    
-    if (!tokenize(input, keywords, context->num_ops, &tokens, &num_tokens)) return PERR_MAX_TOKENS_EXCEEDED;
+    if (!tokenize(context, input, &tokens, &num_tokens)) return PERR_MAX_TOKENS_EXCEEDED;
 
     // 2. Initialize data structures
     ctx = context;
-    error = PERR_SUCCESS;
+    result = PERR_SUCCESS;
     num_ops = 0;
     num_nodes = 0;
 
@@ -199,7 +191,7 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
     bool await_subexpression = true;
     for (int i = 0; i < num_tokens; i++)
     {
-        if (error != PERR_SUCCESS) goto exit;
+        if (result != PERR_SUCCESS) goto exit;
         
         char *token = tokens[i];
         size_t tok_len = strlen(token);
@@ -232,7 +224,7 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
             {
                 if (!op_pop_and_insert())
                 {
-                    error = PERR_UNEXPECTED_CLOSING_PARENTHESIS;
+                    result = PERR_UNEXPECTED_CLOSING_PARENTHESIS;
                     goto exit;
                 }
             }
@@ -243,7 +235,7 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
             }
             else
             {
-                error = PERR_UNEXPECTED_CLOSING_PARENTHESIS;
+                result = PERR_UNEXPECTED_CLOSING_PARENTHESIS;
                 goto exit;
             }
             
@@ -264,7 +256,7 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
             {
                 if (!op_pop_and_insert())
                 {
-                    error = PERR_UNEXPECTED_DELIMITER;
+                    result = PERR_UNEXPECTED_DELIMITER;
                     goto exit;
                 }
             }
@@ -292,6 +284,7 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
                 await_subexpression = true;
                 
                 // Handle unary functions without parenthesis (e.g. "sin2")
+				// If function is last token its arity will be set to 0
                 if (i != num_tokens - 1)
                 {
                     if (!is_opening_parenthesis(tokens[i + 1][0]))
@@ -330,7 +323,7 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
             }
             
             // We can fail here: no more tokens processable (no glue-op)
-            error = PERR_UNEXPECTED_SUBEXPRESSION;
+            result = PERR_UNEXPECTED_SUBEXPRESSION;
             goto exit;
         }
         
@@ -344,7 +337,7 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
         else // Token must be variable
         {
             free(constant);
-            char *name = malloc(tok_len * sizeof(char*) + 1);
+            char *name = malloc((tok_len + 1) * sizeof(char));
             strcpy(name, token);
             *node = get_variable_node(name);
         }
@@ -358,7 +351,7 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
     {
         if (op_stack[num_ops - 1] == NULL)
         {
-            error = PERR_UNEXPECTED_OPENING_PARENTHESIS;
+            result = PERR_UNEXPECTED_OPENING_PARENTHESIS;
             goto exit;
         }
         if (!op_pop_and_insert()) goto exit;
@@ -368,29 +361,31 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
     switch (num_nodes)
     {
         case 0:
-            error = PERR_EMPTY; // We haven't constructed a single node
+            result = PERR_EMPTY; // We haven't constructed a single node
             break;
         case 1:
-            error = PERR_SUCCESS; // We successfully constructed a single AST
+            result = PERR_SUCCESS; // We successfully constructed a single AST
             *res = node_stack[0];
             break;
         default:
-            error = PERR_MISSING_OPERATOR; // We have multiple ASTs (need glue-op)
+            result = PERR_MISSING_OPERATOR; // We have multiple ASTs (need glue-op)
     }
     
     exit:
     
-    // If parsing wasn't successful, free partial results:
-    if (error != PERR_SUCCESS)
+    // If parsing wasn't successful, free partial results
+    if (result != PERR_SUCCESS)
     {
         while (num_nodes > 0)
         {
-            free_tree(node_stack[num_nodes - 1], false);
+            free_tree(node_stack[num_nodes - 1]);
             num_nodes--;
         }
     }
     
+    // Free tokens and pointers to them
     for (int i = 0; i < num_tokens; i++) free(tokens[i]);
     free(tokens);
-    return error;
+    
+    return result;
 }

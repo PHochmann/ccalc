@@ -16,9 +16,14 @@ bool add_token(char **tokens, char *position, int *num_tokens)
 Summary: Splits input string into several tokens to be parsed
 Returns: True if method succeeded, False if MAX_TOKENS was exceeded
 */
-bool tokenize(char *input, char **keywords, int num_keyw, char ***out_tokens, int *out_num_tokens)
+bool tokenize(ParsingContext *ctx, char *input, char ***out_tokens, int *out_num_tokens)
 {
     char *token_markers[MAX_TOKENS];
+    char *keywords[ctx->num_ops];
+    for (int i = 0; i < ctx->num_ops; i++)
+    {
+        keywords[i] = ctx->operators[i].name;
+    }
     
     int state = 0; // 0: initial, 1: default, 2: letter, 3: digit, 4: keyword
     int num_markers = 0;
@@ -45,7 +50,7 @@ bool tokenize(char *input, char **keywords, int num_keyw, char ***out_tokens, in
         // Did we find a keyword?
         if (next_state != 2) // We don't want to find keywords in strings
         {
-            for (size_t j = 0; j < num_keyw; j++)
+            for (size_t j = 0; j < ctx->num_ops; j++)
             {
                 size_t keyw_len = strlen(keywords[j]);
                 if (keyw_len == 0) continue;

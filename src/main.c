@@ -1,13 +1,7 @@
-#include <stdio.h>
-
-#include "commands.h"
-#include "engine/parser.h"
-
-#define VERSION "1.1.1"
+#include "arith/commands.h"
 
 int main(int argc, char *argv[])
 {
-    init_parser();
     init_commands();
     
     if (argc > 1)
@@ -17,13 +11,6 @@ int main(int argc, char *argv[])
     }
     else
     {
-#ifdef DEBUG
-        printf("Calculator %s Debug build (c) 2018, Philipp Hochmann\n", VERSION);
-#else
-        printf("Calculator %s (c) 2018, Philipp Hochmann\n", VERSION);
-#endif
-
-        printf("Commands: debug, help, def_func <name> <arity>, def_rule <before> -> <after>\n");
         main_interactive();
     }
     

@@ -3,10 +3,21 @@
 
 #include "memory.h"
 #include "rule.h"
-#include "constants.h"
-#include "parser.h"
+#include "constants.h" 
 #include "node.h"
 #include "console_util.h"
+
+/*
+Summary: Constructs new rule. Warning: "before" and "after" are not copied, so don't free them!
+*/
+RewriteRule get_rule(ParsingContext *ctx, Node *before, Node *after)
+{
+    RewriteRule rule;
+    rule.context = ctx;
+    rule.before = before;
+    rule.after = after;
+    return rule;
+}
 
 /*
 Summary: Tries to match 'tree' against 'pattern' (only in root)
@@ -53,6 +64,11 @@ bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_
                     // Check special rules
                     if (begins_with(CONST_PREFIX, curr_pattern_n->var_name) && curr_tree_n->type != NTYPE_CONSTANT) return false;
                     if (begins_with(VAR_PREFIX, curr_pattern_n->var_name) && curr_tree_n->type != NTYPE_VARIABLE) return false;
+                    if (begins_with(LITERAL_PREFIX, curr_pattern_n->var_name))
+                    {
+                        if (curr_tree_n->type != NTYPE_VARIABLE) return false;
+                        if (strcmp(curr_pattern_n->var_name + strlen(LITERAL_PREFIX), curr_tree_n->var_name) != 0) return false;
+                    }
                     
                     // Bind variable
                     mapped_vars[num_mapped_vars] = curr_pattern_n->var_name;
@@ -114,27 +130,6 @@ bool find_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out
     }
     
     return false;
-}
-
-/*
-Summary: Constructs rule from pattern-string (before) and transformation-string (after)
-Returns: true, if rule was successfully constructed from supplied strings, false otherwise
-*/
-bool parse_rule(ParsingContext *ctx, char *before, char *after, RewriteRule *out_rule)
-{
-    if (ctx == NULL || before == NULL || after == NULL || out_rule == NULL) return false;
-    
-    Node *before_n;
-    Node *after_n;
-    
-    if (parse_node(ctx, before, &before_n) != PERR_SUCCESS) return false;
-    if (parse_node(ctx, after, &after_n) != PERR_SUCCESS) return false;
-    
-    out_rule->context = ctx;
-    out_rule->before = before_n;
-    out_rule->after = after_n;
-    
-    return true;
 }
 
 void transform_by_rule(RewriteRule *rule, Matching *matching)

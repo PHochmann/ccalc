@@ -7,7 +7,7 @@
 #include "../src/engine/node.h"
 #include "../src/engine/parser.h"
 
-#include "../src/arith.h"
+#include "../src/arith/arith_ctx.h"
 
 #define EPSILON 0.0000001
 #define NUM_TESTS 27
@@ -54,12 +54,12 @@ bool almost_equals(double a, double b)
 
 int perform_tests()
 {
-    ParsingContext context = arith_get_ctx();
+    ParsingContext *context = arith_get_ctx();
     Node *node = NULL;
     
     for (int i = 0; i < NUM_TESTS; i++)
     {
-        if (parse_node(&context, cases[i].input, &node) != PERR_SUCCESS)
+        if (parse_node(context, cases[i].input, &node) != PERR_SUCCESS)
         {
             return i;
         }

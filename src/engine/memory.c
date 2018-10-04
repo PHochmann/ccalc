@@ -1,7 +1,14 @@
 #include "memory.h"
 
 /* Summary: Calls free() on each node within tree, including variable's names and constant's values */
-void free_tree(Node *tree, bool preserve_root)
+void free_tree(Node *tree)
+{
+    if (tree == NULL) return;
+    free_children(tree);
+    free(tree);
+}
+
+void free_children(Node *tree)
 {
     if (tree == NULL) return;
     
@@ -10,7 +17,7 @@ void free_tree(Node *tree, bool preserve_root)
         case NTYPE_OPERATOR:
             for (int i = 0; i < tree->num_children; i++)
             {
-                free_tree(tree->children[i], false);
+                free_tree(tree->children[i]);
             }
             break;
             
@@ -22,8 +29,6 @@ void free_tree(Node *tree, bool preserve_root)
             free(tree->var_name);
             break;
     }
-    
-    if (!preserve_root) free(tree);
 }
 
 void free_matching(Matching matching)
@@ -38,8 +43,8 @@ void free_matching(Matching matching)
 
 void free_rule(RewriteRule rule)
 {
-    free_tree(rule.before, false);
-    free_tree(rule.after, false);
+    free_tree(rule.before);
+    free_tree(rule.after);
 }
 
 void free_context(ParsingContext *ctx)
