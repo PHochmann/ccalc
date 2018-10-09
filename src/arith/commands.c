@@ -16,7 +16,7 @@
 #include "../engine/memory.h"
 #include "../engine/console_util.h"
 
-#define VERSION "1.1.2"
+#define VERSION "1.1.3"
 #define MAX_LINE_LENGTH 256
 #define NUM_MAX_RULES 16
 
@@ -230,7 +230,7 @@ void parse_assignment(char *input, char *op_pos)
     }
     
     rules[num_rules++] = get_rule(ctx, left_n, right_n);
-    printf("Added function\n");
+    message(0, "Added function\n");
 }
 
 void parse_rule(char *input, char *op_pos)
@@ -261,7 +261,7 @@ void parse_rule(char *input, char *op_pos)
     }
     
     rules[num_rules++] = get_rule(ctx, before_n, after_n);
-    printf("Rule added\n");
+    message(0, "Rule added\n");
 }
 
 void parse_evaluation(char *input)

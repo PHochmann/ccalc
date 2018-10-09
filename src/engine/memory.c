@@ -4,11 +4,12 @@
 void free_tree(Node *tree)
 {
     if (tree == NULL) return;
-    free_children(tree);
+    free_tree_preserved(tree);
     free(tree);
 }
 
-void free_children(Node *tree)
+/* Summary: Same as free_tree, but root will be preserved (root's name or value are free'd) */
+void free_tree_preserved(Node *tree)
 {
     if (tree == NULL) return;
     
