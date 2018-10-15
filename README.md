@@ -16,6 +16,6 @@ Simple parser and calculator written in C
 | ```debug``` | Toggles debug mode. In debug mode, an abstract syntax tree is shown before evaluation |
 | ```help``` | Lists all available operators |
 | ```<function> := <after>``` | Adds new function |
-| ```<before> -> <after>``` | Defines new rule <ul><li><tt>literal_x</tt> will only bind to variables named  x (can be used with any other name)</li><li><tt>var_x</tt> will only bind to variables</li><li><tt>const_x</tt> will only bind to constants</li></ul> |
+| ```<before> -> <after>``` | Defines new rule. The following special variable names can be used to restrict matchings (<tt>x</tt> used as example, can be any variable name): <ul><li><tt>literal_x</tt> will only bind to variables named  x</li><li><tt>var_x</tt> will only bind to variables</li><li><tt>const_x</tt> will only bind to constants</li></ul> |
 
 ```ans``` can be used to reference previous result.

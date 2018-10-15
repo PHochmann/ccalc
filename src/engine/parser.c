@@ -8,35 +8,18 @@
 #include "parser.h"
 
 // Global vars while parsing
-static bool initialized = false;
 static ParsingContext *ctx;
-static Node **node_stack = NULL;
-static Operator **op_stack = NULL;
-static int *arities = NULL;
-static int num_nodes = 0;
-static int num_ops = 0;
+static Node **node_stack;
+static Operator **op_stack;
+static int *arities;
+static int num_nodes;
+static int num_ops;
 static ParserError result;
 
-/*
-Summary: Reserves memory for buffers used while parsing
-*/
-void init_parser()
+/* Check if stack is empty before calling! */
+Operator* op_peek()
 {
-    if (op_stack == NULL) op_stack = malloc(MAX_STACK_SIZE * sizeof(Operator*));
-    if (node_stack == NULL) node_stack = malloc(MAX_STACK_SIZE * sizeof(Node*));
-    if (arities == NULL) arities = malloc(MAX_STACK_SIZE * sizeof(int));
-    initialized = true;
-}
-
-/*
-Summary: Frees memory of buffers used while parsing
-*/
-void uninit_parser()
-{
-    if (op_stack != NULL) free(node_stack);
-    if (node_stack != NULL) free(op_stack);
-    if (arities != NULL) free(arities);
-    initialized = false;
+    return op_stack[num_ops - 1];
 }
 
 bool node_push(Node *value)
@@ -47,7 +30,7 @@ bool node_push(Node *value)
         result = PERR_STACK_EXCEEDED;
         return false;
     }
-    
+
     node_stack[num_nodes] = value;
     num_nodes++;
     
@@ -76,7 +59,7 @@ bool op_pop_and_insert()
         return false;
     }
     
-    Operator *op = op_stack[num_ops - 1];
+    Operator *op = op_peek();
     bool is_function = (op != NULL && op->placement == OP_PLACE_FUNCTION);
     
     // Function overloading: Find function with suitable arity
@@ -141,13 +124,13 @@ bool op_push(Operator *op)
     
     if (op != NULL)
     {
-        if (op->placement != OP_PLACE_PREFIX && !is_function)
+        if (op->placement == OP_PLACE_INFIX || op->placement == OP_PLACE_POSTFIX)
         {
             while (num_ops > 0
-                && op_stack[num_ops - 1] != NULL
-                && (op->precedence < op_stack[num_ops - 1]->precedence
-                    || (op->precedence == op_stack[num_ops - 1]->precedence
-                    && (op->assoc == OP_ASSOC_LEFT || op->assoc == OP_ASSOC_BOTH))))
+                && op_peek() != NULL
+                && (op->precedence < op_peek()->precedence
+                    || (op->precedence == op_peek()->precedence
+                        && (op->assoc == OP_ASSOC_LEFT || op->assoc == OP_ASSOC_BOTH))))
             {
                 if (!op_pop_and_insert()) return false;
             }
@@ -163,29 +146,29 @@ bool op_push(Operator *op)
     arities[num_ops] = (is_function ? 0 : -1);
     op_stack[num_ops] = op;
     num_ops++;
+
+    // Postfix operators are never on the op_stack, because their operands are directly available
+    if (op != NULL && op->placement == OP_PLACE_POSTFIX)
+    {
+        if (!op_pop_and_insert()) return false;
+    }
+
     return true;
 }
 
-/*
-Summary: Parses string to abstract syntax tree with operators of given context
-Returns: result code to indicate whether string was parsed successfully or which result occured
-*/
-ParserError parse_node(ParsingContext *context, char *input, Node **res)
+ParserError parse_tokens(ParsingContext *context, char **tokens, int num_tokens, Node **res)
 {
-    // 0. Early outs
-    if (context == NULL || input == NULL || res == NULL) return PERR_ARGS_MALFORMED;
-    if (!initialized) return PERR_NOT_INIT;
-    
-    // 1. Tokenize input
-    int num_tokens = 0;
-    char **tokens;
-    if (!tokenize(context, input, &tokens, &num_tokens)) return PERR_MAX_TOKENS_EXCEEDED;
+    // 1. Early outs
+    if (context == NULL || tokens == NULL || res == NULL) return PERR_ARGS_MALFORMED;
 
     // 2. Initialize data structures
     ctx = context;
     result = PERR_SUCCESS;
     num_ops = 0;
     num_nodes = 0;
+    op_stack = malloc(MAX_STACK_SIZE * sizeof(Operator*));
+    node_stack = malloc(MAX_STACK_SIZE * sizeof(Node*));
+    arities = malloc(MAX_STACK_SIZE * sizeof(int));
 
     // 3. Process each token
     bool await_subexpression = true;
@@ -220,7 +203,7 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
         // IV. Is token closing parenthesis or argument delimiter?
         if (is_closing_parenthesis(token[0]))
         {
-            while (num_ops > 0 && op_stack[num_ops - 1] != NULL)
+            while (num_ops > 0 && op_peek() != NULL)
             {
                 if (!op_pop_and_insert())
                 {
@@ -252,7 +235,7 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
         
         if (is_delimiter(token[0]))
         {
-            while (num_ops > 0 && op_stack[num_ops - 1] != NULL)
+            while (num_ops > 0 && op_peek() != NULL)
             {
                 if (!op_pop_and_insert())
                 {
@@ -349,7 +332,7 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
     // 5. Pop all remaining operators
     while (num_ops > 0)
     {
-        if (op_stack[num_ops - 1] == NULL)
+        if (op_peek() == NULL)
         {
             result = PERR_UNEXPECTED_OPENING_PARENTHESIS;
             goto exit;
@@ -382,10 +365,25 @@ ParserError parse_node(ParsingContext *context, char *input, Node **res)
             num_nodes--;
         }
     }
-    
-    // Free tokens and pointers to them
+
+    free(node_stack);
+    free(op_stack);
+    free(arities);
+
+    return result;
+}
+
+/*
+Summary: Parses string to abstract syntax tree with operators of given context
+Returns: result code to indicate whether string was parsed successfully or which result occured
+*/
+ParserError parse_input(ParsingContext *context, char *input, Node **res)
+{
+    int num_tokens;
+    char **tokens;
+    if (!tokenize(context, input, &tokens, &num_tokens)) return PERR_MAX_TOKENS_EXCEEDED;
+    ParserError result = parse_tokens(context, tokens, num_tokens, res);
     for (int i = 0; i < num_tokens; i++) free(tokens[i]);
     free(tokens);
-    
     return result;
 }

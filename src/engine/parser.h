@@ -5,8 +5,6 @@
 typedef enum {
     // No error
     PERR_SUCCESS,
-    // Not initialized
-    PERR_NOT_INIT,
     // NULL-Pointer in arguments
     PERR_ARGS_MALFORMED,
     // Checked at pre-processing
@@ -35,6 +33,5 @@ typedef enum {
     PERR_EMPTY,
 } ParserError;
 
-void init_parser();
-void uninit_parser();
-ParserError parse_node(ParsingContext *ctx, char *input, Node **res);
+ParserError parse_tokens(ParsingContext *context, char **tokens, int num_tokens, Node **res);
+ParserError parse_input(ParsingContext *ctx, char *input, Node **res);

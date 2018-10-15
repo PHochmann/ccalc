@@ -23,9 +23,10 @@
 void parse_evaluation(char *input);
 void print_help();
 bool ask_input(char *prompt, char **out_input);
-bool parse_node_wrapper(char *input, Node **out_res, bool apply_rules, bool apply_ans);
+bool parse_input_wrapper(char *input, Node **out_res, bool apply_rules, bool apply_ans);
 void parse_assignment(char *input, char *op);
 void parse_rule(char *input, char *op);
+void message(int prio, const char *format, ...);
 
 static bool debug; // When set to true, a tree and string representation is printed
 static int min_prio; // Minimal priority of messages that are printed
@@ -47,7 +48,6 @@ void init_commands()
     debug = false;
 #endif
 
-    init_parser();
     ans = NULL;
     ctx = arith_get_ctx();
     num_rules = 0;
@@ -80,7 +80,7 @@ void main_interactive()
     {
         if (ask_input("> ", &input))
         {
-            parse_input(input);
+            parse_command(input);
             free(input);
         }
         else return;
@@ -95,7 +95,7 @@ bool ask_input(char *prompt, char **out_input)
     return true;
 }
 
-void parse_input(char *input)
+void parse_command(char *input)
 {
     if (strcmp(input, "quit") == 0)
     {
@@ -169,7 +169,7 @@ void parse_assignment(char *input, char *op_pos)
     
     Node *left_n;
     
-    if (parse_node(ctx, input, &left_n) != PERR_SUCCESS)
+    if (parse_input(ctx, input, &left_n) != PERR_SUCCESS)
     {
         ctx->num_ops--;
         printf("Error in function definition\n");
@@ -220,7 +220,7 @@ void parse_assignment(char *input, char *op_pos)
     Node *right_n;
     
     ParserError perr;
-    if ((perr = parse_node(ctx, op_pos + 2, &right_n)) != PERR_SUCCESS)
+    if ((perr = parse_input(ctx, op_pos + 2, &right_n)) != PERR_SUCCESS)
     {
         ctx->num_ops--;
         free_tree(left_n);
@@ -248,13 +248,13 @@ void parse_rule(char *input, char *op_pos)
     Node *after_n;
     ParserError perr;
     
-    if ((perr = parse_node(ctx, input, &before_n)) != PERR_SUCCESS)
+    if ((perr = parse_input(ctx, input, &before_n)) != PERR_SUCCESS)
     {
         printf("Error in left expression: %s\n", perr_to_string(perr));
         return;
     }
     
-    if ((perr = parse_node(ctx, op_pos + 2, &after_n)) != PERR_SUCCESS)
+    if ((perr = parse_input(ctx, op_pos + 2, &after_n)) != PERR_SUCCESS)
     {
         printf("Error in right expression: %s\n", perr_to_string(perr));
         return;
@@ -268,7 +268,7 @@ void parse_evaluation(char *input)
 {
     Node *res;
     
-    if (parse_node_wrapper(input, &res, true, true))
+    if (parse_input_wrapper(input, &res, true, true))
     {
         if (debug)
         {
@@ -287,7 +287,7 @@ void parse_evaluation(char *input)
             if (ask_input("> ", &input))
             {
                 Node *res_var;
-                if (!parse_node_wrapper(input, &res_var, true, true))
+                if (!parse_input_wrapper(input, &res_var, true, true))
                 {
                     // Error while parsing - ask again
                     free(input);
@@ -322,9 +322,9 @@ void parse_evaluation(char *input)
     }
 }
 
-bool parse_node_wrapper(char *input, Node **out_res, bool apply_rules, bool apply_ans)
+bool parse_input_wrapper(char *input, Node **out_res, bool apply_rules, bool apply_ans)
 {
-    ParserError perr = parse_node(ctx, input, out_res);
+    ParserError perr = parse_input(ctx, input, out_res);
     if (perr != PERR_SUCCESS)
     {
         printf("Error: %s\n", perr_to_string(perr));

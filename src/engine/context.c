@@ -38,6 +38,10 @@ ParsingContext get_context(
     return res;
 }
 
+/*
+Summary: Adds given operators to context
+Returns: true if all operators were successfully added, false if inconsistency occured, buffer full or NULL given
+*/
 bool ctx_add_ops(ParsingContext *ctx, int count, ...)
 {
     va_list args;

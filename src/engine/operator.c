@@ -10,7 +10,6 @@ Operator op_get_function(char *name, unsigned int arity)
     res.arity = arity;
     
     res.precedence = UINT_MAX;
-    res.assoc = OP_ASSOC_BOTH; // Not needed
     res.placement = OP_PLACE_FUNCTION;
     
     return res;
@@ -24,8 +23,8 @@ Operator op_get_prefix(char *name, unsigned int precedence)
     res.arity = 1;
     
     res.precedence = precedence;
-    res.assoc = OP_ASSOC_BOTH; // Not needed
     res.placement = OP_PLACE_PREFIX;
+    res.assoc = OP_ASSOC_LEFT;
     
     return res;
 }
@@ -52,8 +51,8 @@ Operator op_get_postfix(char *name, unsigned int precedence)
     res.arity = 1;
     
     res.precedence = precedence;
-    res.assoc = OP_ASSOC_BOTH; // Not needed
     res.placement = OP_PLACE_POSTFIX;
+    res.assoc = OP_ASSOC_LEFT; // To pop prefix operators before postfix operators of same arity
     
     return res;
 }
@@ -66,7 +65,6 @@ Operator op_get_constant(char *name)
     res.arity = 0;
     
     res.precedence = UINT_MAX;
-    res.assoc = OP_ASSOC_BOTH; // Not needed
     res.placement = OP_PLACE_PREFIX; // Needed for await_subexpression = false
     
     return res;

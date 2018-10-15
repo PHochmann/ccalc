@@ -26,8 +26,6 @@ char* perr_to_string(ParserError perr)
     {
         case PERR_SUCCESS:
             return "SUCCESS";
-        case PERR_NOT_INIT:
-            return "PARSER NOT INITIALIZED";
         case PERR_MAX_TOKENS_EXCEEDED:
             return "MAX TOKENS EXCEEDED";
         case PERR_STACK_EXCEEDED:

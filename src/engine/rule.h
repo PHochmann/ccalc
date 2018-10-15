@@ -7,21 +7,16 @@
 #define LITERAL_PREFIX "literal_"
 
 typedef struct {
-    
     ParsingContext *context;
     Node *before;
     Node *after;
-    
 } RewriteRule;
 
 typedef struct {
-    
     Node *matched_tree;
-
     char **mapped_vars;
     Node **mapped_nodes;
     size_t num_mapped;
-    
 } Matching;
 
 RewriteRule get_rule(ParsingContext *ctx, Node *before, Node *after);

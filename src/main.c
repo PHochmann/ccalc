@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
     if (argc > 1)
     {
         make_silent();
-        for (int i = 1; i < argc; i++) parse_input(argv[i]);
+        for (int i = 1; i < argc; i++) parse_command(argv[i]);
     }
     else
     {
