@@ -267,7 +267,7 @@ ParserError parse_tokens(ParsingContext *context, char **tokens, int num_tokens,
                 await_subexpression = true;
                 
                 // Handle unary functions without parenthesis (e.g. "sin2")
-				// If function is last token its arity will be set to 0
+                // If function is last token its arity will be set to 0
                 if (i != num_tokens - 1)
                 {
                     if (!is_opening_parenthesis(tokens[i + 1][0]))

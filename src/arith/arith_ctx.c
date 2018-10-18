@@ -175,20 +175,6 @@ double arith_eval(Node *node)
                 case 37: // phi
                     return 1.61803398874;
                     
-                #ifdef DEBUG
-                case 38: // count(DYNAMIC_ARITY)
-                    return -node->num_children;
-                    
-                case 39: // count(1)
-                    return 1;
-                    
-                case 40: // count(2)
-                    return 2;
-                    
-                case 41: // count(3)
-                    return 3;
-                #endif
-                    
                 default:
                     printf("Encountered operator without evaluation rule\n");
                     return -1;
@@ -261,14 +247,6 @@ ParsingContext* arith_get_ctx()
         op_get_constant("pi"),
         op_get_constant("e"),
         op_get_constant("phi"));
-    
-    #ifdef DEBUG
-    ctx_add_ops(&arith_ctx, 4,
-        op_get_function("count", DYNAMIC_ARITY),
-        op_get_function("count", 1),
-        op_get_function("count", 2),
-        op_get_function("count", 3));
-    #endif
     
     ctx_set_glue_op(&arith_ctx, &arith_ctx.operators[0]);
     

@@ -14,12 +14,11 @@
 #define B_CYAN    "\x1B[46m"
 #define B_WHITE   "\x1B[47m"
 #define B_BLACK   "\x1B[40m"
-#define COL_RESET "\x1B[0m" B_BLACK
 
 #define OP_COLOR B_RED F_GREEN
 #define CONST_COLOR F_YELLOW
 #define VAR_COLOR F_CYAN
-// - - -
+#define COL_RESET F_WHITE B_BLACK
 
 // Maximum number of tokens reserved before tokenization
 #define MAX_TOKENS 128

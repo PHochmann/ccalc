@@ -9,7 +9,7 @@
 #include "../src/arith/arith_ctx.h"
 
 #define EPSILON 0.0000001
-#define NUM_VALUE_TESTS 58
+#define NUM_VALUE_TESTS 57
 #define NUM_ERROR_TESTS 7
 
 // To check if parsed tree evaluates to expected value
@@ -82,8 +82,7 @@ static ValueTest valueTests[NUM_VALUE_TESTS] = {
     { "1/[{2/2]}", 1 },
     { "2*3^2", 18 },
     { "sin(asin(.2))", 0.2 },
-    { "count(1, 2)", 2 },
-    { "sqrt(abs(--2!!*--count(1, 2, 3, 4)*--2!!))", 4 }
+    { "sqrt(abs(--2!!*--sum(1, 1, 1, 1)*--2!!))", 4 }
 };
 
 static ErrorTest errorTests[NUM_ERROR_TESTS] = {

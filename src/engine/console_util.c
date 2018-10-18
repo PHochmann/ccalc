@@ -3,23 +3,6 @@
 
 #include "console_util.h"
 
-char* opplace_to_string(OpPlacement place)
-{
-    switch (place)
-    {
-        case OP_PLACE_PREFIX:
-            return "PREFIX";
-        case OP_PLACE_INFIX:
-            return "INFIX";
-        case OP_PLACE_POSTFIX:
-            return "POSTFIX";
-        case OP_PLACE_FUNCTION:
-            return "FUNCTION";
-        default:
-            return "UNKNOWN";
-    }
-}
-
 char* perr_to_string(ParserError perr)
 {
     switch (perr)
@@ -50,6 +33,29 @@ char* perr_to_string(ParserError perr)
             return "EMPTY EXPRESSION";
         default:
             return "UNKNOWN ERROR";
+    }
+}
+
+/*
+Summary: Replaces end of string by three points if it needed to be shorted because of a limited buffer size
+Returns: True if string was changed, false if not
+*/
+bool indicate_abbreviation(char *string, size_t actual_length)
+{
+    size_t length = strlen(string);
+    if (length < actual_length)
+    {
+        if (length >= 3)
+        {
+            string[length - 1] = '.';
+            string[length - 2] = '.';
+            string[length - 3] = '.';
+        }
+        return true;
+    }
+    else
+    {
+        return false;
     }
 }
 
@@ -130,6 +136,6 @@ void print_table(int num_rows, int num_cols, char **cells, bool head_border)
         print_repeated("─", width[i] + 2);
         if (i != num_cols - 1) printf("┴");
     }
-    printf("┘\n\n");
+    printf("┘\n");
     // - - -
 }

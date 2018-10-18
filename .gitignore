@@ -1,2 +1,2 @@
-# Ignore 'bin' directory
 bin/
+.vscode

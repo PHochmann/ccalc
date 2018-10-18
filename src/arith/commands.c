@@ -9,6 +9,7 @@
 
 #include "../engine/constants.h"
 #include "../engine/node.h"
+#include "../engine/tree_to_string.h"
 #include "../engine/operator.h"
 #include "../engine/tokenizer.h"
 #include "../engine/parser.h"
@@ -16,20 +17,20 @@
 #include "../engine/memory.h"
 #include "../engine/console_util.h"
 
-#define VERSION "1.1.3"
-#define MAX_LINE_LENGTH 256
+#define VERSION "1.1.5"
+#define MAX_LINE_LENGTH 128
 #define NUM_MAX_RULES 16
 
 void parse_evaluation(char *input);
 void print_help();
 bool ask_input(char *prompt, char **out_input);
-bool parse_input_wrapper(char *input, Node **out_res, bool apply_rules, bool apply_ans);
+bool parse_input_wrapper(char *input, Node **out_res, bool apply_rules, bool apply_ans, bool constant);
 void parse_assignment(char *input, char *op);
 void parse_rule(char *input, char *op);
-void message(int prio, const char *format, ...);
+void whisper(const char *format, ...);
 
 static bool debug; // When set to true, a tree and string representation is printed
-static int min_prio; // Minimal priority of messages that are printed
+static bool silent; // When set to true, whispered prints will not be displayed
 
 static ParsingContext *ctx; // ParsingContext to use while parsing strings
 static Node *ans; // Last parsed tree 'ans' is substituted with
@@ -54,11 +55,11 @@ void init_commands()
 }
 
 /*
-Summary: Sets min_prio to 1, thus messages with priority of 0 are filtered
+Summary: Activates silent mode, whispered messages will not be displayed
 */
 void make_silent()
 {
-    min_prio = 1;
+    silent = true;
 }
 
 /*
@@ -111,7 +112,7 @@ void parse_command(char *input)
     if (strcmp(input, "debug") == 0)
     {
         debug = !debug;
-        message(0, "toggled debug\n");
+        whisper("debug %s\n", debug ? "on" : "off");
         return;
     }
     
@@ -230,7 +231,7 @@ void parse_assignment(char *input, char *op_pos)
     }
     
     rules[num_rules++] = get_rule(ctx, left_n, right_n);
-    message(0, "Added function\n");
+    whisper("Added function\n");
 }
 
 void parse_rule(char *input, char *op_pos)
@@ -261,25 +262,53 @@ void parse_rule(char *input, char *op_pos)
     }
     
     rules[num_rules++] = get_rule(ctx, before_n, after_n);
-    message(0, "Rule added\n");
+    whisper("Rule added\n");
 }
 
 void parse_evaluation(char *input)
 {
     Node *res;
     
-    if (parse_input_wrapper(input, &res, true, true))
+    if (parse_input_wrapper(input, &res, true, true, true))
     {
         if (debug)
         {
             print_tree_visual(ctx, res);
-            printf("= ");
-            print_tree_inline(ctx, res);
-            printf("\n");
+            char inlined_tree[MAX_LINE_LENGTH];
+            size_t size = tree_inline(ctx, res, inlined_tree, MAX_LINE_LENGTH, false);
+            indicate_abbreviation(inlined_tree, size);
+            printf("= %s\n", inlined_tree);
         }
         
+        double eval = arith_eval(res);
+        char result_str[ctx->min_str_len];
+        ctx->to_string((void*)(&eval), result_str, ctx->min_str_len);
+        printf("= %s\n", result_str);
+        
+        if (ans != NULL) free_tree(ans);
+        ans = res;
+    }
+}
+
+bool parse_input_wrapper(char *input, Node **out_res, bool apply_rules, bool apply_ans, bool constant)
+{
+    ParserError perr = parse_input(ctx, input, out_res);
+    if (perr != PERR_SUCCESS)
+    {
+        printf("Error: %s\n", perr_to_string(perr));
+        return false;
+    }
+    
+    if (apply_ans && ans != NULL) tree_substitute_variable(ctx, *out_res, ans, "ans");
+    if (apply_rules)
+    {
+        apply_ruleset(*out_res, rules, num_rules, 50);
+    }
+
+    if (constant)
+    {
         char *vars[MAX_VAR_COUNT];
-        int num_variables = tree_list_variables(res, vars);
+        int num_variables = tree_list_variables(*out_res, vars);
         for (int i = 0; i < num_variables; i++)
         {
             printf(" %s? ", vars[i]);
@@ -287,7 +316,7 @@ void parse_evaluation(char *input)
             if (ask_input("> ", &input))
             {
                 Node *res_var;
-                if (!parse_input_wrapper(input, &res_var, true, true))
+                if (!parse_input_wrapper(input, &res_var, true, true, false))
                 {
                     // Error while parsing - ask again
                     free(input);
@@ -305,36 +334,12 @@ void parse_evaluation(char *input)
                     continue;
                 }
                 
-                tree_substitute_variable(ctx, res, res_var, vars[i]);
+                tree_substitute_variable(ctx, *out_res, res_var, vars[i]);
                 free(vars[i]);
                 free_tree(res_var);
             }
-            else return;
+            else return false;
         }
-        
-        double eval = arith_eval(res);
-        char result_str[ctx->min_str_len];
-        ctx->to_string((void*)(&eval), result_str, ctx->min_str_len);
-        printf("= %s\n", result_str);
-        
-        if (ans != NULL) free_tree(ans);
-        ans = res;
-    }
-}
-
-bool parse_input_wrapper(char *input, Node **out_res, bool apply_rules, bool apply_ans)
-{
-    ParserError perr = parse_input(ctx, input, out_res);
-    if (perr != PERR_SUCCESS)
-    {
-        printf("Error: %s\n", perr_to_string(perr));
-        return false;
-    }
-    
-    if (apply_ans && ans != NULL) tree_substitute_variable(ctx, *out_res, ans, "ans");
-    if (apply_rules)
-    {
-        apply_ruleset(*out_res, rules, num_rules, 50);
     }
     
     return true;
@@ -392,9 +397,9 @@ void print_help()
 /*
 Summary: printf-wrapper to filter unimportant prints in silent mode
 */
-void message(int prio, const char *format, ...)
+void whisper(const char *format, ...)
 {
-    if (prio >= min_prio)
+    if (!silent)
     {
         va_list args;
         va_start(args, format);
