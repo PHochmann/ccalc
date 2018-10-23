@@ -6,8 +6,6 @@
 
 #include "tree_to_string.h"
 
-#define LAYER_CUTOFF 5
-
 void print_constant(ParsingContext *ctx, Node *node)
 {
     char value[ctx->min_str_len];

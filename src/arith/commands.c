@@ -17,7 +17,7 @@
 #include "../engine/memory.h"
 #include "../engine/console_util.h"
 
-#define VERSION "1.1.5"
+#define VERSION "1.1.6"
 #define MAX_LINE_LENGTH 128
 #define NUM_MAX_RULES 16
 
