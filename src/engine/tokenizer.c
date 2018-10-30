@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "constants.h"
 #include "tokenizer.h"
 #include "console_util.h"
 
@@ -16,7 +15,7 @@ bool add_token(char **tokens, char *position, int *num_tokens)
 Summary: Splits input string into several tokens to be parsed
 Returns: True if method succeeded, False if MAX_TOKENS was exceeded
 */
-bool tokenize(ParsingContext *ctx, char *input, char ***out_tokens, int *out_num_tokens)
+bool tokenize(ParsingContext *ctx, char *input, char *out_tokens[MAX_TOKENS], int *out_num_tokens)
 {
     char *token_markers[MAX_TOKENS];
     char *keywords[ctx->num_ops];
@@ -82,18 +81,21 @@ bool tokenize(ParsingContext *ctx, char *input, char ***out_tokens, int *out_num
     
     // Build \0-terminated strings from pointers and out_num_tokens
     // (might be less than num_markers due to whitespace-tokens that are removed)
-    *out_tokens = malloc(sizeof(char*) * (num_markers - 1));
     *out_num_tokens = 0;
     for (int i = 0; i < num_markers - 1; i++)
     {
         // Check for whitespace-token and empty token (only when input itself is empty)
         if (is_space(token_markers[i][0]) || token_markers[i] == token_markers[i + 1]) continue;
         
-        int len = (int)(token_markers[i + 1] - token_markers[i]);
-        
-        (*out_tokens)[*out_num_tokens] = malloc(len + 1);
-        for (int j = 0; j < len; j++) (*out_tokens)[*out_num_tokens][j] = token_markers[i][j];
-        (*out_tokens)[*out_num_tokens][len] = '\0';
+        int tok_len = (int)(token_markers[i + 1] - token_markers[i]);
+        out_tokens[*out_num_tokens] = malloc(tok_len + 1);
+
+        for (int j = 0; j < tok_len; j++)
+        {
+            out_tokens[*out_num_tokens][j] = token_markers[i][j];
+        }
+
+        out_tokens[*out_num_tokens][tok_len] = '\0';
         (*out_num_tokens)++;
     }
     return true;

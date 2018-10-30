@@ -145,9 +145,9 @@ void parse_assignment(char *input, char *op_pos)
     *op_pos = '\0';
     
     // Tokenize function definition to get its name. Name is first token.
-    char **tokens;
+    char *tokens[MAX_TOKENS];
     int num_tokens = 0;
-    if (!tokenize(ctx, input, &tokens, &num_tokens))
+    if (!tokenize(ctx, input, tokens, &num_tokens))
     {
         printf("Error in function definition\n");
     }
@@ -159,7 +159,6 @@ void parse_assignment(char *input, char *op_pos)
         name = tokens[0];
         // Free tokens and pointers to them
         for (int i = 1; i < num_tokens; i++) free(tokens[i]);
-        free(tokens);
         ctx_add_op(ctx, op_get_function(name, DYNAMIC_ARITY));
     }
     else

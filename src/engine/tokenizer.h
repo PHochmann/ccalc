@@ -1,7 +1,9 @@
 #include <stdbool.h>
+
+#include "constants.h"
 #include "context.h"
 
-bool tokenize(ParsingContext *ctx, char *input, char ***out_tokens, int *out_num_tokens);
+bool tokenize(ParsingContext *ctx, char *input, char *out_tokens[MAX_TOKENS], int *out_num_tokens);
 
 bool is_space(char c);
 bool is_letter(char c);

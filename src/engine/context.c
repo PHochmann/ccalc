@@ -7,13 +7,15 @@
 /*
 Summary: This method is used to create a new ParsingContext without glueOp.
 Parameters:
-    value_size: Size of a constant in bytes (e.g. sizeof(double) for arithmetics, sizeof(bool) for propositional logic)
-    min_str_len: Minimal buffer size to be supplied to to_string when printing a constant (not relevant for engine, just for own account)
+    value_size: Size of a constant in bytes
+        (e.g. sizeof(double) for arithmetics, sizeof(bool) for propositional logic)
+    min_str_len: Minimum amount of chars (without \0) a buffer supplied to to_string should hold
+        (not relevant for engine, only for own account)
     max_ops: Number of operators that should fit into reserved buffer
     try_parse: Function that is called when trying to parse a constant
     to_string: Function that makes a constant readable
     equals: Function that compares two constants. When NULL is given, bytewise_equals is used as a fallback.   
-        Only relevant for node_equals and tree_equals (used in rule.c)
+        (Only relevant for node_equals and tree_equals used in rule.c)
 */
 ParsingContext get_context(
     size_t value_size,
@@ -88,12 +90,13 @@ int ctx_add_op(ParsingContext *ctx, Operator op)
     {
         for (int i = 0; i < ctx->num_ops; i++)
         {
-            if (ctx->operators[i].placement == OP_PLACE_INFIX && ctx->operators[i].precedence == op.precedence)
+            if (ctx->operators[i].placement == OP_PLACE_INFIX
+                && ctx->operators[i].precedence == op.precedence)
             {
-                // The parser treats OP_ASSOC_BOTH as OP_ASSOC_LEFT
                 OpAssociativity a_assoc = ctx->operators[i].assoc;
                 OpAssociativity b_assoc = op.assoc;
                 
+                // Parser treats OP_ASSOC_BOTH as OP_ASSOC_LEFT
                 if (a_assoc == OP_ASSOC_BOTH) a_assoc = OP_ASSOC_LEFT;
                 if (b_assoc == OP_ASSOC_BOTH) b_assoc = OP_ASSOC_LEFT;
                 
@@ -110,11 +113,13 @@ int ctx_add_op(ParsingContext *ctx, Operator op)
     return ctx->num_ops - 1;
 }
 
+/*
+Summary: Sets glue-op, which is inserted between two subexpressions (such as 2a -> 2*a)
+Returns: False, if null in arguments or operator with arity other than 2 given
+*/
 bool ctx_set_glue_op(ParsingContext *ctx, Operator *op)
 {
-    if (ctx == NULL) return false;
-    if (op->placement != OP_PLACE_INFIX) return false; // Must be infix to "glue" subtrees together
-    
+    if (ctx == NULL || op == NULL || op->arity != 2) return false;
     ctx->glue_op = op;
     return true;
 }
@@ -122,7 +127,6 @@ bool ctx_set_glue_op(ParsingContext *ctx, Operator *op)
 void remove_glue_op(ParsingContext *ctx)
 {
     if (ctx == NULL) return;
-    
     ctx->glue_op = NULL;
 }
 

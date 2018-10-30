@@ -196,6 +196,9 @@ void tree_replace(Node *destination, Node new_node)
     *destination = new_node;
 }
 
+/*
+Summary: Copies tree, tree_equals will be true of copy. Source tree can be safely free'd afterwards.
+*/
 Node tree_copy(ParsingContext *ctx, Node *tree)
 {
     Node res = *tree;
@@ -240,6 +243,9 @@ bool bytewise_equals(void *a, void *b, size_t value_size)
     return true;
 }
 
+/*
+Summary: Checks if two nodes are equal, i.e. have the same type and respective further values
+*/
 bool node_equals(ParsingContext *ctx, Node *a, Node *b)
 {
     if (ctx == NULL || a == NULL || b == NULL) return false;
@@ -271,6 +277,9 @@ bool node_equals(ParsingContext *ctx, Node *a, Node *b)
     return true;
 }
 
+/*
+Summary: Checks if two trees represent the same expression, i.e. all nodes in 'a' are equal to their respective node in 'b'
+*/
 bool tree_equals(ParsingContext *ctx, Node *a, Node *b)
 {
     if (ctx == NULL || a == NULL || b == NULL) return false;

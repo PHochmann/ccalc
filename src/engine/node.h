@@ -17,13 +17,13 @@ typedef struct Node
 {
     NodeType type;
 
-    /* For NTYPE_VARIABLE: */
+    // For NTYPE_VARIABLE
     char *var_name;
 
-    /* For NTYPE_CONSTANT: */
+    // For NTYPE_CONSTANT
     void *const_value;
 
-    /* For NTYPE_OPERATOR: */
+    // For NTYPE_OPERATOR
     Operator *op;
     int num_children;
     struct Node *children[MAX_CHILDREN];

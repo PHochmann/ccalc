@@ -16,7 +16,7 @@ static int num_nodes;
 static int num_ops;
 static ParserError result;
 
-/* Check if stack is empty before calling! */
+// Check if stack is empty before calling!
 Operator* op_peek()
 {
     return op_stack[num_ops - 1];
@@ -60,7 +60,8 @@ bool op_pop_and_insert()
     }
     
     Operator *op = op_peek();
-    bool is_function = (op != NULL && op->placement == OP_PLACE_FUNCTION);
+    // Functions with recorded arity of -1 are glue-ops and shouldn't be computed as functions
+    bool is_function = (arities[num_ops - 1] != -1);
     
     // Function overloading: Find function with suitable arity
     if (is_function)
@@ -83,7 +84,7 @@ bool op_pop_and_insert()
             }
         }
     }
-    
+
     if (op != NULL) // Construct operator-node and append children
     {
         Node *op_node = malloc(sizeof(Node));
@@ -188,6 +189,9 @@ ParserError parse_tokens(ParsingContext *context, char **tokens, int num_tokens,
                 && ctx_lookup_op(ctx, token, OP_PLACE_POSTFIX) == NULL)
             {
                 if (!op_push(ctx->glue_op)) goto exit;
+                // If glue-op was function, we can't count operands like we normally do
+                // Disable function overloading mechanism
+                arities[num_ops - 1] = -1;
                 await_subexpression = true;
             }
         }
@@ -375,15 +379,19 @@ ParserError parse_tokens(ParsingContext *context, char **tokens, int num_tokens,
 
 /*
 Summary: Parses string to abstract syntax tree with operators of given context
-Returns: result code to indicate whether string was parsed successfully or which result occured
+Returns: Result code to indicate whether string was parsed successfully or which error occured
 */
 ParserError parse_input(ParsingContext *context, char *input, Node **res)
 {
+    // Data
     int num_tokens;
-    char **tokens;
-    if (!tokenize(context, input, &tokens, &num_tokens)) return PERR_MAX_TOKENS_EXCEEDED;
+    char *tokens[MAX_TOKENS];
+
+    // Parsing
+    if (!tokenize(context, input, tokens, &num_tokens)) return PERR_MAX_TOKENS_EXCEEDED;
     ParserError result = parse_tokens(context, tokens, num_tokens, res);
+
+    // Cleanup
     for (int i = 0; i < num_tokens; i++) free(tokens[i]);
-    free(tokens);
     return result;
 }
