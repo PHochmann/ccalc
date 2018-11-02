@@ -5,7 +5,7 @@
 #include "context.h"
 
 /*
-Summary: This method is used to create a new ParsingContext without glueOp.
+Summary: This method is used to create a new ParsingContext without glue-op
 Parameters:
     value_size: Size of a constant in bytes
         (e.g. sizeof(double) for arithmetics, sizeof(bool) for propositional logic)
@@ -42,7 +42,7 @@ ParsingContext get_context(
 
 /*
 Summary: Adds given operators to context
-Returns: true if all operators were successfully added, false if inconsistency occured, buffer full or NULL given
+Returns: true if all operators were successfully added, false if inconsistency occured, buffer full or invalid arguments
 */
 bool ctx_add_ops(ParsingContext *ctx, int count, ...)
 {
@@ -68,8 +68,7 @@ Returns: ID of new operator, -1 if buffer is full or infix operator with inconsi
 */
 int ctx_add_op(ParsingContext *ctx, Operator op)
 {
-    if (ctx == NULL) return -1;
-    if (ctx->num_ops == ctx->max_ops) return -1; // Buffer too small
+    if (ctx == NULL || ctx->num_ops == ctx->max_ops) return -1;
     
     // Consistency checks:
     
@@ -124,17 +123,26 @@ bool ctx_set_glue_op(ParsingContext *ctx, Operator *op)
     return true;
 }
 
+/*
+Summary: Sets glue-op to NULL, two subexpressions next to each other will result in PERR_UNEXPECTED_SUBEXPRESSION
+*/
 void remove_glue_op(ParsingContext *ctx)
 {
     if (ctx == NULL) return;
     ctx->glue_op = NULL;
 }
 
+/*
+Summmary: Searches for operator of given name and placement
+Returns: NULL if no operator has been found or invalid arguments given, otherwise pointer to operator in ctx->operators
+*/
 Operator* ctx_lookup_op(ParsingContext *ctx, char *name, OpPlacement placement)
 {
+    if (ctx == NULL || name == NULL) return NULL;
+
     for (int i = 0; i < ctx->num_ops; i++)
     {
-        Operator *curr_op = &ctx->operators[i];
+        Operator *curr_op = &(ctx->operators[i]);
         
         if (curr_op->placement == placement
             && strcmp(curr_op->name, name) == 0)
@@ -146,8 +154,14 @@ Operator* ctx_lookup_op(ParsingContext *ctx, char *name, OpPlacement placement)
     return NULL;
 }
 
+/*
+Summmary: Searches for function of given name and arity
+Returns: NULL if no function has been found or invalid arguments given, otherwise pointer to function in ctx->operators
+*/
 Operator* ctx_lookup_function(ParsingContext *ctx, char *name, int arity)
 {
+    if (ctx == NULL || name == NULL) return NULL;
+
     for (int i = 0; i < ctx->num_ops; i++)
     {
         Operator *curr_op = &ctx->operators[i];

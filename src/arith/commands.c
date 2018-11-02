@@ -17,17 +17,15 @@
 #include "../engine/memory.h"
 #include "../engine/console_util.h"
 
-#define VERSION "1.1.6"
+#define VERSION "1.1.7"
 #define MAX_LINE_LENGTH 128
-#define NUM_MAX_RULES 16
+#define NUM_MAX_RULES 1
 
 void parse_evaluation(char *input);
-void print_help();
 bool ask_input(char *prompt, char **out_input);
 bool parse_input_wrapper(char *input, Node **out_res, bool apply_rules, bool apply_ans, bool constant);
 void parse_assignment(char *input, char *op);
 void parse_rule(char *input, char *op);
-void whisper(const char *format, ...);
 
 static bool debug; // When set to true, a tree and string representation is printed
 static bool silent; // When set to true, whispered prints will not be displayed
@@ -60,6 +58,69 @@ Summary: Activates silent mode, whispered messages will not be displayed
 void make_silent()
 {
     silent = true;
+}
+
+void print_help()
+{
+    for (int i = 0; i < ctx->num_ops; i++)
+    {
+        printf(OP_COLOR);
+        switch (ctx->operators[i].placement)
+        {
+            case OP_PLACE_PREFIX:
+                if (ctx->operators[i].arity != 0)
+                {
+                    printf("%sx", ctx->operators[i].name);
+                }
+                else
+                {
+                    printf("%s", ctx->operators[i].name);
+                }
+                break;
+                
+            case OP_PLACE_INFIX:
+                if (strlen(ctx->operators[i].name) == 1)
+                {
+                    printf("x%sy", ctx->operators[i].name);
+                }
+                else
+                {
+                    printf("x %s y", ctx->operators[i].name);
+                }
+                break;
+                
+            case OP_PLACE_POSTFIX:
+                printf("x%s", ctx->operators[i].name);
+                break;
+                
+            case OP_PLACE_FUNCTION:
+                if (ctx->operators[i].arity != DYNAMIC_ARITY)
+                {
+                    printf("%s(%d)", ctx->operators[i].name, ctx->operators[i].arity);
+                }
+                else
+                {
+                    printf("%s(0..%d)", ctx->operators[i].name, MAX_CHILDREN);
+                }
+                break;
+        }
+        printf(COL_RESET " ");
+    }
+    printf("\n(%d available operators)\n", ctx->num_ops);
+}
+
+/*
+Summary: printf-wrapper to filter unimportant prints in silent mode
+*/
+void whisper(const char *format, ...)
+{
+    if (!silent)
+    {
+        va_list args;
+        va_start(args, format);
+        vprintf(format, args);
+        va_end(args);
+    }
 }
 
 /*
@@ -342,67 +403,4 @@ bool parse_input_wrapper(char *input, Node **out_res, bool apply_rules, bool app
     }
     
     return true;
-}
-
-void print_help()
-{
-    for (int i = 0; i < ctx->num_ops; i++)
-    {
-        printf(OP_COLOR);
-        switch (ctx->operators[i].placement)
-        {
-            case OP_PLACE_PREFIX:
-                if (ctx->operators[i].arity != 0)
-                {
-                    printf("%sx", ctx->operators[i].name);
-                }
-                else
-                {
-                    printf("%s", ctx->operators[i].name);
-                }
-                break;
-                
-            case OP_PLACE_INFIX:
-                if (strlen(ctx->operators[i].name) == 1)
-                {
-                    printf("x%sy", ctx->operators[i].name);
-                }
-                else
-                {
-                    printf("x %s y", ctx->operators[i].name);
-                }
-                break;
-                
-            case OP_PLACE_POSTFIX:
-                printf("x%s", ctx->operators[i].name);
-                break;
-                
-            case OP_PLACE_FUNCTION:
-                if (ctx->operators[i].arity != DYNAMIC_ARITY)
-                {
-                    printf("%s(%d)", ctx->operators[i].name, ctx->operators[i].arity);
-                }
-                else
-                {
-                    printf("%s(0..%d)", ctx->operators[i].name, MAX_CHILDREN);
-                }
-                break;
-        }
-        printf(COL_RESET " ");
-    }
-    printf("\n(%d available operators)\n", ctx->num_ops);
-}
-
-/*
-Summary: printf-wrapper to filter unimportant prints in silent mode
-*/
-void whisper(const char *format, ...)
-{
-    if (!silent)
-    {
-        va_list args;
-        va_start(args, format);
-        vprintf(format, args);
-        va_end(args);
-    }
 }

@@ -6,7 +6,7 @@
 #include "arith_ctx.h"
 
 #define ARITH_STRING_LENGTH 30
-#define ARITH_NUM_OPS 44
+#define ARITH_NUM_OPS 45
 #define ARITH_CUSTOM_BUFFER 10
 
 static ParsingContext arith_ctx;
@@ -25,6 +25,11 @@ long binomial(long n, long k)
     return res;
 }
 
+double frac(double x)
+{
+    return x - floor(x);
+}
+
 double arith_eval(Node *node)
 {
     double d_res = 1;
@@ -38,14 +43,14 @@ double arith_eval(Node *node)
         case NTYPE_OPERATOR:
             switch ((size_t)(node->op - arith_ctx.operators))
             {
-                case 0: // x*y
-                    return arith_eval(node->children[0]) * arith_eval(node->children[1]);
-                case 1: // x/y
-                    return arith_eval(node->children[0]) / arith_eval(node->children[1]);
-                case 2: // x+y
+                case 0: // x+y
                     return arith_eval(node->children[0]) + arith_eval(node->children[1]);
-                case 3: // x-y
+                case 1: // x-y
                     return arith_eval(node->children[0]) - arith_eval(node->children[1]);
+                case 2: // x*y
+                    return arith_eval(node->children[0]) * arith_eval(node->children[1]);
+                case 3: // x/y
+                    return arith_eval(node->children[0]) / arith_eval(node->children[1]);
                 case 4: // x^y
                     return pow(arith_eval(node->children[0]), arith_eval(node->children[1]));
                 case 5: // x C y
@@ -118,36 +123,38 @@ double arith_eval(Node *node)
                         if (child_val < d_res) d_res = child_val;
                     }
                     return d_res;
-                case 32: // abs(x)
-                    return fabs(arith_eval(node->children[0]));
-                case 33: // round(x)
-                    return round(arith_eval(node->children[0]));
-                case 34: // trunc(x)
-                    return trunc(arith_eval(node->children[0]));
-                case 35: // ceil(x)
+                case 32: // ceil(x)
                     return ceil(arith_eval(node->children[0]));
-                case 36: // floor(x)
+                case 33: // floor(x)
                     return floor(arith_eval(node->children[0]));
-                case 37: // sum(x, y, ...)
+                case 34: // abs(x)
+                    return fabs(arith_eval(node->children[0]));
+                case 35: // round(x)
+                    return round(arith_eval(node->children[0]));
+                case 36: // trunc(x)
+                    return trunc(arith_eval(node->children[0]));
+                case 37: // frac(x)
+                    return frac(arith_eval(node->children[0]));
+                case 38: // sum(x, y, ...)
                     d_res = 0;
                     for (int i = 0; i < node->num_children; i++) d_res += arith_eval(node->children[i]);
                     return d_res;
-                case 38: // prod(x, y, ...)
+                case 39: // prod(x, y, ...)
                     d_res = 1;
                     for (int i = 0; i < node->num_children; i++) d_res *= arith_eval(node->children[i]);
                     return d_res;
-                case 39: // avg(x, y, ...)
+                case 40: // avg(x, y, ...)
                     if (node->num_children == 0) return 0;
                     d_res = 0;
                     for (int i = 0; i < node->num_children; i++) d_res += arith_eval(node->children[i]);
                     return d_res / node->num_children;
-                case 40: // gamma(x)
+                case 41: // gamma(x)
                     return tgamma(arith_eval(node->children[0]));
-                case 41: // pi
+                case 42: // pi
                     return 3.14159265359;
-                case 42: // e
+                case 43: // e
                     return 2.71828182846;
-                case 43: // phi
+                case 44: // phi
                     return 1.61803398874;
                 default:
                     printf("Encountered operator without evaluation rule\n");
@@ -187,10 +194,10 @@ ParsingContext* arith_get_ctx()
         NULL); // Uses bytewise equals
     
     ctx_add_ops(&arith_ctx, ARITH_NUM_OPS,
-        op_get_infix("*", 3, OP_ASSOC_BOTH),
-        op_get_infix("/", 3, OP_ASSOC_LEFT),
         op_get_infix("+", 2, OP_ASSOC_BOTH),
         op_get_infix("-", 2, OP_ASSOC_LEFT),
+        op_get_infix("*", 3, OP_ASSOC_BOTH),
+        op_get_infix("/", 3, OP_ASSOC_LEFT),
         op_get_infix("^", 4, OP_ASSOC_RIGHT),
         op_get_infix("C", 1, OP_ASSOC_LEFT),
         op_get_infix("mod", 1, OP_ASSOC_LEFT),
@@ -220,10 +227,11 @@ ParsingContext* arith_get_ctx()
         op_get_function("max", DYNAMIC_ARITY),
         op_get_function("min", DYNAMIC_ARITY),
         op_get_function("abs", 1),
-        op_get_function("round", 1),
-        op_get_function("trunc", 1),
         op_get_function("ceil", 1),
         op_get_function("floor", 1),
+        op_get_function("round", 1),
+        op_get_function("trunc", 1),
+        op_get_function("frac", 1),
         op_get_function("sum", DYNAMIC_ARITY),
         op_get_function("prod", DYNAMIC_ARITY),
         op_get_function("avg", DYNAMIC_ARITY),
@@ -232,7 +240,7 @@ ParsingContext* arith_get_ctx()
         op_get_constant("e"),
         op_get_constant("phi"));
     
-    ctx_set_glue_op(&arith_ctx, &arith_ctx.operators[0]);
+    ctx_set_glue_op(&arith_ctx, &arith_ctx.operators[2]);
     
     return &arith_ctx;
 }

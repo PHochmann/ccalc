@@ -171,7 +171,7 @@ Returns: Number of occurences of variable
 */
 int tree_substitute_variable(ParsingContext *ctx, Node *tree, Node *tree_to_copy, char *var_name)
 {
-    if (tree == NULL || tree_to_copy == NULL || var_name == NULL) return 0;
+    if (ctx == NULL || tree == NULL || tree_to_copy == NULL || var_name == NULL) return 0;
     
     Node *var_instances[MAX_VAR_COUNT];
     int inst_count = tree_get_variable_instances(tree, var_name, var_instances);
@@ -201,6 +201,8 @@ Summary: Copies tree, tree_equals will be true of copy. Source tree can be safel
 */
 Node tree_copy(ParsingContext *ctx, Node *tree)
 {
+    //if (ctx == NULL || tree == NULL) ...?
+
     Node res = *tree;
     
     switch (tree->type)
@@ -235,6 +237,8 @@ Summary: Fallback in node_equals that is used when no EqualsHandler is defined i
 */
 bool bytewise_equals(void *a, void *b, size_t value_size)
 {
+    if (a == NULL || b == NULL) return false;
+
     for (size_t i = 0; i < value_size; i++)
     {
         if (((char*)a)[i] != ((char*)b)[i]) return false;

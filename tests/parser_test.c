@@ -9,7 +9,7 @@
 #include "../src/arith/arith_ctx.h"
 
 #define EPSILON 0.0000001
-#define NUM_VALUE_TESTS 57
+#define NUM_VALUE_TESTS 58
 #define NUM_ERROR_TESTS 7
 
 // To check if parsed tree evaluates to expected value
@@ -52,6 +52,7 @@ static ValueTest valueTests[NUM_VALUE_TESTS] = {
     { "max(1, 2, 3)", 3 },
     { "min(1, 2, 3)", 1 },
     { "abs(-2)", 2 },
+    { "frac(-5.5)", 0.5 },
     { "round(.5)", 1 },
     { "trunc(-.5)", 0 },
     { "ceil(.5)", 1 },
