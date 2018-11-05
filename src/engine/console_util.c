@@ -25,8 +25,8 @@ char* perr_to_string(ParserError perr)
             return "UNEXPECTED OPERAND";
         case PERR_MISSING_OPERAND:
             return "MISSING OPERAND";
-        case PERR_EXCEEDED_MAX_CHILDREN:
-            return "TOO MANY OPERANDS";
+        case PERR_OUT_OF_MEMORY:
+            return "OUT OF MEMORY";
         case PERR_FUNCTION_WRONG_ARITY:
             return "WRONG NUMBER OF OPERANDS FOR FUNCTION";
         case PERR_EMPTY:
@@ -37,7 +37,7 @@ char* perr_to_string(ParserError perr)
 }
 
 /*
-Summary: Replaces end of string by three points if it needed to be shorted because of a limited buffer size
+Summary: Replaces end of string by three dots if it needed to be shortened because of a limited buffer size
 Returns: True if string was changed, false if not
 */
 bool indicate_abbreviation(char *string, size_t actual_length)

@@ -1,6 +1,6 @@
 #include "memory.h"
 
-/* Summary: Calls free() on each node within tree, including variable's names and constant's values */
+// Summary: Calls free() on each node within tree, including variable's names, constant's values and operator's children
 void free_tree(Node *tree)
 {
     if (tree == NULL) return;
@@ -8,7 +8,7 @@ void free_tree(Node *tree)
     free(tree);
 }
 
-/* Summary: Same as free_tree, but root will be preserved (root's name or value is free'd) */
+// Summary: Same as free_tree, but root will be preserved (root's name or value is free'd)
 void free_tree_preserved(Node *tree)
 {
     if (tree == NULL) return;
@@ -20,6 +20,7 @@ void free_tree_preserved(Node *tree)
             {
                 free_tree(tree->children[i]);
             }
+            free(tree->children);
             break;
             
         case NTYPE_CONSTANT:

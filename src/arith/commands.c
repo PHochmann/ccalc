@@ -100,7 +100,7 @@ void print_help()
                 }
                 else
                 {
-                    printf("%s(0..%d)", ctx->operators[i].name, MAX_CHILDREN);
+                    printf("%s(*)", ctx->operators[i].name);
                 }
                 break;
         }

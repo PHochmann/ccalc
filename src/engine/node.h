@@ -12,6 +12,8 @@ typedef enum
     NTYPE_VARIABLE
 } NodeType;
 
+// Could be redone as binary tree
+// https://blog.mozilla.org/nnethercote/2012/03/07/n-ary-trees-in-c/
 typedef struct Node
 {
     NodeType type;
@@ -21,8 +23,8 @@ typedef struct Node
     void *const_value;
     // For NTYPE_OPERATOR:
     Operator *op;
-    int num_children;
-    struct Node *children[MAX_CHILDREN];
+    unsigned int num_children;
+    struct Node **children;
 } Node;
 
 Node get_variable_node(char *var_name);

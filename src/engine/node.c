@@ -33,7 +33,6 @@ Node get_operator_node(Operator *op)
     Node res = get_node(NTYPE_OPERATOR);
     res.op = op;
     res.num_children = 0;
-    for (size_t i = 0; i < MAX_CHILDREN; i++) res.children[i] = NULL;
     return res;
 }
 

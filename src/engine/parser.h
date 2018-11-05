@@ -25,8 +25,8 @@ typedef enum {
     PERR_MISSING_OPERATOR,
     // Could not pop 'arity' amount of nodes
     PERR_MISSING_OPERAND,
-    // Arity too high (maybe dynamic)
-    PERR_EXCEEDED_MAX_CHILDREN,
+    // Malloc failed
+    PERR_OUT_OF_MEMORY,
     // Function of wrong arity
     PERR_FUNCTION_WRONG_ARITY,
     // Not a single node

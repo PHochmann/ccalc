@@ -32,10 +32,7 @@
 // Maximum length of a variable's name
 #define MAX_VAR_LENGTH 8
 
-// Maximum arity of an operator (Max. number of children a node can have)
-#define MAX_CHILDREN 16
-
-// Used to indicate arbitrary amount of operands (0 up to MAX_CHILDREN)
+// Used to indicate arbitrary number of operands (0 up to INT_MAX)
 #define DYNAMIC_ARITY -1
 
 // Used in matching and variable-list

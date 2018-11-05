@@ -11,7 +11,7 @@
 static ParsingContext *ctx;
 static Node **node_stack;
 static Operator **op_stack;
-static int *arities;
+static unsigned int *arities;
 static int num_nodes;
 static int num_ops;
 static ParserError result;
@@ -20,6 +20,13 @@ static ParserError result;
 Operator* op_peek()
 {
     return op_stack[num_ops - 1];
+}
+
+void *malloc_wrapper(size_t size)
+{
+    void *res = malloc(size);
+    if (res == NULL) result = PERR_OUT_OF_MEMORY;
+    return res;
 }
 
 bool node_push(Node *value)
@@ -60,40 +67,41 @@ bool op_pop_and_insert()
     }
     
     Operator *op = op_peek();
-    // Functions with recorded arity of -1 are glue-ops and shouldn't be computed as functions
-    bool is_function = (arities[num_ops - 1] != -1);
-    
-    // Function overloading: Find function with suitable arity
-    if (is_function)
-    {
-        if (op->arity != arities[num_ops - 1])
-        {
-            char *name = op->name;
-            op = ctx_lookup_function(ctx, name, arities[num_ops - 1]);
-            
-            // Fallback: Find function of dynamic aritiy
-            if (op == NULL)
-            {
-                op = ctx_lookup_function(ctx, name, DYNAMIC_ARITY);
-            }
-            
-            if (op == NULL)
-            {
-                result = PERR_FUNCTION_WRONG_ARITY;
-                return false;
-            }
-        }
-    }
-
     if (op != NULL) // Construct operator-node and append children
     {
-        Node *op_node = malloc(sizeof(Node));
+        // Functions with recorded arity of -1 are glue-ops and shouldn't be computed as functions
+        bool is_function = (arities[num_ops - 1] != -1);
+    
+        // Function overloading: Find function with suitable arity
+        if (is_function)
+        {
+            if (op->arity != arities[num_ops - 1])
+            {
+                char *name = op->name;
+                op = ctx_lookup_function(ctx, name, arities[num_ops - 1]);
+                
+                // Fallback: Find function of dynamic aritiy
+                if (op == NULL)
+                {
+                    op = ctx_lookup_function(ctx, name, DYNAMIC_ARITY);
+                }
+                
+                if (op == NULL)
+                {
+                    result = PERR_FUNCTION_WRONG_ARITY;
+                    return false;
+                }
+            }
+        }
+
+        // We try to allocate a new node and take their children from node stack
+        Node *op_node = malloc_wrapper(sizeof(Node));
+        if (op_node == NULL) return false;
         *op_node = get_operator_node(op);
         op_node->num_children = is_function ? arities[num_ops - 1] : op->arity;
-        
-        if (op_node->num_children > MAX_CHILDREN)
+        op_node->children = malloc_wrapper(op_node->num_children * sizeof(Node*));
+        if (op_node->children == NULL)
         {
-            result = PERR_EXCEEDED_MAX_CHILDREN;
             free(op_node);
             return false;
         }
@@ -107,6 +115,7 @@ bool op_pop_and_insert()
                 {
                     free_tree(op_node->children[j]);
                 }
+                free(op_node->children);
                 free(op_node);
                 return false;
             }
@@ -167,9 +176,10 @@ ParserError parse_tokens(ParsingContext *context, char **tokens, int num_tokens,
     result = PERR_SUCCESS;
     num_ops = 0;
     num_nodes = 0;
-    op_stack = malloc(MAX_STACK_SIZE * sizeof(Operator*));
-    node_stack = malloc(MAX_STACK_SIZE * sizeof(Node*));
-    arities = malloc(MAX_STACK_SIZE * sizeof(int));
+    op_stack = malloc_wrapper(MAX_STACK_SIZE * sizeof(Operator*));
+    node_stack = malloc_wrapper(MAX_STACK_SIZE * sizeof(Node*));
+    arities = malloc_wrapper(MAX_STACK_SIZE * sizeof(unsigned int));
+    if (result == PERR_OUT_OF_MEMORY) goto exit;
 
     // 3. Process each token
     bool await_subexpression = true;
@@ -315,8 +325,16 @@ ParserError parse_tokens(ParsingContext *context, char **tokens, int num_tokens,
         }
         
         // VI. Token must be variable or constant (leaf)
-        Node *node = malloc(sizeof(Node));
-        void *constant = malloc(ctx->value_size);
+        Node *node = malloc_wrapper(sizeof(Node));
+        void *constant = malloc_wrapper(ctx->value_size);
+
+        if (result == PERR_OUT_OF_MEMORY)
+        {
+            free(node);
+            free(constant);
+            goto exit;
+        }
+
         if (ctx->try_parse(token, constant)) // Is token constant?
         {
             *node = get_constant_node(constant);
@@ -324,7 +342,8 @@ ParserError parse_tokens(ParsingContext *context, char **tokens, int num_tokens,
         else // Token must be variable
         {
             free(constant);
-            char *name = malloc((tok_len + 1) * sizeof(char));
+            char *name = malloc_wrapper((tok_len + 1) * sizeof(char));
+            if (result == PERR_OUT_OF_MEMORY) goto exit;
             strcpy(name, token);
             *node = get_variable_node(name);
         }
