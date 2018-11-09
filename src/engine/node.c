@@ -28,11 +28,12 @@ Node get_constant_node(void *value)
 }
 
 /* Returns a new node of type NTYPE_OPERATOR and prepares its attributes */
-Node get_operator_node(Operator *op)
+Node get_operator_node(Operator *op, unsigned int num_children)
 {
     Node res = get_node(NTYPE_OPERATOR);
     res.op = op;
-    res.num_children = 0;
+    res.num_children = num_children;
+    res.children = malloc(num_children * sizeof(Node*));
     return res;
 }
 
@@ -200,13 +201,12 @@ Summary: Copies tree, tree_equals will be true of copy. Source tree can be safel
 */
 Node tree_copy(ParsingContext *ctx, Node *tree)
 {
-    //if (ctx == NULL || tree == NULL) ...?
-
-    Node res = *tree;
+    Node res;
     
     switch (tree->type)
     {
         case NTYPE_OPERATOR:
+            res = get_operator_node(tree->op, tree->num_children);
             for (int i = 0; i < tree->num_children; i++)
             {
                 res.children[i] = malloc(sizeof(Node));
@@ -215,7 +215,7 @@ Node tree_copy(ParsingContext *ctx, Node *tree)
             break;
         
         case NTYPE_CONSTANT:
-            res.const_value = malloc(ctx->value_size);
+            res = get_constant_node(malloc(ctx->value_size));
             for (size_t i = 0; i < ctx->value_size; i++)
             {
                 *((char*)(res.const_value) + i) = *((char*)(tree->const_value) + i);
@@ -223,7 +223,7 @@ Node tree_copy(ParsingContext *ctx, Node *tree)
             break;
             
         case NTYPE_VARIABLE:
-            res.var_name = malloc((strlen(tree->var_name) + 1) * sizeof(char));
+            res = get_variable_node(malloc((strlen(tree->var_name) + 1) * sizeof(char)));
             strcpy(res.var_name, tree->var_name);
             break;
     }

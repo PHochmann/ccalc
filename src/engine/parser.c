@@ -97,9 +97,7 @@ bool op_pop_and_insert()
         // We try to allocate a new node and take their children from node stack
         Node *op_node = malloc_wrapper(sizeof(Node));
         if (op_node == NULL) return false;
-        *op_node = get_operator_node(op);
-        op_node->num_children = is_function ? arities[num_ops - 1] : op->arity;
-        op_node->children = malloc_wrapper(op_node->num_children * sizeof(Node*));
+        *op_node = get_operator_node(op, is_function ? arities[num_ops - 1] : op->arity);
         if (op_node->children == NULL)
         {
             free(op_node);

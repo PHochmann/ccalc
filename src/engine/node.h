@@ -29,7 +29,7 @@ typedef struct Node
 
 Node get_variable_node(char *var_name);
 Node get_constant_node(void *value);
-Node get_operator_node(Operator *op);
+Node get_operator_node(Operator *op, unsigned int num_children);
 
 bool tree_contains_variable(Node* node);
 int tree_get_variable_instances(Node *tree, char *variable, Node *out_instances[MAX_VAR_COUNT]);

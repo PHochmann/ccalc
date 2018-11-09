@@ -57,6 +57,7 @@ Summary: Activates silent mode, whispered messages will not be displayed
 */
 void make_silent()
 {
+    debug = false;
     silent = true;
 }
 
