@@ -17,7 +17,7 @@
 #include "../engine/memory.h"
 #include "../engine/console_util.h"
 
-#define VERSION "1.1.7"
+#define VERSION "1.1.8"
 #define MAX_LINE_LENGTH 128
 #define NUM_MAX_RULES 1
 
@@ -108,6 +108,12 @@ void print_help()
         printf(COL_RESET " ");
     }
     printf("\n(%d available operators)\n", ctx->num_ops);
+
+    if (debug)
+    {
+        printf("MAX_TOKENS=%d, MAX_STACK_SIZE=%d, MAX_VAR_COUNT=%d\n",
+            MAX_TOKENS, MAX_STACK_SIZE, MAX_VAR_COUNT);
+    }
 }
 
 /*

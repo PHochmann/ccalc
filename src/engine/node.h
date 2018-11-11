@@ -12,8 +12,6 @@ typedef enum
     NTYPE_VARIABLE
 } NodeType;
 
-// Could be redone as binary tree
-// https://blog.mozilla.org/nnethercote/2012/03/07/n-ary-trees-in-c/
 typedef struct Node
 {
     NodeType type;

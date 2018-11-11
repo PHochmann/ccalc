@@ -26,12 +26,6 @@
 // Maximum number of operator/node instances the parser can handle at once
 #define MAX_STACK_SIZE 128
 
-// Maximum length of name of an operator
-#define MAX_OP_LENGTH 8
-
-// Maximum length of a variable's name
-#define MAX_VAR_LENGTH 8
-
 // Used to indicate arbitrary number of operands (0 up to INT_MAX)
 #define DYNAMIC_ARITY -1
 
