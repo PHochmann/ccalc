@@ -1,4 +1,4 @@
-# Calculator
+# Calculator 1.1.8
 Simple parser and calculator written in C
 
 ## Setup guide
