@@ -17,7 +17,7 @@
 #include "../engine/memory.h"
 #include "../engine/console_util.h"
 
-#define VERSION "1.1.9"
+#define VERSION "1.2.0"
 #define MAX_LINE_LENGTH 512
 #define NUM_MAX_RULES 8
 
@@ -34,7 +34,7 @@ static ParsingContext *ctx; // ParsingContext to use while parsing strings
 static Node *ans; // Last parsed tree 'ans' is substituted with
 
 static RewriteRule rules[NUM_MAX_RULES];
-static int num_rules;
+static size_t num_rules;
 
 /*
 Summary: Sets parsing context and prepares global vars
@@ -63,7 +63,7 @@ void make_silent()
 
 void print_help()
 {
-    for (int i = 0; i < ctx->num_ops; i++)
+    for (size_t i = 0; i < ctx->num_ops; i++)
     {
         printf(OP_COLOR);
         switch (ctx->operators[i].placement)
@@ -97,7 +97,7 @@ void print_help()
             case OP_PLACE_FUNCTION:
                 if (ctx->operators[i].arity != DYNAMIC_ARITY)
                 {
-                    printf("%s(%d)", ctx->operators[i].name, ctx->operators[i].arity);
+                    printf("%s(%zu)", ctx->operators[i].name, ctx->operators[i].arity);
                 }
                 else
                 {
@@ -214,10 +214,11 @@ void parse_assignment(char *input, char *op_pos)
     
     // Tokenize function definition to get its name. Name is first token.
     char *tokens[MAX_TOKENS];
-    int num_tokens = 0;
+    size_t num_tokens = 0;
     if (!tokenize(ctx, input, tokens, &num_tokens))
     {
         printf("Error in function definition\n");
+        return;
     }
     
     char *name = NULL;
@@ -226,7 +227,7 @@ void parse_assignment(char *input, char *op_pos)
     {
         name = tokens[0];
         // Free tokens and pointers to them
-        for (int i = 1; i < num_tokens; i++) free(tokens[i]);
+        for (size_t i = 1; i < num_tokens; i++) free(tokens[i]);
         ctx_add_op(ctx, op_get_function(name, DYNAMIC_ARITY));
     }
     else

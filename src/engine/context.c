@@ -44,12 +44,12 @@ ParsingContext get_context(
 Summary: Adds given operators to context
 Returns: true if all operators were successfully added, false if inconsistency occured, buffer full or invalid arguments
 */
-bool ctx_add_ops(ParsingContext *ctx, int count, ...)
+bool ctx_add_ops(ParsingContext *ctx, size_t count, ...)
 {
     va_list args;
     va_start(args, count);
     
-    for (int i = 0; i < count; i++)
+    for (size_t i = 0; i < count; i++)
     {
         if (ctx_add_op(ctx, va_arg(args, Operator)) == -1)
         {
@@ -87,7 +87,7 @@ int ctx_add_op(ParsingContext *ctx, Operator op)
     // to associate every operand with exactly one operator in a unique manner
     if (op.placement == OP_PLACE_INFIX)
     {
-        for (int i = 0; i < ctx->num_ops; i++)
+        for (size_t i = 0; i < ctx->num_ops; i++)
         {
             if (ctx->operators[i].placement == OP_PLACE_INFIX
                 && ctx->operators[i].precedence == op.precedence)
@@ -140,7 +140,7 @@ Operator* ctx_lookup_op(ParsingContext *ctx, char *name, OpPlacement placement)
 {
     if (ctx == NULL || name == NULL) return NULL;
 
-    for (int i = 0; i < ctx->num_ops; i++)
+    for (size_t i = 0; i < ctx->num_ops; i++)
     {
         Operator *curr_op = &(ctx->operators[i]);
         
@@ -158,11 +158,11 @@ Operator* ctx_lookup_op(ParsingContext *ctx, char *name, OpPlacement placement)
 Summmary: Searches for function of given name and arity
 Returns: NULL if no function has been found or invalid arguments given, otherwise pointer to function in ctx->operators
 */
-Operator* ctx_lookup_function(ParsingContext *ctx, char *name, int arity)
+Operator* ctx_lookup_function(ParsingContext *ctx, char *name, size_t arity)
 {
     if (ctx == NULL || name == NULL) return NULL;
 
-    for (int i = 0; i < ctx->num_ops; i++)
+    for (size_t i = 0; i < ctx->num_ops; i++)
     {
         Operator *curr_op = &ctx->operators[i];
         

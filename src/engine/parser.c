@@ -11,12 +11,12 @@
 static ParsingContext *ctx;
 static Node **node_stack;
 static Operator **op_stack;
-static unsigned int *arities;
-static int num_nodes;
-static int num_ops;
+static int *arities;
+static size_t num_nodes;
+static size_t num_ops;
 static ParserError result;
 
-// Check if stack is empty before calling!
+// Check if stack is not empty before calling!
 Operator* op_peek()
 {
     return op_stack[num_ops - 1];
@@ -97,19 +97,19 @@ bool op_pop_and_insert()
         // We try to allocate a new node and take their children from node stack
         Node *op_node = malloc_wrapper(sizeof(Node));
         if (op_node == NULL) return false;
-        *op_node = get_operator_node(op, is_function ? arities[num_ops - 1] : op->arity);
+        *op_node = get_operator_node(op, is_function ? (size_t)arities[num_ops - 1] : op->arity);
         if (op_node->children == NULL)
         {
             free(op_node);
             return false;
         }
         
-        for (int i = 0; i < op_node->num_children; i++)
+        for (size_t i = 0; i < op_node->num_children; i++)
         {
             if (!node_pop(&(op_node->children[op_node->num_children - i - 1])))
             {
                 // Free already appended children and new node
-                for (int j = op_node->num_children - 1; j > op_node->num_children - i - 1; j--)
+                for (size_t j = op_node->num_children - 1; j > op_node->num_children - i - 1; j--)
                 {
                     free_tree(op_node->children[j]);
                 }
@@ -164,7 +164,7 @@ bool op_push(Operator *op)
     return true;
 }
 
-ParserError parse_tokens(ParsingContext *context, char **tokens, int num_tokens, Node **res)
+ParserError parse_tokens(ParsingContext *context, char **tokens, size_t num_tokens, Node **res)
 {
     // 1. Early outs
     if (context == NULL || tokens == NULL || res == NULL) return PERR_ARGS_MALFORMED;
@@ -181,7 +181,7 @@ ParserError parse_tokens(ParsingContext *context, char **tokens, int num_tokens,
 
     // 3. Process each token
     bool await_subexpression = true;
-    for (int i = 0; i < num_tokens; i++)
+    for (size_t i = 0; i < num_tokens; i++)
     {
         if (result != PERR_SUCCESS) goto exit;
         
@@ -401,7 +401,7 @@ Returns: Result code to indicate whether string was parsed successfully or which
 ParserError parse_input(ParsingContext *context, char *input, Node **res)
 {
     // Data
-    int num_tokens;
+    size_t num_tokens;
     char *tokens[MAX_TOKENS];
 
     // Parsing
@@ -409,6 +409,6 @@ ParserError parse_input(ParsingContext *context, char *input, Node **res)
     ParserError result = parse_tokens(context, tokens, num_tokens, res);
 
     // Cleanup
-    for (int i = 0; i < num_tokens; i++) free(tokens[i]);
+    for (size_t i = 0; i < num_tokens; i++) free(tokens[i]);
     return result;
 }

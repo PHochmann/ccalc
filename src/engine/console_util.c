@@ -67,9 +67,9 @@ bool begins_with(char *prefix, char *string)
     return strncmp(prefix, string, prefix_length) == 0;
 }
 
-void print_padded(char *string, int total_length)
+void print_padded(char *string, size_t total_length)
 {
-    for (int i = strlen(string); i < total_length; i++) printf(" ");
+    for (size_t i = strlen(string); i < total_length; i++) printf(" ");
     printf("%s", string);
 }
 
@@ -80,7 +80,7 @@ void print_repeated(char* string, int amount)
 
 void print_table(int num_rows, int num_cols, char **cells, bool head_border)
 {
-    int width[num_cols];
+    size_t width[num_cols];
     for (int i = 0; i < num_cols; i++) width[i] = 0;
     
     // Calculate col width
@@ -88,7 +88,7 @@ void print_table(int num_rows, int num_cols, char **cells, bool head_border)
     {
         for (int j = 0; j < num_cols; j++)
         {
-            int len = strlen(cells[i * num_cols + j]);
+            size_t len = strlen(cells[i * num_cols + j]);
             if (width[j] < len) width[j] = len;
         }
     }

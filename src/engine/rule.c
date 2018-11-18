@@ -29,11 +29,11 @@ bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_
     
     char *mapped_vars[MAX_VAR_COUNT];
     Node *mapped_nodes[MAX_VAR_COUNT];
-    int num_mapped_vars = 0;
+    size_t num_mapped_vars = 0;
     
     Node *tree_stack[MAX_STACK_SIZE];
     Node *pattern_stack[MAX_STACK_SIZE];
-    int num_stack = 0;
+    size_t num_stack = 0;
     
     tree_stack[0] = tree;
     pattern_stack[0] = pattern;
@@ -50,7 +50,7 @@ bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_
         {
             // 1. Check if variable is bound, if it is, check it. Otherwise, bind.
             case NTYPE_VARIABLE:
-                for (int i = 0; i < num_mapped_vars; i++)
+                for (size_t i = 0; i < num_mapped_vars; i++)
                 {
                     if (strcmp(mapped_vars[i], curr_pattern_n->var_name) == 0) // Already bound
                     {
@@ -103,7 +103,7 @@ bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_
     out_matching->mapped_vars = malloc(sizeof(char*) * num_mapped_vars);
     out_matching->mapped_nodes = malloc(sizeof(Node*) * num_mapped_vars);
     
-    for (int i = 0; i < num_mapped_vars; i++)
+    for (size_t i = 0; i < num_mapped_vars; i++)
     {
         out_matching->mapped_vars[i] = malloc(sizeof(char) * (strlen(mapped_vars[i]) + 1));
         strcpy(out_matching->mapped_vars[i], mapped_vars[i]);
@@ -124,7 +124,7 @@ bool find_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out
     
     if (tree->type == NTYPE_OPERATOR)
     {
-        for (int i = 0; i < tree->num_children; i++)
+        for (size_t i = 0; i < tree->num_children; i++)
         {
             if (find_matching(ctx, tree->children[i], pattern, out_matching)) return true;
         }
@@ -140,7 +140,7 @@ void transform_by_rule(RewriteRule *rule, Matching *matching)
     // We need to save all variable instances in "after" before we substitute because variable names are not sanitized
     Node transformed = tree_copy(rule->context, rule->after);
     Node *var_instances[matching->num_mapped][MAX_VAR_COUNT];
-    int num_instances[matching->num_mapped];
+    size_t num_instances[matching->num_mapped];
 
     for (size_t i = 0; i < matching->num_mapped; i++)
     {
@@ -175,7 +175,7 @@ Params
     max_iterations: maximal number of times the set is iterated, -1 for no cap (this makes non-termination possible)
 Returns: Number of successful appliances
 */
-int apply_ruleset(Node *tree, RewriteRule *rules, int num_rules, int max_iterations)
+int apply_ruleset(Node *tree, RewriteRule *rules, size_t num_rules, int max_iterations)
 {
     int i = 0;
     int res = 0;
@@ -184,7 +184,7 @@ int apply_ruleset(Node *tree, RewriteRule *rules, int num_rules, int max_iterati
     {
         bool applied_flag = false;
         
-        for (int j = 0; j < num_rules; j++)
+        for (size_t j = 0; j < num_rules; j++)
         {
             if (apply_rule(tree, &rules[j]))
             {

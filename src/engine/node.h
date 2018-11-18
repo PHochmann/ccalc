@@ -21,13 +21,13 @@ typedef struct Node
     void *const_value;
     // For NTYPE_OPERATOR:
     Operator *op;
-    unsigned int num_children;
+    size_t num_children;
     struct Node **children;
 } Node;
 
 Node get_variable_node(char *var_name);
 Node get_constant_node(void *value);
-Node get_operator_node(Operator *op, unsigned int num_children);
+Node get_operator_node(Operator *op, size_t num_children);
 
 bool tree_contains_variable(Node* node);
 int tree_get_variable_instances(Node *tree, char *variable, Node *out_instances[MAX_VAR_COUNT]);

@@ -4,7 +4,7 @@
 #include "tokenizer.h"
 #include "console_util.h"
 
-bool add_token(char **tokens, char *position, int *num_tokens)
+bool add_token(char **tokens, char *position, size_t *num_tokens)
 {
     if (*num_tokens == MAX_TOKENS) return false;
     tokens[(*num_tokens)++] = position;
@@ -12,7 +12,7 @@ bool add_token(char **tokens, char *position, int *num_tokens)
 }
 
 // Sorts strings in descending length
-int cmpfunc(const void *a, const void *b)
+int str_cmp(const void *a, const void *b)
 {
     size_t len_a = strlen(*(char**)a);
     size_t len_b = strlen(*(char**)b);
@@ -25,19 +25,19 @@ int cmpfunc(const void *a, const void *b)
 Summary: Splits input string into several tokens to be parsed
 Returns: True if method succeeded, False if MAX_TOKENS was exceeded
 */
-bool tokenize(ParsingContext *ctx, char *input, char *out_tokens[MAX_TOKENS], int *out_num_tokens)
+bool tokenize(ParsingContext *ctx, char *input, char *out_tokens[MAX_TOKENS], size_t *out_num_tokens)
 {
     char *token_markers[MAX_TOKENS];
     char *keywords[ctx->num_ops];
-    for (int i = 0; i < ctx->num_ops; i++)
+    for (size_t i = 0; i < ctx->num_ops; i++)
     {
         keywords[i] = ctx->operators[i].name;
     }
     // Maximal munch
-    qsort(keywords, ctx->num_ops, sizeof(char*), &cmpfunc);
+    qsort(keywords, ctx->num_ops, sizeof(char*), &str_cmp);
     
     int state = 0; // 0: initial, 1: default, 2: letter, 3: digit, 4: keyword
-    int num_markers = 0;
+    size_t num_markers = 0;
     
     if (!add_token(token_markers, input, &num_markers)) return false;
 
@@ -94,15 +94,15 @@ bool tokenize(ParsingContext *ctx, char *input, char *out_tokens[MAX_TOKENS], in
     // Build \0-terminated strings from pointers and out_num_tokens
     // (might be less than num_markers due to whitespace-tokens that are removed)
     *out_num_tokens = 0;
-    for (int i = 0; i < num_markers - 1; i++)
+    for (size_t i = 0; i < num_markers - 1; i++)
     {
         // Check for whitespace-token and empty token (only when input itself is empty)
         if (is_space(token_markers[i][0]) || token_markers[i] == token_markers[i + 1]) continue;
         
-        int tok_len = (int)(token_markers[i + 1] - token_markers[i]);
+        size_t tok_len = token_markers[i + 1] - token_markers[i];
         out_tokens[*out_num_tokens] = malloc(tok_len + 1);
 
-        for (int j = 0; j < tok_len; j++)
+        for (size_t j = 0; j < tok_len; j++)
         {
             out_tokens[*out_num_tokens][j] = token_markers[i][j];
         }

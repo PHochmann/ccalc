@@ -21,13 +21,13 @@ typedef enum
 typedef struct
 {
     char *name;
-    unsigned int arity;
+    size_t arity;
     unsigned int precedence;
     OpAssociativity assoc;
     OpPlacement placement;
 } Operator;
 
-Operator op_get_function(char *name, unsigned int arity);
+Operator op_get_function(char *name, size_t arity);
 Operator op_get_prefix(char *name, unsigned int precedence);
 Operator op_get_infix(char *name, unsigned int precedence, OpAssociativity assoc);
 Operator op_get_postfix(char *name, unsigned int precedence);

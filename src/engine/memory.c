@@ -16,7 +16,7 @@ void free_tree_preserved(Node *tree)
     switch (tree->type)
     {
         case NTYPE_OPERATOR:
-            for (int i = 0; i < tree->num_children; i++)
+            for (size_t i = 0; i < tree->num_children; i++)
             {
                 free_tree(tree->children[i]);
             }
@@ -35,7 +35,7 @@ void free_tree_preserved(Node *tree)
 
 void free_matching(Matching matching)
 {
-    for (int i = 0; i < matching.num_mapped; i++)
+    for (size_t i = 0; i < matching.num_mapped; i++)
     {
         free(matching.mapped_vars[i]);
     }

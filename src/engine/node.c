@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdio.h>
+#include <sys/types.h>
 
 #include "node.h"
 #include "memory.h"
@@ -28,7 +29,7 @@ Node get_constant_node(void *value)
 }
 
 /* Returns a new node of type NTYPE_OPERATOR and prepares its attributes */
-Node get_operator_node(Operator *op, unsigned int num_children)
+Node get_operator_node(Operator *op, size_t num_children)
 {
     Node res = get_node(NTYPE_OPERATOR);
     res.op = op;
@@ -52,7 +53,7 @@ bool tree_contains_variable(Node* tree)
             return true;
             
         case NTYPE_OPERATOR:
-            for (int i = 0; i < tree->num_children; i++)
+            for (size_t i = 0; i < tree->num_children; i++)
             {
                 if (tree_contains_variable(tree->children[i])) return true;
             }
@@ -69,11 +70,10 @@ int tree_get_variable_instances(Node *tree, char *variable, Node *out_instances[
 {
     if (tree == NULL) return -1;
     
-    int res_count = 0;
-    
     Node *node_stack[MAX_STACK_SIZE];
     node_stack[0] = tree;
-    int stack_count = 1;
+    int res_count = 0;
+    size_t stack_count = 1;
     
     while (stack_count > 0)
     {
@@ -90,7 +90,7 @@ int tree_get_variable_instances(Node *tree, char *variable, Node *out_instances[
                 break;
                 
             case NTYPE_OPERATOR:
-                for (int i = curr_node->num_children - 1; i >= 0; i--)
+                for (ssize_t i = curr_node->num_children - 1; i >= 0; i--)
                 {
                     if (stack_count == MAX_STACK_SIZE) return -1;
                     node_stack[stack_count++] = curr_node->children[i];
@@ -119,7 +119,7 @@ int tree_list_variables(Node *tree, char *out_variables[MAX_VAR_COUNT])
     
     Node *node_stack[MAX_STACK_SIZE];
     node_stack[0] = tree;
-    int stack_count = 1;
+    size_t stack_count = 1;
     
     while (stack_count > 0)
     {
@@ -148,7 +148,7 @@ int tree_list_variables(Node *tree, char *out_variables[MAX_VAR_COUNT])
                 break;
                 
             case NTYPE_OPERATOR:
-                for (int i = curr_node->num_children - 1; i >= 0; i--)
+                for (ssize_t i = curr_node->num_children - 1; i >= 0; i--)
                 {
                     // Buffer overflow protection
                     if (stack_count == MAX_STACK_SIZE) return -1;
@@ -207,7 +207,7 @@ Node tree_copy(ParsingContext *ctx, Node *tree)
     {
         case NTYPE_OPERATOR:
             res = get_operator_node(tree->op, tree->num_children);
-            for (int i = 0; i < tree->num_children; i++)
+            for (size_t i = 0; i < tree->num_children; i++)
             {
                 res.children[i] = malloc(sizeof(Node));
                 *(res.children[i]) = tree_copy(ctx, tree->children[i]);

@@ -89,7 +89,7 @@ static ValueTest valueTests[NUM_VALUE_TESTS] = {
     { "1/[{2/2]}", 1 },
     { "2*3^2", 18 },
     { "sin(asin(.2))", 0.2 },
-    { "sqrt(abs(--2!!*--sum(1, 1, 1, 1)*--2!!))", 4 }
+    { "-sqrt(abs(--2!!*--sum(-1+.2-.2+2, 2^2^3-255, -sum(.1, .9), 1+2)*--2!!))", -4 }
 };
 
 static ErrorTest errorTests[NUM_ERROR_TESTS] = {

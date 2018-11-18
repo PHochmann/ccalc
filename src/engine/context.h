@@ -28,9 +28,9 @@ ParsingContext get_context(
     TryParseHandler try_parse,
     ToStringHandler to_string,
     EqualsHandler handler);
-bool ctx_add_ops(ParsingContext *ctx, int count, ...);    
+bool ctx_add_ops(ParsingContext *ctx, size_t count, ...);    
 int ctx_add_op(ParsingContext *ctx, Operator op);
 bool ctx_set_glue_op(ParsingContext *ctx, Operator *op);
 void ctx_remove_glue_op(ParsingContext *ctx);
 Operator* ctx_lookup_op(ParsingContext *ctx, char *name, OpPlacement placement);
-Operator* ctx_lookup_function(ParsingContext *ctx, char *name, int arity);
+Operator* ctx_lookup_function(ParsingContext *ctx, char *name, size_t arity);

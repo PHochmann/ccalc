@@ -6,6 +6,11 @@
 
 #include "tree_to_string.h"
 
+#define EMPTY_TAB  "    "
+#define LINE_TAB   "│   "
+#define BRANCH_TAB "├── "
+#define END_TAB    "└── "
+
 void print_constant(ParsingContext *ctx, Node *node)
 {
     char value[ctx->min_str_len];
@@ -18,29 +23,29 @@ void print_variable(Node *node)
     printf(VAR_COLOR "%s" COL_RESET, node->var_name);
 }
 
-void print_tree_visual_rec(ParsingContext *ctx, Node *node, int layer, unsigned int vert_lines, bool last_child)
+void print_tree_visual_rec(ParsingContext *ctx, Node *node, char layer, unsigned int vert_lines)
 {
-    for (int i = 0; i < layer - 1; i++)
-    {
-        if (vert_lines & ((unsigned int)1 << i))
-        {
-            printf("│   "); // Bit at i=1
-        }
-        else
-        {
-            printf("    "); // Bit at i=0
-        }
-    }
-    
     if (layer != 0)
     {
-        if (!last_child)
+        for (char i = 0; i < layer - 1; i++)
         {
-            printf("├── ");
+            if (vert_lines & ((unsigned int)1 << i))
+            {
+                printf(LINE_TAB);
+            }
+            else
+            {
+                printf(EMPTY_TAB);
+            }
+        }
+
+        if (vert_lines & ((unsigned int)1 << (layer - 1)))
+        {
+            printf(BRANCH_TAB);
         }
         else
         {
-            printf("└── ");
+            printf(END_TAB);
         }
     }
     
@@ -48,12 +53,10 @@ void print_tree_visual_rec(ParsingContext *ctx, Node *node, int layer, unsigned 
     {
         case NTYPE_OPERATOR:
             printf(OP_COLOR "%s" COL_RESET "\n", node->op->name);
-            for (int i = 0; i < node->num_children; i++)
+            for (size_t i = 0; i < node->num_children; i++)
             {
-                bool is_last = (i == node->num_children - 1);
-                print_tree_visual_rec(ctx,
-                    node->children[i], layer + 1, is_last ? vert_lines : vert_lines | ((unsigned int)1 << layer),
-                    is_last);
+                print_tree_visual_rec(ctx, node->children[i], layer + 1,
+                    (i == node->num_children - 1) ? vert_lines : (vert_lines | ((unsigned int)1 << layer)));
             }
             break;
             
@@ -70,12 +73,12 @@ void print_tree_visual_rec(ParsingContext *ctx, Node *node, int layer, unsigned 
 }
 
 /*
-Summary: Draws coloured tree of node to stdout
+Summary: Draws coloured tree to stdout
 */
 void print_tree_visual(ParsingContext *ctx, Node *node)
 {
     if (ctx == NULL || node == NULL) return;
-    print_tree_visual_rec(ctx, node, 0, 0, true);
+    print_tree_visual_rec(ctx, node, 0, 0);
 }
 
 void print_buffered(char *string, char **buffer, ssize_t *buffer_size)

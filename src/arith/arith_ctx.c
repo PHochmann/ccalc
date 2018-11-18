@@ -109,7 +109,7 @@ double arith_eval(Node *node)
                     return atanh(arith_eval(node->children[0]));
                 case 30: // max(x, y, ...)
                     d_res = -INFINITY;
-                    for (int i = 0; i < node->num_children; i++)
+                    for (size_t i = 0; i < node->num_children; i++)
                     {
                         double child_val = arith_eval(node->children[i]);
                         if (child_val > d_res) d_res = child_val;
@@ -117,7 +117,7 @@ double arith_eval(Node *node)
                     return d_res;
                 case 31: // min(x, y, ...)
                     d_res = INFINITY;
-                    for (int i = 0; i < node->num_children; i++)
+                    for (size_t i = 0; i < node->num_children; i++)
                     {
                         double child_val = arith_eval(node->children[i]);
                         if (child_val < d_res) d_res = child_val;
@@ -137,16 +137,16 @@ double arith_eval(Node *node)
                     return frac(arith_eval(node->children[0]));
                 case 38: // sum(x, y, ...)
                     d_res = 0;
-                    for (int i = 0; i < node->num_children; i++) d_res += arith_eval(node->children[i]);
+                    for (size_t i = 0; i < node->num_children; i++) d_res += arith_eval(node->children[i]);
                     return d_res;
                 case 39: // prod(x, y, ...)
                     d_res = 1;
-                    for (int i = 0; i < node->num_children; i++) d_res *= arith_eval(node->children[i]);
+                    for (size_t i = 0; i < node->num_children; i++) d_res *= arith_eval(node->children[i]);
                     return d_res;
                 case 40: // avg(x, y, ...)
                     if (node->num_children == 0) return 0;
                     d_res = 0;
-                    for (int i = 0; i < node->num_children; i++) d_res += arith_eval(node->children[i]);
+                    for (size_t i = 0; i < node->num_children; i++) d_res += arith_eval(node->children[i]);
                     return d_res / node->num_children;
                 case 41: // gamma(x)
                     return tgamma(arith_eval(node->children[0]));
