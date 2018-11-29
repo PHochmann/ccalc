@@ -13,7 +13,7 @@ typedef enum {
     PERR_MAX_TOKENS_EXCEEDED,
     // op-stack or node-stack overflow
     PERR_STACK_EXCEEDED,
-    // Only without glue-op
+    // Only without glue-op: Two expressions next to each other
     PERR_UNEXPECTED_SUBEXPRESSION,
     // There are opening parenthesis on op-stack after all tokens are processed
     PERR_UNEXPECTED_OPENING_PARENTHESIS,

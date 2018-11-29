@@ -1,5 +1,4 @@
 #include <limits.h>
-
 #include "operator.h"
 
 Operator op_get_function(char *name, size_t arity)

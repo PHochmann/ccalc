@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include <float.h>
 #include <math.h>
-
 #include "arith_ctx.h"
 
+#define EVAL(n) arith_eval(node->children[n])
 #define ARITH_STRING_LENGTH 30
 #define ARITH_NUM_OPS 45
 #define ARITH_CUSTOM_BUFFER 10
@@ -25,11 +25,6 @@ long binomial(long n, long k)
     return res;
 }
 
-double frac(double x)
-{
-    return x - floor(x);
-}
-
 double arith_eval(Node *node)
 {
     double d_res = 1;
@@ -44,74 +39,74 @@ double arith_eval(Node *node)
             switch ((size_t)(node->op - arith_ctx.operators))
             {
                 case 0: // x+y
-                    return arith_eval(node->children[0]) + arith_eval(node->children[1]);
+                    return EVAL(0) + EVAL(1);
                 case 1: // x-y
-                    return arith_eval(node->children[0]) - arith_eval(node->children[1]);
+                    return EVAL(0) - EVAL(1);
                 case 2: // x*y
-                    return arith_eval(node->children[0]) * arith_eval(node->children[1]);
+                    return EVAL(0) * EVAL(1);
                 case 3: // x/y
-                    return arith_eval(node->children[0]) / arith_eval(node->children[1]);
+                    return EVAL(0) / EVAL(1);
                 case 4: // x^y
-                    return pow(arith_eval(node->children[0]), arith_eval(node->children[1]));
+                    return pow(EVAL(0), EVAL(1));
                 case 5: // x C y
                     return (double)binomial(
-                        labs((long)trunc(arith_eval(node->children[0]))),
-                        labs((long)trunc(arith_eval(node->children[1]))));
+                        labs((long)trunc(EVAL(0))),
+                        labs((long)trunc(EVAL(1))));
                 case 6: // x mod y
-                    return fmod(arith_eval(node->children[0]), arith_eval(node->children[1]));
+                    return fmod(EVAL(0), EVAL(1));
                 case 7: // -x
-                    return -arith_eval(node->children[0]);
+                    return -EVAL(0);
                 case 8: // +x
-                    return arith_eval(node->children[0]);
+                    return EVAL(0);
                 case 9: // x!
                     i_res = 1;
-                    for (long i = labs((long)trunc(arith_eval(node->children[0]))); i > 1; i--) i_res *= i;
+                    for (long i = (long)trunc(EVAL(0)); i > 1; i--) i_res *= i;
                     return (double)i_res;
                 case 10: // x%
-                    return arith_eval(node->children[0]) / 100;
+                    return EVAL(0) / 100;
                 case 11: // exp(x)
-                    return exp(arith_eval(node->children[0]));
+                    return exp(EVAL(0));
                 case 12: // root(x, y)
-                    return pow(arith_eval(node->children[0]), 1 / arith_eval(node->children[1]));
+                    return pow(EVAL(0), 1 / EVAL(1));
                 case 13: // sqrt(x)
-                    return sqrt(arith_eval(node->children[0]));
+                    return sqrt(EVAL(0));
                 case 14: // log(x, y)
-                    return log(arith_eval(node->children[0])) / log(arith_eval(node->children[1]));
+                    return log(EVAL(0)) / log(EVAL(1));
                 case 15: // ln(x)
-                    return log(arith_eval(node->children[0]));
+                    return log(EVAL(0));
                 case 16: // ld(x)
-                    return log2(arith_eval(node->children[0]));
+                    return log2(EVAL(0));
                 case 17: // log(x)
-                    return log10(arith_eval(node->children[0]));
+                    return log10(EVAL(0));
                 case 18: // sin(x)
-                    return sin(arith_eval(node->children[0]));
+                    return sin(EVAL(0));
                 case 19: // cos(x)
-                    return cos(arith_eval(node->children[0]));
+                    return cos(EVAL(0));
                 case 20: // tan(x)
-                    return tan(arith_eval(node->children[0]));
+                    return tan(EVAL(0));
                 case 21: // asin(x)
-                    return asin(arith_eval(node->children[0]));
+                    return asin(EVAL(0));
                 case 22: // acos(x)
-                    return acos(arith_eval(node->children[0]));
+                    return acos(EVAL(0));
                 case 23: // atan(x)
-                    return atan(arith_eval(node->children[0]));
+                    return atan(EVAL(0));
                 case 24: // sinh(x)
-                    return sinh(arith_eval(node->children[0]));
+                    return sinh(EVAL(0));
                 case 25: // cosh(x)
-                    return cosh(arith_eval(node->children[0]));
+                    return cosh(EVAL(0));
                 case 26: // tanh(x)
-                    return tanh(arith_eval(node->children[0]));
+                    return tanh(EVAL(0));
                 case 27: // asinh(x)
-                    return asinh(arith_eval(node->children[0]));
+                    return asinh(EVAL(0));
                 case 28: // acosh(x)
-                    return acosh(arith_eval(node->children[0]));
+                    return acosh(EVAL(0));
                 case 29: // atanh(x)
-                    return atanh(arith_eval(node->children[0]));
+                    return atanh(EVAL(0));
                 case 30: // max(x, y, ...)
                     d_res = -INFINITY;
                     for (size_t i = 0; i < node->num_children; i++)
                     {
-                        double child_val = arith_eval(node->children[i]);
+                        double child_val = EVAL(i);
                         if (child_val > d_res) d_res = child_val;
                     }
                     return d_res;
@@ -119,37 +114,37 @@ double arith_eval(Node *node)
                     d_res = INFINITY;
                     for (size_t i = 0; i < node->num_children; i++)
                     {
-                        double child_val = arith_eval(node->children[i]);
+                        double child_val = EVAL(i);
                         if (child_val < d_res) d_res = child_val;
                     }
                     return d_res;
                 case 32: // abs(x)
-                    return fabs(arith_eval(node->children[0]));
+                    return fabs(EVAL(0));
                 case 33: // ceil(x)
-                    return ceil(arith_eval(node->children[0]));
+                    return ceil(EVAL(0));
                 case 34: // floor(x)
-                    return floor(arith_eval(node->children[0]));
+                    return floor(EVAL(0));
                 case 35: // round(x)
-                    return round(arith_eval(node->children[0]));
+                    return round(EVAL(0));
                 case 36: // trunc(x)
-                    return trunc(arith_eval(node->children[0]));
+                    return trunc(EVAL(0));
                 case 37: // frac(x)
-                    return frac(arith_eval(node->children[0]));
+                    return EVAL(0) - floor(EVAL(0));
                 case 38: // sum(x, y, ...)
                     d_res = 0;
-                    for (size_t i = 0; i < node->num_children; i++) d_res += arith_eval(node->children[i]);
+                    for (size_t i = 0; i < node->num_children; i++) d_res += EVAL(i);
                     return d_res;
                 case 39: // prod(x, y, ...)
                     d_res = 1;
-                    for (size_t i = 0; i < node->num_children; i++) d_res *= arith_eval(node->children[i]);
+                    for (size_t i = 0; i < node->num_children; i++) d_res *= EVAL(i);
                     return d_res;
                 case 40: // avg(x, y, ...)
                     if (node->num_children == 0) return 0;
                     d_res = 0;
-                    for (size_t i = 0; i < node->num_children; i++) d_res += arith_eval(node->children[i]);
+                    for (size_t i = 0; i < node->num_children; i++) d_res += EVAL(i);
                     return d_res / node->num_children;
                 case 41: // gamma(x)
-                    return tgamma(arith_eval(node->children[0]));
+                    return tgamma(EVAL(0));
                 case 42: // pi
                     return 3.14159265359;
                 case 43: // e

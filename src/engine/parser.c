@@ -400,7 +400,6 @@ Returns: Result code to indicate whether string was parsed successfully or which
 */
 ParserError parse_input(ParsingContext *context, char *input, Node **res)
 {
-    // Data
     size_t num_tokens;
     char *tokens[MAX_TOKENS];
 

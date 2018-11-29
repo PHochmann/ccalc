@@ -126,7 +126,7 @@ bool ctx_set_glue_op(ParsingContext *ctx, Operator *op)
 /*
 Summary: Sets glue-op to NULL, two subexpressions next to each other will result in PERR_UNEXPECTED_SUBEXPRESSION
 */
-void remove_glue_op(ParsingContext *ctx)
+void ctx_remove_glue_op(ParsingContext *ctx)
 {
     if (ctx == NULL) return;
     ctx->glue_op = NULL;

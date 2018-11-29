@@ -1,7 +1,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
-#include <math.h>
 #include <sys/types.h>
 
 #include "tree_to_string.h"
@@ -29,26 +28,11 @@ void print_tree_visual_rec(ParsingContext *ctx, Node *node, char layer, unsigned
     {
         for (char i = 0; i < layer - 1; i++)
         {
-            if (vert_lines & ((unsigned int)1 << i))
-            {
-                printf(LINE_TAB);
-            }
-            else
-            {
-                printf(EMPTY_TAB);
-            }
+            printf(vert_lines & ((unsigned int)1 << i) ? LINE_TAB : EMPTY_TAB);
         }
-
-        if (vert_lines & ((unsigned int)1 << (layer - 1)))
-        {
-            printf(BRANCH_TAB);
-        }
-        else
-        {
-            printf(END_TAB);
-        }
+        printf(vert_lines & ((unsigned int)1 << (layer - 1)) ? BRANCH_TAB : END_TAB);
     }
-    
+
     switch (node->type)
     {
         case NTYPE_OPERATOR:

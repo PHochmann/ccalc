@@ -12,11 +12,11 @@ Summary: Constructs new rule. Warning: "before" and "after" are not copied, so d
 */
 RewriteRule get_rule(ParsingContext *ctx, Node *before, Node *after)
 {
-    RewriteRule rule;
-    rule.context = ctx;
-    rule.before = before;
-    rule.after = after;
-    return rule;
+    return (RewriteRule){
+        .context = ctx,
+        .before = before,
+        .after = after
+    };
 }
 
 /*
