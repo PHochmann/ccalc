@@ -6,7 +6,7 @@ Simple parser and calculator written in C
 
 2. Download and install readline. (On Ubuntu: ```sudo apt-get install libreadline-dev```)
 
-3. In root directory, run ```chmod +x make.sh; ./make.sh``` to compile sources.
+3. In root directory, run ```./make.sh [-d]``` to compile sources.
 
 4. If you want, add alias such as ```c="~/Calculator/bin/calculator.out $@"``` in ~/.bash_aliases (when using the bash) to run program from anywhere. Arguments can be any expression as in interactive mode, which is started when program is executed without additional arguments.
 
