@@ -87,7 +87,7 @@ bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_
             // 3. Check operands for equality and add children on stack
             case NTYPE_OPERATOR:
                 if (!node_equals(ctx, curr_pattern_n, curr_tree_n)) return false;
-                for (size_t i = 0; i < curr_pattern_n->num_children; i++)
+                for (Arity i = 0; i < curr_pattern_n->num_children; i++)
                 {
                     tree_stack[num_stack + i] = curr_tree_n->children[i];
                     pattern_stack[num_stack + i] = curr_pattern_n->children[i];
@@ -124,7 +124,7 @@ bool find_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out
     
     if (tree->type == NTYPE_OPERATOR)
     {
-        for (size_t i = 0; i < tree->num_children; i++)
+        for (Arity i = 0; i < tree->num_children; i++)
         {
             if (find_matching(ctx, tree->children[i], pattern, out_matching)) return true;
         }

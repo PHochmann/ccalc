@@ -5,11 +5,10 @@
 #include "../src/engine/context.h"
 #include "../src/engine/node.h"
 #include "../src/engine/parser.h"
-
 #include "../src/arith/arith_ctx.h"
 
-#define EPSILON 0.0000001
-#define NUM_VALUE_TESTS 64
+#define EPSILON 0.00000001
+#define NUM_VALUE_TESTS 66
 #define NUM_ERROR_TESTS 7
 
 // To check if parsed tree evaluates to expected value
@@ -74,6 +73,7 @@ static ValueTest valueTests[NUM_VALUE_TESTS] = {
     { "1+2*3+4", 11 },
     { " ( 9.0 *  0)", 0 },
     { "sin(0)", 0 },
+    { "sqrt2", 1.4142135623 },
     { "sin0+2", 2 },
     { "(cos sin.123pi.123)", 0.38351121094 },
     { "avg()", 0 },
@@ -89,17 +89,27 @@ static ValueTest valueTests[NUM_VALUE_TESTS] = {
     { "1/[{2/2]}", 1 },
     { "2*3^2", 18 },
     { "sin(asin(.2))", 0.2 },
-    { "-sqrt(abs(--2!!*--sum(-1+.2-.2+2, 2^2^3-255, -sum(.1, .9), 1+2)*--2!!))", -4 }
+    { "-sqrt(abs(--2!!*--sum(-1+.2-.2+2, 2^2^3-255, -sum(.1, .9), 1+2)*--2!!))", -4 },
+#if STRICT_PARENTHESIS
+    { "(1+1)*(2+2)", 8 },
+#else
+    { "1+1)*(2+2", 8 }
+#endif
 };
 
 static ErrorTest errorTests[NUM_ERROR_TESTS] = {
     { "", PERR_EMPTY },
     { "()", PERR_EMPTY },
-    { "x)", PERR_UNEXPECTED_CLOSING_PARENTHESIS },
     { "x+", PERR_MISSING_OPERAND },
-    { "((x)", PERR_UNEXPECTED_OPENING_PARENTHESIS },
     { "sin(x, y)", PERR_FUNCTION_WRONG_ARITY },
-    { "sin,", PERR_UNEXPECTED_DELIMITER }
+    { "sin,", PERR_UNEXPECTED_DELIMITER },
+#if STRICT_PARENTHESIS
+    { "(x", PERR_UNEXPECTED_OPENING_PARENTHESIS },
+    { "x)", PERR_UNEXPECTED_CLOSING_PARENTHESIS },
+#else
+    { "(x", PERR_SUCCESS },
+    { "x)", PERR_SUCCESS },
+#endif
 };
 
 bool almost_equals(double a, double b)
@@ -142,7 +152,7 @@ int perform_error_tests(ParsingContext *ctx)
     return -1;
 }
 
-int main(int argc, char *argv[])
+int main()
 {
     ParsingContext *ctx = arith_get_ctx();
     int error_index = perform_value_tests(ctx);
@@ -161,6 +171,6 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    printf(F_GREEN "passed (%d)" COL_RESET "\n", NUM_VALUE_TESTS + NUM_ERROR_TESTS);
+    printf(F_GREEN "passed (Version: %s, Tests: %d)" COL_RESET "\n", VERSION, NUM_VALUE_TESTS + NUM_ERROR_TESTS);
     return 0;
 }

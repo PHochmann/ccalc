@@ -42,7 +42,7 @@ ParsingContext get_context(
 
 /*
 Summary: Adds given operators to context
-Returns: true if all operators were successfully added, false if inconsistency occured, buffer full or invalid arguments
+Returns: true if all operators were successfully added, false if inconsistency occurred, buffer full or invalid arguments
 */
 bool ctx_add_ops(ParsingContext *ctx, size_t count, ...)
 {

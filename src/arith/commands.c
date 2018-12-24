@@ -17,7 +17,6 @@
 #include "../engine/memory.h"
 #include "../engine/console_util.h"
 
-#define VERSION "1.2.0"
 #define MAX_LINE_LENGTH 512
 #define NUM_MAX_RULES 8
 
@@ -63,6 +62,12 @@ void make_silent()
 
 void print_help()
 {
+    if (debug)
+    {
+        printf("MAX_TOKENS=%d, MAX_STACK_SIZE=%d, MAX_VAR_COUNT=%d, STRICT_PARENTHESES=%d\n",
+            MAX_TOKENS, MAX_STACK_SIZE, MAX_VAR_COUNT, STRICT_PARENTHESES);
+    }
+    
     for (size_t i = 0; i < ctx->num_ops; i++)
     {
         printf(OP_COLOR);
@@ -97,7 +102,7 @@ void print_help()
             case OP_PLACE_FUNCTION:
                 if (ctx->operators[i].arity != DYNAMIC_ARITY)
                 {
-                    printf("%s(%zu)", ctx->operators[i].name, ctx->operators[i].arity);
+                    printf("%s(%d)", ctx->operators[i].name, ctx->operators[i].arity);
                 }
                 else
                 {
@@ -108,12 +113,6 @@ void print_help()
         printf(COL_RESET " ");
     }
     printf("\n(%zu available operators)\n", ctx->num_ops);
-
-    if (debug)
-    {
-        printf("MAX_TOKENS=%d, MAX_STACK_SIZE=%d, MAX_VAR_COUNT=%d\n",
-            MAX_TOKENS, MAX_STACK_SIZE, MAX_VAR_COUNT);
-    }
 }
 
 /*

@@ -22,11 +22,11 @@ void print_variable(Node *node)
     printf(VAR_COLOR "%s" COL_RESET, node->var_name);
 }
 
-void print_tree_visual_rec(ParsingContext *ctx, Node *node, char layer, unsigned int vert_lines)
+void print_tree_visual_rec(ParsingContext *ctx, Node *node, unsigned char layer, unsigned int vert_lines)
 {
     if (layer != 0)
     {
-        for (char i = 0; i < layer - 1; i++)
+        for (unsigned char i = 0; i < layer - 1; i++)
         {
             printf(vert_lines & ((unsigned int)1 << i) ? LINE_TAB : EMPTY_TAB);
         }
@@ -37,10 +37,10 @@ void print_tree_visual_rec(ParsingContext *ctx, Node *node, char layer, unsigned
     {
         case NTYPE_OPERATOR:
             printf(OP_COLOR "%s" COL_RESET "\n", node->op->name);
-            for (size_t i = 0; i < node->num_children; i++)
+            for (Arity i = 0; i < node->num_children; i++)
             {
                 print_tree_visual_rec(ctx, node->children[i], layer + 1,
-                    (i == node->num_children - 1) ? vert_lines : (vert_lines | ((unsigned int)1 << layer)));
+                    (i == (Arity)(node->num_children - 1)) ? vert_lines : (vert_lines | ((unsigned int)1 << layer)));
             }
             break;
             
@@ -80,11 +80,11 @@ void print_buffered(char *string, char **buffer, ssize_t *buffer_size)
 }
 
 /*
-Summary: Same as print_buffered, but doesn't framgent string (useful for ANSI color codes)
+Summary: Same as print_buffered, but doesn't fragment string (useful for ANSI color codes)
 */
 void print_buffered_protected(char *string, char **buffer, ssize_t *buffer_size)
 {
-    if (*buffer_size < strlen(string)) return;
+    if (*buffer_size < (ssize_t)strlen(string)) return;
     print_buffered(string, buffer, buffer_size);
 }
 
@@ -159,10 +159,10 @@ void tree_inline_rec(ParsingContext *ctx, Node *node, char **buffer, ssize_t *bu
                 case OP_PLACE_FUNCTION:
                     print_buffered(node->op->name, buffer, buffer_size);
                     print_buffered("(", buffer, buffer_size);
-                    for (size_t i = 0; i < node->num_children; i++)
+                    for (Arity i = 0; i < node->num_children; i++)
                     {
                         tree_inline_rec(ctx, node->children[i], buffer, buffer_size, colours, false, false);
-                        if (i != node->num_children - 1) print_buffered(", ", buffer, buffer_size);
+                        if (i != (Arity)(node->num_children - 1)) print_buffered(", ", buffer, buffer_size);
                     }
                     print_buffered(")", buffer, buffer_size);
                     break;
@@ -222,6 +222,6 @@ size_t tree_inline(ParsingContext *ctx, Node *node, char *buffer, size_t buffer_
 
     ssize_t buffer_size_copy = buffer_size - 1;
     tree_inline_rec(ctx, node, &buffer, &buffer_size_copy, colours, false, false);
-    *buffer = '\0';
+    if (buffer_size != 0) *buffer = '\0';
     return buffer_size - buffer_size_copy - 1;
 }

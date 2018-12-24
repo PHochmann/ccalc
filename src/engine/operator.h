@@ -18,17 +18,20 @@ typedef enum
     OP_PLACE_FUNCTION,
 } OpPlacement;
 
+typedef unsigned char Arity;
+typedef unsigned char Precedence;
+
 typedef struct
 {
     char *name;
-    size_t arity;
-    unsigned int precedence;
+    Arity arity;
+    Precedence precedence;
     OpAssociativity assoc;
     OpPlacement placement;
 } Operator;
 
-Operator op_get_function(char *name, size_t arity);
-Operator op_get_prefix(char *name, unsigned int precedence);
-Operator op_get_infix(char *name, unsigned int precedence, OpAssociativity assoc);
-Operator op_get_postfix(char *name, unsigned int precedence);
+Operator op_get_function(char *name, Arity arity);
+Operator op_get_prefix(char *name, Precedence precedence);
+Operator op_get_infix(char *name, Precedence precedence, OpAssociativity assoc);
+Operator op_get_postfix(char *name, Precedence precedence);
 Operator op_get_constant(char *name);

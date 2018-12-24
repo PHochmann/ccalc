@@ -15,9 +15,9 @@ char* perr_to_string(ParserError perr)
             return "STACK EXCEEDED";
         case PERR_UNEXPECTED_SUBEXPRESSION:
             return "UNEXPECTED SUBEXPRESSION";
-        case PERR_UNEXPECTED_OPENING_PARENTHESIS:
-            return "UNEXPECTED OPENING PARENTHESIS";
-        case PERR_UNEXPECTED_CLOSING_PARENTHESIS:
+        case PERR_EXCESS_OPENING_PARENTHESIS:
+            return "MISSING CLOSING PARENTHESIS";
+        case PERR_EXCESS_CLOSING_PARENTHESIS:
             return "UNEXPECTED CLOSING PARENTHESIS";
         case PERR_UNEXPECTED_DELIMITER:
             return "UNEXPECTED DELIMITER";
@@ -29,6 +29,8 @@ char* perr_to_string(ParserError perr)
             return "OUT OF MEMORY";
         case PERR_FUNCTION_WRONG_ARITY:
             return "WRONG NUMBER OF OPERANDS FOR FUNCTION";
+        case PERR_CHILDREN_EXCEEDED:
+            return "EXCEEDED MAXIMUM NUMBER OF OPERANDS FOR FUNCTION"; 
         case PERR_EMPTY:
             return "EMPTY EXPRESSION";
         default:
@@ -37,7 +39,7 @@ char* perr_to_string(ParserError perr)
 }
 
 /*
-Summary: Replaces end of string by three dots if it needed to be shortened because of a limited buffer size
+Summary: Replaces end of string by three dots if it needed to be shortend because of a limited buffer size
 Returns: True if string was changed, false if not
 */
 bool indicate_abbreviation(char *string, size_t actual_length)

@@ -1,18 +1,18 @@
 #include <limits.h>
 #include "operator.h"
 
-Operator op_get_function(char *name, size_t arity)
+Operator op_get_function(char *name, Arity arity)
 {
     return (Operator){
         .name = name,
         .arity = arity,
-        .precedence = UINT_MAX,
+        .precedence = 255,
         .placement = OP_PLACE_FUNCTION,
         .assoc = OP_ASSOC_LEFT
     };
 }
 
-Operator op_get_prefix(char *name, unsigned int precedence)
+Operator op_get_prefix(char *name, Precedence precedence)
 {
     return (Operator){
         .name = name,
@@ -23,7 +23,7 @@ Operator op_get_prefix(char *name, unsigned int precedence)
     };
 }
 
-Operator op_get_infix(char *name, unsigned int precedence, OpAssociativity assoc)
+Operator op_get_infix(char *name, Precedence precedence, OpAssociativity assoc)
 {
     return (Operator){
         .name = name,
@@ -34,7 +34,7 @@ Operator op_get_infix(char *name, unsigned int precedence, OpAssociativity assoc
     };
 }
 
-Operator op_get_postfix(char *name, unsigned int precedence)
+Operator op_get_postfix(char *name, Precedence precedence)
 {
     return (Operator){
         .name = name,
@@ -50,7 +50,7 @@ Operator op_get_constant(char *name)
     return (Operator){
         .name = name,
         .arity = 0,
-        .precedence = UINT_MAX,
+        .precedence = 255,
         .placement = OP_PLACE_PREFIX, // Needed for await_subexpression = false
         .assoc = OP_ASSOC_RIGHT
     };

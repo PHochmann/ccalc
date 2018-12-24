@@ -7,19 +7,25 @@
 #include "tokenizer.h"
 #include "parser.h"
 
+#define ERROR(type) { result = type; goto exit; }
+
 // Global vars while parsing
 static ParsingContext *ctx;
 static Node **node_stack;
 static Operator **op_stack;
-static int *arities;
+static Arity *arities; // Records number of operands for functions, or DYNAMIC_ARITY for non-functions and glue-ops
 static size_t num_nodes;
 static size_t num_ops;
 static ParserError result;
 
-// Check if stack is not empty before calling!
 Operator* op_peek()
 {
     return op_stack[num_ops - 1];
+}
+
+Arity arity_peek()
+{
+    return arities[num_ops - 1];
 }
 
 void *malloc_wrapper(size_t size)
@@ -69,18 +75,18 @@ bool op_pop_and_insert()
     Operator *op = op_peek();
     if (op != NULL) // Construct operator-node and append children
     {
-        // Functions with recorded arity of -1 are glue-ops and shouldn't be computed as functions
-        bool is_function = (arities[num_ops - 1] != -1);
+        // Functions with recorded arity of DYNAMIC_ARITY are glue-ops and shouldn't be computed as functions
+        bool is_function = (arity_peek() != DYNAMIC_ARITY);
     
         // Function overloading: Find function with suitable arity
         if (is_function)
         {
-            if (op->arity != arities[num_ops - 1])
+            if (op->arity != arity_peek())
             {
                 char *name = op->name;
-                op = ctx_lookup_function(ctx, name, arities[num_ops - 1]);
+                op = ctx_lookup_function(ctx, name, arity_peek());
                 
-                // Fallback: Find function of dynamic aritiy
+                // Fallback: Find function of dynamic arity
                 if (op == NULL)
                 {
                     op = ctx_lookup_function(ctx, name, DYNAMIC_ARITY);
@@ -97,19 +103,19 @@ bool op_pop_and_insert()
         // We try to allocate a new node and take their children from node stack
         Node *op_node = malloc_wrapper(sizeof(Node));
         if (op_node == NULL) return false;
-        *op_node = get_operator_node(op, is_function ? (size_t)arities[num_ops - 1] : op->arity);
+        *op_node = get_operator_node(op, is_function ? arity_peek() : op->arity);
         if (op_node->children == NULL)
         {
             free(op_node);
             return false;
         }
         
-        for (size_t i = 0; i < op_node->num_children; i++)
+        for (Arity i = 0; i < op_node->num_children; i++)
         {
-            if (!node_pop(&(op_node->children[op_node->num_children - i - 1])))
+            if (!node_pop(&op_node->children[op_node->num_children - i - 1]))
             {
                 // Free already appended children and new node
-                for (size_t j = op_node->num_children - 1; j > op_node->num_children - i - 1; j--)
+                for (Arity j = op_node->num_children - 1; j > op_node->num_children - i - 1; j--)
                 {
                     free_tree(op_node->children[j]);
                 }
@@ -151,7 +157,7 @@ bool op_push(Operator *op)
         return false;
     }
     
-    arities[num_ops] = (is_function ? 0 : -1);
+    arities[num_ops] = (is_function ? 0 : DYNAMIC_ARITY);
     op_stack[num_ops] = op;
     num_ops++;
 
@@ -176,15 +182,13 @@ ParserError parse_tokens(ParsingContext *context, char **tokens, size_t num_toke
     num_nodes = 0;
     op_stack = malloc_wrapper(MAX_STACK_SIZE * sizeof(Operator*));
     node_stack = malloc_wrapper(MAX_STACK_SIZE * sizeof(Node*));
-    arities = malloc_wrapper(MAX_STACK_SIZE * sizeof(unsigned int));
+    arities = malloc_wrapper(MAX_STACK_SIZE * sizeof(Arity));
     if (result == PERR_OUT_OF_MEMORY) goto exit;
 
     // 3. Process each token
     bool await_subexpression = true;
     for (size_t i = 0; i < num_tokens; i++)
     {
-        if (result != PERR_SUCCESS) goto exit;
-        
         char *token = tokens[i];
         size_t tok_len = strlen(token);
         
@@ -197,9 +201,10 @@ ParserError parse_tokens(ParsingContext *context, char **tokens, size_t num_toke
                 && ctx_lookup_op(ctx, token, OP_PLACE_POSTFIX) == NULL)
             {
                 if (!op_push(ctx->glue_op)) goto exit;
+
                 // If glue-op was function, we can't count operands like we normally do
                 // Disable function overloading mechanism
-                arities[num_ops - 1] = -1;
+                arities[num_ops - 1] = DYNAMIC_ARITY;
                 await_subexpression = true;
             }
         }
@@ -215,12 +220,13 @@ ParserError parse_tokens(ParsingContext *context, char **tokens, size_t num_toke
         // IV. Is token closing parenthesis or argument delimiter?
         if (is_closing_parenthesis(token[0]))
         {
+            await_subexpression = false;
+
             while (num_ops > 0 && op_peek() != NULL)
             {
                 if (!op_pop_and_insert())
                 {
-                    result = PERR_UNEXPECTED_CLOSING_PARENTHESIS;
-                    goto exit;
+                    ERROR(PERR_EXCESS_CLOSING_PARENTHESIS);
                 }
             }
             
@@ -230,17 +236,25 @@ ParserError parse_tokens(ParsingContext *context, char **tokens, size_t num_toke
             }
             else
             {
-                result = PERR_UNEXPECTED_CLOSING_PARENTHESIS;
-                goto exit;
+                if (STRICT_PARENTHESES)
+                {
+                    ERROR(PERR_EXCESS_CLOSING_PARENTHESIS);
+                }
+                else
+                {
+                    continue;
+                }
             }
             
             bool empty_params = (i > 0 && is_opening_parenthesis(tokens[i - 1][0]));
-            if (num_ops > 0 && arities[num_ops - 1] != -1 && !empty_params)
+            if (num_ops > 0 && arity_peek() != DYNAMIC_ARITY && !empty_params)
             {
                 arities[num_ops - 1]++;
+                if (arity_peek() == DYNAMIC_ARITY)
+                {
+                    ERROR(PERR_CHILDREN_EXCEEDED);
+                }
             }
-            
-            await_subexpression = false;
             
             continue;
         }
@@ -251,19 +265,21 @@ ParserError parse_tokens(ParsingContext *context, char **tokens, size_t num_toke
             {
                 if (!op_pop_and_insert())
                 {
-                    result = PERR_UNEXPECTED_DELIMITER;
-                    goto exit;
+                    ERROR(PERR_UNEXPECTED_DELIMITER);
                 }
             }
             
             // Increase operand counter
-            if (num_ops > 1 && arities[num_ops - 2] != -1)
+            if (num_ops > 1 && arities[num_ops - 2] != DYNAMIC_ARITY)
             {
                 arities[num_ops - 2]++;
+                if (arities[num_ops - 2] == DYNAMIC_ARITY)
+                {
+                    ERROR(PERR_CHILDREN_EXCEEDED);
+                }
             }
             
             await_subexpression = true;
-            
             continue;
         }
         // - - -
@@ -318,8 +334,7 @@ ParserError parse_tokens(ParsingContext *context, char **tokens, size_t num_toke
             }
             
             // We can fail here: no more tokens processable (no glue-op)
-            result = PERR_UNEXPECTED_SUBEXPRESSION;
-            goto exit;
+            ERROR(PERR_UNEXPECTED_SUBEXPRESSION);
         }
         
         // VI. Token must be variable or constant (leaf)
@@ -345,20 +360,22 @@ ParserError parse_tokens(ParsingContext *context, char **tokens, size_t num_toke
             strcpy(name, token);
             *node = get_variable_node(name);
         }
+
         await_subexpression = false;
-        
         if (!node_push(node)) goto exit;
     }
     
     // 5. Pop all remaining operators
     while (num_ops > 0)
     {
-        if (op_peek() == NULL)
+        if (STRICT_PARENTHESES && op_peek() == NULL)
         {
-            result = PERR_UNEXPECTED_OPENING_PARENTHESIS;
-            goto exit;
+            ERROR(PERR_EXCESS_OPENING_PARENTHESIS);
         }
-        if (!op_pop_and_insert()) goto exit;
+        else
+        {
+            if (!op_pop_and_insert()) goto exit;
+        }
     }
     
     // 6. Build result and return value
@@ -367,10 +384,11 @@ ParserError parse_tokens(ParsingContext *context, char **tokens, size_t num_toke
         case 0:
             result = PERR_EMPTY; // We haven't constructed a single node
             break;
+
         case 1:
-            result = PERR_SUCCESS; // We successfully constructed a single AST
-            *res = node_stack[0];
+            *res = node_stack[0]; // We successfully constructed a single AST
             break;
+
         default:
             result = PERR_MISSING_OPERATOR; // We have multiple ASTs (need glue-op)
     }

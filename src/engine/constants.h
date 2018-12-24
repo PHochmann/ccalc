@@ -1,4 +1,3 @@
-// Colours
 #define F_RED     "\x1B[1;31m"
 #define F_GREEN   "\x1B[1;32m"
 #define F_YELLOW  "\x1B[1;33m"
@@ -15,15 +14,24 @@
 #define B_WHITE   "\x1B[47m"
 #define B_BLACK   "\x1B[40m"
 #define COL_RESET "\033[0m"
-#define OP_COLOR B_RED F_GREEN
-#define CONST_COLOR F_YELLOW
-#define VAR_COLOR F_CYAN
 
+#define OP_COLOR    B_RED F_GREEN
+#define CONST_COLOR F_YELLOW
+#define VAR_COLOR   F_CYAN
+
+// Version number
+#define VERSION "1.2.1"
 // Maximum number of tokens reserved before tokenization
 #define MAX_TOKENS 128
 // Maximum number of operator/node instances the parser can handle at once
 #define MAX_STACK_SIZE 128
-// Used to indicate arbitrary number of operands (0 up to INT_MAX)
-#define DYNAMIC_ARITY -1
 // Used in matching and variable-list
 #define MAX_VAR_COUNT 16
+// Used to indicate arbitrary number of operands (0 up to INT_MAX)
+#define DYNAMIC_ARITY 255
+// Since arity is a char and DYNAMIC_ARITY is set to 255
+#define MAX_ARITY 254
+
+// When set to 0, remaining open and closed parentheses will be balanced at start and end of input
+// Otherwise, PERR_EXCESS_{OPENING, CLOSED}_PARENTHESIS  will be reported
+#define STRICT_PARENTHESES 0

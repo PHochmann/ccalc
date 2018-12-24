@@ -29,7 +29,7 @@ Node get_constant_node(void *value)
 }
 
 /* Returns a new node of type NTYPE_OPERATOR and prepares its attributes */
-Node get_operator_node(Operator *op, size_t num_children)
+Node get_operator_node(Operator *op, Arity num_children)
 {
     Node res = get_node(NTYPE_OPERATOR);
     res.op = op;
@@ -53,7 +53,7 @@ bool tree_contains_variable(Node* tree)
             return true;
             
         case NTYPE_OPERATOR:
-            for (size_t i = 0; i < tree->num_children; i++)
+            for (Arity i = 0; i < tree->num_children; i++)
             {
                 if (tree_contains_variable(tree->children[i])) return true;
             }
@@ -207,7 +207,7 @@ Node tree_copy(ParsingContext *ctx, Node *tree)
     {
         case NTYPE_OPERATOR:
             res = get_operator_node(tree->op, tree->num_children);
-            for (size_t i = 0; i < tree->num_children; i++)
+            for (Arity i = 0; i < tree->num_children; i++)
             {
                 res.children[i] = malloc(sizeof(Node));
                 *(res.children[i]) = tree_copy(ctx, tree->children[i]);
@@ -290,7 +290,7 @@ bool tree_equals(ParsingContext *ctx, Node *a, Node *b)
     if (!node_equals(ctx, a, b)) return false;
     if (a->type == NTYPE_OPERATOR)
     {
-        for (size_t i = 0; i < a->num_children; i++)
+        for (Arity i = 0; i < a->num_children; i++)
         {
             if (!tree_equals(ctx, a->children[i], b->children[i])) return false;
         }

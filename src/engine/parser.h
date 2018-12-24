@@ -16,9 +16,9 @@ typedef enum {
     // Only without glue-op: Two expressions next to each other
     PERR_UNEXPECTED_SUBEXPRESSION,
     // There are opening parenthesis on op-stack after all tokens are processed
-    PERR_UNEXPECTED_OPENING_PARENTHESIS,
+    PERR_EXCESS_OPENING_PARENTHESIS,
     // Mismatch: no opening parenthesis found
-    PERR_UNEXPECTED_CLOSING_PARENTHESIS,
+    PERR_EXCESS_CLOSING_PARENTHESIS,
     // Delimiter too soon (e.g. 1+,)
     PERR_UNEXPECTED_DELIMITER,
     // Too many children
@@ -29,6 +29,8 @@ typedef enum {
     PERR_OUT_OF_MEMORY,
     // Function of wrong arity
     PERR_FUNCTION_WRONG_ARITY,
+    // Too many operands for function
+    PERR_CHILDREN_EXCEEDED,
     // Not a single node
     PERR_EMPTY,
 } ParserError;
