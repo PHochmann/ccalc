@@ -55,7 +55,7 @@ bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_
                     if (strcmp(mapped_vars[i], curr_pattern_n->var_name) == 0) // Already bound
                     {
                         found = true;
-                        // Already bound variable not compatible with this occurence
+                        // Already bound variable not compatible with this occurrence
                         if (!tree_equals(ctx, mapped_nodes[i], curr_tree_n)) return false;
                     }
                 }

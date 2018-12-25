@@ -78,7 +78,7 @@ static ValueTest valueTests[NUM_VALUE_TESTS] = {
     { "(cos sin.123pi.123)", 0.38351121094 },
     { "avg()", 0 },
     { "1+sum()*2", 1 },
-    { "sum(1, 2, 3)*2", 12 },
+    { "sum(1; 2, 3)*2", 12 },
     { "-pi e", -8.5397342226 },
     { "((--1)) sum2 !%", 0.02 },
     { "--(1+sum(ld--8, --1%+--1%, 2 .2))%+1", 1.0442 },
@@ -90,7 +90,7 @@ static ValueTest valueTests[NUM_VALUE_TESTS] = {
     { "2*3^2", 18 },
     { "sin(asin(.2))", 0.2 },
     { "-sqrt(abs(--2!!*--sum(-1+.2-.2+2, 2^2^3-255, -sum(.1, .9), 1+2)*--2!!))", -4 },
-#if STRICT_PARENTHESIS
+#if STRICT_PARENTHESES
     { "(1+1)*(2+2)", 8 },
 #else
     { "1+1)*(2+2", 8 }
@@ -103,9 +103,9 @@ static ErrorTest errorTests[NUM_ERROR_TESTS] = {
     { "x+", PERR_MISSING_OPERAND },
     { "sin(x, y)", PERR_FUNCTION_WRONG_ARITY },
     { "sin,", PERR_UNEXPECTED_DELIMITER },
-#if STRICT_PARENTHESIS
-    { "(x", PERR_UNEXPECTED_OPENING_PARENTHESIS },
-    { "x)", PERR_UNEXPECTED_CLOSING_PARENTHESIS },
+#if STRICT_PARENTHESES
+    { "(x", PERR_EXCESS_OPENING_PARENTHESIS },
+    { "x)", PERR_EXCESS_CLOSING_PARENTHESIS },
 #else
     { "(x", PERR_SUCCESS },
     { "x)", PERR_SUCCESS },
@@ -123,12 +123,8 @@ int perform_value_tests(ParsingContext *ctx)
     
     for (int i = 0; i < NUM_VALUE_TESTS; i++)
     {
-        if (parse_input(ctx, valueTests[i].input, &node) != PERR_SUCCESS)
-        {
-            return i;
-        }
-        
-        if (!almost_equals(arith_eval(node), valueTests[i].result))
+        if (parse_input(ctx, valueTests[i].input, &node) != PERR_SUCCESS
+            || !almost_equals(arith_eval(node), valueTests[i].result))
         {
             return i;
         }

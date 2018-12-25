@@ -28,9 +28,9 @@ void print_tree_visual_rec(ParsingContext *ctx, Node *node, unsigned char layer,
     {
         for (unsigned char i = 0; i < layer - 1; i++)
         {
-            printf(vert_lines & ((unsigned int)1 << i) ? LINE_TAB : EMPTY_TAB);
+            printf(vert_lines & ((unsigned char)1 << i) ? LINE_TAB : EMPTY_TAB);
         }
-        printf(vert_lines & ((unsigned int)1 << (layer - 1)) ? BRANCH_TAB : END_TAB);
+        printf(vert_lines & ((unsigned char)1 << (layer - 1)) ? BRANCH_TAB : END_TAB);
     }
 
     switch (node->type)
@@ -171,7 +171,8 @@ void tree_inline_rec(ParsingContext *ctx, Node *node, char **buffer, ssize_t *bu
                     if (node->children[0]->type == NTYPE_OPERATOR
                         && (node->children[0]->op->precedence < node->op->precedence
                             || (node->children[0]->op->precedence == node->op->precedence
-                                && node->op->assoc == OP_ASSOC_RIGHT)))
+                                && (node->op->assoc == OP_ASSOC_RIGHT
+                                    || (node->op->assoc == OP_ASSOC_BOTH && STANDARD_ASSOC == OP_ASSOC_RIGHT)))))
                     {
                         print_buffered("(", buffer, buffer_size);
                         tree_inline_rec(ctx, node->children[0], buffer, buffer_size, colours, false, false);
@@ -196,7 +197,8 @@ void tree_inline_rec(ParsingContext *ctx, Node *node, char **buffer, ssize_t *bu
                     if (node->children[1]->type == NTYPE_OPERATOR
                         && (node->children[1]->op->precedence < node->op->precedence
                             || (node->children[1]->op->precedence == node->op->precedence
-                                && node->op->assoc == OP_ASSOC_LEFT)))
+                                && (node->op->assoc == OP_ASSOC_LEFT
+                                    || (node->op->assoc == OP_ASSOC_BOTH && STANDARD_ASSOC == OP_ASSOC_LEFT)))))
                     {
                         print_buffered("(", buffer, buffer_size);
                         tree_inline_rec(ctx, node->children[1], buffer, buffer_size, colours, false, false);

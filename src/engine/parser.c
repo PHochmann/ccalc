@@ -12,7 +12,7 @@
 // Global vars while parsing
 static ParsingContext *ctx;
 static Node **node_stack;
-static Operator **op_stack;
+static Operator **op_stack; // NULL pointer on stack is opening parenthesis
 static Arity *arities; // Records number of operands for functions, or DYNAMIC_ARITY for non-functions and glue-ops
 static size_t num_nodes;
 static size_t num_ops;
@@ -28,7 +28,7 @@ Arity arity_peek()
     return arities[num_ops - 1];
 }
 
-void *malloc_wrapper(size_t size)
+void* malloc_wrapper(size_t size)
 {
     void *res = malloc(size);
     if (res == NULL) result = PERR_OUT_OF_MEMORY;
@@ -44,9 +44,7 @@ bool node_push(Node *value)
         return false;
     }
 
-    node_stack[num_nodes] = value;
-    num_nodes++;
-    
+    node_stack[num_nodes++] = value;
     return true;
 }
 
@@ -58,9 +56,7 @@ bool node_pop(Node **out)
         return false;
     }
     
-    num_nodes--;
-    *out = node_stack[num_nodes];
-    
+    *out = node_stack[--num_nodes];
     return true;
 }
 
@@ -140,11 +136,13 @@ bool op_push(Operator *op)
     {
         if (op->placement == OP_PLACE_INFIX || op->placement == OP_PLACE_POSTFIX)
         {
+            OpAssociativity assoc = op->assoc;
+            if (op->assoc == OP_ASSOC_BOTH) assoc = STANDARD_ASSOC;
+
             while (num_ops > 0
                 && op_peek() != NULL
                 && (op->precedence < op_peek()->precedence
-                    || (op->precedence == op_peek()->precedence
-                        && (op->assoc == OP_ASSOC_LEFT || op->assoc == OP_ASSOC_BOTH))))
+                    || (op->precedence == op_peek()->precedence && assoc == OP_ASSOC_LEFT)))
             {
                 if (!op_pop_and_insert()) return false;
             }
@@ -286,24 +284,22 @@ ParserError parse_tokens(ParsingContext *context, char **tokens, size_t num_toke
         
         // V. Is token operator?
         Operator *op = NULL;
+        
+        // Infix, Prefix (await=true) -> Function (false), Leaf (false), Prefix (true)
+        // Function, Leaf, Postfix (await=false) -> Infix (true), Postfix (false)
         if (await_subexpression)
         {
             op = ctx_lookup_op(ctx, token, OP_PLACE_FUNCTION);
             if (op != NULL) // Function operator found
             {
                 if (!op_push(op)) goto exit;
-                await_subexpression = true;
-                
                 // Handle unary functions without parenthesis (e.g. "sin2")
                 // If function is last token its arity will be set to 0
-                if (i != num_tokens - 1)
+                if (i < num_tokens - 1 && !is_opening_parenthesis(tokens[i + 1][0]))
                 {
-                    if (!is_opening_parenthesis(tokens[i + 1][0]))
-                    {
-                        arities[num_ops - 1] = 1;
-                    }
+                    arities[num_ops - 1] = 1;
                 }
-                
+                await_subexpression = true;
                 continue;
             }
             
@@ -311,7 +307,8 @@ ParserError parse_tokens(ParsingContext *context, char **tokens, size_t num_toke
             if (op != NULL) // Prefix operator found
             {
                 if (!op_push(op)) goto exit;
-                await_subexpression = (op->arity != 0); // Constants don't await subexpression
+                // Constants are modeled as prefix operators with arity of 0 and don't await a subexpression
+                await_subexpression = (op->arity != 0);
                 continue;
             }
         }
@@ -414,7 +411,7 @@ ParserError parse_tokens(ParsingContext *context, char **tokens, size_t num_toke
 
 /*
 Summary: Parses string to abstract syntax tree with operators of given context
-Returns: Result code to indicate whether string was parsed successfully or which error occured
+Returns: Result code to indicate whether string was parsed successfully or which error occurred
 */
 ParserError parse_input(ParsingContext *context, char *input, Node **res)
 {

@@ -19,8 +19,8 @@
 #define CONST_COLOR F_YELLOW
 #define VAR_COLOR   F_CYAN
 
-// Version number
-#define VERSION "1.2.1"
+// Version number of engine
+#define VERSION "1.2.2"
 // Maximum number of tokens reserved before tokenization
 #define MAX_TOKENS 128
 // Maximum number of operator/node instances the parser can handle at once
@@ -32,6 +32,8 @@
 // Since arity is a char and DYNAMIC_ARITY is set to 255
 #define MAX_ARITY 254
 
-// When set to 0, remaining open and closed parentheses will be balanced at start and end of input
-// Otherwise, PERR_EXCESS_{OPENING, CLOSED}_PARENTHESIS  will be reported
+// When set to 0, remaining closing or opening parentheses will be balanced at start or end of input
+// Otherwise, PERR_EXCESS_{CLOSING, OPENING}_PARENTHESIS  will be reported
 #define STRICT_PARENTHESES 0
+// Associativity of OP_ASSOC_BOTH operands
+#define STANDARD_ASSOC OP_ASSOC_LEFT

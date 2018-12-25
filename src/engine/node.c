@@ -166,8 +166,8 @@ int tree_list_variables(Node *tree, char *out_variables[MAX_VAR_COUNT])
 }
 
 /*
-Summary: Substitutes any occurence of a variable with certain name with a given subtree
-Returns: Number of occurences of variable
+Summary: Substitutes any occurrence of a variable with certain name with a given subtree
+Returns: Number of occurrences of variable
 */
 int tree_substitute_variable(ParsingContext *ctx, Node *tree, Node *tree_to_copy, char *var_name)
 {

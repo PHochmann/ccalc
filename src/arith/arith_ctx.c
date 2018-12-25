@@ -167,9 +167,9 @@ double arith_eval(Node *node)
 
 bool _arith_try_parse(char *in, void *out)
 {
-    char *ptr;
-    *((double*)out) = strtod(in, &ptr);
-    return ptr != in; // Unsafe, fix later
+    char *end_ptr;
+    *((double*)out) = strtod(in, &end_ptr);
+    return *end_ptr == '\0';
 }
 
 void _arith_to_string(void *in, char *str, size_t buff_size)

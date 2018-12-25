@@ -3,6 +3,9 @@
 
 #include "console_util.h"
 
+/*
+Returns: String representation for user of ParserError
+*/
 char* perr_to_string(ParserError perr)
 {
     switch (perr)

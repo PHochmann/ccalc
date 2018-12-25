@@ -7,8 +7,6 @@ typedef enum {
     PERR_SUCCESS,
     // NULL-Pointer in arguments
     PERR_ARGS_MALFORMED,
-    // Checked at pre-processing
-    PERR_CTX_MALFORMED,
     // Token buffer overflow
     PERR_MAX_TOKENS_EXCEEDED,
     // op-stack or node-stack overflow

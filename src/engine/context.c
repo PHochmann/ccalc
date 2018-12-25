@@ -64,7 +64,11 @@ bool ctx_add_ops(ParsingContext *ctx, size_t count, ...)
 
 /*
 Summary: Adds operator to context
-Returns: ID of new operator, -1 if buffer is full or infix operator with inconsistent associativity is given
+Returns: ID of new operator, -1 if one of the following:
+    * buffer is full
+    * ctx is NULL
+    * infix operator with inconsistent associativity is given
+    * function of same name and arity is present in context
 */
 int ctx_add_op(ParsingContext *ctx, Operator op)
 {
@@ -73,7 +77,7 @@ int ctx_add_op(ParsingContext *ctx, Operator op)
     // Consistency checks:
     
     // Check if operator with same name already exists
-    // For functions: Check if function with same name and arity already exists, since function overloading is supported
+    // For functions: check if function with same name and arity already exists, since function overloading is supported
     if (op.placement != OP_PLACE_FUNCTION)
     {
         if (ctx_lookup_op(ctx, op.name, op.placement) != NULL) return -1;
@@ -95,9 +99,9 @@ int ctx_add_op(ParsingContext *ctx, Operator op)
                 OpAssociativity a_assoc = ctx->operators[i].assoc;
                 OpAssociativity b_assoc = op.assoc;
                 
-                // Parser treats OP_ASSOC_BOTH as OP_ASSOC_LEFT
-                if (a_assoc == OP_ASSOC_BOTH) a_assoc = OP_ASSOC_LEFT;
-                if (b_assoc == OP_ASSOC_BOTH) b_assoc = OP_ASSOC_LEFT;
+                // Parser treats OP_ASSOC_BOTH as STANDARD_ASSOC
+                if (a_assoc == OP_ASSOC_BOTH) a_assoc = STANDARD_ASSOC;
+                if (b_assoc == OP_ASSOC_BOTH) b_assoc = STANDARD_ASSOC;
                 
                 if (a_assoc != b_assoc)
                 {
@@ -106,15 +110,14 @@ int ctx_add_op(ParsingContext *ctx, Operator op)
             }
         }
     }
-    
+
     ctx->operators[ctx->num_ops++] = op;
-    
     return ctx->num_ops - 1;
 }
 
 /*
 Summary: Sets glue-op, which is inserted between two subexpressions (such as 2a -> 2*a)
-Returns: False, if null in arguments or operator with arity other than 2 given
+Returns: False, if null in arguments or operator with arity not equal to 2 given
 */
 bool ctx_set_glue_op(ParsingContext *ctx, Operator *op)
 {
