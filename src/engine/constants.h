@@ -32,8 +32,8 @@
 // Since arity is a char and DYNAMIC_ARITY is set to 255
 #define MAX_ARITY 254
 
-// When set to 0, remaining closing or opening parentheses will be balanced at start or end of input
-// Otherwise, PERR_EXCESS_{CLOSING, OPENING}_PARENTHESIS  will be reported
+// When set to 0, remaining closing and opening parentheses will be balanced at start and end of input
+// Otherwise, PERR_EXCESS_{CLOSING, OPENING}_PARENTHESIS  will be reported (with priority of CLOSING)
 #define STRICT_PARENTHESES 0
 // Associativity of OP_ASSOC_BOTH operands
 #define STANDARD_ASSOC OP_ASSOC_LEFT

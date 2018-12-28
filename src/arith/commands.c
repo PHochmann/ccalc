@@ -62,12 +62,13 @@ void make_silent()
 
 void print_help()
 {
-    if (debug)
-    {
-        printf("MAX_TOKENS=%d, MAX_STACK_SIZE=%d, MAX_VAR_COUNT=%d, STRICT_PARENTHESES=%d\n",
-            MAX_TOKENS, MAX_STACK_SIZE, MAX_VAR_COUNT, STRICT_PARENTHESES);
-    }
-    
+#ifdef DEBUG
+    printf("Calculator %s Debug build (c) 2018, Philipp Hochmann\n", VERSION);
+#else
+    printf("Calculator %s (c) 2018, Philipp Hochmann\n", VERSION);
+#endif
+    printf("Commands: debug, help, <function> := <after>, <before> -> <after>\n");
+
     for (size_t i = 0; i < ctx->num_ops; i++)
     {
         printf(OP_COLOR);
@@ -137,13 +138,6 @@ void main_interactive()
     char *input;
     rl_bind_key('\t', rl_insert); // Disable tab completion
     
-#ifdef DEBUG
-    printf("Calculator %s Debug build (c) 2018, Philipp Hochmann\n", VERSION);
-#else
-    printf("Calculator %s (c) 2018, Philipp Hochmann\n", VERSION);
-#endif
-    printf("Commands: debug, help, <function> := <after>, <before> -> <after>\n");
-    
     while (true)
     {
         if (ask_input("> ", &input))
@@ -212,11 +206,13 @@ void parse_assignment(char *input, char *op_pos)
     *op_pos = '\0';
     
     // Tokenize function definition to get its name. Name is first token.
+    ParserError perr;
     char *tokens[MAX_TOKENS];
     size_t num_tokens = 0;
-    if (!tokenize(ctx, input, tokens, &num_tokens))
+    if (!tokenize(ctx, input, &num_tokens, tokens))
     {
-        printf("Error in function definition\n");
+        // Only reason for tokenize to fail is max. number of tokens exceeded
+        printf("Error in function definition: %s\n", perr_to_string(PERR_MAX_TOKENS_EXCEEDED));
         return;
     }
     
@@ -231,16 +227,16 @@ void parse_assignment(char *input, char *op_pos)
     }
     else
     {
-        printf("Error in function definition\n");
+        printf("Error in left side: %s\n", perr_to_string(PERR_EMPTY));
         return;
     }
     
     Node *left_n;
     
-    if (parse_input(ctx, input, &left_n) != PERR_SUCCESS)
+    if ((perr = parse_input(ctx, input, &left_n)) != PERR_SUCCESS)
     {
         ctx->num_ops--;
-        printf("Error in function definition\n");
+        printf("Error in left side: %s\n", perr_to_string(perr));
         return;
     }
     
@@ -249,7 +245,7 @@ void parse_assignment(char *input, char *op_pos)
         ctx->num_ops--;
         free_tree(left_n);
         free(name);
-        printf("Error in function definition\n");
+        printf("Error in left side: not a function\n");
         return;
     }
     
@@ -260,11 +256,20 @@ void parse_assignment(char *input, char *op_pos)
             ctx->num_ops--;
             free_tree(left_n);
             free(name);
-            printf("Error in function definition\n");
+            printf("Error in left side: arguments must be variables\n");
             return;
         }
     }
-    
+
+    if (tree_list_vars(left_n, NULL) != left_n->num_children)
+    {
+        ctx->num_ops--;
+        free_tree(left_n);
+        free(name);
+        printf("Error in left side: arguments must be distinct variables\n");
+        return;
+    }
+
     if (ctx_lookup_function(ctx, name, left_n->num_children) != NULL)
     {
         ctx->num_ops--;
@@ -286,8 +291,7 @@ void parse_assignment(char *input, char *op_pos)
     }
     
     Node *right_n;
-    
-    ParserError perr;
+
     if ((perr = parse_input(ctx, op_pos + 2, &right_n)) != PERR_SUCCESS)
     {
         ctx->num_ops--;
@@ -350,7 +354,15 @@ void parse_evaluation(char *input)
         double eval = arith_eval(res);
         char result_str[ctx->min_str_len];
         ctx->to_string((void*)(&eval), result_str, ctx->min_str_len);
-        printf("= %s\n", result_str);
+
+        if (!silent)
+        {
+            printf("= %s\n", result_str);
+        }
+        else
+        {
+            printf("%s\n", result_str);
+        }
         
         if (ans != NULL) free_tree(ans);
         ans = res;
@@ -366,16 +378,17 @@ bool parse_input_wrapper(char *input, Node **out_res, bool apply_rules, bool app
         return false;
     }
     
-    if (apply_ans && ans != NULL) tree_substitute_variable(ctx, *out_res, ans, "ans");
+    if (apply_ans && ans != NULL) tree_substitute_var(ctx, *out_res, ans, "ans");
     if (apply_rules)
     {
         apply_ruleset(*out_res, rules, num_rules, 50);
     }
 
+    // Make expression constant by asking for values and binding them to variables
     if (constant)
     {
         char *vars[MAX_VAR_COUNT];
-        int num_variables = tree_list_variables(*out_res, vars);
+        int num_variables = tree_list_vars(*out_res, vars);
         for (int i = 0; i < num_variables; i++)
         {
             printf(" %s? ", vars[i]);
@@ -392,7 +405,7 @@ bool parse_input_wrapper(char *input, Node **out_res, bool apply_rules, bool app
                 }
                 free(input);
                 
-                if (tree_contains_variable(res_var))
+                if (tree_contains_vars(res_var))
                 {
                     // Not a constant given - ask again
                     printf("Not a constant expression\n");
@@ -401,7 +414,7 @@ bool parse_input_wrapper(char *input, Node **out_res, bool apply_rules, bool app
                     continue;
                 }
                 
-                tree_substitute_variable(ctx, *out_res, res_var, vars[i]);
+                tree_substitute_var(ctx, *out_res, res_var, vars[i]);
                 free(vars[i]);
                 free_tree(res_var);
             }

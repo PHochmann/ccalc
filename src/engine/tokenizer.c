@@ -25,7 +25,7 @@ int str_cmp(const void *a, const void *b)
 Summary: Splits input string into several tokens to be parsed
 Returns: True if method succeeded, False if MAX_TOKENS was exceeded
 */
-bool tokenize(ParsingContext *ctx, char *input, char *out_tokens[MAX_TOKENS], size_t *out_num_tokens)
+bool tokenize(ParsingContext *ctx, char *input, size_t *out_num_tokens, char **out_tokens)
 {
     char *token_markers[MAX_TOKENS];
     char *keywords[ctx->num_ops];

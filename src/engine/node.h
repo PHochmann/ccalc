@@ -29,10 +29,10 @@ Node get_variable_node(char *var_name);
 Node get_constant_node(void *value);
 Node get_operator_node(Operator *op, Arity num_children);
 
-bool tree_contains_variable(Node* node);
-int tree_get_variable_instances(Node *tree, char *variable, Node *out_instances[MAX_VAR_COUNT]);
-int tree_list_variables(Node *tree, char *out_variables[MAX_VAR_COUNT]);
-int tree_substitute_variable(ParsingContext *ctx, Node *tree, Node *tree_to_copy, char* var_name);
+bool tree_contains_vars(Node* node);
+int tree_get_var_instances(Node *tree, char *variable, Node **out_instances);
+int tree_list_vars(Node *tree, char **out_variables);
+int tree_substitute_var(ParsingContext *ctx, Node *tree, Node *tree_to_copy, char* var_name);
 void tree_replace(Node *destination, Node new_node);
 Node tree_copy(ParsingContext *ctx, Node *node);
 bool node_equals(ParsingContext *ctx, Node *a, Node *b);

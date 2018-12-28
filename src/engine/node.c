@@ -40,7 +40,7 @@ Node get_operator_node(Operator *op, Arity num_children)
 
 /* Returns true iff variable node exists in tree
    False indicates save evaluation */
-bool tree_contains_variable(Node* tree)
+bool tree_contains_vars(Node* tree)
 {
     if (tree == NULL) return false;
     
@@ -55,7 +55,7 @@ bool tree_contains_variable(Node* tree)
         case NTYPE_OPERATOR:
             for (Arity i = 0; i < tree->num_children; i++)
             {
-                if (tree_contains_variable(tree->children[i])) return true;
+                if (tree_contains_vars(tree->children[i])) return true;
             }
             return false;
     }
@@ -66,7 +66,7 @@ bool tree_contains_variable(Node* tree)
 /*
 Summary: Lists all variable nodes of given names (e.g. to replace them)
 */
-int tree_get_variable_instances(Node *tree, char *variable, Node *out_instances[MAX_VAR_COUNT])
+int tree_get_var_instances(Node *tree, char *variable, Node **out_instances)
 {
     if (tree == NULL) return -1;
     
@@ -107,11 +107,12 @@ int tree_get_variable_instances(Node *tree, char *variable, Node *out_instances[
 
 /*
 Summary: Lists all variable names in tree.
+Returns: Length of out_variables (i.e. count of variables in tree without duplicates)
 Params
-    out_variables must hold at least MAX_VAR_COUNT char-pointers
+    out_variables must hold at least MAX_VAR_COUNT char-pointers or NULL to only count variables
         (strings are copied, don't forget to call free on each of out_variables' items)
 */
-int tree_list_variables(Node *tree, char *out_variables[MAX_VAR_COUNT])
+int tree_list_vars(Node *tree, char **out_variables)
 {
     if (tree == NULL) return -1;
     
@@ -120,7 +121,9 @@ int tree_list_variables(Node *tree, char *out_variables[MAX_VAR_COUNT])
     Node *node_stack[MAX_STACK_SIZE];
     node_stack[0] = tree;
     size_t stack_count = 1;
-    
+
+    char *variables[MAX_VAR_COUNT];
+
     while (stack_count > 0)
     {
         Node *curr_node = node_stack[--stack_count];
@@ -132,7 +135,7 @@ int tree_list_variables(Node *tree, char *out_variables[MAX_VAR_COUNT])
                 for (int i = 0; i < res_count; i++)
                 {
                     // Don't add variable if we already found it
-                    if (strcmp(out_variables[i], curr_node->var_name) == 0)
+                    if (strcmp(variables[i], curr_node->var_name) == 0)
                     {
                         flag = true;
                         break;
@@ -143,8 +146,8 @@ int tree_list_variables(Node *tree, char *out_variables[MAX_VAR_COUNT])
                 // Buffer overflow protection
                 if (res_count == MAX_VAR_COUNT) return -1;
                 
-                out_variables[res_count] = malloc(strlen(curr_node->var_name) + 1);
-                strcpy(out_variables[res_count++], curr_node->var_name);
+                variables[res_count] = malloc(strlen(curr_node->var_name) + 1);
+                strcpy(variables[res_count++], curr_node->var_name);
                 break;
                 
             case NTYPE_OPERATOR:
@@ -162,6 +165,10 @@ int tree_list_variables(Node *tree, char *out_variables[MAX_VAR_COUNT])
         }
     }
     
+    if (out_variables != NULL)
+    {
+        for (int i = 0; i < res_count; i++) out_variables[i] = variables[i];
+    }
     return res_count;
 }
 
@@ -169,12 +176,12 @@ int tree_list_variables(Node *tree, char *out_variables[MAX_VAR_COUNT])
 Summary: Substitutes any occurrence of a variable with certain name with a given subtree
 Returns: Number of occurrences of variable
 */
-int tree_substitute_variable(ParsingContext *ctx, Node *tree, Node *tree_to_copy, char *var_name)
+int tree_substitute_var(ParsingContext *ctx, Node *tree, Node *tree_to_copy, char *var_name)
 {
     if (ctx == NULL || tree == NULL || tree_to_copy == NULL || var_name == NULL) return 0;
     
     Node *var_instances[MAX_VAR_COUNT];
-    int inst_count = tree_get_variable_instances(tree, var_name, var_instances);
+    int inst_count = tree_get_var_instances(tree, var_name, var_instances);
     
     for (int i = 0; i < inst_count; i++)
     {

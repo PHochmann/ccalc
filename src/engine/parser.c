@@ -168,7 +168,7 @@ bool op_push(Operator *op)
     return true;
 }
 
-ParserError parse_tokens(ParsingContext *context, char **tokens, size_t num_tokens, Node **res)
+ParserError parse_tokens(ParsingContext *context, size_t num_tokens, char **tokens, Node **res)
 {
     // 1. Early outs
     if (context == NULL || tokens == NULL || res == NULL) return PERR_ARGS_MALFORMED;
@@ -419,8 +419,8 @@ ParserError parse_input(ParsingContext *context, char *input, Node **res)
     char *tokens[MAX_TOKENS];
 
     // Parsing
-    if (!tokenize(context, input, tokens, &num_tokens)) return PERR_MAX_TOKENS_EXCEEDED;
-    ParserError result = parse_tokens(context, tokens, num_tokens, res);
+    if (!tokenize(context, input, &num_tokens, tokens)) return PERR_MAX_TOKENS_EXCEEDED;
+    ParserError result = parse_tokens(context, num_tokens, tokens, res);
 
     // Cleanup
     for (size_t i = 0; i < num_tokens; i++) free(tokens[i]);
