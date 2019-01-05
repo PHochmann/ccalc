@@ -178,7 +178,7 @@ void _arith_to_string(void *in, char *str, size_t buff_size)
     sprintf(str, "%.30g", *((double*)in));
 }
 
-ParsingContext* arith_get_ctx()
+ParsingContext *arith_get_ctx()
 {
     arith_ctx = get_context(
         sizeof(double),

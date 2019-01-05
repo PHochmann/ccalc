@@ -7,8 +7,9 @@
 #include "../src/engine/parser.h"
 #include "../src/arith/arith_ctx.h"
 
+#define PAD_PARENTHESES true
 #define EPSILON 0.00000001
-#define NUM_VALUE_TESTS 66
+#define NUM_VALUE_TESTS 67
 #define NUM_ERROR_TESTS 7
 
 // To check if parsed tree evaluates to expected value
@@ -90,10 +91,12 @@ static ValueTest valueTests[NUM_VALUE_TESTS] = {
     { "2*3^2", 18 },
     { "sin(asin(.2))", 0.2 },
     { "-sqrt(abs(--2!!*--sum(-1+.2-.2+2, 2^2^3-255, -sum(.1, .9), 1+2)*--2!!))", -4 },
-#if STRICT_PARENTHESES
-    { "(1+1)*(2+2)", 8 },
+#if PAD_PARENTHESES
+    { "1+1)*(2+2", 8 },
+    { "sin((2)", 0.909297426825 }
 #else
-    { "1+1)*(2+2", 8 }
+    { "(1+1)*(2+2)", 8 },
+    { "sin((2))", 0.909297426825 }
 #endif
 };
 
@@ -103,12 +106,12 @@ static ErrorTest errorTests[NUM_ERROR_TESTS] = {
     { "x+", PERR_MISSING_OPERAND },
     { "sin(x, y)", PERR_FUNCTION_WRONG_ARITY },
     { "sin,", PERR_UNEXPECTED_DELIMITER },
-#if STRICT_PARENTHESES
-    { "(x", PERR_EXCESS_OPENING_PARENTHESIS },
-    { "x)", PERR_EXCESS_CLOSING_PARENTHESIS },
-#else
+#if PAD_PARENTHESES
     { "(x", PERR_SUCCESS },
-    { "x)", PERR_SUCCESS },
+    { "x)", PERR_SUCCESS }
+#else
+    { "(x", PERR_EXCESS_OPENING_PARENTHESIS },
+    { "x)", PERR_EXCESS_CLOSING_PARENTHESIS }
 #endif
 };
 
@@ -123,7 +126,7 @@ int perform_value_tests(ParsingContext *ctx)
     
     for (int i = 0; i < NUM_VALUE_TESTS; i++)
     {
-        if (parse_input(ctx, valueTests[i].input, &node) != PERR_SUCCESS
+        if (parse_input(ctx, PAD_PARENTHESES, valueTests[i].input, &node) != PERR_SUCCESS
             || !almost_equals(arith_eval(node), valueTests[i].result))
         {
             return i;
@@ -139,7 +142,7 @@ int perform_error_tests(ParsingContext *ctx)
 
     for (int i = 0; i < NUM_ERROR_TESTS; i++)
     {
-        if (parse_input(ctx, errorTests[i].input, &node) != errorTests[i].result)
+        if (parse_input(ctx, PAD_PARENTHESES, errorTests[i].input, &node) != errorTests[i].result)
         {
             return i;
         }
@@ -167,6 +170,10 @@ int main()
         return 1;
     }
 
-    printf(F_GREEN "passed (Version: %s, Tests: %d)" COL_RESET "\n", VERSION, NUM_VALUE_TESTS + NUM_ERROR_TESTS);
+    printf(F_GREEN "passed (PAD_P: %s, Version: %s, Tests: %d)" COL_RESET "\n",
+        PAD_PARENTHESES ? "1" : "0",
+        VERSION,
+        NUM_VALUE_TESTS + NUM_ERROR_TESTS);
+
     return 0;
 }

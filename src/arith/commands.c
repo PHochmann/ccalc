@@ -22,7 +22,7 @@
 
 void parse_evaluation(char *input);
 bool ask_input(char *prompt, char **out_input);
-bool parse_input_wrapper(char *input, Node **out_res, bool apply_rules, bool apply_ans, bool constant);
+bool parse_input_wrapper(char *input, bool pad_parentheses, Node **out_res, bool apply_rules, bool apply_ans, bool constant);
 void parse_assignment(char *input, char *op);
 void parse_rule(char *input, char *op);
 
@@ -63,9 +63,9 @@ void make_silent()
 void print_help()
 {
 #ifdef DEBUG
-    printf("Calculator %s Debug build (c) 2018, Philipp Hochmann\n", VERSION);
+    printf("Calculator %s Debug build (c) 2018-2019, Philipp Hochmann\n", VERSION);
 #else
-    printf("Calculator %s (c) 2018, Philipp Hochmann\n", VERSION);
+    printf("Calculator %s (c) 2018-2019, Philipp Hochmann\n", VERSION);
 #endif
     printf("Commands: debug, help, <function> := <after>, <before> -> <after>\n");
 
@@ -209,7 +209,7 @@ void parse_assignment(char *input, char *op_pos)
     ParserError perr;
     char *tokens[MAX_TOKENS];
     size_t num_tokens = 0;
-    if (!tokenize(ctx, input, &num_tokens, tokens))
+    if (!tokenize(ctx, false, input, &num_tokens, tokens))
     {
         // Only reason for tokenize to fail is max. number of tokens exceeded
         printf("Error in function definition: %s\n", perr_to_string(PERR_MAX_TOKENS_EXCEEDED));
@@ -233,7 +233,7 @@ void parse_assignment(char *input, char *op_pos)
     
     Node *left_n;
     
-    if ((perr = parse_input(ctx, input, &left_n)) != PERR_SUCCESS)
+    if ((perr = parse_input(ctx, false, input, &left_n)) != PERR_SUCCESS)
     {
         ctx->num_ops--;
         printf("Error in left side: %s\n", perr_to_string(perr));
@@ -292,7 +292,7 @@ void parse_assignment(char *input, char *op_pos)
     
     Node *right_n;
 
-    if ((perr = parse_input(ctx, op_pos + 2, &right_n)) != PERR_SUCCESS)
+    if ((perr = parse_input(ctx, false, op_pos + 2, &right_n)) != PERR_SUCCESS)
     {
         ctx->num_ops--;
         free_tree(left_n);
@@ -320,13 +320,13 @@ void parse_rule(char *input, char *op_pos)
     Node *after_n;
     ParserError perr;
     
-    if ((perr = parse_input(ctx, input, &before_n)) != PERR_SUCCESS)
+    if ((perr = parse_input(ctx, false, input, &before_n)) != PERR_SUCCESS)
     {
         printf("Error in left expression: %s\n", perr_to_string(perr));
         return;
     }
     
-    if ((perr = parse_input(ctx, op_pos + 2, &after_n)) != PERR_SUCCESS)
+    if ((perr = parse_input(ctx, false, op_pos + 2, &after_n)) != PERR_SUCCESS)
     {
         printf("Error in right expression: %s\n", perr_to_string(perr));
         return;
@@ -340,7 +340,7 @@ void parse_evaluation(char *input)
 {
     Node *res;
     
-    if (parse_input_wrapper(input, &res, true, true, true))
+    if (parse_input_wrapper(input, true, &res, true, true, true))
     {
         if (debug)
         {
@@ -369,9 +369,9 @@ void parse_evaluation(char *input)
     }
 }
 
-bool parse_input_wrapper(char *input, Node **out_res, bool apply_rules, bool apply_ans, bool constant)
+bool parse_input_wrapper(char *input, bool pad_parentheses, Node **out_res, bool apply_rules, bool apply_ans, bool constant)
 {
-    ParserError perr = parse_input(ctx, input, out_res);
+    ParserError perr = parse_input(ctx, pad_parentheses, input, out_res);
     if (perr != PERR_SUCCESS)
     {
         printf("Error: %s\n", perr_to_string(perr));
@@ -396,7 +396,7 @@ bool parse_input_wrapper(char *input, Node **out_res, bool apply_rules, bool app
             if (ask_input("> ", &input))
             {
                 Node *res_var;
-                if (!parse_input_wrapper(input, &res_var, true, true, false))
+                if (!parse_input_wrapper(input, pad_parentheses, &res_var, apply_rules, apply_ans, false))
                 {
                     // Error while parsing - ask again
                     free(input);

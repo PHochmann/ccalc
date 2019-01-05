@@ -6,7 +6,7 @@
 /*
 Returns: String representation for user of ParserError
 */
-char* perr_to_string(ParserError perr)
+char *perr_to_string(ParserError perr)
 {
     switch (perr)
     {
@@ -78,7 +78,7 @@ void print_padded(char *string, size_t total_length)
     printf("%s", string);
 }
 
-void print_repeated(char* string, int amount)
+void print_repeated(char *string, int amount)
 {
     for (int i = 0; i < amount; i++) printf("%s", string);
 }

@@ -28,9 +28,9 @@ void print_tree_visual_rec(ParsingContext *ctx, Node *node, unsigned char layer,
     {
         for (unsigned char i = 0; i < layer - 1; i++)
         {
-            printf(vert_lines & ((unsigned char)1 << i) ? LINE_TAB : EMPTY_TAB);
+            printf(vert_lines & ((unsigned int)1 << i) ? LINE_TAB : EMPTY_TAB);
         }
-        printf(vert_lines & ((unsigned char)1 << (layer - 1)) ? BRANCH_TAB : END_TAB);
+        printf(vert_lines & ((unsigned int)1 << (layer - 1)) ? BRANCH_TAB : END_TAB);
     }
 
     switch (node->type)
@@ -40,7 +40,7 @@ void print_tree_visual_rec(ParsingContext *ctx, Node *node, unsigned char layer,
             for (Arity i = 0; i < node->num_children; i++)
             {
                 print_tree_visual_rec(ctx, node->children[i], layer + 1,
-                    (i == (Arity)(node->num_children - 1)) ? vert_lines : (vert_lines | ((unsigned int)1 << layer)));
+                    (i == node->num_children - 1) ? vert_lines : (vert_lines | ((unsigned int)1 << layer)));
             }
             break;
             

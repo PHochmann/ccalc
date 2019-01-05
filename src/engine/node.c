@@ -40,7 +40,7 @@ Node get_operator_node(Operator *op, Arity num_children)
 
 /* Returns true iff variable node exists in tree
    False indicates save evaluation */
-bool tree_contains_vars(Node* tree)
+bool tree_contains_vars(Node *tree)
 {
     if (tree == NULL) return false;
     

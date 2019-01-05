@@ -2,4 +2,4 @@
 #include "../engine/node.h"
 
 double arith_eval(Node *node);
-ParsingContext* arith_get_ctx();
+ParsingContext *arith_get_ctx();

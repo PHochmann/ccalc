@@ -8,6 +8,7 @@ int main(int argc, char *argv[])
     if (argc > 1)
     {
         make_silent();
+        
         for (int i = 1; i < argc; i++)
         {
             parse_command(argv[i]);
@@ -16,7 +17,11 @@ int main(int argc, char *argv[])
     else
     {
         // If we pipe in arguments, do so silently
-        if (!isatty(STDIN_FILENO)) make_silent();
+        if (!isatty(STDIN_FILENO))
+        {
+            make_silent();
+        }
+
         main_interactive();
     }
     

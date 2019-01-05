@@ -234,14 +234,7 @@ ParserError parse_tokens(ParsingContext *context, size_t num_tokens, char **toke
             }
             else
             {
-                if (STRICT_PARENTHESES)
-                {
-                    ERROR(PERR_EXCESS_CLOSING_PARENTHESIS);
-                }
-                else
-                {
-                    continue;
-                }
+                ERROR(PERR_EXCESS_CLOSING_PARENTHESIS);
             }
             
             bool empty_params = (i > 0 && is_opening_parenthesis(tokens[i - 1][0]));
@@ -365,7 +358,7 @@ ParserError parse_tokens(ParsingContext *context, size_t num_tokens, char **toke
     // 5. Pop all remaining operators
     while (num_ops > 0)
     {
-        if (STRICT_PARENTHESES && op_peek() == NULL)
+        if (op_peek() == NULL)
         {
             ERROR(PERR_EXCESS_OPENING_PARENTHESIS);
         }
@@ -413,13 +406,13 @@ ParserError parse_tokens(ParsingContext *context, size_t num_tokens, char **toke
 Summary: Parses string to abstract syntax tree with operators of given context
 Returns: Result code to indicate whether string was parsed successfully or which error occurred
 */
-ParserError parse_input(ParsingContext *context, char *input, Node **res)
+ParserError parse_input(ParsingContext *context, bool pad_parentheses, char *input, Node **res)
 {
     size_t num_tokens;
     char *tokens[MAX_TOKENS];
 
     // Parsing
-    if (!tokenize(context, input, &num_tokens, tokens)) return PERR_MAX_TOKENS_EXCEEDED;
+    if (!tokenize(context, pad_parentheses, input, &num_tokens, tokens)) return PERR_MAX_TOKENS_EXCEEDED;
     ParserError result = parse_tokens(context, num_tokens, tokens, res);
 
     // Cleanup
