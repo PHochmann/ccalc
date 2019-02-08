@@ -5,7 +5,7 @@
 #include "../src/engine/context.h"
 #include "../src/engine/node.h"
 #include "../src/engine/parser.h"
-#include "../src/arith/arith_ctx.h"
+#include "../src/commands/arith_context.h"
 
 #define PAD_PARENTHESES true
 #define EPSILON 0.00000001
@@ -126,7 +126,7 @@ int perform_value_tests(ParsingContext *ctx)
     
     for (int i = 0; i < NUM_VALUE_TESTS; i++)
     {
-        if (parse_input(ctx, PAD_PARENTHESES, valueTests[i].input, &node) != PERR_SUCCESS
+        if (parse_input(ctx, valueTests[i].input, PAD_PARENTHESES, &node) != PERR_SUCCESS
             || !almost_equals(arith_eval(node), valueTests[i].result))
         {
             return i;
@@ -142,7 +142,7 @@ int perform_error_tests(ParsingContext *ctx)
 
     for (int i = 0; i < NUM_ERROR_TESTS; i++)
     {
-        if (parse_input(ctx, PAD_PARENTHESES, errorTests[i].input, &node) != errorTests[i].result)
+        if (parse_input(ctx, errorTests[i].input, PAD_PARENTHESES, &node) != errorTests[i].result)
         {
             return i;
         }

@@ -40,6 +40,12 @@ ParsingContext get_context(
     return res;
 }
 
+void free_context(ParsingContext *ctx)
+{
+    if (ctx == NULL) return;
+    free(ctx->operators);
+}
+
 /*
 Summary: Adds given operators to context
 Returns: true if all operators were successfully added, false if inconsistency occurred, buffer full or invalid arguments

@@ -3,7 +3,6 @@
 #include <sys/types.h>
 
 #include "node.h"
-#include "memory.h"
 
 Node get_node(NodeType type)
 {
@@ -36,6 +35,39 @@ Node get_operator_node(Operator *op, Arity num_children)
     res.num_children = num_children;
     res.children = malloc(num_children * sizeof(Node*));
     return res;
+}
+
+// Summary: Calls free() on each node within tree, including variable's names, constant's values and operator's children
+void free_tree(Node *tree)
+{
+    if (tree == NULL) return;
+    free_tree_preserved(tree);
+    free(tree);
+}
+
+// Summary: Same as free_tree, but root will be preserved (root's name or value is free'd)
+void free_tree_preserved(Node *tree)
+{
+    if (tree == NULL) return;
+    
+    switch (tree->type)
+    {
+        case NTYPE_OPERATOR:
+            for (size_t i = 0; i < tree->num_children; i++)
+            {
+                free_tree(tree->children[i]);
+            }
+            free(tree->children);
+            break;
+            
+        case NTYPE_CONSTANT:
+            free(tree->const_value);
+            break;
+            
+        case NTYPE_VARIABLE:
+            free(tree->var_name);
+            break;
+    }
 }
 
 /* Returns true iff variable node exists in tree

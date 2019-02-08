@@ -34,4 +34,4 @@ typedef enum {
 } ParserError;
 
 ParserError parse_tokens(ParsingContext *context, size_t num_tokens, char **tokens, Node **res);
-ParserError parse_input(ParsingContext *ctx, bool pad_parentheses, char *input, Node **res);
+ParserError parse_input(ParsingContext *ctx, char *input, bool pad_parentheses, Node **res);

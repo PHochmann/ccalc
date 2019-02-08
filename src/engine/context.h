@@ -28,7 +28,7 @@ ParsingContext get_context(
     TryParseHandler try_parse,
     ToStringHandler to_string,
     EqualsHandler handler);
-
+void free_context(ParsingContext *ctx);
 bool ctx_add_ops(ParsingContext *ctx, size_t count, ...);
 int ctx_add_op(ParsingContext *ctx, Operator op);
 bool ctx_set_glue_op(ParsingContext *ctx, Operator *op);

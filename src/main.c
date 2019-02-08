@@ -1,5 +1,6 @@
 #include <unistd.h>
-#include "arith/commands.h"
+
+#include "commands/core.h"
 
 int main(int argc, char *argv[])
 {

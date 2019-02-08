@@ -28,7 +28,8 @@ typedef struct Node
 Node get_variable_node(char *var_name);
 Node get_constant_node(void *value);
 Node get_operator_node(Operator *op, Arity num_children);
-
+void free_tree(Node *node);
+void free_tree_preserved(Node *tree);
 bool tree_contains_vars(Node *node);
 int tree_get_var_instances(Node *tree, char *variable, Node **out_instances);
 int tree_list_vars(Node *tree, char **out_variables);

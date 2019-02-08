@@ -21,7 +21,9 @@ typedef struct {
 
 RewriteRule get_rule(ParsingContext *ctx, Node *before, Node *after);
 bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_matching);
+void free_matching(Matching matching);
+void free_rule(RewriteRule rule);
 bool find_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_matching);
 void transform_by_rule(RewriteRule *rule, Matching *matching);
 bool apply_rule(Node *tree, RewriteRule *rule);
-int apply_ruleset(Node *tree, RewriteRule *rules, size_t num_rules, int max_iterations);
+int apply_ruleset(Node *tree, size_t num_rules, RewriteRule *rules, int max_iterations);

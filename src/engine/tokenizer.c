@@ -23,13 +23,15 @@ int str_cmp(const void *a, const void *b)
 
 /*
 Summary: Splits input string into several tokens to be parsed
-Returns: True if method succeeded, False if MAX_TOKENS was exceeded
+Returns: True if method succeeded, False if MAX_TOKENS was exceeded or NULL given in arguments
 Params:
     pad_parentheses: When set to 1, remaining closing and opening parentheses will be balanced at start and end of input
         Otherwise, PERR_EXCESS_{CLOSING, OPENING}_PARENTHESIS  will be reported by parser (with priority of CLOSING)
 */
-bool tokenize(ParsingContext *ctx, bool pad_parentheses, char *input, size_t *out_num_tokens, char **out_tokens)
+bool tokenize(ParsingContext *ctx, char *input, bool pad_parentheses, size_t *out_num_tokens, char **out_tokens)
 {
+    if (ctx == NULL || input == NULL) return false;
+
     char *token_markers[MAX_TOKENS];
     char *keywords[ctx->num_ops];
     int num_opening_parentheses = 0;

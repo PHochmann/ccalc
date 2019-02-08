@@ -1,3 +1,4 @@
+#pragma once
 #include "../engine/context.h"
 #include "../engine/node.h"
 

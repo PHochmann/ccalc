@@ -20,7 +20,7 @@
 #define VAR_COLOR   F_CYAN
 
 // Version number of engine
-#define VERSION "1.2.3"
+#define VERSION "1.2.4"
 // Maximum number of tokens reserved before tokenization
 #define MAX_TOKENS 128
 // Maximum number of operator/node instances the parser can handle at once

@@ -2,9 +2,11 @@
 #include <stdio.h>
 #include <float.h>
 #include <math.h>
-#include "arith_ctx.h"
+
+#include "arith_context.h"
 
 #define EVAL(n) arith_eval(node->children[n])
+
 #define ARITH_STRING_LENGTH 30
 #define ARITH_NUM_OPS 45
 #define ARITH_CUSTOM_BUFFER 10

@@ -1,7 +1,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "memory.h"
 #include "rule.h"
 #include "constants.h" 
 #include "node.h"
@@ -113,6 +112,22 @@ bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_
     return true;
 }
 
+void free_rule(RewriteRule rule)
+{
+    free_tree(rule.before);
+    free_tree(rule.after);
+}
+
+void free_matching(Matching matching)
+{
+    for (size_t i = 0; i < matching.num_mapped; i++)
+    {
+        free(matching.mapped_vars[i]);
+    }
+    free(matching.mapped_vars);
+    free(matching.mapped_nodes);
+}
+
 /*
 Summary: Looks for matching in tree, i.e. tries to construct matching in each node until matching is found (Top-Down)
 */
@@ -175,7 +190,7 @@ Params
     max_iterations: maximal number of times the set is iterated, -1 for no cap (this makes non-termination possible)
 Returns: Number of successful appliances
 */
-int apply_ruleset(Node *tree, RewriteRule *rules, size_t num_rules, int max_iterations)
+int apply_ruleset(Node *tree, size_t num_rules, RewriteRule *rules, int max_iterations)
 {
     int i = 0;
     int res = 0;
