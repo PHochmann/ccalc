@@ -10,7 +10,6 @@ typedef struct
     CommandInitHandler initHandler;
     CommandCheckHandler checkHandler;
     CommandExecHandler execHandler;
-    char *description;
 } Command;
 
-Command get_command(CommandInitHandler initHandler, CommandCheckHandler checkHandler, CommandExecHandler execHandler, char *description);
+Command get_command(CommandInitHandler initHandler, CommandCheckHandler checkHandler, CommandExecHandler execHandler);

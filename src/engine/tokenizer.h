@@ -4,7 +4,6 @@
 #include "context.h"
 
 bool tokenize(ParsingContext *ctx, char *input, bool pad_parentheses, size_t *out_num_tokens, char **out_tokens);
-
 bool is_space(char c);
 bool is_letter(char c);
 bool is_digit(char c);
