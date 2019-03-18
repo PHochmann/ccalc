@@ -12,6 +12,9 @@
 #include "../engine/parser.h"
 #include "../engine/console_util.h"
 
+#define MSG_ERROR_LEFT "Error in left expression: "
+#define MSG_ERROR_RIGHT "Error in right expression: "
+
 void definition_init()
 {
 
@@ -56,7 +59,7 @@ void definition_exec(ParsingContext *ctx, char *input)
     }
     else
     {
-        printf("Error in left side: %s\n", perr_to_string(PERR_EMPTY));
+        printf(MSG_ERROR_LEFT "%s\n", perr_to_string(PERR_EMPTY));
         return;
     }
     
@@ -65,7 +68,7 @@ void definition_exec(ParsingContext *ctx, char *input)
     if ((perr = parse_input(ctx, input, false, &left_n)) != PERR_SUCCESS)
     {
         ctx->num_ops--;
-        printf("Error in left side: %s\n", perr_to_string(perr));
+        printf(MSG_ERROR_LEFT "%s\n", perr_to_string(perr));
         return;
     }
     
@@ -74,7 +77,7 @@ void definition_exec(ParsingContext *ctx, char *input)
         ctx->num_ops--;
         free_tree(left_n);
         free(name);
-        printf("Error in left side: not a function\n");
+        printf(MSG_ERROR_LEFT "not a function\n");
         return;
     }
     
@@ -85,7 +88,7 @@ void definition_exec(ParsingContext *ctx, char *input)
             ctx->num_ops--;
             free_tree(left_n);
             free(name);
-            printf("Error in left side: arguments must be variables\n");
+            printf(MSG_ERROR_LEFT "arguments must be variables\n");
             return;
         }
     }
@@ -95,7 +98,7 @@ void definition_exec(ParsingContext *ctx, char *input)
         ctx->num_ops--;
         free_tree(left_n);
         free(name);
-        printf("Error in left side: arguments must be distinct variables\n");
+        printf(MSG_ERROR_LEFT "arguments must be distinct variables\n");
         return;
     }
 
@@ -126,7 +129,7 @@ void definition_exec(ParsingContext *ctx, char *input)
         ctx->num_ops--;
         free_tree(left_n);
         free(name);
-        printf("Error in right expression: %s\n", perr_to_string(perr));
+        printf(MSG_ERROR_RIGHT "%s\n", perr_to_string(perr));
         return;
     }
     

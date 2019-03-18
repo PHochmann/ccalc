@@ -53,7 +53,8 @@ bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_
                 {
                     if (strcmp(mapped_vars[i], curr_pattern_n->var_name) == 0) // Already bound
                     {
-                        // Already bound variable not compatible with this occurrence
+                        // Is already bound variable equal to this occurrence?
+                        // If not, fail here
                         if (!tree_equals(ctx, mapped_nodes[i], curr_tree_n)) return false;
                         found = true;
                         break;
@@ -199,7 +200,6 @@ int apply_ruleset(Node *tree, size_t num_rules, RewriteRule *rules, int max_iter
     while (i < max_iterations || max_iterations == -1)
     {
         bool applied_flag = false;
-        
         for (size_t j = 0; j < num_rules; j++)
         {
             if (apply_rule(tree, &rules[j]))
@@ -208,7 +208,6 @@ int apply_ruleset(Node *tree, size_t num_rules, RewriteRule *rules, int max_iter
                 applied_flag = true;
             }
         }
-        
         i++;
         if (!applied_flag) return res;
     }

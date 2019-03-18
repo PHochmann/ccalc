@@ -8,7 +8,7 @@
 #define EVAL(n) arith_eval(node->children[n])
 
 #define ARITH_STRING_LENGTH 30
-#define ARITH_NUM_OPS 45
+#define ARITH_NUM_OPS 46
 #define ARITH_CUSTOM_BUFFER 10
 
 static ParsingContext arith_ctx;
@@ -25,6 +25,21 @@ long binomial(long n, long k)
     }
     
     return res;
+}
+
+long fibonacci(long n)
+{
+    if (n == 0) return 0;
+
+    int a = 0;
+    int b = 1;
+
+    while (n-- > 1) {
+        int t = a + b;
+        a = b;
+        b = t;
+    }
+    return b;
 }
 
 double arith_eval(Node *node)
@@ -147,11 +162,13 @@ double arith_eval(Node *node)
                     return d_res / node->num_children;
                 case 41: // gamma(x)
                     return tgamma(EVAL(0));
-                case 42: // pi
+                case 42: // fib(x)
+                    return fibonacci((long)trunc(EVAL(0)));
+                case 43: // pi
                     return 3.14159265359;
-                case 43: // e
+                case 44: // e
                     return 2.71828182846;
-                case 44: // phi
+                case 45: // phi
                     return 1.61803398874;
                 default:
                     printf("Encountered operator without evaluation rule\n");
@@ -233,6 +250,7 @@ ParsingContext *arith_get_ctx()
         op_get_function("prod", DYNAMIC_ARITY),
         op_get_function("avg", DYNAMIC_ARITY),
         op_get_function("gamma", 1),
+        op_get_function("fib", 1),
         op_get_constant("pi"),
         op_get_constant("e"),
         op_get_constant("phi"));

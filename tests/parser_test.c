@@ -9,7 +9,7 @@
 
 #define PAD_PARENTHESES true
 #define EPSILON 0.00000001
-#define NUM_VALUE_TESTS 67
+#define NUM_VALUE_TESTS 68
 #define NUM_ERROR_TESTS 7
 
 // To check if parsed tree evaluates to expected value
@@ -67,6 +67,7 @@ static ValueTest valueTests[NUM_VALUE_TESTS] = {
     { "prod(3, 4, 5)", 60 },
     { "avg(0, 4)", 2 },
     { "gamma(2)", 1 },
+    { "fib(9)", 34 },
     { "pi", 3.141592653 },
     { "e", 2.7182818284 },
     { "phi", 1.61803398 },

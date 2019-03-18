@@ -30,30 +30,6 @@ char *placement_to_string(OpPlacement placement, Arity arity)
     return "Undefined";
 }
 
-void table(ParsingContext *ctx)
-{
-    // Name | type | arity | precendece
-
-    char *table[4 + ctx->num_ops * 4];
-
-    table[0] = "Name";
-    table[1] = "Type";
-    table[2] = "Arity";
-    table[3] = "Precedence";
-
-    for (size_t i = 0; i < ctx->num_ops; i++)
-    {
-        Operator *op = &ctx->operators[i];
-
-        table[4 + i * 4 + 0] = op->name;
-        table[4 + i * 4 + 1] = placement_to_string(op->placement, op->arity);
-        table[4 + i * 4 + 2] = "-1";
-        table[4 + i * 4 + 3] = "-2";
-    }
-
-    print_table(ctx->num_ops + 1, 4, table, true);
-}
-
 void help_init()
 {
 
@@ -127,6 +103,4 @@ void help_exec(ParsingContext *ctx, __attribute__((unused)) char *input)
         
     }
     printf("\n(%zu available operators)\n", ctx->num_ops);
-
-    if (g_debug) table(ctx);
 }
