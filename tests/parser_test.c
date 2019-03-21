@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <math.h>
 
+#include "parser_test.h"
+#include "../src/commands/arith_context.h"
 #include "../src/engine/constants.h"
 #include "../src/engine/context.h"
 #include "../src/engine/node.h"
 #include "../src/engine/parser.h"
-#include "../src/commands/arith_context.h"
 
 #define PAD_PARENTHESES true
 #define EPSILON 0.00000001
@@ -121,6 +122,7 @@ bool almost_equals(double a, double b)
     return (fabs(a - b) < EPSILON);
 }
 
+// Returns: Index of error occurrence, -1 denotes no error
 int perform_value_tests(ParsingContext *ctx)
 {
     Node *node = NULL;
@@ -137,6 +139,7 @@ int perform_value_tests(ParsingContext *ctx)
     return -1;
 }
 
+// Returns: Index of error occurrence, -1 denotes no error
 int perform_error_tests(ParsingContext *ctx)
 {
     Node *node = NULL;
@@ -152,7 +155,8 @@ int perform_error_tests(ParsingContext *ctx)
     return -1;
 }
 
-int main()
+// Returns: 0 if all tests passed, -1 otherwise
+int parser_test()
 {
     ParsingContext *ctx = arith_get_ctx();
     int error_index = perform_value_tests(ctx);
@@ -160,7 +164,7 @@ int main()
     if (error_index != -1)
     {
         printf(F_RED "\nError in value test %d: '%s'" COL_RESET "\n", error_index, valueTests[error_index].input);
-        return 1;
+        return -1;
     }
 
     error_index = perform_error_tests(ctx);
@@ -168,13 +172,8 @@ int main()
     if (error_index != -1)
     {
         printf(F_RED "\nError in error test %d: '%s'" COL_RESET "\n", error_index, errorTests[error_index].input);
-        return 1;
+        return -1;
     }
-
-    printf(F_GREEN "passed (PAD_P: %s, Version: %s, Tests: %d)" COL_RESET "\n",
-        PAD_PARENTHESES ? "1" : "0",
-        VERSION,
-        NUM_VALUE_TESTS + NUM_ERROR_TESTS);
 
     return 0;
 }

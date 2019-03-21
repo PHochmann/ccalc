@@ -8,10 +8,10 @@ if [ "$1" = "-debug" ] || [ "$1" = "-d" ]; then
     # Run tests only when compilation succeeded
     if [ "$?" = 0 ]; then
         # Compiling tests.c
-        gcc -DDEBUG -g -std=c99 -Wall -Wextra -Werror -pedantic ${BASEDIR}/src/engine/*.c ${BASEDIR}/src/commands/arith_context.c ${BASEDIR}/tests/parser_test.c -o ${BASEDIR}/bin/parser_test.out -lm
+        gcc -DDEBUG -g -std=c99 -Wall -Wextra -Werror -pedantic ${BASEDIR}/src/engine/*.c ${BASEDIR}/src/commands/arith_context.c ${BASEDIR}/tests/*.c -o ${BASEDIR}/bin/tests.out -lm
         if [ "$?" = 0 ]; then
             # Executing tests
-            ${BASEDIR}/bin/parser_test.out
+            ${BASEDIR}/bin/tests.out
         fi
     fi
 else

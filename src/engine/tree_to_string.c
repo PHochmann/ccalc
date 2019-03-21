@@ -172,7 +172,9 @@ void tree_inline_rec(ParsingContext *ctx, Node *node, char **buffer, ssize_t *bu
                         && (node->children[0]->op->precedence < node->op->precedence
                             || (node->children[0]->op->precedence == node->op->precedence
                                 && (node->op->assoc == OP_ASSOC_RIGHT
-                                    || (node->op->assoc == OP_ASSOC_BOTH && STANDARD_ASSOC == OP_ASSOC_RIGHT)))))
+                                    || (node->op->assoc == OP_ASSOC_BOTH
+                                        && (STANDARD_ASSOC == OP_ASSOC_RIGHT
+                                            && node->op != node->children[0]->op))))))
                     {
                         print_buffered("(", buffer, buffer_size);
                         tree_inline_rec(ctx, node->children[0], buffer, buffer_size, colours, false, false);
@@ -198,7 +200,9 @@ void tree_inline_rec(ParsingContext *ctx, Node *node, char **buffer, ssize_t *bu
                         && (node->children[1]->op->precedence < node->op->precedence
                             || (node->children[1]->op->precedence == node->op->precedence
                                 && (node->op->assoc == OP_ASSOC_LEFT
-                                    || (node->op->assoc == OP_ASSOC_BOTH && STANDARD_ASSOC == OP_ASSOC_LEFT)))))
+                                    || (node->op->assoc == OP_ASSOC_BOTH
+                                        && (STANDARD_ASSOC == OP_ASSOC_LEFT
+                                            && node->op != node->children[1]->op))))))
                     {
                         print_buffered("(", buffer, buffer_size);
                         tree_inline_rec(ctx, node->children[1], buffer, buffer_size, colours, false, false);
@@ -216,7 +220,7 @@ void tree_inline_rec(ParsingContext *ctx, Node *node, char **buffer, ssize_t *bu
 
 /*
 Summary: Fills buffer with representation of tree
-Returns: Total length of representation, even if buffer was too small
+Returns: Total length of representation, even if buffer was too small (without \n)
 */
 size_t tree_inline(ParsingContext *ctx, Node *node, char *buffer, size_t buffer_size, bool colours)
 {

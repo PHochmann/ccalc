@@ -70,20 +70,19 @@ bool ctx_add_ops(ParsingContext *ctx, size_t count, ...)
 
 /*
 Summary: Adds operator to context
+    To associate every operand with exactly one operator in a unique manner, infix operators with the same precedence must have the same associativity.
+    OP_ASSOC_BOTH is treated as STANDARD_ASSOC
 Returns: ID of new operator, -1 if one of the following:
     * buffer is full
     * ctx is NULL
-    * infix operator with inconsistent associativity is given
+    * infix operator with inconsistent associativity is given (infix operator with same precedence has different associativity)
     * function of same name and arity is present in context
 */
 int ctx_add_op(ParsingContext *ctx, Operator op)
 {
     if (ctx == NULL || ctx->num_ops == ctx->max_ops) return -1;
     
-    // Consistency checks:
-    
-    // Check if operator with same name already exists
-    // For functions: check if function with same name and arity already exists, since function overloading is supported
+    // Check for name clash
     if (op.placement != OP_PLACE_FUNCTION)
     {
         if (ctx_lookup_op(ctx, op.name, op.placement) != NULL) return -1;
@@ -92,9 +91,8 @@ int ctx_add_op(ParsingContext *ctx, Operator op)
     {
         if (ctx_lookup_function(ctx, op.name, op.arity) != NULL) return -1;
     }
-    
-    // For infix operators: Operators with same precedence must have the same associativity
-    // to associate every operand with exactly one operator in a unique manner
+
+    // Consistency checks
     if (op.placement == OP_PLACE_INFIX)
     {
         for (size_t i = 0; i < ctx->num_ops; i++)
@@ -105,7 +103,6 @@ int ctx_add_op(ParsingContext *ctx, Operator op)
                 OpAssociativity a_assoc = ctx->operators[i].assoc;
                 OpAssociativity b_assoc = op.assoc;
                 
-                // Parser treats OP_ASSOC_BOTH as STANDARD_ASSOC
                 if (a_assoc == OP_ASSOC_BOTH) a_assoc = STANDARD_ASSOC;
                 if (b_assoc == OP_ASSOC_BOTH) b_assoc = STANDARD_ASSOC;
                 
