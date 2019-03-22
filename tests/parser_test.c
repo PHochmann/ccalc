@@ -14,18 +14,18 @@
 #define NUM_ERROR_TESTS 7
 
 // To check if parsed tree evaluates to expected value
-typedef struct {
+struct ValueTest {
     char *input;
     double result; 
-} ValueTest;
+};
 
 // To check if parser returns expected error on malformed inputs
-typedef struct {
+struct ErrorTest {
     char *input;
     ParserError result;
-} ErrorTest;
+};
 
-static ValueTest valueTests[NUM_VALUE_TESTS] = {
+static struct ValueTest valueTests[NUM_VALUE_TESTS] = {
     { "2+3", 5 },
     { "2-3", -1 },
     { "2*3", 6 },
@@ -102,7 +102,7 @@ static ValueTest valueTests[NUM_VALUE_TESTS] = {
 #endif
 };
 
-static ErrorTest errorTests[NUM_ERROR_TESTS] = {
+static struct ErrorTest errorTests[NUM_ERROR_TESTS] = {
     { "", PERR_EMPTY },
     { "()", PERR_EMPTY },
     { "x+", PERR_MISSING_OPERAND },
@@ -155,7 +155,6 @@ int perform_error_tests(ParsingContext *ctx)
     return -1;
 }
 
-// Returns: 0 if all tests passed, -1 otherwise
 int parser_test()
 {
     ParsingContext *ctx = arith_get_ctx();
@@ -163,7 +162,7 @@ int parser_test()
     
     if (error_index != -1)
     {
-        printf(F_RED "\nError in value test %d: '%s'" COL_RESET "\n", error_index, valueTests[error_index].input);
+        printf("\nError in value test %d: '%s'\n", error_index, valueTests[error_index].input);
         return -1;
     }
 
@@ -171,9 +170,18 @@ int parser_test()
 
     if (error_index != -1)
     {
-        printf(F_RED "\nError in error test %d: '%s'" COL_RESET "\n", error_index, errorTests[error_index].input);
+        printf("\nError in error test %d: '%s'\n", error_index, errorTests[error_index].input);
         return -1;
     }
 
     return 0;
+}
+
+Test get_parser_test()
+{
+    return (Test){
+        parser_test,
+        NUM_ERROR_TESTS + NUM_VALUE_TESTS,
+        "Parser"
+    };
 }

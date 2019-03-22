@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "tree_to_string_test.h"
+
 #include "../src/commands/arith_context.h"
 #include "../src/engine/constants.h"
 #include "../src/engine/context.h"
@@ -9,16 +10,22 @@
 #include "../src/engine/parser.h"
 #include "../src/engine/tree_to_string.h"
 
-#define NUM_TESTS 2
+#define NUM_TESTS 7
 
-typedef struct {
+struct TreeToStringTest {
     char *string_to_tree;
     char *tree_to_string;
-} TreeToStringTest;
+};
 
-static TreeToStringTest tests[NUM_TESTS] = {
+static struct TreeToStringTest tests[NUM_TESTS] = {
+    { "--a", "-(-a)"},
+    { "--b!!", "(-(-b)!)!"},
     { "(1+2)+3", "1+2+3" },
-    { "1+(2+3)", "1+2+3" }
+    { "1+(2+3)", "1+2+3" },
+    { "1+2-3", "1+2-3" },
+    { "1+(2-3)", "1+(2-3)" },
+    
+    { "-sqrt(abs(--a!!*--sum(-b+c-d+e, f^g^h-i, -sum(j, k), l+m)*--n!!))", "-sqrt(abs(((-(-a)!)!)*(-(-sum(-b+c-d+e, f^g^h-i, -sum(j, k), l+m)))*(-(-n)!)!))" }
 };
 
 int tree_to_string_test()
@@ -30,7 +37,7 @@ int tree_to_string_test()
         Node *node = NULL;
         if (parse_input(ctx, tests[i].string_to_tree, true, &node) != PERR_SUCCESS)
         {
-            printf(F_RED "\nError in tree inline test %d: Parser Error\n" COL_RESET, i);
+            printf("\nError in tree inline test %d: Parser Error\n", i);
             return -1;
         }
 
@@ -38,18 +45,25 @@ int tree_to_string_test()
         char expected_string[expected_length + 1];
         if (tree_inline(ctx, node, expected_string, expected_length + 1, false) != expected_length)
         {
-            printf(F_RED "\nError in tree inline test %d: Unexpected length\n" COL_RESET, i);
+            printf("\nError in tree inline test %d: Unexpected length\n", i);
             return -1;
         }
 
         if (strcmp(tests[i].tree_to_string, expected_string) != 0)
         {
-            printf(F_RED "\nError in tree inline test %d: Unexpected result\n" COL_RESET, i);
-            printf("%s\n", tests[i].tree_to_string);
-            printf("%s\n", expected_string);
+            printf("\nError in tree inline test %d: Unexpected result\n", i);
             return -1;
         }
     }
 
     return 0;
+}
+
+Test get_tree_to_string_test()
+{
+    return (Test){
+        tree_to_string_test,
+        NUM_TESTS,
+        "Tree to String"
+    };
 }
