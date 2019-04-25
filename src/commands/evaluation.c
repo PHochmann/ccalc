@@ -21,7 +21,7 @@ void evaluation_exec(ParsingContext *ctx, char *input)
 {
     Node *res;
     
-    if (parse_input_wrapper(ctx, input, true, &res, true, true, true))
+    if (parse_input_wrapper(ctx, input, false, &res, true, true, true))
     {
         if (g_debug)
         {

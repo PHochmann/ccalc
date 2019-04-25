@@ -1,6 +1,11 @@
+//#define USE_READLINE
+
 #include <stdio.h>
-#include <readline/readline.h>
-#include <readline/history.h>
+#include <string.h>
+#ifdef USE_READLINE
+    #include <readline/readline.h>
+    #include <readline/history.h>
+#endif
 
 #include "util.h"
 #include "evaluation.h"
@@ -9,9 +14,13 @@
 #include "../engine/parser.h"
 #include "../engine/console_util.h"
 
+#define MAX_INPUT_LENGTH 100
+
 void init_util()
 {
-    rl_bind_key('\t', rl_insert); // Disable tab completion
+    #ifdef USE_READLINE
+        rl_bind_key('\t', rl_insert); // Disable tab completion
+    #endif
 }
 
 /*
@@ -33,9 +42,28 @@ Summary: Used whenever user input is requested
 */
 bool ask_input(char *prompt, char **out_input)
 {
-    *out_input = readline(prompt);
-    if (!(*out_input)) return false;
-    add_history(*out_input);
+    #ifdef USE_READLINE
+        *out_input = readline(prompt);
+        if (!(*out_input)) return false;
+        add_history(*out_input);
+    #else
+        printf("%s", prompt);
+        *out_input = malloc(MAX_INPUT_LENGTH * sizeof(char));
+        if (fgets(*out_input, MAX_INPUT_LENGTH, stdin) == NULL) return false;
+
+        // Overwrite newline
+        char *pos;
+        if ((pos = strchr(*out_input, '\n')) != NULL)
+        {
+            *pos = '\0';
+        }
+        else
+        {
+            return false;
+        }
+
+    #endif
+
     return true;
 }
 

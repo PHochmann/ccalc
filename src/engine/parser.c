@@ -167,10 +167,10 @@ bool op_push(Operator *op)
     return true;
 }
 
-ParserError parse_tokens(ParsingContext *context, size_t num_tokens, char **tokens, Node **res)
+ParserError parse_tokens(ParsingContext *context, size_t num_tokens, char **tokens, Node **out_res)
 {
     // 1. Early outs
-    if (context == NULL || tokens == NULL || res == NULL) return PERR_ARGS_MALFORMED;
+    if (context == NULL || tokens == NULL || out_res == NULL) return PERR_ARGS_MALFORMED;
 
     // 2. Initialize data structures
     ctx = context;
@@ -375,7 +375,7 @@ ParserError parse_tokens(ParsingContext *context, size_t num_tokens, char **toke
             break;
 
         case 1:
-            *res = node_stack[0]; // We successfully constructed a single AST
+            *out_res = node_stack[0]; // We successfully constructed a single AST
             break;
 
         default:
@@ -405,14 +405,14 @@ ParserError parse_tokens(ParsingContext *context, size_t num_tokens, char **toke
 Summary: Parses string to abstract syntax tree with operators of given context
 Returns: Result code to indicate whether string was parsed successfully or which error occurred
 */
-ParserError parse_input(ParsingContext *context, char *input, bool pad_parentheses, Node **res)
+ParserError parse_input(ParsingContext *context, char *input, bool pad_parentheses, Node **out_res)
 {
     size_t num_tokens;
     char *tokens[MAX_TOKENS];
 
     // Parsing
     if (!tokenize(context, input, pad_parentheses, &num_tokens, tokens)) return PERR_MAX_TOKENS_EXCEEDED;
-    ParserError result = parse_tokens(context, num_tokens, tokens, res);
+    ParserError result = parse_tokens(context, num_tokens, tokens, out_res);
 
     // Cleanup
     for (size_t i = 0; i < num_tokens; i++) free(tokens[i]);

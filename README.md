@@ -4,7 +4,7 @@ Simple parser and calculator written in C
 ## Setup guide
 1. Clone repository.
 
-2. Download and install readline. (On Ubuntu: ```sudo apt-get install libreadline-dev```)
+2. Download and install readline (On Ubuntu: ```sudo apt-get install libreadline-dev```) or remove ```-DUSE_READLINE``` from symbols in make.sh to use fgets instead.
 
 3. In root directory, run ```./make.sh [-d]``` to compile sources.
 

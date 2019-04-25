@@ -8,28 +8,6 @@
 #include "../engine/operator.h"
 #include "../engine/console_util.h"
 
-char *placement_to_string(OpPlacement placement, Arity arity)
-{
-    if (placement == OP_PLACE_PREFIX && arity == 0)
-    {
-        return "Constant";
-    }
-
-    switch (placement)
-    {
-        case OP_PLACE_FUNCTION:
-            return "Function";
-        case OP_PLACE_INFIX:
-            return "Infix";
-        case OP_PLACE_POSTFIX:
-            return "Postfix";
-        case OP_PLACE_PREFIX:
-            return "Prefix";
-    }
-
-    return "Undefined";
-}
-
 void help_init()
 {
 

@@ -33,5 +33,5 @@ typedef enum {
     PERR_EMPTY,
 } ParserError;
 
-ParserError parse_tokens(ParsingContext *context, size_t num_tokens, char **tokens, Node **res);
-ParserError parse_input(ParsingContext *ctx, char *input, bool pad_parentheses, Node **res);
+ParserError parse_tokens(ParsingContext *context, size_t num_tokens, char **tokens, Node **out_res);
+ParserError parse_input(ParsingContext *ctx, char *input, bool pad_parentheses, Node **out_res);
