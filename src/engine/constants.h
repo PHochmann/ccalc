@@ -5,6 +5,7 @@
 #define F_MAGENTA "\x1B[35m"
 #define F_CYAN    "\x1B[1;36m"
 #define F_WHITE   "\x1B[37m"
+#define F_BLACK   "\x1B[22;30m"
 #define B_RED     "\x1B[1;41m"
 #define B_GREEN   "\x1B[42m"
 #define B_YELLOW  "\x1B[43m"
@@ -15,12 +16,12 @@
 #define B_BLACK   "\x1B[40m"
 #define COL_RESET "\033[0m"
 
-#define OP_COLOR    B_RED F_GREEN
+#define OP_COLOR    B_WHITE F_BLACK
 #define CONST_COLOR F_YELLOW
 #define VAR_COLOR   F_CYAN
 
 // Version number of engine
-#define VERSION "1.2.5"
+#define VERSION "1.2.6"
 // Maximum number of tokens reserved before tokenization
 #define MAX_TOKENS 128
 // Maximum number of operator/node instances the parser can handle at once
