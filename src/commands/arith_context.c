@@ -8,7 +8,7 @@
 #define EVAL(n) arith_eval(node->children[n])
 
 #define ARITH_STRING_LENGTH 30
-#define ARITH_NUM_OPS 46
+#define ARITH_NUM_OPS 47
 #define ARITH_CUSTOM_BUFFER 10
 
 static ParsingContext arith_ctx;
@@ -170,6 +170,8 @@ double arith_eval(Node *node)
                     return 2.71828182846;
                 case 45: // phi
                     return 1.61803398874;
+                case 46: // clight
+                    return 299792458;
                 default:
                     printf("Encountered operator without evaluation rule\n");
                     return -1;
@@ -253,7 +255,8 @@ ParsingContext *arith_get_ctx()
         op_get_function("fib", 1),
         op_get_constant("pi"),
         op_get_constant("e"),
-        op_get_constant("phi"));
+        op_get_constant("phi"),
+        op_get_constant("clight"));
     
     ctx_set_glue_op(&arith_ctx, &arith_ctx.operators[2]);
     

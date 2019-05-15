@@ -19,7 +19,7 @@ RewriteRule get_rule(ParsingContext *ctx, Node *before, Node *after)
 }
 
 /*
-Summary: Tries to match 'tree' against 'pattern' (only in root)
+Summary: Tries to match "tree" against "pattern" (only in root)
 Returns: true, if matching is found, false if NULL-pointers given in arguments or no matching found
 */
 bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_matching)
@@ -47,7 +47,7 @@ bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_
         bool found = false;
         switch (curr_pattern_n->type)
         {
-            // 1. Check if variable is bound, if it is, check it. Otherwise, bind.
+            // 1. Check if variable is bound, if it is, check occurrence. Otherwise, bind.
             case NTYPE_VARIABLE:
                 for (size_t i = 0; i < num_mapped_vars; i++)
                 {
