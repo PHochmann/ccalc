@@ -16,7 +16,7 @@ typedef struct
     size_t max_ops; // Maximum count of operators (limited by buffer size)
     TryParseHandler try_parse; // Used to detect a literal token
     ToStringHandler to_string; // Used to print trees
-    EqualsHandler equals; // Only relevant for rule.c
+    EqualsHandler equals; // Relevant for unification of leaf nodes in rule_get_matching. Used in node_equals.
     Operator *glue_op; // Points to op in operators
     Operator *operators; // On heap!
 } ParsingContext;

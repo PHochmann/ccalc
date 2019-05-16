@@ -31,21 +31,23 @@ long fibonacci(long n)
 {
     if (n == 0) return 0;
 
-    int a = 0;
-    int b = 1;
+    long a = 0;
+    long b = 1;
 
-    while (n-- > 1) {
-        int t = a + b;
+    while (n-- > 1)
+    {
+        long temp = a + b;
         a = b;
-        b = t;
+        b = temp;
     }
+
     return b;
 }
 
 double arith_eval(Node *node)
 {
     double d_res = 1;
-    long i_res = 1;
+    long l_res = 1;
 
     switch (node->type)
     {
@@ -76,9 +78,9 @@ double arith_eval(Node *node)
                 case 8: // +x
                     return EVAL(0);
                 case 9: // x!
-                    i_res = 1;
-                    for (long i = (long)trunc(EVAL(0)); i > 1; i--) i_res *= i;
-                    return (double)i_res;
+                    l_res = 1;
+                    for (long i = (long)trunc(EVAL(0)); i > 1; i--) l_res *= i;
+                    return (double)l_res;
                 case 10: // x%
                     return EVAL(0) / 100;
                 case 11: // exp(x)

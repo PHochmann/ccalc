@@ -25,7 +25,7 @@ void help_exec(ParsingContext *ctx, __attribute__((unused)) char *input)
 #else
     printf("Calculator %s (c) 2018-2019, Philipp Hochmann\n", VERSION);
 #endif
-    printf("Commands: debug, help, <function> := <after>, <before> -> <after>\n");
+    printf("Commands: debug, help, rules, <function> := <after>, <before> -> <after>\n");
 
     for (size_t i = 0; i < ctx->num_ops; i++)
     {

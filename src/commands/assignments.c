@@ -32,6 +32,12 @@ void definition_exec(ParsingContext *ctx, char *input)
         printf("Can't add any more functions\n");
         return;
     }
+
+    if (g_num_rules == NUM_MAX_RULES)
+    {
+        printf("Can't add any more rules\n");
+        return;
+    }
     
     // Overwrite first char of operator to make function definition a proper string
     char *op_pos = strstr(input, ":=");
@@ -41,10 +47,11 @@ void definition_exec(ParsingContext *ctx, char *input)
     ParserError perr;
     char *tokens[MAX_TOKENS];
     size_t num_tokens = 0;
+
     if (!tokenize(ctx, input, false, &num_tokens, tokens))
     {
         // Only reason for tokenize to fail is max. number of tokens exceeded
-        printf("Error in function definition: %s\n", perr_to_string(PERR_MAX_TOKENS_EXCEEDED));
+        printf(MSG_ERROR_LEFT "%s\n", perr_to_string(PERR_MAX_TOKENS_EXCEEDED));
         return;
     }
     
@@ -59,6 +66,7 @@ void definition_exec(ParsingContext *ctx, char *input)
     }
     else
     {
+        // Zero tokens: expression is empty
         printf(MSG_ERROR_LEFT "%s\n", perr_to_string(PERR_EMPTY));
         return;
     }
@@ -68,16 +76,19 @@ void definition_exec(ParsingContext *ctx, char *input)
     if ((perr = parse_input(ctx, input, false, &left_n)) != PERR_SUCCESS)
     {
         ctx->num_ops--;
+        free(name);
         printf(MSG_ERROR_LEFT "%s\n", perr_to_string(perr));
         return;
     }
+
+    // Disable newly added function while parsing right-hand side to avoid recursive function
+    ctx->num_ops--;
     
     if (left_n->type != NTYPE_OPERATOR || left_n->op->placement != OP_PLACE_FUNCTION)
     {
-        ctx->num_ops--;
         free_tree(left_n);
         free(name);
-        printf(MSG_ERROR_LEFT "not a function\n");
+        printf(MSG_ERROR_LEFT "Not a function\n");
         return;
     }
     
@@ -85,40 +96,26 @@ void definition_exec(ParsingContext *ctx, char *input)
     {
         if (left_n->children[i]->type != NTYPE_VARIABLE)
         {
-            ctx->num_ops--;
             free_tree(left_n);
             free(name);
-            printf(MSG_ERROR_LEFT "arguments must be variables\n");
+            printf(MSG_ERROR_LEFT "Arguments must be variables\n");
             return;
         }
     }
 
     if (tree_list_vars(left_n, NULL) != left_n->num_children)
     {
-        ctx->num_ops--;
         free_tree(left_n);
         free(name);
-        printf(MSG_ERROR_LEFT "arguments must be distinct variables\n");
+        printf(MSG_ERROR_LEFT "Arguments must be distinct variables\n");
         return;
     }
 
     if (ctx_lookup_function(ctx, name, left_n->num_children) != NULL)
     {
-        ctx->num_ops--;
         free_tree(left_n);
         free(name);
         printf("Function already exists\n");
-        return;
-    }
-    
-    ctx->operators[ctx->num_ops - 1].arity = left_n->num_children;
-    
-    if (g_num_rules == NUM_MAX_RULES)
-    {
-        ctx->num_ops--;
-        free_tree(left_n);
-        free(name);
-        printf("Can't add any more rules\n");
         return;
     }
     
@@ -126,14 +123,19 @@ void definition_exec(ParsingContext *ctx, char *input)
 
     if ((perr = parse_input(ctx, op_pos + 2, false, &right_n)) != PERR_SUCCESS)
     {
-        ctx->num_ops--;
         free_tree(left_n);
         free(name);
         printf(MSG_ERROR_RIGHT "%s\n", perr_to_string(perr));
         return;
     }
     
+    // Assign correct arity
+    ctx->operators[ctx->num_ops].arity = left_n->num_children;
+    // Activate added function
+    ctx->num_ops++;
+    // Add rule to eliminate function before evaluation
     g_rules[g_num_rules++] = get_rule(ctx, left_n, right_n);
+    
     whisper("Added function\n");
 }
 

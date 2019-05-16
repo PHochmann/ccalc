@@ -28,9 +28,9 @@
 #define MAX_STACK_SIZE 128
 // Used in matching and variable-list
 #define MAX_VAR_COUNT 16
-// Used to indicate arbitrary number of operands (0 up to INT_MAX)
+// Used to indicate arbitrary number of operands (0 up to 254)
 #define DYNAMIC_ARITY 255
-// Since arity is a char and DYNAMIC_ARITY is set to 255
+// Since arity is unsigned char and DYNAMIC_ARITY is set to 255
 #define MAX_ARITY 254
 // Associativity of OP_ASSOC_BOTH operands
 #define STANDARD_ASSOC OP_ASSOC_LEFT

@@ -71,6 +71,7 @@ bool op_pop_and_insert()
     if (op != NULL) // Construct operator-node and append children
     {
         // Functions with recorded arity of DYNAMIC_ARITY are glue-ops and shouldn't be computed as functions
+        // TODO: That's dirty, change it
         bool is_function = (arity_peek() != DYNAMIC_ARITY);
     
         // Function overloading: Find function with suitable arity
@@ -95,7 +96,7 @@ bool op_pop_and_insert()
             }
         }
 
-        // We try to allocate a new node and take their children from node stack
+        // We try to allocate a new node and pop its children from node stack
         Node *op_node = malloc_wrapper(sizeof(Node));
         if (op_node == NULL) return false;
         *op_node = get_operator_node(op, is_function ? arity_peek() : op->arity);
@@ -114,6 +115,7 @@ bool op_pop_and_insert()
                 {
                     free_tree(op_node->children[j]);
                 }
+
                 free(op_node->children);
                 free(op_node);
                 return false;
@@ -154,7 +156,7 @@ bool op_push(Operator *op)
         return false;
     }
     
-    arities[num_ops] = (is_function ? 0 : DYNAMIC_ARITY);
+    arities[num_ops] = (is_function ? 0 : DYNAMIC_ARITY); // TODO: That's dirty. Change it! (DYNAMIC_ARITY is only Arity that will never occur)
     op_stack[num_ops] = op;
     num_ops++;
 

@@ -320,13 +320,14 @@ bool node_equals(ParsingContext *ctx, Node *a, Node *b)
 }
 
 /*
-Summary: Checks if two trees represent the same expression, i.e. all nodes in 'a' are equal to their respective node in 'b'
+Summary: Checks if two trees represent the same expression, i.e. all nodes in "a" are equal to their respective node in "b"
 */
 bool tree_equals(ParsingContext *ctx, Node *a, Node *b)
 {
     if (ctx == NULL || a == NULL || b == NULL) return false;
     
     if (!node_equals(ctx, a, b)) return false;
+
     if (a->type == NTYPE_OPERATOR)
     {
         for (Arity i = 0; i < a->num_children; i++)

@@ -6,10 +6,11 @@
 #include "command.h"
 #include "evaluation.h"
 #include "help.h"
+#include "show_rules.h"
 #include "assignments.h"
 #include "arith_context.h"
 
-#define NUM_COMMANDS 6
+#define NUM_COMMANDS 7
 
 static ParsingContext *ctx;
 static Command commands[NUM_COMMANDS];
@@ -27,7 +28,8 @@ void init_commands()
     commands[2] = get_command(help_init, help_check, help_exec);
     commands[3] = get_command(definition_init, definition_check, definition_exec);
     commands[4] = get_command(rule_init, rule_check, rule_exec);
-    commands[5] = get_command(evaluation_init, evaluation_check, evaluation_exec);
+    commands[5] = get_command(show_rules_init, show_rules_check, show_rules_exec);
+    commands[6] = get_command(evaluation_init, evaluation_check, evaluation_exec);
 
     for (int i = 0; i < NUM_COMMANDS; i++)
     {
