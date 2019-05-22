@@ -188,14 +188,14 @@ double arith_eval(Node *node)
     }
 }
 
-bool _arith_try_parse(char *in, void *out)
+bool arith_try_parse(char *in, void *out)
 {
     char *end_ptr;
     *((double*)out) = strtod(in, &end_ptr);
     return *end_ptr == '\0';
 }
 
-void _arith_to_string(void *in, char *str, size_t buff_size)
+void arith_to_string(void *in, char *str, size_t buff_size)
 {
     if (buff_size < (ARITH_STRING_LENGTH + 1)) return;
     sprintf(str, "%.30g", *((double*)in));
@@ -207,8 +207,8 @@ ParsingContext *arith_get_ctx()
         sizeof(double),
         ARITH_STRING_LENGTH + 1,
         ARITH_NUM_OPS + ARITH_CUSTOM_BUFFER,
-        _arith_try_parse,
-        _arith_to_string,
+        arith_try_parse,
+        arith_to_string,
         NULL); // Uses bytewise equals
     
     ctx_add_ops(&arith_ctx, ARITH_NUM_OPS,

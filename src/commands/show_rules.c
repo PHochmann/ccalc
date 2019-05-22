@@ -24,6 +24,12 @@ bool show_rules_check(char *input)
 
 void show_rules_exec(ParsingContext *ctx, __attribute__((unused)) char *input)
 {
+    if (g_num_rules == 0)
+    {
+        printf("No rules defined.\n");
+        return;
+    }
+
     for (size_t i = 0; i < g_num_rules; i++)
     {
         char l[MAX_STRING_LENGTH];
