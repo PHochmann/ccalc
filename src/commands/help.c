@@ -6,7 +6,6 @@
 #include "util.h"
 #include "../engine/constants.h"
 #include "../engine/operator.h"
-#include "../engine/console_util.h"
 
 void help_init()
 {

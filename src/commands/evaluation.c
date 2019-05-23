@@ -4,8 +4,8 @@
 #include "evaluation.h"
 #include "util.h"
 #include "arith_context.h"
-#include "../engine/console_util.h"
-#include "../engine/tree_to_string.h"
+#include "../engine/string_util.h"
+#include "../engine/string_util.h"
 
 void evaluation_init()
 {

@@ -8,7 +8,7 @@
 #include "../src/engine/context.h"
 #include "../src/engine/node.h"
 #include "../src/engine/parser.h"
-#include "../src/engine/tree_to_string.h"
+#include "../src/engine/string_util.h"
 
 #define NUM_TESTS 7
 

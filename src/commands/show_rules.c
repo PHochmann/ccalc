@@ -7,8 +7,7 @@
 #include "util.h"
 #include "../engine/constants.h"
 #include "../engine/operator.h"
-#include "../engine/console_util.h"
-#include "../engine/tree_to_string.h"
+#include "../engine/string_util.h"
 
 #define MAX_STRING_LENGTH 300
 
@@ -19,23 +18,47 @@ void show_rules_init()
 
 bool show_rules_check(char *input)
 {
-    return strcmp(input, "rules") == 0;
+    return (strcmp(input, "rules") == 0) || (strcmp(input, "rules pop") == 0);
 }
 
-void show_rules_exec(ParsingContext *ctx, __attribute__((unused)) char *input)
+void print_rule(ParsingContext *ctx, RewriteRule *rule)
 {
-    if (g_num_rules == 0)
-    {
-        printf("No rules defined.\n");
-        return;
-    }
+    char l[MAX_STRING_LENGTH];
+    char r[MAX_STRING_LENGTH];
+    tree_inline(ctx, rule->before, l, MAX_STRING_LENGTH, true);
+    tree_inline(ctx, rule->after, r, MAX_STRING_LENGTH, true);
+    printf("%s -> %s", l, r);
+}
 
-    for (size_t i = 0; i < g_num_rules; i++)
+void show_rules_exec(ParsingContext *ctx, char *input)
+{
+    if (strcmp(input, "rules pop") == 0)
     {
-        char l[MAX_STRING_LENGTH];
-        char r[MAX_STRING_LENGTH];
-        tree_inline(ctx, g_rules[i].before, l, MAX_STRING_LENGTH, true);
-        tree_inline(ctx, g_rules[i].after, r, MAX_STRING_LENGTH, true);
-        printf("%zu: %s -> %s\n", i, l, r);
+        if (g_num_rules != 0)
+        {
+            printf("Popped ");
+            print_rule(ctx, &g_rules[g_num_rules - 1]);
+            printf("\n");
+            g_num_rules--;
+        }
+        else
+        {
+            printf("There is not rule to pop.\n");
+        }
+    }
+    else // Only show rules, input was "rules"
+    {
+        if (g_num_rules == 0)
+        {
+            printf("No rules defined.\n");
+            return;
+        }
+
+        for (size_t i = 0; i < g_num_rules; i++)
+        {
+            printf("%zu: ", i);
+            print_rule(ctx, &g_rules[i]);
+            printf("\n");
+        }
     }
 }

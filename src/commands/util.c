@@ -7,14 +7,51 @@
 #include "evaluation.h"
 #include "assignments.h"
 #include "../engine/context.h"
-#include "../engine/parser.h"
-#include "../engine/console_util.h"
 
+#define MAX_ITERATIONS 50
 #define MAX_INPUT_LENGTH 100
 
 void init_util()
 {
     rl_bind_key('\t', rl_insert); // Disable tab completion
+}
+
+/*
+Returns: String representation for user of ParserError
+*/
+char *perr_to_string(ParserError perr)
+{
+    switch (perr)
+    {
+        case PERR_SUCCESS:
+            return "SUCCESS";
+        case PERR_MAX_TOKENS_EXCEEDED:
+            return "MAX TOKENS EXCEEDED";
+        case PERR_STACK_EXCEEDED:
+            return "STACK EXCEEDED";
+        case PERR_UNEXPECTED_SUBEXPRESSION:
+            return "UNEXPECTED SUBEXPRESSION";
+        case PERR_EXCESS_OPENING_PARENTHESIS:
+            return "MISSING CLOSING PARENTHESIS";
+        case PERR_EXCESS_CLOSING_PARENTHESIS:
+            return "UNEXPECTED CLOSING PARENTHESIS";
+        case PERR_UNEXPECTED_DELIMITER:
+            return "UNEXPECTED DELIMITER";
+        case PERR_MISSING_OPERATOR:
+            return "UNEXPECTED OPERAND";
+        case PERR_MISSING_OPERAND:
+            return "MISSING OPERAND";
+        case PERR_OUT_OF_MEMORY:
+            return "OUT OF MEMORY";
+        case PERR_FUNCTION_WRONG_ARITY:
+            return "WRONG NUMBER OF OPERANDS FOR FUNCTION";
+        case PERR_CHILDREN_EXCEEDED:
+            return "EXCEEDED MAXIMUM NUMBER OF OPERANDS FOR FUNCTION"; 
+        case PERR_EMPTY:
+            return "EMPTY EXPRESSION";
+        default:
+            return "UNKNOWN ERROR";
+    }
 }
 
 /*
@@ -55,7 +92,8 @@ bool parse_input_wrapper(ParsingContext *ctx, char *input, bool pad_parentheses,
     if (apply_ans && g_ans != NULL) tree_substitute_var(ctx, *out_res, g_ans, "ans");
     if (apply_rules)
     {
-        apply_ruleset(*out_res, g_num_rules, g_rules, 50);
+        int appliances = apply_ruleset(*out_res, g_num_rules, g_rules, MAX_ITERATIONS);
+        if (appliances == MAX_ITERATIONS) whisper("Warning: Possibly non-terminating ruleset\n");
     }
 
     // Make expression constant by asking for values and binding them to variables

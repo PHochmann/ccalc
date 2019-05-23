@@ -4,7 +4,7 @@
 #include "rule.h"
 #include "constants.h" 
 #include "node.h"
-#include "console_util.h"
+#include "string_util.h" // For begins_with
 
 /*
 Summary: Constructs new rule. Warning: "before" and "after" are not copied, so don't free them!

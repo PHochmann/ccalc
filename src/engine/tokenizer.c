@@ -2,7 +2,7 @@
 #include <string.h>
 
 #include "tokenizer.h"
-#include "console_util.h"
+#include "string_util.h"
 
 bool add_token(char **tokens, char *position, size_t *num_tokens)
 {

@@ -6,11 +6,10 @@
 
 #include "../engine/constants.h"
 #include "../engine/node.h"
-#include "../engine/tree_to_string.h"
+#include "../engine/string_util.h"
 #include "../engine/operator.h"
 #include "../engine/tokenizer.h"
 #include "../engine/parser.h"
-#include "../engine/console_util.h"
 
 #define MSG_ERROR_LEFT "Error in left expression: "
 #define MSG_ERROR_RIGHT "Error in right expression: "
