@@ -11,7 +11,7 @@ Node get_node(NodeType type)
     return res;
 }
 
-/* Returns a new node of type NTYPE_VARIABLE and prepares its attributes */
+// Returns a new node of type NTYPE_VARIABLE and prepares its attributes
 Node get_variable_node(char *var_name)
 {
     Node res = get_node(NTYPE_VARIABLE);
@@ -19,7 +19,7 @@ Node get_variable_node(char *var_name)
     return res;
 }
 
-/* Returns a new node of type NTYPE_CONSTANT and prepares its attributes */
+// Returns a new node of type NTYPE_CONSTANT and prepares its attributes
 Node get_constant_node(void *value)
 {
     Node res = get_node(NTYPE_CONSTANT);
@@ -27,7 +27,7 @@ Node get_constant_node(void *value)
     return res;
 }
 
-/* Returns a new node of type NTYPE_OPERATOR and prepares its attributes */
+// Returns a new node of type NTYPE_OPERATOR and prepares its attributes
 Node get_operator_node(Operator *op, Arity num_children)
 {
     Node res = get_node(NTYPE_OPERATOR);
@@ -71,7 +71,7 @@ void free_tree_preserved(Node *tree)
 }
 
 /* Returns true iff variable node exists in tree
-   False indicates save evaluation */
+   False indicates safe evaluation */
 bool tree_contains_vars(Node *tree)
 {
     if (tree == NULL) return false;
@@ -97,6 +97,8 @@ bool tree_contains_vars(Node *tree)
 
 /*
 Summary: Lists all variable nodes of given names (e.g. to replace them)
+Params
+    out_instances: Buffer to nodes. Must hold max_var
 */
 int tree_get_var_instances(Node *tree, char *variable, Node **out_instances)
 {

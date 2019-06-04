@@ -25,14 +25,11 @@ Returns: True if string was changed, false if not
 bool indicate_abbreviation(char *string, size_t actual_length)
 {
     size_t length = strlen(string);
-    if (length < actual_length)
+    if (length < actual_length && length >= 3)
     {
-        if (length >= 3)
-        {
-            string[length - 1] = '.';
-            string[length - 2] = '.';
-            string[length - 3] = '.';
-        }
+        string[length - 1] = '.';
+        string[length - 2] = '.';
+        string[length - 3] = '.';
         return true;
     }
     else

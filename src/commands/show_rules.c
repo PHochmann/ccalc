@@ -18,7 +18,7 @@ void show_rules_init()
 
 bool show_rules_check(char *input)
 {
-    return (strcmp(input, "rules") == 0) || (strcmp(input, "rules pop") == 0);
+    return strcmp(input, "rules") == 0;
 }
 
 void print_rule(ParsingContext *ctx, RewriteRule *rule)
@@ -30,35 +30,18 @@ void print_rule(ParsingContext *ctx, RewriteRule *rule)
     printf("%s -> %s", l, r);
 }
 
-void show_rules_exec(ParsingContext *ctx, char *input)
+void show_rules_exec(ParsingContext *ctx,  __attribute__((unused)) char *input)
 {
-    if (strcmp(input, "rules pop") == 0)
+    if (g_num_rules == 0)
     {
-        if (g_num_rules != 0)
-        {
-            printf("Popped ");
-            print_rule(ctx, &g_rules[g_num_rules - 1]);
-            printf("\n");
-            g_num_rules--;
-        }
-        else
-        {
-            printf("There is not rule to pop.\n");
-        }
+        printf("No rules defined.\n");
+        return;
     }
-    else // Only show rules, input was "rules"
-    {
-        if (g_num_rules == 0)
-        {
-            printf("No rules defined.\n");
-            return;
-        }
 
-        for (size_t i = 0; i < g_num_rules; i++)
-        {
-            printf("%zu: ", i);
-            print_rule(ctx, &g_rules[i]);
-            printf("\n");
-        }
+    for (size_t i = 0; i < g_num_rules; i++)
+    {
+        printf("%zu: ", i);
+        print_rule(ctx, &g_rules[i]);
+        printf("\n");
     }
 }

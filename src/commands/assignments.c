@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "assignments.h"
+#include "evaluation.h"
 #include "util.h"
 
 #include "../engine/constants.h"
@@ -127,7 +128,9 @@ void definition_exec(ParsingContext *ctx, char *input)
         printf(MSG_ERROR_RIGHT "%s\n", perr_to_string(perr));
         return;
     }
-    
+
+    // Replace ans
+    tree_substitute_var(ctx, right_n, g_ans, "ans");
     // Assign correct arity
     ctx->operators[ctx->num_ops].arity = left_n->num_children;
     // Activate added function

@@ -24,33 +24,33 @@ char *perr_to_string(ParserError perr)
     switch (perr)
     {
         case PERR_SUCCESS:
-            return "SUCCESS";
+            return "Success";
         case PERR_MAX_TOKENS_EXCEEDED:
-            return "MAX TOKENS EXCEEDED";
+            return "Max. Tokens exceeded";
         case PERR_STACK_EXCEEDED:
-            return "STACK EXCEEDED";
+            return "Stack exceeded";
         case PERR_UNEXPECTED_SUBEXPRESSION:
-            return "UNEXPECTED SUBEXPRESSION";
+            return "Unexpected Subexpression";
         case PERR_EXCESS_OPENING_PARENTHESIS:
-            return "MISSING CLOSING PARENTHESIS";
+            return "Missing closing parenthesis";
         case PERR_EXCESS_CLOSING_PARENTHESIS:
-            return "UNEXPECTED CLOSING PARENTHESIS";
+            return "Unexpected closing parenthesis";
         case PERR_UNEXPECTED_DELIMITER:
-            return "UNEXPECTED DELIMITER";
+            return "Unexpected delimiter";
         case PERR_MISSING_OPERATOR:
-            return "UNEXPECTED OPERAND";
+            return "Unexpected operand";
         case PERR_MISSING_OPERAND:
-            return "MISSING OPERAND";
+            return "Missing operand";
         case PERR_OUT_OF_MEMORY:
-            return "OUT OF MEMORY";
+            return "Out of memory";
         case PERR_FUNCTION_WRONG_ARITY:
-            return "WRONG NUMBER OF OPERANDS FOR FUNCTION";
+            return "Wrong number of operands of function";
         case PERR_CHILDREN_EXCEEDED:
-            return "EXCEEDED MAXIMUM NUMBER OF OPERANDS FOR FUNCTION"; 
+            return "Exceeded maximum number of operands of function"; 
         case PERR_EMPTY:
-            return "EMPTY EXPRESSION";
+            return "Empty Expression";
         default:
-            return "UNKNOWN ERROR";
+            return "Unknown Error";
     }
 }
 
