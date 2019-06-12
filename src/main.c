@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
     
     if (isatty(STDIN_FILENO))
     {
-        make_interactive();
+        set_interactive(true);
     }
 
     process_input(stdin);

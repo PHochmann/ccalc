@@ -33,10 +33,9 @@ void load_exec(__attribute__((unused)) ParsingContext *ctx, char *input)
         return;
     }
 
-    bool interactive = g_interactive;
-    g_interactive = false;
+    bool interactive = set_interactive(false);
     process_input(file);
-    g_interactive = interactive;
+    set_interactive(interactive);
     
     fclose(file);
 }

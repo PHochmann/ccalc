@@ -1,9 +1,11 @@
 #include <stdio.h>
+#include <unistd.h>
 #include <string.h>
 
 #include "evaluation.h"
-#include "assignments.h"
+#include "core.h"
 #include "util.h"
+#include "assignments.h"
 #include "arith_context.h"
 #include "../engine/string_util.h"
 
@@ -43,8 +45,9 @@ bool parse_input_wrapper(ParsingContext *ctx, char *input, bool pad_parentheses,
         int num_variables = tree_list_vars(*out_res, vars);
         for (int i = 0; i < num_variables; i++)
         {
-            printf(" %s? ", vars[i]);
+            if (isatty(STDIN_FILENO)) printf("%s? ", vars[i]);
             char *input;
+
             if (ask_input("> ", stdin, &input))
             {
                 Node *res_var;
@@ -70,7 +73,10 @@ bool parse_input_wrapper(ParsingContext *ctx, char *input, bool pad_parentheses,
                 free(vars[i]);
                 free_tree(res_var);
             }
-            else return false;
+            else
+            {
+                return false;
+            }
         }
     }
     

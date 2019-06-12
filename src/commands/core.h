@@ -5,7 +5,9 @@
 #include "../engine/context.h"
 #include "../engine/node.h"
 
+#define VERSION "1.3.0"
+
 void init_commands();
-void make_interactive();
+bool set_interactive(bool value);
 void process_input(FILE *file);
 void parse_command(char *input);

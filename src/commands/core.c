@@ -22,6 +22,7 @@ Summary: Sets parsing context and initializes commands
 void init_commands()
 {
     init_util();
+    g_interactive = false;
     ctx = arith_get_ctx();
 
     commands[0] = get_command(quit_init, quit_check, quit_exec);
@@ -40,11 +41,13 @@ void init_commands()
 }
 
 /*
-Summary: Activates silent mode, whispered messages will not be displayed
+Summary: Activates interactive mode, whispered messages will be displayed
 */
-void make_interactive()
+bool set_interactive(bool value)
 {
-    g_interactive = true;
+    bool res = g_interactive;
+    g_interactive = value;
+    return res;
 }
 
 /*

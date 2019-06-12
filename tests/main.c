@@ -3,6 +3,7 @@
 #include "test.h"
 #include "parser_test.h"
 #include "tree_to_string_test.h"
+#include "../src/commands/core.h"
 #include "../src/engine/constants.h"
 
 #define NUM_TESTS 2

@@ -2,9 +2,9 @@
 #include <string.h>
 
 #include "help.h"
+#include "core.h"
 #include "command.h"
 #include "util.h"
-#include "../engine/constants.h"
 #include "../engine/operator.h"
 
 void help_init()
