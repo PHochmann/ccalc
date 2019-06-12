@@ -2,7 +2,7 @@
 #include "../engine/context.h"
 #include "../engine/rule.h"
 
-#define NUM_MAX_RULES 8
+#define NUM_MAX_RULES 10
 
 RewriteRule g_rules[NUM_MAX_RULES];
 size_t g_num_rules;

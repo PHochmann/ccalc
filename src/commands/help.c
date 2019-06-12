@@ -20,11 +20,11 @@ bool help_check(char *input)
 void help_exec(ParsingContext *ctx, __attribute__((unused)) char *input)
 {
 #ifdef DEBUG
-    printf("Calculator %s Debug build (c) 2018-2019, Philipp Hochmann\n", VERSION);
+    printf("Calculator %s Debug build (c) 2019, Philipp Hochmann\n", VERSION);
 #else
-    printf("Calculator %s (c) 2018-2019, Philipp Hochmann\n", VERSION);
+    printf("Calculator %s (c) 2019, Philipp Hochmann\n", VERSION);
 #endif
-    printf("Commands: debug, help, rules, <function> := <after>, <before> -> <after>\n");
+    printf("Commands: debug, help, rules, <function> := <after>, <before> -> <after>, load <path>\n");
 
     for (size_t i = 0; i < ctx->num_ops; i++)
     {
@@ -71,7 +71,29 @@ void help_exec(ParsingContext *ctx, __attribute__((unused)) char *input)
 
         if (g_debug && ctx->operators[i].arity > 0 && ctx->operators[i].placement != OP_PLACE_FUNCTION)
         {
-            printf(COL_RESET "p:%d ", ctx->operators[i].precedence);
+            if (ctx->operators[i].placement == OP_PLACE_INFIX)
+            {
+                char assoc = '?';
+                switch (ctx->operators[i].assoc)
+                {
+                    case OP_ASSOC_BOTH:
+                        assoc = 'B';
+                        break;
+                    case OP_ASSOC_LEFT:
+                        assoc = 'L';
+                        break;
+                    case OP_ASSOC_RIGHT:
+                        assoc = 'R';
+                        break;
+                }
+
+                printf(COL_RESET "%d,%c ", ctx->operators[i].precedence, assoc);
+            }
+            else
+            {
+                printf(COL_RESET "%d ", ctx->operators[i].precedence);
+            }
+            
         }
         else
         {

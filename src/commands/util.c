@@ -1,14 +1,12 @@
+#define _GNU_SOURCE
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 
 #include "util.h"
-#include "evaluation.h"
-#include "assignments.h"
-#include "../engine/context.h"
 
-#define MAX_ITERATIONS 50
 #define MAX_INPUT_LENGTH 100
 
 void init_util()
@@ -55,11 +53,11 @@ char *perr_to_string(ParserError perr)
 }
 
 /*
-Summary: printf-wrapper to filter unimportant prints in silent mode
+Summary: printf-wrapper to filter unimportant prints in non-interactive mode
 */
 void whisper(const char *format, ...)
 {
-    if (!g_silent)
+    if (g_interactive)
     {
         va_list args;
         va_start(args, format);
@@ -69,71 +67,32 @@ void whisper(const char *format, ...)
 }
 
 /*
-Summary: Used whenever user input is requested. Prompt is only printed when not silent.
+Summary: Used whenever input is requested. Prompt is only printed when interactive.
+Params
+    file: Used when not interactive - should be stdin when arguments are piped in or file when load command is used
 */
-bool ask_input(char *prompt, char **out_input)
+bool ask_input(char *prompt, FILE *file, char **out_input)
 {
-    if (g_silent) prompt = "";
-    *out_input = readline(prompt);
-    if (!(*out_input)) return false;
-    add_history(*out_input);
-    return true;
-}
-
-bool parse_input_wrapper(ParsingContext *ctx, char *input, bool pad_parentheses, Node **out_res, bool apply_rules, bool apply_ans, bool constant)
-{
-    ParserError perr = parse_input(ctx, input, pad_parentheses, out_res);
-    if (perr != PERR_SUCCESS)
+    if (g_interactive)
     {
-        printf("Error: %s\n", perr_to_string(perr));
-        return false;
-    }
-    
-    if (apply_ans && g_ans != NULL) tree_substitute_var(ctx, *out_res, g_ans, "ans");
-    if (apply_rules)
-    {
-        int appliances = apply_ruleset(*out_res, g_num_rules, g_rules, MAX_ITERATIONS);
-        if (appliances == MAX_ITERATIONS) whisper("Warning: Possibly non-terminating ruleset\n");
-    }
-
-    // Make expression constant by asking for values and binding them to variables
-    if (constant)
-    {
-        char *vars[MAX_VAR_COUNT];
-        int num_variables = tree_list_vars(*out_res, vars);
-        for (int i = 0; i < num_variables; i++)
+        *out_input = readline(prompt);
+        if (*out_input == NULL)
         {
-            printf(" %s? ", vars[i]);
-            char *input;
-            if (ask_input("> ", &input))
-            {
-                Node *res_var;
-                if (!parse_input_wrapper(ctx, input, pad_parentheses, &res_var, apply_rules, apply_ans, false))
-                {
-                    // Error while parsing - ask again
-                    free(input);
-                    i--;
-                    continue;
-                }
-                free(input);
-                
-                if (tree_contains_vars(res_var))
-                {
-                    // Not a constant given - ask again
-                    printf("Not a constant expression\n");
-                    free_tree(res_var);
-                    i--;
-                    continue;
-                }
-                
-                tree_substitute_var(ctx, *out_res, res_var, vars[i]);
-                free(vars[i]);
-                free_tree(res_var);
-            }
-            else return false;
+            return false;
         }
+        add_history(*out_input);
     }
-    
+    else
+    {
+        size_t size = MAX_INPUT_LENGTH;
+        *out_input = malloc(MAX_INPUT_LENGTH);
+        if (getline(out_input, &size, file) == -1)
+        {
+            return false;
+        }
+        (*out_input)[strlen(*out_input) - 1] = '\0'; // Overwrite newline char
+    }
+
     return true;
 }
 

@@ -2,10 +2,13 @@
 #include <string.h>
 
 #include "evaluation.h"
+#include "assignments.h"
 #include "util.h"
 #include "arith_context.h"
 #include "../engine/string_util.h"
-#include "../engine/string_util.h"
+
+#define MAX_DEBUG_LENGTH 200
+#define MAX_ITERATIONS 50
 
 void evaluation_init()
 {
@@ -14,6 +17,63 @@ void evaluation_init()
 
 bool evaluation_check(__attribute__((unused)) char *input)
 {
+    return true;
+}
+
+bool parse_input_wrapper(ParsingContext *ctx, char *input, bool pad_parentheses, Node **out_res, bool apply_rules, bool apply_ans, bool constant)
+{
+    ParserError perr = parse_input(ctx, input, pad_parentheses, out_res);
+    if (perr != PERR_SUCCESS)
+    {
+        printf("Error: %s\n", perr_to_string(perr));
+        return false;
+    }
+    
+    if (apply_ans && g_ans != NULL) tree_substitute_var(ctx, *out_res, g_ans, "ans");
+    if (apply_rules)
+    {
+        int appliances = apply_ruleset(*out_res, g_num_rules, g_rules, MAX_ITERATIONS);
+        if (appliances == MAX_ITERATIONS) whisper("Warning: Possibly non-terminating ruleset\n");
+    }
+
+    // Make expression constant by asking for values and binding them to variables
+    if (constant)
+    {
+        char *vars[MAX_VAR_COUNT];
+        int num_variables = tree_list_vars(*out_res, vars);
+        for (int i = 0; i < num_variables; i++)
+        {
+            printf(" %s? ", vars[i]);
+            char *input;
+            if (ask_input("> ", stdin, &input))
+            {
+                Node *res_var;
+                if (!parse_input_wrapper(ctx, input, pad_parentheses, &res_var, apply_rules, apply_ans, false))
+                {
+                    // Error while parsing - ask again
+                    free(input);
+                    i--;
+                    continue;
+                }
+                free(input);
+                
+                if (tree_contains_vars(res_var))
+                {
+                    // Not a constant given - ask again
+                    printf("Not a constant expression\n");
+                    free_tree(res_var);
+                    i--;
+                    continue;
+                }
+                
+                tree_substitute_var(ctx, *out_res, res_var, vars[i]);
+                free(vars[i]);
+                free_tree(res_var);
+            }
+            else return false;
+        }
+    }
+    
     return true;
 }
 
@@ -26,8 +86,8 @@ void evaluation_exec(ParsingContext *ctx, char *input)
         if (g_debug)
         {
             print_tree_visual(ctx, res);
-            char inlined_tree[MAX_LINE_LENGTH];
-            size_t size = tree_inline(ctx, res, inlined_tree, MAX_LINE_LENGTH, true);
+            char inlined_tree[MAX_DEBUG_LENGTH];
+            size_t size = tree_inline(ctx, res, inlined_tree, MAX_DEBUG_LENGTH, true);
             indicate_abbreviation(inlined_tree, size);
             printf("= %s\n", inlined_tree);
         }
@@ -36,7 +96,7 @@ void evaluation_exec(ParsingContext *ctx, char *input)
         char result_str[ctx->min_str_len];
         ctx->to_string((void*)(&eval), result_str, ctx->min_str_len);
 
-        if (!g_silent)
+        if (g_interactive)
         {
             printf("= %s\n", result_str);
         }

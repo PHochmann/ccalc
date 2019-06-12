@@ -18,5 +18,6 @@ Simple parser and calculator written in C
 | ```rules``` | Lists all defined rules |
 | ```<function> := <after>``` | Adds new function |
 | ```<before> -> <after>``` | Defines new rule. The following special variable names can be used to restrict matchings (<tt>x</tt> used as example, can be any variable name): <ul><li><tt>literal_x</tt> will only bind to variables named  x</li><li><tt>var_x</tt> will only bind to variables</li><li><tt>const_x</tt> will only bind to constants</li></ul> |
+| ```load <path>``` | Loads file as if its content had been typed in line by line |
 
 ```ans``` can be used to reference previous result.

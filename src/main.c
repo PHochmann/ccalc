@@ -1,30 +1,22 @@
+#include <stdio.h>
 #include <unistd.h>
-
 #include "commands/core.h"
 
 int main(int argc, char *argv[])
 {
     init_commands();
     
-    if (argc > 1)
+    for (int i = 1; i < argc; i++)
     {
-        make_silent();
-        
-        for (int i = 1; i < argc; i++)
-        {
-            parse_command(argv[i]);
-        }
-    }
-    else
-    {
-        // If we pipe in arguments, do so silently
-        if (!isatty(STDIN_FILENO))
-        {
-            make_silent();
-        }
-
-        main_interactive();
+        parse_command(argv[i]);
     }
     
-    return 0;
+    if (isatty(STDIN_FILENO))
+    {
+        make_interactive();
+    }
+
+    process_input(stdin);
+    
+    return EXIT_SUCCESS;
 }

@@ -4,11 +4,7 @@
 #include "assignments.h"
 #include "evaluation.h"
 #include "util.h"
-
-#include "../engine/constants.h"
 #include "../engine/node.h"
-#include "../engine/string_util.h"
-#include "../engine/operator.h"
 #include "../engine/tokenizer.h"
 #include "../engine/parser.h"
 
@@ -141,9 +137,7 @@ void definition_exec(ParsingContext *ctx, char *input)
     whisper("Added function\n");
 }
 
-
 // Rule definition command
-
 
 void rule_init()
 {
@@ -174,13 +168,13 @@ void rule_exec(ParsingContext *ctx, char *input)
     
     if ((perr = parse_input(ctx, input, false, &before_n)) != PERR_SUCCESS)
     {
-        printf("Error in left expression: %s\n", perr_to_string(perr));
+        printf(MSG_ERROR_LEFT "%s\n", perr_to_string(perr));
         return;
     }
     
     if ((perr = parse_input(ctx, op_pos + 2, false, &after_n)) != PERR_SUCCESS)
     {
-        printf("Error in right expression: %s\n", perr_to_string(perr));
+        printf(MSG_ERROR_RIGHT "%s\n", perr_to_string(perr));
         return;
     }
     
