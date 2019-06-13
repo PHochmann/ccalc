@@ -8,6 +8,8 @@
 #include "../engine/tokenizer.h"
 #include "../engine/parser.h"
 
+#define DEFINITION_OP ":="
+#define RULE_OP "->"
 #define MSG_ERROR_LEFT "Error in left expression: "
 #define MSG_ERROR_RIGHT "Error in right expression: "
 
@@ -18,7 +20,7 @@ void definition_init()
 
 bool definition_check(char *input)
 {
-    return strstr(input, ":=") != NULL;
+    return strstr(input, DEFINITION_OP) != NULL;
 }
 
 void definition_exec(ParsingContext *ctx, char *input)
@@ -36,8 +38,9 @@ void definition_exec(ParsingContext *ctx, char *input)
     }
     
     // Overwrite first char of operator to make function definition a proper string
-    char *op_pos = strstr(input, ":=");
-    *op_pos = '\0';
+    char *right_input = strstr(input, DEFINITION_OP);
+    *right_input = '\0';
+    right_input += strlen(DEFINITION_OP);
     
     // Tokenize function definition to get its name. Name is first token.
     ParserError perr;
@@ -117,7 +120,7 @@ void definition_exec(ParsingContext *ctx, char *input)
     
     Node *right_n;
 
-    if ((perr = parse_input(ctx, op_pos + 2, false, &right_n)) != PERR_SUCCESS)
+    if ((perr = parse_input(ctx, right_input, false, &right_n)) != PERR_SUCCESS)
     {
         free_tree(left_n);
         free(name);
@@ -151,16 +154,16 @@ bool rule_check(char *input)
 
 void rule_exec(ParsingContext *ctx, char *input)
 {
-    char *op_pos = strstr(input, "->");
-
     if (g_num_rules == NUM_MAX_RULES)
     {
         printf("Can't add any more rules\n");
         return;
     }
     
+    char *right_input = strstr(input, RULE_OP);
     // Overwrite first char of operator to make left hand side a proper string
-    *op_pos = '\0';
+    *right_input = '\0';
+    right_input += strlen(RULE_OP);
     
     Node *before_n;
     Node *after_n;
@@ -172,12 +175,15 @@ void rule_exec(ParsingContext *ctx, char *input)
         return;
     }
     
-    if ((perr = parse_input(ctx, op_pos + 2, false, &after_n)) != PERR_SUCCESS)
+    if ((perr = parse_input(ctx, right_input, false, &after_n)) != PERR_SUCCESS)
     {
         printf(MSG_ERROR_RIGHT "%s\n", perr_to_string(perr));
         return;
     }
     
+    tree_substitute_var(ctx, before_n, g_ans, "ans");
+    tree_substitute_var(ctx, after_n, g_ans, "ans");
+
     g_rules[g_num_rules++] = get_rule(ctx, before_n, after_n);
     whisper("Rule added\n");
 }

@@ -11,7 +11,7 @@
 #include "../engine/operator.h"
 #include "../engine/string_util.h"
 
-#define PREFIX "load "
+#define COMMAND "load "
 
 void load_init()
 {
@@ -20,12 +20,12 @@ void load_init()
 
 bool load_check(char *input)
 {
-    return begins_with(PREFIX, input);
+    return begins_with(COMMAND, input);
 }
 
 void load_exec(__attribute__((unused)) ParsingContext *ctx, char *input)
 {
-    FILE *file = fopen(input + strlen(PREFIX), "r");
+    FILE *file = fopen(input + strlen(COMMAND), "r");
 
     if (file == NULL)
     {
@@ -33,6 +33,7 @@ void load_exec(__attribute__((unused)) ParsingContext *ctx, char *input)
         return;
     }
 
+    // Set g_interactive to false to read with getline from file
     bool interactive = set_interactive(false);
     process_input(file);
     set_interactive(interactive);

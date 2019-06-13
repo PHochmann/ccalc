@@ -10,7 +10,10 @@
 #include "load.h"
 #include "assignments.h"
 #include "arith_context.h"
+#include "../engine/string_util.h"
 
+#define INTERACTIVE_ASK_PREFIX "> "
+#define COMMENT_PREFIX "'"
 #define NUM_COMMANDS 8
 
 static ParsingContext *ctx;
@@ -59,9 +62,10 @@ void process_input(FILE *file)
 
     while (true)
     {
-        if (ask_input("> ", file, &input))
+        if (ask_input(INTERACTIVE_ASK_PREFIX, file, &input))
         {
-            parse_command(input);
+            // Ignore lines that begin with '
+            if (!begins_with(COMMENT_PREFIX, input)) parse_command(input);
             free(input);
         }
         else
