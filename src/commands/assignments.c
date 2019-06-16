@@ -183,7 +183,7 @@ void rule_exec(ParsingContext *ctx, char *input)
     
     tree_substitute_var(ctx, before_n, g_ans, "ans");
     tree_substitute_var(ctx, after_n, g_ans, "ans");
-
     g_rules[g_num_rules++] = get_rule(ctx, before_n, after_n);
+    
     whisper("Rule added\n");
 }

@@ -54,24 +54,15 @@ bool set_interactive(bool value)
 }
 
 /*
-Summary: Endless loop to ask user for command
+Summary: Endless loop to ask user or file for command until ask_input() returns false, ignores comments
 */
 void process_input(FILE *file)
 {
     char *input = NULL;
-
-    while (true)
+    while (ask_input(INTERACTIVE_ASK_PREFIX, file, &input))
     {
-        if (ask_input(INTERACTIVE_ASK_PREFIX, file, &input))
-        {
-            // Ignore lines that begin with '
-            if (!begins_with(COMMENT_PREFIX, input)) parse_command(input);
-            free(input);
-        }
-        else
-        {
-            return;
-        }
+        if (!begins_with(COMMENT_PREFIX, input)) parse_command(input);
+        free(input);
     }
 }
 

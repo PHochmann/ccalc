@@ -9,7 +9,7 @@
 #include "arith_context.h"
 #include "../engine/string_util.h"
 
-#define MAX_DEBUG_LENGTH 200
+#define MAX_DEBUG_LENGTH 500
 #define MAX_ITERATIONS 50
 
 void evaluation_init()

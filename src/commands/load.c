@@ -7,8 +7,6 @@
 #include "load.h"
 #include "core.h"
 #include "util.h"
-#include "../engine/constants.h"
-#include "../engine/operator.h"
 #include "../engine/string_util.h"
 
 #define COMMAND "load "
@@ -39,4 +37,5 @@ void load_exec(__attribute__((unused)) ParsingContext *ctx, char *input)
     set_interactive(interactive);
     
     fclose(file);
+    whisper("File successfully loaded\n");
 }
