@@ -178,6 +178,7 @@ void rule_exec(ParsingContext *ctx, char *input)
     if ((perr = parse_input(ctx, right_input, false, &after_n)) != PERR_SUCCESS)
     {
         printf(MSG_ERROR_RIGHT "%s\n", perr_to_string(perr));
+        free_tree(before_n);
         return;
     }
     

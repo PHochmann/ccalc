@@ -201,8 +201,20 @@ int tree_list_vars(Node *tree, char **out_variables)
     
     if (out_variables != NULL)
     {
-        for (int i = 0; i < res_count; i++) out_variables[i] = variables[i];
+        for (int i = 0; i < res_count; i++)
+        {
+            out_variables[i] = variables[i];
+        }
     }
+    else
+    {
+        // When out_variables is NULL, we only want to count variables
+        for (int i = 0; i < res_count; i++)
+        {
+            free(variables[i]);
+        }
+    }
+
     return res_count;
 }
 
