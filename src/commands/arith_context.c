@@ -13,13 +13,13 @@
 
 static ParsingContext arith_ctx;
 
-long binomial(long n, long k)
+double binomial(double n, double k)
 {
     if (k == 0) return 1;
     if ((2 * k) > n) k = n - k;
     
-    long res = 1;
-    for (long i = 1; i <= k; i++)
+    double res = 1;
+    for (double i = 1; i <= k; i++)
     {
         res = (res * (n - k + i)) / i;
     }
@@ -27,16 +27,16 @@ long binomial(long n, long k)
     return res;
 }
 
-long fibonacci(long n)
+double fibonacci(double n)
 {
     if (n == 0) return 0;
 
-    long a = 0;
-    long b = 1;
+    double a = 0;
+    double b = 1;
 
     while (n-- > 1)
     {
-        long temp = a + b;
+        double temp = a + b;
         a = b;
         b = temp;
     }
@@ -46,8 +46,7 @@ long fibonacci(long n)
 
 double arith_eval(Node *node)
 {
-    double d_res = 1;
-    long l_res = 1;
+    double res = 1;
 
     switch (node->type)
     {
@@ -78,9 +77,9 @@ double arith_eval(Node *node)
                 case 8: // +x
                     return EVAL(0);
                 case 9: // x!
-                    l_res = 1;
-                    for (long i = (long)trunc(EVAL(0)); i > 1; i--) l_res *= i;
-                    return (double)l_res;
+                    res = 1;
+                    for (double i = trunc(EVAL(0)); i > 1; i--) res *= i;
+                    return res;
                 case 10: // x%
                     return EVAL(0) / 100;
                 case 11: // exp(x)
@@ -122,21 +121,21 @@ double arith_eval(Node *node)
                 case 29: // atanh(x)
                     return atanh(EVAL(0));
                 case 30: // max(x, y, ...)
-                    d_res = -INFINITY;
+                    res = -INFINITY;
                     for (size_t i = 0; i < node->num_children; i++)
                     {
                         double child_val = EVAL(i);
-                        if (child_val > d_res) d_res = child_val;
+                        if (child_val > res) res = child_val;
                     }
-                    return d_res;
+                    return res;
                 case 31: // min(x, y, ...)
-                    d_res = INFINITY;
+                    res = INFINITY;
                     for (size_t i = 0; i < node->num_children; i++)
                     {
                         double child_val = EVAL(i);
-                        if (child_val < d_res) d_res = child_val;
+                        if (child_val < res) res = child_val;
                     }
-                    return d_res;
+                    return res;
                 case 32: // abs(x)
                     return fabs(EVAL(0));
                 case 33: // ceil(x)
@@ -150,22 +149,22 @@ double arith_eval(Node *node)
                 case 37: // frac(x)
                     return EVAL(0) - floor(EVAL(0));
                 case 38: // sum(x, y, ...)
-                    d_res = 0;
-                    for (size_t i = 0; i < node->num_children; i++) d_res += EVAL(i);
-                    return d_res;
+                    res = 0;
+                    for (size_t i = 0; i < node->num_children; i++) res += EVAL(i);
+                    return res;
                 case 39: // prod(x, y, ...)
-                    d_res = 1;
-                    for (size_t i = 0; i < node->num_children; i++) d_res *= EVAL(i);
-                    return d_res;
+                    res = 1;
+                    for (size_t i = 0; i < node->num_children; i++) res *= EVAL(i);
+                    return res;
                 case 40: // avg(x, y, ...)
                     if (node->num_children == 0) return 0;
-                    d_res = 0;
-                    for (size_t i = 0; i < node->num_children; i++) d_res += EVAL(i);
-                    return d_res / node->num_children;
+                    res = 0;
+                    for (size_t i = 0; i < node->num_children; i++) res += EVAL(i);
+                    return res / node->num_children;
                 case 41: // gamma(x)
                     return tgamma(EVAL(0));
                 case 42: // fib(x)
-                    return fibonacci((long)trunc(EVAL(0)));
+                    return fibonacci(trunc(EVAL(0)));
                 case 43: // pi
                     return 3.14159265359;
                 case 44: // e

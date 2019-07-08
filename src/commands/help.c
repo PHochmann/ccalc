@@ -7,6 +7,10 @@
 #include "util.h"
 #include "../engine/operator.h"
 
+#define TRIG_IND 18
+#define MISC_FUNC_IND 30
+#define CONSTANTS_IND 43
+
 void help_init()
 {
 
@@ -15,6 +19,82 @@ void help_init()
 bool help_check(char *input)
 {
     return strcmp(input, "help") == 0;
+}
+
+void print_op(Operator *op)
+{
+    printf(OP_COLOR);
+    switch (op->placement)
+    {
+        case OP_PLACE_PREFIX:
+            if (op->arity != 0)
+            {
+                printf("%sx", op->name);
+            }
+            else
+            {
+                printf("%s", op->name);
+            }
+            break;
+            
+        case OP_PLACE_INFIX:
+            if (strlen(op->name) == 1)
+            {
+                printf("x%sy", op->name);
+            }
+            else
+            {
+                printf("x %s y", op->name);
+            }
+            break;
+            
+        case OP_PLACE_POSTFIX:
+            printf("x%s", op->name);
+            break;
+            
+        case OP_PLACE_FUNCTION:
+            if (op->arity != DYNAMIC_ARITY)
+            {
+                printf("%s(%d)", op->name, op->arity);
+            }
+            else
+            {
+                printf("%s(*)", op->name);
+            }
+            break;
+    }
+
+    // Print additional information when debug mode is active
+    if (g_debug && op->arity > 0 && op->placement != OP_PLACE_FUNCTION)
+    {
+        if (op->placement == OP_PLACE_INFIX)
+        {
+            char assoc = '?';
+            switch (op->assoc)
+            {
+                case OP_ASSOC_BOTH:
+                    assoc = 'B';
+                    break;
+                case OP_ASSOC_LEFT:
+                    assoc = 'L';
+                    break;
+                case OP_ASSOC_RIGHT:
+                    assoc = 'R';
+                    break;
+            }
+
+            printf(COL_RESET "%d,%c ", op->precedence, assoc);
+        }
+        else
+        {
+            printf(COL_RESET "%d ", op->precedence);
+        }
+        
+    }
+    else
+    {
+        printf(COL_RESET " ");
+    }
 }
 
 void help_exec(ParsingContext *ctx, __attribute__((unused)) char *input)
@@ -26,80 +106,29 @@ void help_exec(ParsingContext *ctx, __attribute__((unused)) char *input)
 #endif
     printf("Commands: debug, help, rules, <function> := <after>, <before> -> <after>, load <path>\n");
 
-    for (size_t i = 0; i < ctx->num_ops; i++)
+    printf("\nBasic operators:\n");
+    for (size_t i = 0; i < TRIG_IND; i++)
     {
-        printf(OP_COLOR);
-        switch (ctx->operators[i].placement)
-        {
-            case OP_PLACE_PREFIX:
-                if (ctx->operators[i].arity != 0)
-                {
-                    printf("%sx", ctx->operators[i].name);
-                }
-                else
-                {
-                    printf("%s", ctx->operators[i].name);
-                }
-                break;
-                
-            case OP_PLACE_INFIX:
-                if (strlen(ctx->operators[i].name) == 1)
-                {
-                    printf("x%sy", ctx->operators[i].name);
-                }
-                else
-                {
-                    printf("x %s y", ctx->operators[i].name);
-                }
-                break;
-                
-            case OP_PLACE_POSTFIX:
-                printf("x%s", ctx->operators[i].name);
-                break;
-                
-            case OP_PLACE_FUNCTION:
-                if (ctx->operators[i].arity != DYNAMIC_ARITY)
-                {
-                    printf("%s(%d)", ctx->operators[i].name, ctx->operators[i].arity);
-                }
-                else
-                {
-                    printf("%s(*)", ctx->operators[i].name);
-                }
-                break;
-        }
-
-        if (g_debug && ctx->operators[i].arity > 0 && ctx->operators[i].placement != OP_PLACE_FUNCTION)
-        {
-            if (ctx->operators[i].placement == OP_PLACE_INFIX)
-            {
-                char assoc = '?';
-                switch (ctx->operators[i].assoc)
-                {
-                    case OP_ASSOC_BOTH:
-                        assoc = 'B';
-                        break;
-                    case OP_ASSOC_LEFT:
-                        assoc = 'L';
-                        break;
-                    case OP_ASSOC_RIGHT:
-                        assoc = 'R';
-                        break;
-                }
-
-                printf(COL_RESET "%d,%c ", ctx->operators[i].precedence, assoc);
-            }
-            else
-            {
-                printf(COL_RESET "%d ", ctx->operators[i].precedence);
-            }
-            
-        }
-        else
-        {
-            printf(COL_RESET " ");
-        }
-        
+        print_op(&ctx->operators[i]);
     }
+
+    printf("\nTrigonometric functions:\n");
+    for (size_t i = TRIG_IND; i < MISC_FUNC_IND; i++)
+    {
+        print_op(&ctx->operators[i]);
+    }
+
+    printf("\nMiscellaneous functions:\n");
+    for (size_t i = MISC_FUNC_IND; i < CONSTANTS_IND; i++)
+    {
+        print_op(&ctx->operators[i]);
+    }
+
+    printf("\nConstants:\n");
+    for (size_t i = CONSTANTS_IND; i < ctx->num_ops; i++)
+    {
+        print_op(&ctx->operators[i]);
+    }
+
     printf("\n(%zu available operators)\n", ctx->num_ops);
 }

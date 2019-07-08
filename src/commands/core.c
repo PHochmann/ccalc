@@ -37,7 +37,7 @@ void init_commands()
     commands[6] = get_command(load_init, load_check, load_exec);
     commands[7] = get_command(evaluation_init, evaluation_check, evaluation_exec);
 
-    for (int i = 0; i < NUM_COMMANDS; i++)
+    for (size_t i = 0; i < NUM_COMMANDS; i++)
     {
         commands[i].initHandler();
     }

@@ -27,7 +27,8 @@ Node get_constant_node(void *value)
     return res;
 }
 
-// Returns a new node of type NTYPE_OPERATOR and prepares its attributes
+/* Returns a new node of type NTYPE_OPERATOR and prepares its attributes
+   Also mallocs buffer for num_children Nodes */
 Node get_operator_node(Operator *op, Arity num_children)
 {
     Node res = get_node(NTYPE_OPERATOR);

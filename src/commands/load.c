@@ -30,6 +30,8 @@ void load_exec(__attribute__((unused)) ParsingContext *ctx, char *input)
         printf("Error loading file: %s\n", strerror(errno));
         return;
     }
+    
+    whisper("File successfully loaded\n");
 
     // Set g_interactive to false to read with getline from file
     bool interactive = set_interactive(false);
@@ -37,5 +39,4 @@ void load_exec(__attribute__((unused)) ParsingContext *ctx, char *input)
     set_interactive(interactive);
     
     fclose(file);
-    whisper("File successfully loaded\n");
 }

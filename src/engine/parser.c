@@ -8,11 +8,14 @@
 
 #define ERROR(type) { result = type; goto exit; }
 
-// Global vars while parsing
+// Global vars while parsing:
+
 static ParsingContext *ctx;
 static Node **node_stack;
-static Operator **op_stack; // NULL pointer on stack is opening parenthesis
-static Arity *arities; // Records number of operands for functions, or DYNAMIC_ARITY for non-functions and glue-ops
+// NULL pointer on stack is opening parenthesis
+static Operator **op_stack;
+// Records number of operands for functions, or DYNAMIC_ARITY for non-functions and glue-ops
+static Arity *arities;
 static size_t num_nodes;
 static size_t num_ops;
 static ParserError result;
@@ -71,10 +74,10 @@ bool op_pop_and_insert()
     if (op != NULL) // Construct operator-node and append children
     {
         // Functions with recorded arity of DYNAMIC_ARITY are glue-ops and shouldn't be computed as functions
-        // TODO: That's dirty, change it
         bool is_function = (arity_peek() != DYNAMIC_ARITY);
     
         // Function overloading: Find function with suitable arity
+        // Actual function on op stack is only tentative with random arity (but same name)
         if (is_function)
         {
             if (op->arity != arity_peek())
@@ -100,6 +103,8 @@ bool op_pop_and_insert()
         Node *op_node = malloc_wrapper(sizeof(Node));
         if (op_node == NULL) return false;
         *op_node = get_operator_node(op, is_function ? arity_peek() : op->arity);
+
+        // Check if malloc of children buffer in get_operator_node failed
         if (op_node->children == NULL)
         {
             free(op_node);
@@ -108,9 +113,10 @@ bool op_pop_and_insert()
         
         for (Arity i = 0; i < op_node->num_children; i++)
         {
+            // Pop nodes from stack and append them in subtree
             if (!node_pop(&op_node->children[op_node->num_children - i - 1]))
             {
-                // Free already appended children and new node
+                // Free already appended children and new node on error
                 for (Arity j = op_node->num_children - 1; j > op_node->num_children - i - 1; j--)
                 {
                     free_tree(op_node->children[j]);
@@ -122,13 +128,18 @@ bool op_pop_and_insert()
             }
         }
         
-        if (!node_push(op_node)) return false;
+        if (!node_push(op_node))
+        {
+            free_tree(op_node);
+            return false;
+        }
     }
     
     num_ops--;
     return true;
 }
 
+// Pushing NULL means pushing an opening parenthesis
 bool op_push(Operator *op)
 {
     bool is_function = (op != NULL && op->placement == OP_PLACE_FUNCTION);
@@ -156,9 +167,9 @@ bool op_push(Operator *op)
         return false;
     }
     
-    arities[num_ops] = (is_function ? 0 : DYNAMIC_ARITY); // TODO: That's dirty. Change it! (DYNAMIC_ARITY is only Arity that will never occur)
-    op_stack[num_ops] = op;
-    num_ops++;
+    // DYNAMIC_ARITY is only Arity that will never occur
+    arities[num_ops] = (is_function ? 0 : DYNAMIC_ARITY);
+    op_stack[num_ops++] = op;
 
     // Postfix operators are never on the op_stack, because their operands are directly available
     if (op != NULL && op->placement == OP_PLACE_POSTFIX)
