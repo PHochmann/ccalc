@@ -30,7 +30,7 @@ Arity arity_peek()
     return arities[num_ops - 1];
 }
 
-void* malloc_wrapper(size_t size)
+void *malloc_wrapper(size_t size)
 {
     void *res = malloc(size);
     if (res == NULL) result = PERR_OUT_OF_MEMORY;
