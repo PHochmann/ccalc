@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 #include <float.h>
 #include <math.h>
 
@@ -8,7 +9,7 @@
 #define EVAL(n) arith_eval(node->children[n])
 
 #define ARITH_STRING_LENGTH 30
-#define ARITH_NUM_OPS 48
+#define ARITH_NUM_OPS 49
 #define ARITH_CUSTOM_BUFFER 10
 
 static ParsingContext arith_ctx;
@@ -42,6 +43,14 @@ double fibonacci(double n)
     }
 
     return b;
+}
+
+// max is exclusive
+double random_between(double min, double max)
+{
+    long diff = (long)(max - min);
+    if (diff < 1) return -1;
+    return rand() % diff + min;
 }
 
 double arith_eval(Node *node)
@@ -78,7 +87,10 @@ double arith_eval(Node *node)
                     return EVAL(0);
                 case 9: // x!
                     res = 1;
-                    for (double i = trunc(EVAL(0)); i > 1; i--) res *= i;
+                    for (double i = trunc(EVAL(0)); i > 1; i--)
+                    {
+                        res *= i;
+                    }
                     return res;
                 case 10: // x%
                     return EVAL(0) / 100;
@@ -161,19 +173,21 @@ double arith_eval(Node *node)
                     res = 0;
                     for (size_t i = 0; i < node->num_children; i++) res += EVAL(i);
                     return res / node->num_children;
-                case 41: // gamma(x)
+                case 41: // rand(x, y)
+                    return random_between(EVAL(0), EVAL(1));
+                case 42: // gamma(x)
                     return tgamma(EVAL(0));
-                case 42: // fib(x)
+                case 43: // fib(x)
                     return fibonacci(trunc(EVAL(0)));
-                case 43: // pi
+                case 44: // pi
                     return 3.14159265359;
-                case 44: // e
+                case 45: // e
                     return 2.71828182846;
-                case 45: // phi
+                case 46: // phi
                     return 1.61803398874;
-                case 46: // clight (m/s)
+                case 47: // clight (m/s)
                     return 299792458;
-                case 47: // csound (m/s)
+                case 48: // csound (m/s)
                     return 343.2;
                 default:
                     printf("Encountered operator without evaluation rule\n");
@@ -254,6 +268,7 @@ ParsingContext *arith_get_ctx()
         op_get_function("sum", DYNAMIC_ARITY),
         op_get_function("prod", DYNAMIC_ARITY),
         op_get_function("avg", DYNAMIC_ARITY),
+        op_get_function("rand", 2),
         op_get_function("gamma", 1),
         op_get_function("fib", 1),
         op_get_constant("pi"),
@@ -263,6 +278,7 @@ ParsingContext *arith_get_ctx()
         op_get_constant("csound"));
     
     ctx_set_glue_op(&arith_ctx, &arith_ctx.operators[2]);
-    
+
+    srand(time(NULL));
     return &arith_ctx;
 }

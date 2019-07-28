@@ -9,7 +9,7 @@
 
 #define TRIG_IND 18
 #define MISC_FUNC_IND 30
-#define CONSTANTS_IND 43
+#define CONSTANTS_IND 44
 
 void help_init()
 {
