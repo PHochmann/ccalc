@@ -19,7 +19,7 @@ When starting the calculator normally, you can enter expressions and commands in
 * Two subexpressions next to each other without an infix operator will be multiplied (e.g. ```2a``` or ```(x-1)(y+1)```).
 * To define a constant, you can define a function without arguments (e.g. ```myConst() := 42```) or a pattern matching rule that only applies to a variable of a specific name (e.g. ```name_myConst -> 42```).
 * When applying unary functions to a literal, you can omit parentheses (e.g. ```sin2```).
-* Any line starting with ```'``` will be ignored (useful for comments in files to be loaded)
+* Any line starting with ```'``` will be ignored (useful for comments in files to be loaded).
 
 ### Available commands
 | Command                     | Description |
