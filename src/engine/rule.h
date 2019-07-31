@@ -4,7 +4,7 @@
 
 #define VAR_PREFIX "var_"
 #define CONST_PREFIX "const_"
-#define LITERAL_PREFIX "literal_"
+#define NAME_PREFIX "name_"
 
 typedef struct {
     ParsingContext *context;

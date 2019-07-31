@@ -66,10 +66,10 @@ bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_
                     // Check special rules
                     if (begins_with(CONST_PREFIX, curr_pattern_n->var_name) && curr_tree_n->type != NTYPE_CONSTANT) return false;
                     if (begins_with(VAR_PREFIX, curr_pattern_n->var_name) && curr_tree_n->type != NTYPE_VARIABLE) return false;
-                    if (begins_with(LITERAL_PREFIX, curr_pattern_n->var_name))
+                    if (begins_with(NAME_PREFIX, curr_pattern_n->var_name))
                     {
                         if (curr_tree_n->type != NTYPE_VARIABLE) return false;
-                        if (strcmp(curr_pattern_n->var_name + strlen(LITERAL_PREFIX), curr_tree_n->var_name) != 0) return false;
+                        if (strcmp(curr_pattern_n->var_name + strlen(NAME_PREFIX), curr_tree_n->var_name) != 0) return false;
                     }
                     
                     // Bind variable

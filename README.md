@@ -16,7 +16,7 @@ When starting the calculator normally, you can enter expressions and commands in
 ### Syntax
 Any input which is not a command will be interpreted as an expression. ```ans``` can be used to reference previous result. Two subexpressions next to each other without an infix operator will be multiplied (e.g. ```2a``` or ```(x-1)(y+1)```).
 
-You can define functions and pattern matching rules. Two define a constant, you can define a function without arguments (e.g. ```myConst() := 42```) or a pattern matching rule that only applies to a variable of a specific name (e.g. ```literal_myConst -> 42```).
+You can define functions and pattern matching rules. To define a constant, you can define a function without arguments (e.g. ```myConst() := 42```) or a pattern matching rule that only applies to a variable of a specific name (e.g. ```name_myConst -> 42```). When applying unary functions to a literal, you can omit parentheses (e.g. ```sin2```).
 
 ### Available commands
 | Command                     | Description |
@@ -25,7 +25,7 @@ You can define functions and pattern matching rules. Two define a constant, you 
 | ```help```                  | Lists all available operators |
 | ```rules```                 | Lists all defined rules |
 | ```<function> := <after>``` | Adds new function |
-| ```<before> -> <after>```   | Defines new rule. The following special variable names can be used to restrict matchings (<tt>x</tt> used as example, can be any variable name): <ul><li><tt>literal_x</tt> will only bind to variables named  x</li><li><tt>var_x</tt> will only bind to variables</li><li><tt>const_x</tt> will only bind to constants</li></ul> |
+| ```<before> -> <after>```   | Defines new rule. The following special variable names can be used to restrict matchings (<tt>x</tt> used as example, can be any variable name): <ul><li><tt>name_x</tt> will only bind to variables named x</li><li><tt>var_x</tt> will only bind to variables</li><li><tt>const_x</tt> will only bind to constants</li></ul> |
 | ```load <path>```           | Loads file as if its content had been typed in line by line |
 | ```quit```                  | Closes calculator |
 
