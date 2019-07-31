@@ -10,14 +10,92 @@ Simple parser and calculator written in C
 
 4. If you want, add alias such as ```c="~/Calculator/bin/calculator.out $@"``` in ~/.bash_aliases (when using the bash) to run program from anywhere. Arguments can be any expression as in interactive mode, which is started when program is executed without additional arguments.
 
-## Available commands  
-| Command | Description |
-| --- | --- |
-| ```debug``` | Toggles debug mode. In debug mode, an abstract syntax tree is shown before evaluation |
-| ```help``` | Lists all available operators |
-| ```rules``` | Lists all defined rules |
-| ```<function> := <after>``` | Adds new function |
-| ```<before> -> <after>``` | Defines new rule. The following special variable names can be used to restrict matchings (<tt>x</tt> used as example, can be any variable name): <ul><li><tt>literal_x</tt> will only bind to variables named  x</li><li><tt>var_x</tt> will only bind to variables</li><li><tt>const_x</tt> will only bind to constants</li></ul> |
-| ```load <path>``` | Loads file as if its content had been typed in line by line |
+## How to use it
+When starting the calculator normally, you can enter expressions and commands interactively. Passed arguments will be evaluated beforehand. You can pipe in contents which will be evaluated as if typed in, after that the calculator terminates and does not enter interactive mode.
 
-```ans``` can be used to reference previous result.
+### Syntax
+Any input which is not a command will be interpreted as an expression. ```ans``` can be used to reference previous result. Two subexpressions next to each other without an infix operator will be multiplied (e.g. ```2a``` or ```(x-1)(y+1)```).
+
+You can define functions and pattern matching rules. Two define a constant, you can define a function without arguments (e.g. ```myConst() := 42```) or a pattern matching rule that only applies to a variable of a specific name (e.g. ```literal_myConst -> 42```).
+
+### Available commands
+| Command                     | Description |
+| ---                         | ---         |
+| ```debug```                 | Toggles debug mode. In debug mode, an abstract syntax tree is shown before evaluation |
+| ```help```                  | Lists all available operators |
+| ```rules```                 | Lists all defined rules |
+| ```<function> := <after>``` | Adds new function |
+| ```<before> -> <after>```   | Defines new rule. The following special variable names can be used to restrict matchings (<tt>x</tt> used as example, can be any variable name): <ul><li><tt>literal_x</tt> will only bind to variables named  x</li><li><tt>var_x</tt> will only bind to variables</li><li><tt>const_x</tt> will only bind to constants</li></ul> |
+| ```load <path>```           | Loads file as if its content had been typed in line by line |
+| ```quit```                  | Closes calculator |
+
+### Infix operators
+| Name      | Associativity | Precedence | Description          |
+| ---       | ---           | ---        | ---                  |
+| ```+```   | Both          | 2          | Addition             |
+| ```-```   | Left          | 2          | Subtration           |
+| ```*```   | Both          | 3          | Multiplication       |
+| ```/```   | Left          | 3          | Division             |
+| ```^```   | Right         | 4          | Exponentiation       |
+| ```C```   | Left          | 1          | Binomial coefficient |
+| ```mod``` | Left          | 1          | Modulo operator      |
+
+### Prefix operators
+| Name    | Precedence | Description |
+| ---     | ---        | ---         |
+| ```+``` | 6          | Identity    |
+| ```-``` | 6          | Negation    |
+
+### Postfix operators
+| Name    | Precedence | Description     |
+| ---     | ---        | ---             |
+| ```!``` | 5          | Faculty         |
+| ```%``` | 5          | Division by 100 |
+
+### Functions
+| Name                 | Description                                   |
+| ---                  | ---                                           |
+| ```exp(x)```         | Natural exponential function                  |
+| ```root(x, n)```     | nth root of x                                 |
+| ```sqrt(x)```        | Square root                                   |
+| ```log(x, n)```      | Logarithm to base n                           |
+| ```ln(x)```          | Natural logarithm                             |
+| ```ld(x)```          | Binary logarithm                              |
+| ```lg(x)```          | Logarithm to base 10                          |
+| ```sin(x)```         | Sine                                          |
+| ```cos(x)```         | Cosine                                        |
+| ```tan(x)```         | Tangent                                       |
+| ```asin(x)```        | Inverse sine                                  |
+| ```acos(x)```        | Inverse cosine                                |
+| ```atan(x)```        | Inverse tangens                               |
+| ```sinh(x)```        | Hyperbolic sine                               |
+| ```cosh(x)```        | Hyperbolic cosine                             |
+| ```tanh(x)```        | Hyperbolic tangent                            |
+| ```asinh(x)```       | Inverse hyperbolic sine                       |
+| ```acosh(x)```       | Inverse hyperbolic cosine                     |
+| ```atanh(x)```       | Inverse hyperbolic tangens                    |
+| ```max(*)```         | Maximum                                       |
+| ```min(*)```         | Minimum                                       |
+| ```abs(x)```         | Absolute value                                |
+| ```ceil(x)```        | Round up to nearest integer                   |
+| ```floor(x)```       | Round down to nearest integer                 |
+| ```round(x)```       | Round to nearest integer                      |
+| ```trunc(x)```       | Round towards 0 to nearest integer            |
+| ```frac(x)```        | Fractional part of x                          |
+| ```sum(*)```         | Sum of all operands                           |
+| ```prod(*)```        | Product of all operands                       |
+| ```avg(*)```         | Arithmetic mean of all operands               |
+| ```rand(min, max)``` | Random number between min and max (exclusive) |
+| ```gamma(x)```       | Gamma function                                |
+| ```fib(n)```         | Fibonacci sequence                            |
+
+Note: ```*``` is used to denote arbitrary number of operands, ```n``` is used to denote integer operand. Non-integer inputs will be truncated.
+
+### Constants
+| Name         | Value         | Description                          |
+| ---          | ---           | ---                                  |
+| ```pi```     | 3.14159265359 |                                      |
+| ```e```      | 2.71828182846 |                                      |
+| ```phi```    | 1.61803398874 |                                      |
+| ```clight``` | 299792458     | Speed of light [m/s]                 |
+| ```csound``` | 343.2         | Speed of sound in air at 20 °C [m/s] |
