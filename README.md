@@ -36,7 +36,7 @@ When starting the calculator normally, you can enter expressions and commands in
 | Name      | Associativity | Precedence | Description          |
 | ---       | ---           | ---        | ---                  |
 | ```+```   | Both          | 2          | Addition             |
-| ```-```   | Left          | 2          | Subtration           |
+| ```-```   | Left          | 2          | Subtraction           |
 | ```*```   | Both          | 3          | Multiplication       |
 | ```/```   | Left          | 3          | Division             |
 | ```^```   | Right         | 4          | Exponentiation       |
@@ -52,7 +52,7 @@ When starting the calculator normally, you can enter expressions and commands in
 ### Postfix operators
 | Name    | Precedence | Description     |
 | ---     | ---        | ---             |
-| ```!``` | 5          | Faculty         |
+| ```!``` | 5          | Factorial       |
 | ```%``` | 5          | Division by 100 |
 
 ### Functions
