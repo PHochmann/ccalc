@@ -99,8 +99,8 @@ Note:
 ### Constants
 | Name         | Value         | Description                          |
 | ---          | ---           | ---                                  |
-| ```pi```     | 3.14159265359 |                                      |
-| ```e```      | 2.71828182846 |                                      |
-| ```phi```    | 1.61803398874 |                                      |
+| ```pi```     | 3.14159265359 | Archimedes' constant                 |
+| ```e```      | 2.71828182846 | Euler's number                       |
+| ```phi```    | 1.61803398874 | Golden ratio                         |
 | ```clight``` | 299792458     | Speed of light [m/s]                 |
 | ```csound``` | 343.2         | Speed of sound in air at 20 °C [m/s] |
