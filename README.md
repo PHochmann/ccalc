@@ -56,43 +56,45 @@ When starting the calculator normally, you can enter expressions and commands in
 | ```%``` | 5          | Division by 100 |
 
 ### Functions
-| Name                 | Description                                   |
-| ---                  | ---                                           |
-| ```exp(x)```         | Natural exponential function                  |
-| ```root(x, n)```     | nth root of x                                 |
-| ```sqrt(x)```        | Square root                                   |
-| ```log(x, n)```      | Logarithm to base n                           |
-| ```ln(x)```          | Natural logarithm                             |
-| ```ld(x)```          | Binary logarithm                              |
-| ```lg(x)```          | Logarithm to base 10                          |
-| ```sin(x)```         | Sine                                          |
-| ```cos(x)```         | Cosine                                        |
-| ```tan(x)```         | Tangent                                       |
-| ```asin(x)```        | Inverse sine                                  |
-| ```acos(x)```        | Inverse cosine                                |
-| ```atan(x)```        | Inverse tangens                               |
-| ```sinh(x)```        | Hyperbolic sine                               |
-| ```cosh(x)```        | Hyperbolic cosine                             |
-| ```tanh(x)```        | Hyperbolic tangent                            |
-| ```asinh(x)```       | Inverse hyperbolic sine                       |
-| ```acosh(x)```       | Inverse hyperbolic cosine                     |
-| ```atanh(x)```       | Inverse hyperbolic tangens                    |
-| ```max(*)```         | Maximum                                       |
-| ```min(*)```         | Minimum                                       |
-| ```abs(x)```         | Absolute value                                |
-| ```ceil(x)```        | Round up to nearest integer                   |
-| ```floor(x)```       | Round down to nearest integer                 |
-| ```round(x)```       | Round to nearest integer                      |
-| ```trunc(x)```       | Round towards 0 to nearest integer            |
-| ```frac(x)```        | Fractional part of x                          |
-| ```sum(*)```         | Sum of all operands                           |
-| ```prod(*)```        | Product of all operands                       |
-| ```avg(*)```         | Arithmetic mean of all operands               |
-| ```rand(min, max)``` | Random number between min and max (exclusive) |
-| ```gamma(x)```       | Gamma function                                |
-| ```fib(n)```         | Fibonacci sequence                            |
+| Name                 | Description                                    |
+| ---                  | ---                                            |
+| ```exp(x)```         | Natural exponential function                   |
+| ```root(x, n)```     | nth root of x                                  |
+| ```sqrt(x)```        | Square root                                    |
+| ```log(x, n)```      | Logarithm to base n                            |
+| ```ln(x)```          | Natural logarithm                              |
+| ```ld(x)```          | Binary logarithm                               |
+| ```lg(x)```          | Logarithm to base 10                           |
+| ```sin(x)```         | Sine                                           |
+| ```cos(x)```         | Cosine                                         |
+| ```tan(x)```         | Tangent                                        |
+| ```asin(x)```        | Inverse sine                                   |
+| ```acos(x)```        | Inverse cosine                                 |
+| ```atan(x)```        | Inverse tangens                                |
+| ```sinh(x)```        | Hyperbolic sine                                |
+| ```cosh(x)```        | Hyperbolic cosine                              |
+| ```tanh(x)```        | Hyperbolic tangent                             |
+| ```asinh(x)```       | Inverse hyperbolic sine                        |
+| ```acosh(x)```       | Inverse hyperbolic cosine                      |
+| ```atanh(x)```       | Inverse hyperbolic tangent                     |
+| ```max(*)```         | Maximum                                        |
+| ```min(*)```         | Minimum                                        |
+| ```abs(x)```         | Absolute value                                 |
+| ```ceil(x)```        | Round up to nearest integer                    |
+| ```floor(x)```       | Round down to nearest integer                  |
+| ```round(x)```       | Round to nearest integer                       |
+| ```trunc(x)```       | Round towards 0 to nearest integer             |
+| ```frac(x)```        | Fractional part of x                           |
+| ```sum(*)```         | Sum of all operands                            |
+| ```prod(*)```        | Product of all operands                        |
+| ```avg(*)```         | Arithmetic mean of all operands                |
+| ```rand(min, max)``` | Random integer between min and max (exclusive) |
+| ```gamma(x)```       | Gamma function                                 |
+| ```fib(n)```         | Fibonacci sequence                             |
 
-Note: ```*``` is used to denote arbitrary number of operands, ```n``` is used to denote integer operand. Non-integer inputs will be truncated.
+Note:
+* ```*``` is used to denote arbitrary number of operands
+* Where operands are expected to be integer-valued, they will be truncated
 
 ### Constants
 | Name         | Value         | Description                          |
