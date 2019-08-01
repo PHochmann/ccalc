@@ -1,5 +1,5 @@
 # Calculator
-Simple parser and calculator written in C
+Simple calculator written in C
 
 ## Setup guide
 1. Clone repository.
