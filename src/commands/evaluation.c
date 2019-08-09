@@ -45,10 +45,15 @@ bool parse_input_wrapper(ParsingContext *ctx, char *input, bool pad_parentheses,
         int num_variables = tree_list_vars(*out_res, vars);
         for (int i = 0; i < num_variables; i++)
         {
-            if (isatty(STDIN_FILENO)) printf("%s? ", vars[i]);
+            // Suppress this prompt when STDIN is a pipe
+            if (isatty(STDIN_FILENO))
+            {
+                printf("%s? > ", vars[i]);
+            }
+
             char *input;
 
-            if (ask_input("> ", stdin, &input))
+            if (ask_input("", stdin, &input))
             {
                 Node *res_var;
                 if (!parse_input_wrapper(ctx, input, pad_parentheses, &res_var, apply_rules, apply_ans, false))

@@ -367,7 +367,7 @@ ParserError parse_tokens(ParsingContext *context, size_t num_tokens, char **toke
         if (!node_push(node)) goto exit;
     }
     
-    // 5. Pop all remaining operators
+    // V. Pop all remaining operators
     while (num_ops > 0)
     {
         if (op_peek() == NULL)
@@ -380,7 +380,7 @@ ParserError parse_tokens(ParsingContext *context, size_t num_tokens, char **toke
         }
     }
     
-    // 6. Build result and return value
+    // VI. Build result and return value
     switch (num_nodes)
     {
         case 0:

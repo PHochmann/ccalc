@@ -22,21 +22,21 @@ When starting the calculator normally, you can enter expressions and commands in
 * Any line starting with ```'``` will be ignored (useful for comments in files to be loaded).
 
 ### Available commands
-| Command                     | Description |
-| ---                         | ---         |
+| Command                     | Description                                                                           |
+| ---                         | ---                                                                                   |
 | ```debug```                 | Toggles debug mode. In debug mode, an abstract syntax tree is shown before evaluation |
-| ```help```                  | Lists all available operators |
-| ```rules```                 | Lists all defined rules |
-| ```<function> := <after>``` | Adds new function |
+| ```help```                  | Lists all available operators                                                         |
+| ```rules [clear]```         | Lists all defined rules or clears all rules and defined functions                     |
+| ```<function> := <after>``` | Adds new function                                                                     |
 | ```<before> -> <after>```   | Defines new rule. The following special variable names can be used to restrict matchings (<tt>x</tt> used as example, can be any variable name): <ul><li><tt>name_x</tt> will only bind to variables named x</li><li><tt>var_x</tt> will only bind to variables</li><li><tt>const_x</tt> will only bind to constants</li></ul> |
-| ```load <path>```           | Loads file as if its content had been typed in line by line |
-| ```quit```                  | Closes calculator |
+| ```load <path>```           | Loads file as if its content had been typed in line by line                           |
+| ```quit```                  | Closes calculator                                                                     |
 
 ### Infix operators
 | Name      | Associativity | Precedence | Description          |
 | ---       | ---           | ---        | ---                  |
 | ```+```   | Both          | 2          | Addition             |
-| ```-```   | Left          | 2          | Subtraction           |
+| ```-```   | Left          | 2          | Subtraction          |
 | ```*```   | Both          | 3          | Multiplication       |
 | ```/```   | Left          | 3          | Division             |
 | ```^```   | Right         | 4          | Exponentiation       |

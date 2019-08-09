@@ -9,7 +9,6 @@
 #define EVAL(n) arith_eval(node->children[n])
 
 #define ARITH_STRING_LENGTH 30
-#define ARITH_NUM_OPS 49
 #define ARITH_CUSTOM_BUFFER 10
 
 static ParsingContext arith_ctx;
@@ -216,6 +215,21 @@ void arith_to_string(void *in, char *str, size_t buff_size)
     sprintf(str, "%.30g", *((double*)in));
 }
 
+// Summary: Used to delete user-defined function operators
+void arith_reset()
+{
+    // As operator names are stored on heap, we need to free them
+    for (size_t i = ARITH_NUM_OPS; i < arith_ctx.num_ops; i++)
+    {
+        free(arith_ctx.operators[i].name);
+    }
+    arith_ctx.num_ops = ARITH_NUM_OPS;
+}
+
+/*
+Summary: Sets arithmetic context stored in global variable
+    It is only passed by pointer, never copied!
+*/
 ParsingContext *arith_get_ctx()
 {
     arith_ctx = get_context(

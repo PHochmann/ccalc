@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "arith_context.h"
 #include "show_rules.h"
 #include "command.h"
 #include "assignments.h"
@@ -17,7 +18,7 @@ void show_rules_init()
 
 bool show_rules_check(char *input)
 {
-    return strcmp(input, "rules") == 0;
+    return strcmp(input, "rules") == 0 || strcmp(input, "rules clear") == 0;
 }
 
 void print_rule(ParsingContext *ctx, RewriteRule *rule)
@@ -31,16 +32,25 @@ void print_rule(ParsingContext *ctx, RewriteRule *rule)
 
 void show_rules_exec(ParsingContext *ctx, __attribute__((unused)) char *input)
 {
-    if (g_num_rules == 0)
+    if (strcmp(input, "rules") == 0)
     {
-        printf("No rules defined.\n");
-        return;
-    }
+        if (g_num_rules == 0)
+        {
+            printf("No rules defined.\n");
+            return;
+        }
 
-    for (size_t i = 0; i < g_num_rules; i++)
+        for (size_t i = 0; i < g_num_rules; i++)
+        {
+            printf("%zu: ", i + 1);
+            print_rule(ctx, &g_rules[i]);
+            printf("\n");
+        }
+    }
+    else // input must be "rules clear"
     {
-        printf("%zu: ", i + 1);
-        print_rule(ctx, &g_rules[i]);
-        printf("\n");
+        arith_reset(); // To remove user-defined functions from parsing context
+        g_num_rules = 0; // To remove any rules
+        printf("Rules cleared.\n");
     }
 }

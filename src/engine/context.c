@@ -5,7 +5,8 @@
 #include "context.h"
 
 /*
-Summary: This method is used to create a new ParsingContext without glue-op
+Summary: This method is used to create a new ParsingContext without glue-op and operators
+    Use ctx_add_op and ctx_add_glue_op to add them to new context
 Parameters:
     value_size: Size of a constant in bytes
         (e.g. sizeof(double) for arithmetics, sizeof(bool) for propositional logic)
@@ -142,7 +143,7 @@ void ctx_remove_glue_op(ParsingContext *ctx)
 Summmary: Searches for operator of given name and placement
 Returns: NULL if no operator has been found or invalid arguments given, otherwise pointer to operator in ctx->operators
 */
-Operator* ctx_lookup_op(ParsingContext *ctx, char *name, OpPlacement placement)
+Operator *ctx_lookup_op(ParsingContext *ctx, char *name, OpPlacement placement)
 {
     if (ctx == NULL || name == NULL) return NULL;
 
@@ -164,7 +165,7 @@ Operator* ctx_lookup_op(ParsingContext *ctx, char *name, OpPlacement placement)
 Summmary: Searches for function of given name and arity
 Returns: NULL if no function has been found or invalid arguments given, otherwise pointer to function in ctx->operators
 */
-Operator* ctx_lookup_function(ParsingContext *ctx, char *name, Arity arity)
+Operator *ctx_lookup_function(ParsingContext *ctx, char *name, Arity arity)
 {
     if (ctx == NULL || name == NULL) return NULL;
 

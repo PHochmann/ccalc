@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "arith_context.h"
 #include "help.h"
 #include "core.h"
 #include "command.h"
@@ -53,13 +54,13 @@ void print_op(Operator *op)
             break;
             
         case OP_PLACE_FUNCTION:
-            if (op->arity != DYNAMIC_ARITY)
+            if (op->arity == DYNAMIC_ARITY)
             {
-                printf("%s(%d)", op->name, op->arity);
+                printf("%s(*)", op->name);
             }
             else
             {
-                printf("%s(*)", op->name);
+                printf("%s(%d)", op->name, op->arity);
             }
             break;
     }
@@ -104,7 +105,7 @@ void help_exec(ParsingContext *ctx, __attribute__((unused)) char *input)
 #else
     printf("Calculator %s (c) 2019, Philipp Hochmann\n", VERSION);
 #endif
-    printf("Commands: debug, help, rules, <function> := <after>, <before> -> <after>, load <path>\n");
+    printf("Commands: debug, help, rules [clear], <function> := <after>, <before> -> <after>, load <path>\n");
 
     printf("\nBasic operators:\n");
     for (size_t i = 0; i < TRIG_IND; i++)
@@ -125,10 +126,20 @@ void help_exec(ParsingContext *ctx, __attribute__((unused)) char *input)
     }
 
     printf("\nConstants:\n");
-    for (size_t i = CONSTANTS_IND; i < ctx->num_ops; i++)
+    for (size_t i = CONSTANTS_IND; i < ARITH_NUM_OPS; i++)
     {
         print_op(&ctx->operators[i]);
     }
 
-    printf("\n(%zu available operators)\n", ctx->num_ops);
+    // Print user-defined functions if there are any
+    if (ctx->num_ops > ARITH_NUM_OPS)
+    {
+        printf("\nUser-defined functions:\n");
+        for (size_t i = ARITH_NUM_OPS; i < ctx->num_ops; i++)
+        {
+            print_op(&ctx->operators[i]);
+        }
+    }
+
+    printf("\n(%zu available operators)\n\n", ctx->num_ops);
 }
