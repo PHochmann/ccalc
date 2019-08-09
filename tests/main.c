@@ -1,5 +1,4 @@
 #include <stdio.h>
-
 #include "test.h"
 #include "parser_test.h"
 #include "tree_to_string_test.h"
@@ -17,7 +16,7 @@ int main()
 {
     int total_cases = 0;
 
-    for (int i = 0; i < NUM_TESTS; i++)
+    for (size_t i = 0; i < NUM_TESTS; i++)
     {
         Test test = test_getters[i]();
         printf("%s:", test.name);

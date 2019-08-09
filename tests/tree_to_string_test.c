@@ -32,12 +32,12 @@ int tree_to_string_test()
 {
     ParsingContext *ctx = arith_get_ctx();
 
-    for (int i = 0; i < NUM_TESTS; i++)
+    for (size_t i = 0; i < NUM_TESTS; i++)
     {
         Node *node = NULL;
-        if (parse_input(ctx, tests[i].string_to_tree, true, &node) != PERR_SUCCESS)
+        if (parse_input(ctx, tests[i].string_to_tree, &node) != PERR_SUCCESS)
         {
-            printf("\nError in tree inline test %d: Parser Error\n", i);
+            printf("\nError in tree inline test %zu: Parser Error\n", i);
             return -1;
         }
 
@@ -45,13 +45,13 @@ int tree_to_string_test()
         char expected_string[expected_length + 1];
         if (tree_inline(ctx, node, expected_string, expected_length + 1, false) != expected_length)
         {
-            printf("\nError in tree inline test %d: Unexpected length\n", i);
+            printf("\nError in tree inline test %zu: Unexpected length\n", i);
             return -1;
         }
 
         if (strcmp(tests[i].tree_to_string, expected_string) != 0)
         {
-            printf("\nError in tree inline test %d: Unexpected result\n", i);
+            printf("\nError in tree inline test %zu: Unexpected result\n", i);
             return -1;
         }
     }

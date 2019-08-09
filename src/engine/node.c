@@ -1,7 +1,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <sys/types.h>
-
 #include "node.h"
 
 Node get_node(NodeType type)

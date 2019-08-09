@@ -3,7 +3,6 @@
 
 #include "core.h"
 #include "util.h"
-#include "command.h"
 #include "evaluation.h"
 #include "help.h"
 #include "show_rules.h"
@@ -16,8 +15,27 @@
 #define COMMENT_PREFIX "'"
 #define NUM_COMMANDS 8
 
+typedef void (*CommandInitHandler)();
+typedef bool (*CommandCheckHandler)(char *input);
+typedef void (*CommandExecHandler)(ParsingContext *ctx, char *input);
+typedef struct
+{
+    CommandInitHandler initHandler;
+    CommandCheckHandler checkHandler;
+    CommandExecHandler execHandler;
+} Command;
+
 static ParsingContext *ctx;
-static Command commands[NUM_COMMANDS];
+static const Command commands[NUM_COMMANDS] = {
+        { quit_init, quit_check, quit_exec },
+        { debug_init, debug_check, debug_exec},
+        { help_init, help_check, help_exec},
+        { definition_init, definition_check, definition_exec},
+        { rule_init, rule_check, rule_exec},
+        { show_rules_init, show_rules_check, show_rules_exec},
+        { load_init, load_check, load_exec},
+        { evaluation_init, evaluation_check, evaluation_exec}
+};
 
 /*
 Summary: Sets parsing context and initializes commands
@@ -28,15 +46,6 @@ void init_commands()
     g_interactive = false;
     ctx = arith_get_ctx();
 
-    commands[0] = get_command(quit_init, quit_check, quit_exec);
-    commands[1] = get_command(debug_init, debug_check, debug_exec);
-    commands[2] = get_command(help_init, help_check, help_exec);
-    commands[3] = get_command(definition_init, definition_check, definition_exec);
-    commands[4] = get_command(rule_init, rule_check, rule_exec);
-    commands[5] = get_command(show_rules_init, show_rules_check, show_rules_exec);
-    commands[6] = get_command(load_init, load_check, load_exec);
-    commands[7] = get_command(evaluation_init, evaluation_check, evaluation_exec);
-
     for (size_t i = 0; i < NUM_COMMANDS; i++)
     {
         commands[i].initHandler();
@@ -44,7 +53,7 @@ void init_commands()
 }
 
 /*
-Summary: Activates interactive mode, whispered messages will be displayed
+Summary: Activates interactive mode, whispered messages will be displayed and readline instead of getline will be used to read input
 */
 bool set_interactive(bool value)
 {
@@ -68,7 +77,7 @@ void process_input(FILE *file)
 
 void parse_command(char *input)
 {
-    for (int i = 0; i < NUM_COMMANDS; i++)
+    for (size_t i = 0; i < NUM_COMMANDS; i++)
     {
         if (commands[i].checkHandler(input))
         {

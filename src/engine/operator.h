@@ -1,6 +1,5 @@
 #pragma once
 #include <stdlib.h>
-
 #include "constants.h"
 
 typedef enum

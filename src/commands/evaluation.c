@@ -9,22 +9,19 @@
 #include "arith_context.h"
 #include "../engine/string_util.h"
 
-#define MAX_DEBUG_LENGTH 500
-#define MAX_ITERATIONS 50
+static const size_t MAX_DEBUG_LENGTH = 500;
+static const size_t MAX_ITERATIONS   = 50;
 
-void evaluation_init()
-{
-
-}
+void evaluation_init() { }
 
 bool evaluation_check(__attribute__((unused)) char *input)
 {
     return true;
 }
 
-bool parse_input_wrapper(ParsingContext *ctx, char *input, bool pad_parentheses, Node **out_res, bool apply_rules, bool apply_ans, bool constant)
+bool parse_input_wrapper(ParsingContext *ctx, char *input, Node **out_res, bool apply_rules, bool apply_ans, bool constant)
 {
-    ParserError perr = parse_input(ctx, input, pad_parentheses, out_res);
+    ParserError perr = parse_input(ctx, input, out_res);
     if (perr != PERR_SUCCESS)
     {
         printf("Error: %s\n", perr_to_string(perr));
@@ -56,7 +53,7 @@ bool parse_input_wrapper(ParsingContext *ctx, char *input, bool pad_parentheses,
             if (ask_input("", stdin, &input))
             {
                 Node *res_var;
-                if (!parse_input_wrapper(ctx, input, pad_parentheses, &res_var, apply_rules, apply_ans, false))
+                if (!parse_input_wrapper(ctx, input, &res_var, apply_rules, apply_ans, false))
                 {
                     // Error while parsing - ask again
                     free(input);
@@ -88,11 +85,15 @@ bool parse_input_wrapper(ParsingContext *ctx, char *input, bool pad_parentheses,
     return true;
 }
 
+/*
+Summary: The evaluation command is executed when input is no other command (hence last in command array at core.c)
+*/
 void evaluation_exec(ParsingContext *ctx, char *input)
 {
     Node *res;
     
-    if (parse_input_wrapper(ctx, input, false, &res, true, true, true))
+    // Input is parsed: Don't pad parentheses
+    if (parse_input_wrapper(ctx, input, &res, true, true, true))
     {
         if (g_debug)
         {

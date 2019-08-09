@@ -7,11 +7,12 @@
 
 #include "util.h"
 
-#define MAX_INPUT_LENGTH 100
+static const size_t MAX_INPUT_LENGTH = 100;
 
 void init_util()
 {
-    rl_bind_key('\t', rl_insert); // Disable tab completion
+    // Disable tab completion
+    rl_bind_key('\t', rl_insert);
 }
 
 /*
@@ -69,7 +70,9 @@ void whisper(const char *format, ...)
 /*
 Summary: Used whenever input is requested. Prompt is only printed when interactive.
 Params
+    prompt: Prompt to display when interactive
     file: Used when not interactive - should be stdin when arguments are piped in or file when load command is used
+    out_input: Pointer to string that will be read. String must be free'd after use.
 */
 bool ask_input(char *prompt, FILE *file, char **out_input)
 {
@@ -116,10 +119,7 @@ void debug_exec(__attribute__((unused)) ParsingContext *ctx, __attribute__((unus
 
 // Quit command:
 
-void quit_init()
-{
-
-}
+void quit_init() { }
 
 bool quit_check(char *input)
 {
@@ -128,5 +128,5 @@ bool quit_check(char *input)
 
 void quit_exec(__attribute__((unused)) ParsingContext *ctx, __attribute__((unused)) char *input)
 {
-    exit(0);
+    exit(EXIT_SUCCESS);
 }

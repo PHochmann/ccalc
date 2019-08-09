@@ -3,18 +3,14 @@
 
 #include "arith_context.h"
 #include "show_rules.h"
-#include "command.h"
 #include "assignments.h"
 #include "../engine/constants.h"
 #include "../engine/operator.h"
 #include "../engine/string_util.h"
 
-#define MAX_STRING_LENGTH 200
+static const size_t MAX_STRING_LENGTH = 200;
 
-void show_rules_init()
-{
-
-}
+void show_rules_init() { }
 
 bool show_rules_check(char *input)
 {
@@ -30,7 +26,7 @@ void print_rule(ParsingContext *ctx, RewriteRule *rule)
     printf("%s -> %s", l, r);
 }
 
-void show_rules_exec(ParsingContext *ctx, __attribute__((unused)) char *input)
+void show_rules_exec(ParsingContext *ctx, char *input)
 {
     if (strcmp(input, "rules") == 0)
     {

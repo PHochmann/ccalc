@@ -6,6 +6,10 @@
 #include "node.h"
 #include "string_util.h" // For begins_with
 
+#define VAR_PREFIX "var_"
+#define CONST_PREFIX "const_"
+#define NAME_PREFIX "name_"
+
 /*
 Summary: Constructs new rule. Warning: "before" and "after" are not copied, so don't free them!
 */

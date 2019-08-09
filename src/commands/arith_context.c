@@ -3,13 +3,14 @@
 #include <time.h>
 #include <float.h>
 #include <math.h>
-
 #include "arith_context.h"
 
 #define EVAL(n) arith_eval(node->children[n])
 
-#define ARITH_STRING_LENGTH 30
-#define ARITH_CUSTOM_BUFFER 10
+// Must not be static because can be exported
+const size_t ARITH_STRING_LENGTH = 30;
+const size_t ARITH_NUM_OPS       = 49;
+const size_t ARITH_CUSTOM_BUFFER = 10;
 
 static ParsingContext arith_ctx;
 
@@ -44,7 +45,9 @@ double fibonacci(double n)
     return b;
 }
 
-// max is exclusive
+/*
+Returns: Random natural number between min and max - 1 (i.e. max is exclusive)
+*/
 double random_between(double min, double max)
 {
     long diff = (long)(max - min);
@@ -215,7 +218,9 @@ void arith_to_string(void *in, char *str, size_t buff_size)
     sprintf(str, "%.30g", *((double*)in));
 }
 
-// Summary: Used to delete user-defined function operators
+/*
+Summary: Used to delete user-defined function operators
+*/
 void arith_reset()
 {
     // As operator names are stored on heap, we need to free them

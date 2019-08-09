@@ -8,8 +8,6 @@
 #include "../src/engine/node.h"
 #include "../src/engine/parser.h"
 
-#define PAD_PARENTHESES true
-#define EPSILON 0.00000001
 #define NUM_VALUE_TESTS 68
 #define NUM_ERROR_TESTS 7
 
@@ -93,13 +91,8 @@ static struct ValueTest valueTests[NUM_VALUE_TESTS] = {
     { "2*3^2", 18 },
     { "sin(asin(.2))", 0.2 },
     { "-sqrt(abs(--2!!*--sum(-1+.2-.2+2, 2^2^3-255, -sum(.1, .9), 1+2)*--2!!))", -4 },
-#if PAD_PARENTHESES
-    { "1+1)*(2+2", 8 },
-    { "sin((2)", 0.909297426825 }
-#else
     { "(1+1)*(2+2)", 8 },
     { "sin((2))", 0.909297426825 }
-#endif
 };
 
 static struct ErrorTest errorTests[NUM_ERROR_TESTS] = {
@@ -108,14 +101,11 @@ static struct ErrorTest errorTests[NUM_ERROR_TESTS] = {
     { "x+", PERR_MISSING_OPERAND },
     { "sin(x, y)", PERR_FUNCTION_WRONG_ARITY },
     { "sin,", PERR_UNEXPECTED_DELIMITER },
-#if PAD_PARENTHESES
-    { "(x", PERR_SUCCESS },
-    { "x)", PERR_SUCCESS }
-#else
     { "(x", PERR_EXCESS_OPENING_PARENTHESIS },
     { "x)", PERR_EXCESS_CLOSING_PARENTHESIS }
-#endif
 };
+
+static const double EPSILON = 0.00000001;
 
 bool almost_equals(double a, double b)
 {
@@ -127,9 +117,9 @@ int perform_value_tests(ParsingContext *ctx)
 {
     Node *node = NULL;
     
-    for (int i = 0; i < NUM_VALUE_TESTS; i++)
+    for (size_t i = 0; i < NUM_VALUE_TESTS; i++)
     {
-        if (parse_input(ctx, valueTests[i].input, PAD_PARENTHESES, &node) != PERR_SUCCESS
+        if (parse_input(ctx, valueTests[i].input, &node) != PERR_SUCCESS
             || !almost_equals(arith_eval(node), valueTests[i].result))
         {
             return i;
@@ -144,9 +134,9 @@ int perform_error_tests(ParsingContext *ctx)
 {
     Node *node = NULL;
 
-    for (int i = 0; i < NUM_ERROR_TESTS; i++)
+    for (size_t i = 0; i < NUM_ERROR_TESTS; i++)
     {
-        if (parse_input(ctx, errorTests[i].input, PAD_PARENTHESES, &node) != errorTests[i].result)
+        if (parse_input(ctx, errorTests[i].input, &node) != errorTests[i].result)
         {
             return i;
         }

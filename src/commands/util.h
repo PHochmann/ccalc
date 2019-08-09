@@ -8,7 +8,6 @@ void init_util();
 char *perr_to_string(ParserError perr);
 void whisper(const char *format, ...);
 bool ask_input(char *prompt, FILE *file, char **out_input);
-bool parse_input_wrapper(ParsingContext *ctx, char *input, bool pad_parentheses, Node **out_res, bool apply_rules, bool apply_ans, bool constant);
 
 void quit_init();
 bool quit_check(char *input);

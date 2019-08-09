@@ -418,13 +418,13 @@ ParserError parse_tokens(ParsingContext *context, size_t num_tokens, char **toke
 Summary: Parses string to abstract syntax tree with operators of given context
 Returns: Result code to indicate whether string was parsed successfully or which error occurred
 */
-ParserError parse_input(ParsingContext *context, char *input, bool pad_parentheses, Node **out_res)
+ParserError parse_input(ParsingContext *context, char *input, Node **out_res)
 {
     size_t num_tokens;
     char *tokens[MAX_TOKENS];
 
     // Parsing
-    if (!tokenize(context, input, pad_parentheses, &num_tokens, tokens)) return PERR_MAX_TOKENS_EXCEEDED;
+    if (!tokenize(context, input, &num_tokens, tokens)) return PERR_MAX_TOKENS_EXCEEDED;
     ParserError result = parse_tokens(context, num_tokens, tokens, out_res);
 
     // Cleanup

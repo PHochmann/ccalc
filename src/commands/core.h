@@ -5,7 +5,7 @@
 #include "../engine/context.h"
 #include "../engine/node.h"
 
-#define VERSION "1.3.1"
+#define VERSION "1.3.2"
 
 void init_commands();
 bool set_interactive(bool value);

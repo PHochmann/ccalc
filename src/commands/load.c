@@ -11,10 +11,7 @@
 
 #define COMMAND "load "
 
-void load_init()
-{
-
-}
+void load_init() { }
 
 bool load_check(char *input)
 {

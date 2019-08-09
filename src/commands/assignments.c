@@ -13,16 +13,16 @@
 #define MSG_ERROR_LEFT "Error in left expression: "
 #define MSG_ERROR_RIGHT "Error in right expression: "
 
-void definition_init()
-{
-
-}
+void definition_init() { }
 
 bool definition_check(char *input)
 {
     return strstr(input, DEFINITION_OP) != NULL;
 }
 
+/*
+Summary: Adds a new function symbol to context and adds a new rule to substitute function with its right hand side
+*/
 void definition_exec(ParsingContext *ctx, char *input)
 {
     if (ctx->num_ops == ctx->max_ops)
@@ -47,7 +47,7 @@ void definition_exec(ParsingContext *ctx, char *input)
     char *tokens[MAX_TOKENS];
     size_t num_tokens = 0;
 
-    if (!tokenize(ctx, input, false, &num_tokens, tokens))
+    if (!tokenize(ctx, input, &num_tokens, tokens))
     {
         // Only reason for tokenize to fail is max. number of tokens exceeded
         printf(MSG_ERROR_LEFT "%s\n", perr_to_string(PERR_MAX_TOKENS_EXCEEDED));
@@ -72,7 +72,7 @@ void definition_exec(ParsingContext *ctx, char *input)
     
     Node *left_n;
     
-    if ((perr = parse_input(ctx, input, false, &left_n)) != PERR_SUCCESS)
+    if ((perr = parse_input(ctx, input, &left_n)) != PERR_SUCCESS)
     {
         ctx->num_ops--;
         free(name);
@@ -120,7 +120,7 @@ void definition_exec(ParsingContext *ctx, char *input)
     
     Node *right_n;
 
-    if ((perr = parse_input(ctx, right_input, false, &right_n)) != PERR_SUCCESS)
+    if ((perr = parse_input(ctx, right_input, &right_n)) != PERR_SUCCESS)
     {
         free_tree(left_n);
         free(name);
@@ -169,13 +169,13 @@ void rule_exec(ParsingContext *ctx, char *input)
     Node *after_n;
     ParserError perr;
     
-    if ((perr = parse_input(ctx, input, false, &before_n)) != PERR_SUCCESS)
+    if ((perr = parse_input(ctx, input, &before_n)) != PERR_SUCCESS)
     {
         printf(MSG_ERROR_LEFT "%s\n", perr_to_string(perr));
         return;
     }
     
-    if ((perr = parse_input(ctx, right_input, false, &after_n)) != PERR_SUCCESS)
+    if ((perr = parse_input(ctx, right_input, &after_n)) != PERR_SUCCESS)
     {
         printf(MSG_ERROR_RIGHT "%s\n", perr_to_string(perr));
         free_tree(before_n);

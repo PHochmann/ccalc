@@ -4,18 +4,14 @@
 #include "arith_context.h"
 #include "help.h"
 #include "core.h"
-#include "command.h"
 #include "util.h"
 #include "../engine/operator.h"
 
-#define TRIG_IND 18
-#define MISC_FUNC_IND 30
-#define CONSTANTS_IND 44
+static const size_t TRIG_IND      = 18; // Index of first trigonometric function
+static const size_t MISC_FUNC_IND = 30; // Index of first misc. function
+static const size_t CONSTANTS_IND = 44; // Index of first constant
 
-void help_init()
-{
-
-}
+void help_init() { }
 
 bool help_check(char *input)
 {

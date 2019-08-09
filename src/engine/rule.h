@@ -2,10 +2,6 @@
 #include "context.h"
 #include "node.h"
 
-#define VAR_PREFIX "var_"
-#define CONST_PREFIX "const_"
-#define NAME_PREFIX "name_"
-
 typedef struct {
     ParsingContext *context;
     Node *before;
