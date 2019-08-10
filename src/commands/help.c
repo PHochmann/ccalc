@@ -56,7 +56,7 @@ void print_op(Operator *op)
             }
             else
             {
-                printf("%s(%d)", op->name, op->arity);
+                printf("%s(%zu)", op->name, op->arity);
             }
             break;
     }

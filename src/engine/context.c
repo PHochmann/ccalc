@@ -165,7 +165,7 @@ Operator *ctx_lookup_op(ParsingContext *ctx, char *name, OpPlacement placement)
 Summmary: Searches for function of given name and arity
 Returns: NULL if no function has been found or invalid arguments given, otherwise pointer to function in ctx->operators
 */
-Operator *ctx_lookup_function(ParsingContext *ctx, char *name, Arity arity)
+Operator *ctx_lookup_function(ParsingContext *ctx, char *name, size_t arity)
 {
     if (ctx == NULL || name == NULL) return NULL;
 

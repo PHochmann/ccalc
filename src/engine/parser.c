@@ -15,7 +15,7 @@ static Node **node_stack;
 // NULL pointer on stack is opening parenthesis
 static Operator **op_stack;
 // Records number of operands for functions, or DYNAMIC_ARITY for non-functions and glue-ops
-static Arity *arities;
+static size_t *arities;
 static size_t num_nodes;
 static size_t num_ops;
 static ParserError result;
@@ -32,7 +32,7 @@ Operator *op_peek()
     return op_stack[num_ops - 1];
 }
 
-Arity arity_peek()
+size_t arity_peek()
 {
     return arities[num_ops - 1];
 }
@@ -111,13 +111,13 @@ bool op_pop_and_insert()
             return false;
         }
         
-        for (Arity i = 0; i < op_node->num_children; i++)
+        for (size_t i = 0; i < op_node->num_children; i++)
         {
             // Pop nodes from stack and append them in subtree
             if (!node_pop(&op_node->children[op_node->num_children - i - 1]))
             {
                 // Free already appended children and new node on error
-                for (Arity j = op_node->num_children - 1; j > op_node->num_children - i - 1; j--)
+                for (size_t j = op_node->num_children - 1; j > op_node->num_children - i - 1; j--)
                 {
                     free_tree(op_node->children[j]);
                 }
@@ -192,7 +192,7 @@ ParserError parse_tokens(ParsingContext *context, size_t num_tokens, char **toke
     num_nodes = 0;
     op_stack = malloc_wrapper(MAX_STACK_SIZE * sizeof(Operator*));
     node_stack = malloc_wrapper(MAX_STACK_SIZE * sizeof(Node*));
-    arities = malloc_wrapper(MAX_STACK_SIZE * sizeof(Arity));
+    arities = malloc_wrapper(MAX_STACK_SIZE * sizeof(size_t));
     if (result == PERR_OUT_OF_MEMORY) goto exit;
 
     // 3. Process each token

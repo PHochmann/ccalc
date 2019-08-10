@@ -9,6 +9,8 @@
 #include "arith_context.h"
 #include "../engine/string_util.h"
 
+#define TTY_ASK_VARIABLE_PROMPT "? > "
+
 static const size_t MAX_DEBUG_LENGTH = 500;
 static const size_t MAX_ITERATIONS   = 50;
 
@@ -42,18 +44,26 @@ bool parse_input_wrapper(ParsingContext *ctx, char *input, Node **out_res, bool 
     if (constant)
     {
         char *vars[MAX_VAR_COUNT];
-        int num_variables = tree_list_vars(*out_res, vars);
-        for (int i = 0; i < num_variables; i++)
+        size_t num_variables = tree_list_vars(*out_res, vars);
+
+        for (size_t i = 0; i < num_variables; i++)
         {
-            // Suppress this prompt when STDIN is a pipe
+            char prompt[strlen(vars[i]) + strlen(TTY_ASK_VARIABLE_PROMPT) + 1];
+
             if (isatty(STDIN_FILENO))
             {
-                printf("%s? > ", vars[i]);
+                // Build prompt to pass it to readline
+                // printf'ing prompt beforehand causes overwrite when using arrow keys
+                sprintf(prompt, "%s" TTY_ASK_VARIABLE_PROMPT, vars[i]);
             }
-
+            else
+            {
+                // Suppress prompt when STDIN is a not a shell (e.g. pipe)
+                prompt[0] = '\0';
+            }
+            
             char *input;
-
-            if (ask_input("", stdin, &input))
+            if (ask_input(prompt, stdin, &input))
             {
                 Node *res_var;
                 if (!parse_input_wrapper(ctx, input, &res_var, apply_rules, apply_ans, false))
@@ -80,6 +90,8 @@ bool parse_input_wrapper(ParsingContext *ctx, char *input, Node **out_res, bool 
             }
             else
             {
+                // EOL when asked for constant
+                printf("\n");
                 return false;
             }
         }

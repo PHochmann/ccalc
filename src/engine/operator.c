@@ -1,7 +1,6 @@
-#include <limits.h>
 #include "operator.h"
 
-Operator op_get_function(char *name, Arity arity)
+Operator op_get_function(char *name, size_t arity)
 {
     return (Operator){
         .name = name,

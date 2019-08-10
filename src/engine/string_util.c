@@ -65,7 +65,7 @@ void print_tree_visual_rec(ParsingContext *ctx, Node *node, unsigned char layer,
     {
         case NTYPE_OPERATOR:
             printf(OP_COLOR "%s" COL_RESET "\n", node->op->name);
-            for (Arity i = 0; i < node->num_children; i++)
+            for (size_t i = 0; i < node->num_children; i++)
             {
                 print_tree_visual_rec(ctx, node->children[i], layer + 1,
                     (i == node->num_children - 1) ? vert_lines : (vert_lines | ((unsigned int)1 << layer)));
@@ -187,10 +187,10 @@ void tree_inline_rec(ParsingContext *ctx, Node *node, char **buffer, ssize_t *bu
                 case OP_PLACE_FUNCTION:
                     print_buffered(node->op->name, buffer, buffer_size);
                     print_buffered("(", buffer, buffer_size);
-                    for (Arity i = 0; i < node->num_children; i++)
+                    for (size_t i = 0; i < node->num_children; i++)
                     {
                         tree_inline_rec(ctx, node->children[i], buffer, buffer_size, colours, false, false);
-                        if (i != (Arity)(node->num_children - 1)) print_buffered(", ", buffer, buffer_size);
+                        if (i != (node->num_children - 1)) print_buffered(", ", buffer, buffer_size);
                     }
                     print_buffered(")", buffer, buffer_size);
                     break;

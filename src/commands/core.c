@@ -23,6 +23,10 @@ struct Command
 };
 
 static ParsingContext *ctx;
+
+/*
+Evaluation is last command because its check function always returns true
+*/
 static const struct Command commands[NUM_COMMANDS] = {
     { quit_init, quit_check, quit_exec },
     { debug_init, debug_check, debug_exec},
@@ -50,7 +54,8 @@ void init_commands()
 }
 
 /*
-Summary: Activates interactive mode, whispered messages will be displayed and readline instead of getline will be used to read input
+Summary: Sets interactive mode
+    When true, whispered messages are displayed and readline instead of getline is used to read input
 */
 bool set_interactive(bool value)
 {
@@ -60,7 +65,7 @@ bool set_interactive(bool value)
 }
 
 /*
-Summary: Endless loop to ask user or file for command until ask_input() returns false, ignores comments
+Summary: Loop to ask user or file for command, ignores comments
 */
 void process_input(FILE *file)
 {
@@ -72,6 +77,10 @@ void process_input(FILE *file)
     }
 }
 
+/*
+Summary: Tries to apply a command to input
+    First command whose check-function returns true is executed
+*/
 void parse_command(char *input)
 {
     for (size_t i = 0; i < NUM_COMMANDS; i++)

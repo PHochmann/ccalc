@@ -28,7 +28,7 @@ Node get_constant_node(void *value)
 
 /* Returns a new node of type NTYPE_OPERATOR and prepares its attributes
    Also mallocs buffer for num_children Nodes */
-Node get_operator_node(Operator *op, Arity num_children)
+Node get_operator_node(Operator *op, size_t num_children)
 {
     Node res = get_node(NTYPE_OPERATOR);
     res.op = op;
@@ -85,7 +85,7 @@ bool tree_contains_vars(Node *tree)
             return true;
             
         case NTYPE_OPERATOR:
-            for (Arity i = 0; i < tree->num_children; i++)
+            for (size_t i = 0; i < tree->num_children; i++)
             {
                 if (tree_contains_vars(tree->children[i])) return true;
             }
@@ -100,13 +100,13 @@ Summary: Lists all variable nodes of given names (e.g. to replace them)
 Params
     out_instances: Buffer to nodes. Must hold max_var
 */
-int tree_get_var_instances(Node *tree, char *variable, Node **out_instances)
+size_t tree_get_var_instances(Node *tree, char *variable, Node **out_instances)
 {
     if (tree == NULL) return -1;
     
     Node *node_stack[MAX_STACK_SIZE];
     node_stack[0] = tree;
-    int res_count = 0;
+    size_t res_count = 0;
     size_t stack_count = 1;
     
     while (stack_count > 0)
@@ -146,11 +146,11 @@ Params
     out_variables must hold at least MAX_VAR_COUNT char-pointers or NULL to only count variables
         (strings are copied, don't forget to call free on each of out_variables' items)
 */
-int tree_list_vars(Node *tree, char **out_variables)
+size_t tree_list_vars(Node *tree, char **out_variables)
 {
     if (tree == NULL) return -1;
     
-    int res_count = 0;
+    size_t res_count = 0;
     
     Node *node_stack[MAX_STACK_SIZE];
     node_stack[0] = tree;
@@ -166,7 +166,7 @@ int tree_list_vars(Node *tree, char **out_variables)
         switch (curr_node->type)
         {
             case NTYPE_VARIABLE:
-                for (int i = 0; i < res_count; i++)
+                for (size_t i = 0; i < res_count; i++)
                 {
                     // Don't add variable if we already found it
                     if (strcmp(variables[i], curr_node->var_name) == 0)
@@ -201,7 +201,7 @@ int tree_list_vars(Node *tree, char **out_variables)
     
     if (out_variables != NULL)
     {
-        for (int i = 0; i < res_count; i++)
+        for (size_t i = 0; i < res_count; i++)
         {
             out_variables[i] = variables[i];
         }
@@ -209,7 +209,7 @@ int tree_list_vars(Node *tree, char **out_variables)
     else
     {
         // When out_variables is NULL, we only want to count variables
-        for (int i = 0; i < res_count; i++)
+        for (size_t i = 0; i < res_count; i++)
         {
             free(variables[i]);
         }
@@ -222,14 +222,14 @@ int tree_list_vars(Node *tree, char **out_variables)
 Summary: Substitutes any occurrence of a variable with certain name with a given subtree
 Returns: Number of occurrences of variable
 */
-int tree_substitute_var(ParsingContext *ctx, Node *tree, Node *tree_to_copy, char *var_name)
+size_t tree_substitute_var(ParsingContext *ctx, Node *tree, Node *tree_to_copy, char *var_name)
 {
     if (ctx == NULL || tree == NULL || tree_to_copy == NULL || var_name == NULL) return 0;
     
     Node *var_instances[MAX_VAR_COUNT];
-    int inst_count = tree_get_var_instances(tree, var_name, var_instances);
+    size_t inst_count = tree_get_var_instances(tree, var_name, var_instances);
     
-    for (int i = 0; i < inst_count; i++)
+    for (size_t i = 0; i < inst_count; i++)
     {
         tree_replace(var_instances[i], tree_copy(ctx, tree_to_copy));
     }
@@ -260,7 +260,7 @@ Node tree_copy(ParsingContext *ctx, Node *tree)
     {
         case NTYPE_OPERATOR:
             res = get_operator_node(tree->op, tree->num_children);
-            for (Arity i = 0; i < tree->num_children; i++)
+            for (size_t i = 0; i < tree->num_children; i++)
             {
                 res.children[i] = malloc(sizeof(Node));
                 *(res.children[i]) = tree_copy(ctx, tree->children[i]);
@@ -344,7 +344,7 @@ bool tree_equals(ParsingContext *ctx, Node *a, Node *b)
 
     if (a->type == NTYPE_OPERATOR)
     {
-        for (Arity i = 0; i < a->num_children; i++)
+        for (size_t i = 0; i < a->num_children; i++)
         {
             if (!tree_equals(ctx, a->children[i], b->children[i])) return false;
         }
