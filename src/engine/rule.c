@@ -193,15 +193,15 @@ bool apply_rule(Node *tree, RewriteRule *rule)
 /*
 Summary: Tries to apply rules in round-robin fashion until no rule can be applied any more
 Params
-    max_iterations: maximal number of times the set is iterated, -1 for no cap (this makes non-termination possible)
+    max_iterations: maximal number of times the set is iterated, 0 for no cap (this makes non-termination possible)
 Returns: Number of successful appliances
 */
-int apply_ruleset(Node *tree, size_t num_rules, RewriteRule *rules, int max_iterations)
+size_t apply_ruleset(Node *tree, size_t num_rules, RewriteRule *rules, size_t max_iterations)
 {
-    int i = 0;
+    size_t i = 0;
     int res = 0;
     
-    while (i < max_iterations || max_iterations == -1)
+    while (i < max_iterations || max_iterations == 0)
     {
         bool applied_flag = false;
         for (size_t j = 0; j < num_rules; j++)

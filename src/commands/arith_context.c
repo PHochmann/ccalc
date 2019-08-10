@@ -8,7 +8,7 @@
 #define EVAL(n) arith_eval(node->children[n])
 
 // Must not be static because can be exported
-const size_t ARITH_STRING_LENGTH = 30;
+const size_t ARITH_STRING_LENGTH = 30; // Including \0
 const size_t ARITH_NUM_OPS       = 49;
 const size_t ARITH_CUSTOM_BUFFER = 10;
 
@@ -98,11 +98,11 @@ double arith_eval(Node *node)
                     return EVAL(0) / 100;
                 case 11: // exp(x)
                     return exp(EVAL(0));
-                case 12: // root(x, y)
+                case 12: // root(x, n)
                     return pow(EVAL(0), 1 / EVAL(1));
                 case 13: // sqrt(x)
                     return sqrt(EVAL(0));
-                case 14: // log(x, y)
+                case 14: // log(x, n)
                     return log(EVAL(0)) / log(EVAL(1));
                 case 15: // ln(x)
                     return log(EVAL(0));
@@ -212,10 +212,9 @@ bool arith_try_parse(char *in, void *out)
     return *end_ptr == '\0';
 }
 
-void arith_to_string(void *in, char *str, size_t buff_size)
+void arith_to_string(void *in, char *str)
 {
-    if (buff_size < (ARITH_STRING_LENGTH + 1)) return;
-    sprintf(str, "%.30g", *((double*)in));
+    snprintf(str, ARITH_STRING_LENGTH, "%-.30g", *((double*)in));
 }
 
 /*
@@ -239,7 +238,7 @@ ParsingContext *arith_get_ctx()
 {
     arith_ctx = get_context(
         sizeof(double),
-        ARITH_STRING_LENGTH + 1,
+        ARITH_STRING_LENGTH,
         ARITH_NUM_OPS + ARITH_CUSTOM_BUFFER,
         arith_try_parse,
         arith_to_string,

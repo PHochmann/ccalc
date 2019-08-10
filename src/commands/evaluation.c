@@ -12,7 +12,10 @@
 static const size_t MAX_DEBUG_LENGTH = 500;
 static const size_t MAX_ITERATIONS   = 50;
 
-void evaluation_init() { }
+void evaluation_init()
+{
+    g_ans = NULL;
+}
 
 bool evaluation_check(__attribute__((unused)) char *input)
 {
@@ -31,7 +34,7 @@ bool parse_input_wrapper(ParsingContext *ctx, char *input, Node **out_res, bool 
     if (apply_ans && g_ans != NULL) tree_substitute_var(ctx, *out_res, g_ans, "ans");
     if (apply_rules)
     {
-        int appliances = apply_ruleset(*out_res, g_num_rules, g_rules, MAX_ITERATIONS);
+        size_t appliances = apply_ruleset(*out_res, g_num_rules, g_rules, MAX_ITERATIONS);
         if (appliances == MAX_ITERATIONS) whisper("Warning: Possibly non-terminating ruleset\n");
     }
 
@@ -92,9 +95,9 @@ void evaluation_exec(ParsingContext *ctx, char *input)
 {
     Node *res;
     
-    // Input is parsed: Don't pad parentheses
     if (parse_input_wrapper(ctx, input, &res, true, true, true))
     {
+        // Show AST and string when debug=true
         if (g_debug)
         {
             print_tree_visual(ctx, res);
@@ -106,7 +109,7 @@ void evaluation_exec(ParsingContext *ctx, char *input)
         
         double eval = arith_eval(res);
         char result_str[ctx->min_str_len];
-        ctx->to_string((void*)(&eval), result_str, ctx->min_str_len);
+        ctx->to_string((void*)(&eval), result_str);
 
         if (g_interactive)
         {

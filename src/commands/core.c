@@ -15,26 +15,23 @@
 #define COMMENT_PREFIX "'"
 #define NUM_COMMANDS 8
 
-typedef void (*CommandInitHandler)();
-typedef bool (*CommandCheckHandler)(char *input);
-typedef void (*CommandExecHandler)(ParsingContext *ctx, char *input);
-typedef struct
+struct Command
 {
-    CommandInitHandler initHandler;
-    CommandCheckHandler checkHandler;
-    CommandExecHandler execHandler;
-} Command;
+    void (*initHandler)();
+    bool (*checkHandler)(char *input);
+    void (*execHandler)(ParsingContext *ctx, char *input);
+};
 
 static ParsingContext *ctx;
-static const Command commands[NUM_COMMANDS] = {
-        { quit_init, quit_check, quit_exec },
-        { debug_init, debug_check, debug_exec},
-        { help_init, help_check, help_exec},
-        { definition_init, definition_check, definition_exec},
-        { rule_init, rule_check, rule_exec},
-        { show_rules_init, show_rules_check, show_rules_exec},
-        { load_init, load_check, load_exec},
-        { evaluation_init, evaluation_check, evaluation_exec}
+static const struct Command commands[NUM_COMMANDS] = {
+    { quit_init, quit_check, quit_exec },
+    { debug_init, debug_check, debug_exec},
+    { help_init, help_check, help_exec},
+    { definition_init, definition_check, definition_exec},
+    { rule_init, rule_check, rule_exec},
+    { show_rules_init, show_rules_check, show_rules_exec},
+    { load_init, load_check, load_exec},
+    { evaluation_init, evaluation_check, evaluation_exec}
 };
 
 /*

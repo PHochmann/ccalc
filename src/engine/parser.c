@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-
+#include <stdio.h>
 #include "constants.h"
 #include "tokenizer.h"
 #include "parser.h"
@@ -20,7 +20,14 @@ static size_t num_nodes;
 static size_t num_ops;
 static ParserError result;
 
-Operator* op_peek()
+void *malloc_wrapper(size_t size)
+{
+    void *res = malloc(size);
+    if (res == NULL) result = PERR_OUT_OF_MEMORY;
+    return res;
+}
+
+Operator *op_peek()
 {
     return op_stack[num_ops - 1];
 }
@@ -28,13 +35,6 @@ Operator* op_peek()
 Arity arity_peek()
 {
     return arities[num_ops - 1];
-}
-
-void *malloc_wrapper(size_t size)
-{
-    void *res = malloc(size);
-    if (res == NULL) result = PERR_OUT_OF_MEMORY;
-    return res;
 }
 
 bool node_push(Node *value)

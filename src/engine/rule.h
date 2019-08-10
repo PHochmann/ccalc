@@ -22,4 +22,4 @@ void free_rule(RewriteRule rule);
 bool find_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_matching);
 void transform_by_rule(RewriteRule *rule, Matching *matching);
 bool apply_rule(Node *tree, RewriteRule *rule);
-int apply_ruleset(Node *tree, size_t num_rules, RewriteRule *rules, int max_iterations);
+size_t apply_ruleset(Node *tree, size_t num_rules, RewriteRule *rules, size_t max_iterations);

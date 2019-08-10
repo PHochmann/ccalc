@@ -41,7 +41,7 @@ bool indicate_abbreviation(char *string, size_t actual_length)
 void print_constant(ParsingContext *ctx, Node *node)
 {
     char value[ctx->min_str_len];
-    ctx->to_string(node->const_value, value, ctx->min_str_len);
+    ctx->to_string(node->const_value, value);
     printf(CONST_COLOR "%s" COL_RESET, value);
 }
 
@@ -124,7 +124,7 @@ void tree_inline_rec(ParsingContext *ctx, Node *node, char **buffer, ssize_t *bu
     {
         case NTYPE_CONSTANT:
             if (colours) print_buffered_protected(CONST_COLOR, buffer, buffer_size);
-            ctx->to_string(node->const_value, constant_value, ctx->min_str_len);
+            ctx->to_string(node->const_value, constant_value);
             print_buffered(constant_value, buffer, buffer_size);
             if (colours) print_buffered_protected(COL_RESET, buffer, buffer_size);
             break;

@@ -5,13 +5,13 @@
 #include "operator.h"
 
 typedef bool (*TryParseHandler)(char *in, void *out);
-typedef void (*ToStringHandler)(void *in, char *out, size_t buff_size);
+typedef void (*ToStringHandler)(void *in, char *out);
 typedef bool (*EqualsHandler)(void *a, void *b);
 
 typedef struct
 {
     size_t value_size; // e.g. sizeof(bool) for propositional logic, sizeof(double) for arithmetic
-    size_t min_str_len; // Needed to let external functions know how much data to allocate for stringed value
+    size_t min_str_len; // Needed to let engine know how much data to allocate for stringed value
     size_t num_ops; // Current count of operators 
     size_t max_ops; // Maximum count of operators (limited by buffer size)
     TryParseHandler try_parse; // Used to detect a literal token
