@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
-
 #include "load.h"
 #include "core.h"
 #include "util.h"
@@ -18,6 +17,9 @@ bool load_check(char *input)
     return begins_with(COMMAND, input);
 }
 
+/*
+Summary: Opens file and processes its content as from stdin
+*/
 void load_exec(__attribute__((unused)) ParsingContext *ctx, char *input)
 {
     FILE *file = fopen(input + strlen(COMMAND), "r");

@@ -1,6 +1,5 @@
 #include <stdbool.h>
 #include <string.h>
-
 #include "rule.h"
 #include "constants.h" 
 #include "node.h"
@@ -24,7 +23,7 @@ RewriteRule get_rule(ParsingContext *ctx, Node *before, Node *after)
 
 /*
 Summary: Tries to match "tree" against "pattern" (only in root)
-Returns: true, if matching is found, false if NULL-pointers given in arguments or no matching found
+Returns: True, if matching is found, false if NULL-pointers given in arguments or no matching found
 */
 bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_matching)
 {
@@ -154,6 +153,9 @@ bool find_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out
     return false;
 }
 
+/*
+Summary: Substitutes subtree in which matching was found according to rule
+*/
 void transform_by_rule(RewriteRule *rule, Matching *matching)
 {
     if (rule == NULL || matching == NULL) return;
@@ -179,6 +181,10 @@ void transform_by_rule(RewriteRule *rule, Matching *matching)
     tree_replace(matching->matched_tree, transformed);
 }
 
+/*
+Summary: Tries to find matching in tree and directly transforms tree by it
+Returns: True when matching could be applied, false otherwise
+*/
 bool apply_rule(Node *tree, RewriteRule *rule)
 {
     Matching matching;

@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <string.h>
-
 #include "core.h"
 #include "util.h"
 #include "evaluation.h"
@@ -13,7 +12,6 @@
 
 #define INTERACTIVE_ASK_PREFIX "> "
 #define COMMENT_PREFIX "'"
-#define NUM_COMMANDS 8
 
 struct Command
 {
@@ -27,7 +25,8 @@ static ParsingContext *ctx;
 /*
 Evaluation is last command because its check function always returns true
 */
-static const struct Command commands[NUM_COMMANDS] = {
+static const size_t NUM_COMMANDS = 8;
+static const struct Command commands[] = {
     { quit_init, quit_check, quit_exec },
     { debug_init, debug_check, debug_exec},
     { help_init, help_check, help_exec},

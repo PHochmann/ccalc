@@ -4,7 +4,6 @@
 #include <string.h>
 #include <readline/readline.h>
 #include <readline/history.h>
-
 #include "util.h"
 
 static const size_t MAX_INPUT_LENGTH = 100;
@@ -16,7 +15,7 @@ void init_util()
 }
 
 /*
-Returns: String representation for user of ParserError
+Returns: String representation of ParserError to print
 */
 char *perr_to_string(ParserError perr)
 {

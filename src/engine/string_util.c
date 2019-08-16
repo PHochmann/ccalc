@@ -2,7 +2,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
-
 #include "string_util.h"
 
 #define EMPTY_TAB  "    "
@@ -19,7 +18,7 @@ bool begins_with(char *prefix, char *string)
 }
 
 /*
-Summary: Replaces end of string by three dots if it needed to be shortend because of a limited buffer size
+Summary: Replaces end of string by three dots if it needed to be shortened because of a limited buffer size
 Returns: True if string was changed, false if not
 */
 bool indicate_abbreviation(char *string, size_t actual_length)

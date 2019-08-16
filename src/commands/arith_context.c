@@ -5,7 +5,7 @@
 #include <math.h>
 #include "arith_context.h"
 
-#define EVAL(n) arith_eval(node->children[n])
+#define EVAL(n) arith_eval(tree->children[n])
 
 // Must not be static because can be exported
 const size_t ARITH_STRING_LENGTH = 30; // Including \0
@@ -55,17 +55,21 @@ double random_between(double min, double max)
     return rand() % diff + min;
 }
 
-double arith_eval(Node *node)
+/*
+Summary: Evaluates operator tree
+Returns: Result after recursive application of all operators
+*/
+double arith_eval(Node *tree)
 {
     double res = 0;
 
-    switch (node->type)
+    switch (tree->type)
     {
         case NTYPE_CONSTANT:
-            return *(double*)(node->const_value);
+            return *(double*)(tree->const_value);
             
         case NTYPE_OPERATOR:
-            switch ((size_t)(node->op - arith_ctx.operators))
+            switch ((size_t)(tree->op - arith_ctx.operators))
             {
                 case 0: // x+y
                     return EVAL(0) + EVAL(1);
@@ -136,7 +140,7 @@ double arith_eval(Node *node)
                     return atanh(EVAL(0));
                 case 30: // max(x, y, ...)
                     res = -INFINITY;
-                    for (size_t i = 0; i < node->num_children; i++)
+                    for (size_t i = 0; i < tree->num_children; i++)
                     {
                         double child_val = EVAL(i);
                         if (child_val > res) res = child_val;
@@ -144,7 +148,7 @@ double arith_eval(Node *node)
                     return res;
                 case 31: // min(x, y, ...)
                     res = INFINITY;
-                    for (size_t i = 0; i < node->num_children; i++)
+                    for (size_t i = 0; i < tree->num_children; i++)
                     {
                         double child_val = EVAL(i);
                         if (child_val < res) res = child_val;
@@ -164,17 +168,17 @@ double arith_eval(Node *node)
                     return EVAL(0) - floor(EVAL(0));
                 case 38: // sum(x, y, ...)
                     res = 0;
-                    for (size_t i = 0; i < node->num_children; i++) res += EVAL(i);
+                    for (size_t i = 0; i < tree->num_children; i++) res += EVAL(i);
                     return res;
                 case 39: // prod(x, y, ...)
                     res = 1;
-                    for (size_t i = 0; i < node->num_children; i++) res *= EVAL(i);
+                    for (size_t i = 0; i < tree->num_children; i++) res *= EVAL(i);
                     return res;
                 case 40: // avg(x, y, ...)
-                    if (node->num_children == 0) return 0;
+                    if (tree->num_children == 0) return 0;
                     res = 0;
-                    for (size_t i = 0; i < node->num_children; i++) res += EVAL(i);
-                    return res / node->num_children;
+                    for (size_t i = 0; i < tree->num_children; i++) res += EVAL(i);
+                    return res / tree->num_children;
                 case 41: // rand(x, y)
                     return random_between(EVAL(0), EVAL(1));
                 case 42: // gamma(x)

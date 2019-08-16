@@ -1,7 +1,6 @@
 #pragma once
 #include <stdarg.h>
 #include <stdbool.h>
-
 #include "operator.h"
 
 typedef bool (*TryParseHandler)(char *in, void *out);

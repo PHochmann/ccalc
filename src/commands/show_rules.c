@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <string.h>
-
 #include "arith_context.h"
 #include "show_rules.h"
 #include "assignments.h"
@@ -26,6 +25,9 @@ void print_rule(ParsingContext *ctx, RewriteRule *rule)
     printf("%s -> %s", l, r);
 }
 
+/*
+Summary: Prints a string representation for currently defined rules
+*/
 void show_rules_exec(ParsingContext *ctx, char *input)
 {
     if (strcmp(input, "rules") == 0)

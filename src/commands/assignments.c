@@ -152,6 +152,9 @@ bool rule_check(char *input)
     return strstr(input, "->") != NULL;
 }
 
+/*
+Summary: Adds new substitution rule
+*/
 void rule_exec(ParsingContext *ctx, char *input)
 {
     if (g_num_rules == NUM_MAX_RULES)

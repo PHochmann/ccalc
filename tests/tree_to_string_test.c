@@ -10,14 +10,13 @@
 #include "../src/engine/parser.h"
 #include "../src/engine/string_util.h"
 
-#define NUM_TESTS 7
-
 struct TreeToStringTest {
     char *string_to_tree;
     char *tree_to_string;
 };
 
-static struct TreeToStringTest tests[NUM_TESTS] = {
+static const size_t NUM_TESTS = 7;
+static struct TreeToStringTest tests[] = {
     { "--a", "-(-a)"},
     { "--b!!", "(-(-b)!)!"},
     { "(1+2)+3", "1+2+3" },

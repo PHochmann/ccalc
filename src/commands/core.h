@@ -1,7 +1,6 @@
 #pragma once
 #include <stdbool.h>
 #include <stdarg.h>
-
 #include "../engine/context.h"
 #include "../engine/node.h"
 

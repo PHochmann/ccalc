@@ -8,11 +8,14 @@ typedef struct {
     Node *after;
 } RewriteRule;
 
+/*
+Contains successful matching
+*/
 typedef struct {
-    Node *matched_tree;
-    char **mapped_vars;
-    Node **mapped_nodes;
-    size_t num_mapped;
+    Node *matched_tree;  // Subtree that could be matched
+    char **mapped_vars;  // Variables in pattern
+    Node **mapped_nodes; // Subtrees in matched_tree that need to replace each mapped_var
+    size_t num_mapped;   // Size of mappes_vars and mapped_nodes
 } Matching;
 
 RewriteRule get_rule(ParsingContext *ctx, Node *before, Node *after);

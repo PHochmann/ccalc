@@ -1,6 +1,5 @@
 #pragma once
 #include <stdbool.h>
-
 #include "context.h"
 #include "constants.h"
 #include "operator.h"

@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <string.h>
-
 #include "tokenizer.h"
 #include "string_util.h"
 

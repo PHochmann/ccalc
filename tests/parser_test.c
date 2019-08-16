@@ -8,9 +8,6 @@
 #include "../src/engine/node.h"
 #include "../src/engine/parser.h"
 
-#define NUM_VALUE_TESTS 68
-#define NUM_ERROR_TESTS 7
-
 // To check if parsed tree evaluates to expected value
 struct ValueTest {
     char *input;
@@ -23,7 +20,8 @@ struct ErrorTest {
     ParserError result;
 };
 
-static struct ValueTest valueTests[NUM_VALUE_TESTS] = {
+static const size_t NUM_VALUE_TESTS = 68;
+static struct ValueTest valueTests[] = {
     { "2+3", 5 },
     { "2-3", -1 },
     { "2*3", 6 },
@@ -95,7 +93,8 @@ static struct ValueTest valueTests[NUM_VALUE_TESTS] = {
     { "sin((2))", 0.909297426825 }
 };
 
-static struct ErrorTest errorTests[NUM_ERROR_TESTS] = {
+static const size_t NUM_ERROR_TESTS = 7;
+static struct ErrorTest errorTests[] = {
     { "", PERR_EMPTY },
     { "()", PERR_EMPTY },
     { "x+", PERR_MISSING_OPERAND },
@@ -106,7 +105,6 @@ static struct ErrorTest errorTests[NUM_ERROR_TESTS] = {
 };
 
 static const double EPSILON = 0.00000001;
-
 bool almost_equals(double a, double b)
 {
     return (fabs(a - b) < EPSILON);

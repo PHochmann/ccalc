@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <string.h>
-
 #include "arith_context.h"
 #include "help.h"
 #include "core.h"

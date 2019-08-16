@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-
 #include "evaluation.h"
 #include "core.h"
 #include "util.h"

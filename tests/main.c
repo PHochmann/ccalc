@@ -5,9 +5,8 @@
 #include "../src/commands/core.h"
 #include "../src/engine/constants.h"
 
-#define NUM_TESTS 2
-
-static Test (*test_getters[NUM_TESTS])() = {
+static const size_t NUM_TESTS = 2;
+static Test (*test_getters[])() = {
     get_parser_test,
     get_tree_to_string_test,
 };
