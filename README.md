@@ -1,5 +1,5 @@
 # Calculator
-Simple calculator written in C
+Simple calculator written in C in which you can define your own functions and pattern matching rules
 
 ## Setup guide
 1. Clone repository.

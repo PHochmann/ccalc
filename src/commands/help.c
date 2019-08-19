@@ -132,4 +132,6 @@ void help_exec(ParsingContext *ctx, __attribute__((unused)) char *input)
             print_op(&ctx->operators[i]);
         }
     }
+
+    printf("\n\n");
 }
