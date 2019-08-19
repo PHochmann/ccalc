@@ -95,12 +95,9 @@ void print_op(Operator *op)
 
 void help_exec(ParsingContext *ctx, __attribute__((unused)) char *input)
 {
-#ifdef DEBUG
-    printf("Calculator %s Debug build (c) 2019, Philipp Hochmann\n", VERSION);
-#else
-    printf("Calculator %s (c) 2019, Philipp Hochmann\n", VERSION);
-#endif
-    printf("Commands: debug, help, rules [clear], <function> := <after>, <before> -> <after>, load <path>\n");
+    printf("Calculator %s (c) 2019, Philipp Hochmann\n"
+           "Commands: debug, help, rules [clear], <function> := <after>, <before> -> <after>, load <path>\n",
+        VERSION);
 
     printf("\nBasic operators:\n");
     for (size_t i = 0; i < TRIG_IND; i++)
@@ -135,6 +132,4 @@ void help_exec(ParsingContext *ctx, __attribute__((unused)) char *input)
             print_op(&ctx->operators[i]);
         }
     }
-
-    printf("\n(%zu available operators)\n\n", ctx->num_ops);
 }

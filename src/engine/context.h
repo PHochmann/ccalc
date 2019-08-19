@@ -9,15 +9,15 @@ typedef bool (*EqualsHandler)(void *a, void *b);
 
 typedef struct
 {
-    size_t value_size; // e.g. sizeof(bool) for propositional logic, sizeof(double) for arithmetic
-    size_t min_str_len; // Needed to let engine know how much data to allocate for stringed value
-    size_t num_ops; // Current count of operators 
-    size_t max_ops; // Maximum count of operators (limited by buffer size)
+    size_t value_size;         // e.g. sizeof(bool) for propositional logic, sizeof(double) for arithmetic
+    size_t min_str_len;        // Needed to let engine know how much data to allocate for stringed value
+    size_t num_ops;            // Current count of operators 
+    size_t max_ops;            // Maximum count of operators (limited by buffer size)
     TryParseHandler try_parse; // Used to detect a literal token
     ToStringHandler to_string; // Used to print trees
-    EqualsHandler equals; // Relevant for unification of leaf nodes in rule_get_matching. Used in node_equals.
-    Operator *glue_op; // Points to op in operators
-    Operator *operators; // On heap!
+    EqualsHandler equals;      // Used in node_equals, tree_equals
+    Operator *glue_op;         // Points to op in operators
+    Operator *operators;       // On heap!
 } ParsingContext;
 
 ParsingContext get_context(

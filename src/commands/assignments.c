@@ -8,9 +8,9 @@
 #include "../engine/tokenizer.h"
 #include "../engine/parser.h"
 
-#define DEFINITION_OP ":="
-#define RULE_OP "->"
-#define MSG_ERROR_LEFT "Error in left expression: "
+#define DEFINITION_OP   ":="
+#define RULE_OP         "->"
+#define MSG_ERROR_LEFT  "Error in left expression: "
 #define MSG_ERROR_RIGHT "Error in right expression: "
 
 void definition_init() { }

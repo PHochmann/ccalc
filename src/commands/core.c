@@ -11,7 +11,7 @@
 #include "../engine/string_util.h"
 
 #define INTERACTIVE_ASK_PREFIX "> "
-#define COMMENT_PREFIX "'"
+#define COMMENT_PREFIX         "'"
 
 struct Command
 {

@@ -11,17 +11,20 @@ typedef enum
     NTYPE_VARIABLE
 } NodeType;
 
+/*
+Summary: Tree consists of nodes that are either operators, constants or variables
+    Operators are usually inner nodes (exceptions: operator-constants or zero-arity functions)
+    Constants are leaf nodes operators work upon
+    Everything else is a variable that needs to be substituted before evaluating
+*/
 typedef struct Node
 {
-    NodeType type;
-    // For NTYPE_VARIABLE:
-    char *var_name;
-    // For NTYPE_CONSTANT:
-    void *const_value;
-    // For NTYPE_OPERATOR:
-    Operator *op;
-    size_t num_children;
-    struct Node **children;
+    NodeType type;          // Operator, constant or variable
+    char *var_name;         // For variables
+    void *const_value;      // For constant, on heap
+    Operator *op;           // For operator, points to operator in ctx
+    size_t num_children;    // Size of children buffer
+    struct Node **children; // On heap, can not be flexible array member due to tree_replace 
 } Node;
 
 Node get_variable_node(char *var_name);

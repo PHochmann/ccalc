@@ -14,7 +14,7 @@ Parameters:
     max_ops: Number of operators that should fit into reserved buffer
     try_parse: Function that is called when trying to parse a constant
     to_string: Function that makes a constant readable
-    equals: Function that compares two constants. When NULL is given, bytewise_equals is used as a fallback.   
+    equals: Function that compares two constants. When NULL is given, bytewise_equals is used as a fallback.
         (Only relevant for node_equals and tree_equals used in rule.c)
 */
 ParsingContext get_context(

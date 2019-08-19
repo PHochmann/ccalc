@@ -2,6 +2,12 @@
 #include <unistd.h>
 #include "commands/core.h"
 
+/*
+Simple calculator written in C in which you can define your own functions and pattern matching rules
+https://github.com/PhilippHochmann/Calculator
+(c) 2019 Philipp Hochmann, phil.hochmann [at] gmail [dot] com
+*/
+
 int main(int argc, char *argv[])
 {
     // Build arithmetic context, initialise commands, set interactive=false
