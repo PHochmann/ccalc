@@ -20,6 +20,8 @@ When starting the calculator normally, you can enter expressions and commands in
 * To define a constant, you can define a function without arguments (e.g. ```myConst() := 42```) or a pattern matching rule that only applies to a variable of a specific name (e.g. ```name_myConst -> 42```).
 * When applying unary functions to a literal, you can omit parentheses (e.g. ```sin2```).
 * Any line starting with ```'``` will be ignored (useful for comments in files to be loaded).
+* Missing closing parentheses at the end of an expression will be padded automatically.
+* You can use ```$``` and ```(``` interchangeably (inspired by Haskell's syntax).
 
 ### Available commands
 | Command                     | Description                                                                           |
