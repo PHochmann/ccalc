@@ -5,7 +5,10 @@
 #include "core.h"
 #include "util.h"
 #include "../engine/operator.h"
-#include "../engine/colors.h"
+
+#define COL_RESET "\033[0m"
+// White background, black foreground
+#define OP_COLOR "\x1B[47m" "\x1B[22;30m"
 
 static const size_t TRIG_IND      = 18; // Index of first trigonometric function
 static const size_t MISC_FUNC_IND = 30; // Index of first misc. function
@@ -20,7 +23,7 @@ bool help_check(char *input)
 
 void print_op(Operator *op)
 {
-    printf(B_WHITE F_BLACK);
+    printf(OP_COLOR);
     switch (op->placement)
     {
         case OP_PLACE_PREFIX:

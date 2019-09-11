@@ -3,11 +3,8 @@ Simple calculator written in C in which you can define your own functions and pa
 
 ## Setup guide
 1. Clone repository.
-
 2. Download and install readline. (On Ubuntu: ```sudo apt-get install libreadline-dev```)
-
 3. In root directory, run ```./make.sh [-d]``` to compile sources.
-
 4. If you want, add alias such as ```c="~/Calculator/bin/calculator.out $@"``` in ~/.bash_aliases (when using the bash) to run program from anywhere. Arguments can be any expression as in interactive mode, which is started when program is executed without additional arguments.
 
 ## How to use it
@@ -20,8 +17,7 @@ When starting the calculator normally, you can enter expressions and commands in
 * To define a constant, you can define a function without arguments (e.g. ```myConst() := 42```) or a pattern matching rule that only applies to a variable of a specific name (e.g. ```name_myConst -> 42```).
 * When applying unary functions to a literal, you can omit parentheses (e.g. ```sin2```).
 * Any line starting with ```'``` will be ignored (useful for comments in files to be loaded).
-* Missing closing parentheses at the end of an expression will be padded automatically.
-* You can use ```$``` and ```(``` interchangeably (inspired by Haskell's syntax).
+* You can use ```$``` to parse the following expression with maximal precedence (inspired by Haskell's syntax).
 
 ### Available commands
 | Command                     | Description                                                                           |

@@ -3,7 +3,10 @@
 #include "parser_test.h"
 #include "tree_to_string_test.h"
 #include "../src/commands/core.h"
-#include "../src/engine/colors.h"
+
+#define COL_RESET "\033[0m"
+#define F_RED     "\x1B[1;31m"
+#define F_GREEN   "\x1B[1;32m"
 
 static const size_t NUM_TESTS = 2;
 static Test (*test_getters[])() = {

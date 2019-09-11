@@ -2,7 +2,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include "colors.h"
 #include "string_util.h"
 
 #define EMPTY_TAB  "    "
@@ -10,9 +9,13 @@
 #define BRANCH_TAB "├── "
 #define END_TAB    "└── "
 
-#define OP_COLOR    B_WHITE F_BLACK
-#define CONST_COLOR F_YELLOW
-#define VAR_COLOR   F_CYAN
+#define COL_RESET "\033[0m"
+// White background, black foreground
+#define OP_COLOR    "\x1B[47m" "\x1B[22;30m"
+// Yellow
+#define CONST_COLOR "\x1B[1;33m"
+// Cyan
+#define VAR_COLOR   "\x1B[1;36m"
 
 bool begins_with(char *prefix, char *string)
 {

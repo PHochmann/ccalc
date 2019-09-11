@@ -19,7 +19,7 @@ struct ErrorTest {
     ParserError result;
 };
 
-static const size_t NUM_VALUE_TESTS = 68;
+static const size_t NUM_VALUE_TESTS = 70;
 static struct ValueTest valueTests[] = {
     { "2+3", 5 },
     { "2-3", -1 },
@@ -62,6 +62,7 @@ static struct ValueTest valueTests[] = {
     { "sum(1, 2, 3)", 6 },
     { "prod(3, 4, 5)", 60 },
     { "avg(0, 4)", 2 },
+    { "rand(0, 0)", -1},
     { "gamma(2)", 1 },
     { "fib(9)", 34 },
     { "pi", 3.141592653 },
@@ -89,18 +90,19 @@ static struct ValueTest valueTests[] = {
     { "sin(asin(.2))", 0.2 },
     { "-sqrt(abs(--2!!*--sum(-1+.2-.2+2, 2^2^3-255, -sum(.1, .9), 1+2)*--2!!))", -4 },
     { "(1+1)*(2+2)", 8 },
+    { "($$(1+1)$8+2)", 20 },
     { "sin((2))", 0.909297426825 }
 };
 
 static const size_t NUM_ERROR_TESTS = 7;
 static struct ErrorTest errorTests[] = {
-    { "", PERR_EMPTY },
-    { "()", PERR_EMPTY },
-    { "x+", PERR_MISSING_OPERAND },
+    { "",          PERR_EMPTY },
+    { "()",        PERR_EMPTY },
+    { "x+",        PERR_MISSING_OPERAND },
     { "sin(x, y)", PERR_FUNCTION_WRONG_ARITY },
-    { "sin,", PERR_UNEXPECTED_DELIMITER },
-    { "(x", /*PERR_EXCESS_OPENING_PARENTHESIS*/ PERR_SUCCESS },
-    { "x)", PERR_EXCESS_CLOSING_PARENTHESIS }
+    { "sin,",      PERR_UNEXPECTED_DELIMITER },
+    { "(x",        PERR_EXCESS_OPENING_PARENTHESIS },
+    { "x)",        PERR_EXCESS_CLOSING_PARENTHESIS }
 };
 
 static const double EPSILON = 0.00000001;
