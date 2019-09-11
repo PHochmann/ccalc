@@ -9,20 +9,11 @@
 // Maximum number of operator/node instances the parser can handle at once
 #define MAX_STACK_SIZE 128
 
-enum PseudoOp
-{
-    NONE,
-    OPENING_PARENTHESIS,
-    PRECEDENCE_JOKER,
-};
-
 // Represents an operator (with metadata) while being parsed
 struct OpData
 {
-    // Pointer to operator in context
+    // Pointer to operator in context, NULL denotes opening parenthesis
     Operator *op;
-    // Operator stack needs to contains opening parentheses and precedence jokers
-    enum PseudoOp pseudo_op;
     // Records number of operands for functions, or DYNAMIC_ARITY for non-functions, glue-op and opening parentheses
     size_t arity;
 };
@@ -38,6 +29,21 @@ struct ParserState
     struct OpData op_stack[MAX_STACK_SIZE];
     ParserError result;
 };
+
+bool is_opening_parenthesis(char c)
+{
+    return c == '(' || c == '[' || c == '{';
+}
+
+bool is_closing_parenthesis(char c)
+{
+    return c == ')' || c == ']' || c == '}';
+}
+
+bool is_delimiter(char c)
+{
+    return c == ',' || c == ';';
+}
 
 void *malloc_wrapper(struct ParserState *state, size_t size)
 {
@@ -161,7 +167,7 @@ bool op_push(struct ParserState *state, struct OpData op_d)
     
     if (op != NULL)
     {
-        // Shunting-yard algorithm: Pop until operator of higher precedence, '(' or '$' is on top of stack 
+        // Shunting-yard algorithm: Pop until operator of higher precedence or '(' is on top of stack 
         if (op->placement == OP_PLACE_INFIX || op->placement == OP_PLACE_POSTFIX)
         {
             OpAssociativity assoc = op->assoc;
@@ -199,29 +205,23 @@ bool op_push(struct ParserState *state, struct OpData op_d)
 bool push_operator(struct ParserState *state, Operator *op)
 {
     // Set arity of functions to 0, everything else's arity to DYNAMIC_ARITY, since DYNAMIC_ARITY is only Arity that will never occur
-    return op_push(state, (struct OpData){ op, NONE, op->placement == OP_PLACE_FUNCTION ? 0 : DYNAMIC_ARITY });
+    return op_push(state, (struct OpData){ op, op->placement == OP_PLACE_FUNCTION ? 0 : DYNAMIC_ARITY });
 }
 
 // Pushes opening parenthesis on op_stack
 bool push_opening_parenthesis(struct ParserState *state)
 {
-    return op_push(state, (struct OpData){ NULL, OPENING_PARENTHESIS, DYNAMIC_ARITY });
+    return op_push(state, (struct OpData){ NULL, DYNAMIC_ARITY });
 }
 
-// Pushes precedence joker on op_stack
-bool push_precedence_joker(struct ParserState *state)
-{
-    return op_push(state, (struct OpData){ NULL, PRECEDENCE_JOKER, DYNAMIC_ARITY });
-}
-
-ParserError parse_tokens(ParsingContext *context, size_t num_tokens, char **tokens, Node **out_res)
+ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, Node **out_res)
 {
     // 1. Early outs
-    if (context == NULL || tokens == NULL || out_res == NULL) return PERR_ARGS_MALFORMED;
+    if (ctx == NULL || tokens == NULL || out_res == NULL) return PERR_ARGS_MALFORMED;
 
     // 2. Initialize state
     struct ParserState state = {
-        .ctx = context,
+        .ctx = ctx,
         .result = PERR_SUCCESS,
         .num_ops = 0,
         .num_nodes = 0,
@@ -251,16 +251,10 @@ ParserError parse_tokens(ParsingContext *context, size_t num_tokens, char **toke
             }
         }
         
-        // II. Is token opening parenthesis or precedence joker?
+        // II. Is token opening parenthesis?
         if (is_opening_parenthesis(token[0]))
         {
             if (!push_opening_parenthesis(&state)) goto exit;
-            continue;
-        }
-
-        if (is_precedence_joker(token[0]))
-        {
-            if (!push_precedence_joker(&state)) goto exit;
             continue;
         }
 
@@ -269,7 +263,7 @@ ParserError parse_tokens(ParsingContext *context, size_t num_tokens, char **toke
         {
             await_subexpression = false;
 
-            while (state.num_ops > 0 && op_peek(&state)->pseudo_op != OPENING_PARENTHESIS)
+            while (state.num_ops > 0 && op_peek(&state)->op != NULL)
             {
                 if (!op_pop_and_insert(&state))
                 {
@@ -416,7 +410,7 @@ ParserError parse_tokens(ParsingContext *context, size_t num_tokens, char **toke
     // 4. Pop all remaining operators
     while (state.num_ops > 0)
     {
-        if (op_peek(&state)->pseudo_op == OPENING_PARENTHESIS)
+        if (op_peek(&state)->op == NULL)
         {
             ERROR(PERR_EXCESS_OPENING_PARENTHESIS);
         }
@@ -456,20 +450,34 @@ ParserError parse_tokens(ParsingContext *context, size_t num_tokens, char **toke
     return state.result;
 }
 
+/* Parsing algorithm ends here. What follows are functions to invoke the parser conveniently */
+
+static size_t MAX_TOKENS = 100;
+
 /*
-Summary: Parses string to abstract syntax tree with operators of given context
+Summary: Parses string, tokenized with default tokenizer, to abstract syntax tree
 Returns: Result code to indicate whether string was parsed successfully or which error occurred
 */
-ParserError parse_input(ParsingContext *context, char *input, Node **out_res)
+ParserError parse_input(ParsingContext *ctx, char *input, Node **out_res)
 {
     size_t num_tokens;
     char *tokens[MAX_TOKENS];
 
     // Parsing
-    if (!tokenize(context, input, &num_tokens, tokens)) return PERR_MAX_TOKENS_EXCEEDED;
-    ParserError result = parse_tokens(context, num_tokens, tokens, out_res);
+    if (!tokenize(ctx, input, MAX_TOKENS, &num_tokens, tokens)) return PERR_MAX_TOKENS_EXCEEDED;
+    ParserError result = parse_tokens(ctx, num_tokens, tokens, out_res);
 
     // Cleanup
     for (size_t i = 0; i < num_tokens; i++) free(tokens[i]);
+    return result;
+}
+
+/*
+Returns: Abstract syntax tree or NULL when error occurred
+*/
+Node *parse_conveniently(ParsingContext *ctx, char *input)
+{
+    Node *result = NULL;
+    parse_input(ctx, input, &result);
     return result;
 }

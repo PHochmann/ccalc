@@ -9,8 +9,8 @@
 
 // Must not be static because can be exported
 const size_t ARITH_STRING_LENGTH = 30; // Including \0
-const size_t ARITH_NUM_OPS       = 49;
-const size_t ARITH_CUSTOM_BUFFER = 10;
+const size_t ARITH_NUM_OPS       = 50;
+const size_t ARITH_MAX_OPS =       60;
 
 static ParsingContext arith_ctx;
 
@@ -71,74 +71,74 @@ double arith_eval(Node *tree)
         case NTYPE_OPERATOR:
             switch ((size_t)(tree->op - arith_ctx.operators))
             {
-                case 0: // x+y
+                case 1: // x+y
                     return EVAL(0) + EVAL(1);
-                case 1: // x-y
+                case 2: // x-y
                     return EVAL(0) - EVAL(1);
-                case 2: // x*y
+                case 3: // x*y
                     return EVAL(0) * EVAL(1);
-                case 3: // x/y
+                case 4: // x/y
                     return EVAL(0) / EVAL(1);
-                case 4: // x^y
+                case 5: // x^y
                     return pow(EVAL(0), EVAL(1));
-                case 5: // x C y
+                case 6: // x C y
                     return (double)binomial(
                         labs((long)trunc(EVAL(0))),
                         labs((long)trunc(EVAL(1))));
-                case 6: // x mod y
+                case 7: // x mod y
                     return fmod(EVAL(0), EVAL(1));
-                case 7: // -x
+                case 8: // -x
                     return -EVAL(0);
-                case 8: // +x
+                case 9: // +x
                     return EVAL(0);
-                case 9: // x!
+                case 10: // x!
                     res = 1;
                     for (double i = trunc(EVAL(0)); i > 1; i--)
                     {
                         res *= i;
                     }
                     return res;
-                case 10: // x%
+                case 11: // x%
                     return EVAL(0) / 100;
-                case 11: // exp(x)
+                case 12: // exp(x)
                     return exp(EVAL(0));
-                case 12: // root(x, n)
+                case 13: // root(x, n)
                     return pow(EVAL(0), 1 / EVAL(1));
-                case 13: // sqrt(x)
+                case 14: // sqrt(x)
                     return sqrt(EVAL(0));
-                case 14: // log(x, n)
+                case 15: // log(x, n)
                     return log(EVAL(0)) / log(EVAL(1));
-                case 15: // ln(x)
+                case 16: // ln(x)
                     return log(EVAL(0));
-                case 16: // ld(x)
+                case 17: // ld(x)
                     return log2(EVAL(0));
-                case 17: // log(x)
+                case 18: // log(x)
                     return log10(EVAL(0));
-                case 18: // sin(x)
+                case 19: // sin(x)
                     return sin(EVAL(0));
-                case 19: // cos(x)
+                case 20: // cos(x)
                     return cos(EVAL(0));
-                case 20: // tan(x)
+                case 21: // tan(x)
                     return tan(EVAL(0));
-                case 21: // asin(x)
+                case 22: // asin(x)
                     return asin(EVAL(0));
-                case 22: // acos(x)
+                case 23: // acos(x)
                     return acos(EVAL(0));
-                case 23: // atan(x)
+                case 24: // atan(x)
                     return atan(EVAL(0));
-                case 24: // sinh(x)
+                case 25: // sinh(x)
                     return sinh(EVAL(0));
-                case 25: // cosh(x)
+                case 26: // cosh(x)
                     return cosh(EVAL(0));
-                case 26: // tanh(x)
+                case 27: // tanh(x)
                     return tanh(EVAL(0));
-                case 27: // asinh(x)
+                case 28: // asinh(x)
                     return asinh(EVAL(0));
-                case 28: // acosh(x)
+                case 29: // acosh(x)
                     return acosh(EVAL(0));
-                case 29: // atanh(x)
+                case 30: // atanh(x)
                     return atanh(EVAL(0));
-                case 30: // max(x, y, ...)
+                case 31: // max(x, y, ...)
                     res = -INFINITY;
                     for (size_t i = 0; i < tree->num_children; i++)
                     {
@@ -146,7 +146,7 @@ double arith_eval(Node *tree)
                         if (child_val > res) res = child_val;
                     }
                     return res;
-                case 31: // min(x, y, ...)
+                case 32: // min(x, y, ...)
                     res = INFINITY;
                     for (size_t i = 0; i < tree->num_children; i++)
                     {
@@ -154,47 +154,48 @@ double arith_eval(Node *tree)
                         if (child_val < res) res = child_val;
                     }
                     return res;
-                case 32: // abs(x)
+                case 33: // abs(x)
                     return fabs(EVAL(0));
-                case 33: // ceil(x)
+                case 34: // ceil(x)
                     return ceil(EVAL(0));
-                case 34: // floor(x)
+                case 35: // floor(x)
                     return floor(EVAL(0));
-                case 35: // round(x)
+                case 36: // round(x)
                     return round(EVAL(0));
-                case 36: // trunc(x)
+                case 37: // trunc(x)
                     return trunc(EVAL(0));
-                case 37: // frac(x)
+                case 38: // frac(x)
                     return EVAL(0) - floor(EVAL(0));
-                case 38: // sum(x, y, ...)
+                case 39: // sum(x, y, ...)
                     res = 0;
                     for (size_t i = 0; i < tree->num_children; i++) res += EVAL(i);
                     return res;
-                case 39: // prod(x, y, ...)
+                case 40: // prod(x, y, ...)
                     res = 1;
                     for (size_t i = 0; i < tree->num_children; i++) res *= EVAL(i);
                     return res;
-                case 40: // avg(x, y, ...)
+                case 41: // avg(x, y, ...)
                     if (tree->num_children == 0) return 0;
                     res = 0;
                     for (size_t i = 0; i < tree->num_children; i++) res += EVAL(i);
                     return res / tree->num_children;
-                case 41: // rand(x, y)
+                case 42: // rand(x, y)
                     return random_between(EVAL(0), EVAL(1));
-                case 42: // gamma(x)
+                case 43: // gamma(x)
                     return tgamma(EVAL(0));
-                case 43: // fib(x)
+                case 44: // fib(x)
                     return fibonacci(trunc(EVAL(0)));
-                case 44: // pi
+                case 45: // pi
                     return 3.14159265359;
-                case 45: // e
+                case 46: // e
                     return 2.71828182846;
-                case 46: // phi
+                case 47: // phi
                     return 1.61803398874;
-                case 47: // clight (m/s)
+                case 48: // clight (m/s)
                     return 299792458;
-                case 48: // csound (m/s)
+                case 49: // csound (m/s)
                     return 343.2;
+
                 default:
                     printf("Encountered operator without evaluation rule\n");
                     return -1;
@@ -224,7 +225,7 @@ void arith_to_string(void *in, char *str)
 /*
 Summary: Used to delete user-defined function operators
 */
-void arith_reset()
+void arith_reset_ctx()
 {
     // As operator names are stored on heap, we need to free them
     for (size_t i = ARITH_NUM_OPS; i < arith_ctx.num_ops; i++)
@@ -238,17 +239,18 @@ void arith_reset()
 Summary: Sets arithmetic context stored in global variable
     It is only passed by pointer, never copied!
 */
-ParsingContext *arith_get_ctx()
+ParsingContext *arith_init_ctx()
 {
     arith_ctx = get_context(
         sizeof(double),
         ARITH_STRING_LENGTH,
-        ARITH_NUM_OPS + ARITH_CUSTOM_BUFFER,
+        ARITH_MAX_OPS,
         arith_try_parse,
         arith_to_string,
         NULL); // Uses bytewise equals
     
     ctx_add_ops(&arith_ctx, ARITH_NUM_OPS,
+        op_get_prefix("$", 0),
         op_get_infix("+", 2, OP_ASSOC_BOTH),
         op_get_infix("-", 2, OP_ASSOC_LEFT),
         op_get_infix("*", 3, OP_ASSOC_BOTH),
@@ -300,7 +302,7 @@ ParsingContext *arith_get_ctx()
         op_get_constant("csound"));
     
     // Set multiplication as glue-op
-    ctx_set_glue_op(&arith_ctx, &arith_ctx.operators[2]);
+    ctx_set_glue_op(&arith_ctx, &arith_ctx.operators[3]);
 
     srand(time(NULL));
     return &arith_ctx;

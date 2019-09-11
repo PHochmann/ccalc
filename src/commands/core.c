@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <string.h>
+
+#include "arith_context.h"
+#include "arith_rules.h"
 #include "core.h"
 #include "util.h"
 #include "evaluation.h"
@@ -7,7 +10,7 @@
 #include "show_rules.h"
 #include "load.h"
 #include "assignments.h"
-#include "arith_context.h"
+
 #include "../engine/string_util.h"
 
 #define INTERACTIVE_ASK_PREFIX "> "
@@ -44,7 +47,8 @@ void init_commands()
 {
     init_util();
     g_interactive = false;
-    ctx = arith_get_ctx();
+    ctx = arith_init_ctx();
+    arith_init_rules(ctx);
 
     for (size_t i = 0; i < NUM_COMMANDS; i++)
     {

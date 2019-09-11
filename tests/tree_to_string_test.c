@@ -28,7 +28,7 @@ static struct TreeToStringTest tests[] = {
 
 int tree_to_string_test()
 {
-    ParsingContext *ctx = arith_get_ctx();
+    ParsingContext *ctx = arith_init_ctx();
 
     for (size_t i = 0; i < NUM_TESTS; i++)
     {

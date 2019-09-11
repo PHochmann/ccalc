@@ -20,6 +20,12 @@ RewriteRule get_rule(ParsingContext *ctx, Node *before, Node *after)
     };
 }
 
+void free_rule(RewriteRule rule)
+{
+    free_tree(rule.before);
+    free_tree(rule.after);
+}
+
 /*
 Summary: Tries to match "tree" against "pattern" (only in root)
 Returns: True, if matching is found, false if NULL-pointers given in arguments or no matching found
@@ -114,12 +120,6 @@ bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_
     }
     
     return true;
-}
-
-void free_rule(RewriteRule rule)
-{
-    free_tree(rule.before);
-    free_tree(rule.after);
 }
 
 void free_matching(Matching matching)

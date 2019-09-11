@@ -3,6 +3,7 @@
 
 #include "assignments.h"
 #include "evaluation.h"
+#include "arith_rules.h"
 #include "util.h"
 #include "../engine/node.h"
 #include "../engine/tokenizer.h"
@@ -12,6 +13,8 @@
 #define RULE_OP         "->"
 #define MSG_ERROR_LEFT  "Error in left expression: "
 #define MSG_ERROR_RIGHT "Error in right expression: "
+
+static const size_t MAX_TOKENS = 100;
 
 void definition_init() { }
 
@@ -31,7 +34,7 @@ void definition_exec(ParsingContext *ctx, char *input)
         return;
     }
 
-    if (g_num_rules == NUM_MAX_RULES)
+    if (g_num_rules == ARITH_MAX_RULES)
     {
         printf("Can't add any more rules\n");
         return;
@@ -47,7 +50,7 @@ void definition_exec(ParsingContext *ctx, char *input)
     char *tokens[MAX_TOKENS];
     size_t num_tokens = 0;
 
-    if (!tokenize(ctx, input, &num_tokens, tokens))
+    if (!tokenize(ctx, input, MAX_TOKENS, &num_tokens, tokens))
     {
         // Only reason for tokenize to fail is max. number of tokens exceeded
         printf(MSG_ERROR_LEFT "%s\n", perr_to_string(PERR_MAX_TOKENS_EXCEEDED));
@@ -142,10 +145,7 @@ void definition_exec(ParsingContext *ctx, char *input)
 
 // Rule definition command
 
-void rule_init()
-{
-    g_num_rules = 0;
-}
+void rule_init() { }
 
 bool rule_check(char *input)
 {
@@ -157,7 +157,7 @@ Summary: Adds new substitution rule
 */
 void rule_exec(ParsingContext *ctx, char *input)
 {
-    if (g_num_rules == NUM_MAX_RULES)
+    if (g_num_rules == ARITH_MAX_RULES)
     {
         printf("Can't add any more rules\n");
         return;

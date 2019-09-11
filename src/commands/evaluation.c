@@ -1,11 +1,14 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+
+#include "arith_context.h"
+#include "arith_rules.h"
 #include "evaluation.h"
 #include "core.h"
 #include "util.h"
 #include "assignments.h"
-#include "arith_context.h"
+
 #include "../engine/string_util.h"
 
 #define ANS_VAR                 "ans"

@@ -3,12 +3,24 @@
 #include "tokenizer.h"
 #include "string_util.h"
 
-// Maximum number of tokens reserved before tokenization
-const size_t MAX_TOKENS = 128;
-
-bool add_token(char **tokens, char *position, size_t *num_tokens)
+bool is_space(char c)
 {
-    if (*num_tokens == MAX_TOKENS) return false;
+    return c == ' ' || c == '\t';
+}
+
+bool is_digit(char c)
+{
+    return (c >= '0' && c <= '9') || c == '.';
+}
+
+bool is_letter(char c)
+{
+    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_';
+}
+
+bool add_token(char **tokens, char *position, size_t max_tokens, size_t *num_tokens)
+{
+    if (*num_tokens == max_tokens) return false;
     tokens[(*num_tokens)++] = position;
     return true;
 }
@@ -27,11 +39,11 @@ int str_cmp(const void *a, const void *b)
 Summary: Splits input string into several tokens to be parsed
 Returns: True if method succeeded, False if MAX_TOKENS was exceeded or NULL given in arguments
 */
-bool tokenize(ParsingContext *ctx, char *input, size_t *out_num_tokens, char **out_tokens)
+bool tokenize(ParsingContext *ctx, char *input, size_t max_tokens, size_t *out_num_tokens, char **out_tokens)
 {
     if (ctx == NULL || input == NULL) return false;
 
-    char *token_markers[MAX_TOKENS];
+    char *token_markers[max_tokens];
     char *keywords[ctx->num_ops];
     int state = 0; // 0: initial, 1: default, 2: letter, 3: digit, 4: keyword
     size_t num_markers = 0;
@@ -40,10 +52,11 @@ bool tokenize(ParsingContext *ctx, char *input, size_t *out_num_tokens, char **o
     {
         keywords[i] = ctx->operators[i].name;
     }
+
     // Maximal munch
     qsort(keywords, ctx->num_ops, sizeof(char*), &str_cmp);
     
-    if (!add_token(token_markers, input, &num_markers)) return false;
+    if (!add_token(token_markers, input, max_tokens, &num_markers)) return false;
     for (char *current = input; *current != '\0'; current++)
     {
         int next_state = 1;
@@ -71,7 +84,7 @@ bool tokenize(ParsingContext *ctx, char *input, size_t *out_num_tokens, char **o
                 
                 if (begins_with(keywords[j], current))
                 {
-                    if (state != 0 && !add_token(token_markers, current, &num_markers)) return false;
+                    if (state != 0 && !add_token(token_markers, current, max_tokens, &num_markers)) return false;
                     current += keyw_len - 1;
                     token = true;
                     next_state = 4;
@@ -85,14 +98,14 @@ bool tokenize(ParsingContext *ctx, char *input, size_t *out_num_tokens, char **o
         {
             if (state != 0 && (next_state == 1 || state == 4 || next_state != state ))
             {
-                if (!add_token(token_markers, current, &num_markers)) return false;
+                if (!add_token(token_markers, current, max_tokens, &num_markers)) return false;
             }
         }
         
         state = next_state;
     }
     
-    if (!add_token(token_markers, input + strlen(input), &num_markers)) return false; // Sentinel marker at \0
+    if (!add_token(token_markers, input + strlen(input), max_tokens, &num_markers)) return false; // Sentinel marker at \0
     
     *out_num_tokens = 0;
 
@@ -116,39 +129,4 @@ bool tokenize(ParsingContext *ctx, char *input, size_t *out_num_tokens, char **o
     }
 
     return true;
-}
-
-bool is_space(char c)
-{
-    return c == ' ' || c == '\t';
-}
-
-bool is_digit(char c)
-{
-    return (c >= '0' && c <= '9') || c == '.';
-}
-
-bool is_opening_parenthesis(char c)
-{
-    return c == '(' || c == '[' || c == '{';
-}
-
-bool is_closing_parenthesis(char c)
-{
-    return c == ')' || c == ']' || c == '}';
-}
-
-bool is_letter(char c)
-{
-    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_';
-}
-
-bool is_delimiter(char c)
-{
-    return c == ',' || c == ';';
-}
-
-bool is_precedence_joker(char c)
-{
-    return c == '$';
 }

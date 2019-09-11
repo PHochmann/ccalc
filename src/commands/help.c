@@ -10,9 +10,10 @@
 // White background, black foreground
 #define OP_COLOR "\x1B[47m" "\x1B[22;30m"
 
-static const size_t TRIG_IND      = 18; // Index of first trigonometric function
-static const size_t MISC_FUNC_IND = 30; // Index of first misc. function
-static const size_t CONSTANTS_IND = 44; // Index of first constant
+static const size_t BASIC_IND     =  1; // Index of first basic operator ($x before, should no be shown)
+static const size_t TRIG_IND      = 19; // Index of first trigonometric function
+static const size_t MISC_FUNC_IND = 31; // Index of first misc. function
+static const size_t CONSTANTS_IND = 45; // Index of first constant
 
 void help_init() { }
 
@@ -104,7 +105,7 @@ void help_exec(ParsingContext *ctx, __attribute__((unused)) char *input)
         VERSION);
 
     printf("\nBasic operators:\n");
-    for (size_t i = 0; i < TRIG_IND; i++)
+    for (size_t i = BASIC_IND; i < TRIG_IND; i++)
     {
         print_op(&ctx->operators[i]);
     }

@@ -19,7 +19,7 @@ struct ErrorTest {
     ParserError result;
 };
 
-static const size_t NUM_VALUE_TESTS = 70;
+static const size_t NUM_VALUE_TESTS = 69;
 static struct ValueTest valueTests[] = {
     { "2+3", 5 },
     { "2-3", -1 },
@@ -90,7 +90,6 @@ static struct ValueTest valueTests[] = {
     { "sin(asin(.2))", 0.2 },
     { "-sqrt(abs(--2!!*--sum(-1+.2-.2+2, 2^2^3-255, -sum(.1, .9), 1+2)*--2!!))", -4 },
     { "(1+1)*(2+2)", 8 },
-    { "($$(1+1)$8+2)", 20 },
     { "sin((2))", 0.909297426825 }
 };
 
@@ -146,7 +145,7 @@ int perform_error_tests(ParsingContext *ctx)
 
 int parser_test()
 {
-    ParsingContext *ctx = arith_get_ctx();
+    ParsingContext *ctx = arith_init_ctx();
     int error_index = perform_value_tests(ctx);
     
     if (error_index != -1)
