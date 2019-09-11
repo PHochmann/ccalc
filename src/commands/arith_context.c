@@ -299,6 +299,7 @@ ParsingContext *arith_get_ctx()
         op_get_constant("clight"),
         op_get_constant("csound"));
     
+    // Set multiplication as glue-op
     ctx_set_glue_op(&arith_ctx, &arith_ctx.operators[2]);
 
     srand(time(NULL));

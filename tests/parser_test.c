@@ -3,7 +3,6 @@
 
 #include "parser_test.h"
 #include "../src/commands/arith_context.h"
-#include "../src/engine/constants.h"
 #include "../src/engine/context.h"
 #include "../src/engine/node.h"
 #include "../src/engine/parser.h"
@@ -100,7 +99,7 @@ static struct ErrorTest errorTests[] = {
     { "x+", PERR_MISSING_OPERAND },
     { "sin(x, y)", PERR_FUNCTION_WRONG_ARITY },
     { "sin,", PERR_UNEXPECTED_DELIMITER },
-    { "(x", PERR_EXCESS_OPENING_PARENTHESIS },
+    { "(x", /*PERR_EXCESS_OPENING_PARENTHESIS*/ PERR_SUCCESS },
     { "x)", PERR_EXCESS_CLOSING_PARENTHESIS }
 };
 

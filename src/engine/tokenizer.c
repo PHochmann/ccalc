@@ -3,6 +3,9 @@
 #include "tokenizer.h"
 #include "string_util.h"
 
+// Maximum number of tokens reserved before tokenization
+const size_t MAX_TOKENS = 128;
+
 bool add_token(char **tokens, char *position, size_t *num_tokens)
 {
     if (*num_tokens == MAX_TOKENS) return false;
@@ -143,4 +146,9 @@ bool is_letter(char c)
 bool is_delimiter(char c)
 {
     return c == ',' || c == ';';
+}
+
+bool is_precedence_joker(char c)
+{
+    return c == '$';
 }

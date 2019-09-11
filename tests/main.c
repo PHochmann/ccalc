@@ -3,7 +3,7 @@
 #include "parser_test.h"
 #include "tree_to_string_test.h"
 #include "../src/commands/core.h"
-#include "../src/engine/constants.h"
+#include "../src/engine/colors.h"
 
 static const size_t NUM_TESTS = 2;
 static Test (*test_getters[])() = {

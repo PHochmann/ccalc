@@ -2,11 +2,13 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include "constants.h"
 #include "tokenizer.h"
 #include "parser.h"
 
 #define ERROR(type) { result = type; goto exit; }
+
+// Maximum number of operator/node instances the parser can handle at once
+const size_t MAX_STACK_SIZE = 128;
 
 // Global vars while parsing:
 
@@ -202,7 +204,7 @@ ParserError parse_tokens(ParsingContext *context, size_t num_tokens, char **toke
         char *token = tokens[i];
         size_t tok_len = strlen(token);
         
-        // II. Does glue-op need to be inserted?
+        // I. Does glue-op need to be inserted?
         if (!await_subexpression && ctx->glue_op != NULL)
         {
             if (!is_closing_parenthesis(token[0])
@@ -219,15 +221,14 @@ ParserError parse_tokens(ParsingContext *context, size_t num_tokens, char **toke
             }
         }
         
-        // III. Is token opening parenthesis?
-        if (is_opening_parenthesis(token[0]))
+        // II. Is token opening parenthesis?
+        if (is_opening_parenthesis(token[0]) || is_precedence_joker(token[0]))
         {
             if (!op_push(NULL)) goto exit;
-            await_subexpression = true;
             continue;
         }
 
-        // IV. Is token closing parenthesis or argument delimiter?
+        // III. Is token closing parenthesis or argument delimiter?
         if (is_closing_parenthesis(token[0]))
         {
             await_subexpression = false;
@@ -287,7 +288,7 @@ ParserError parse_tokens(ParsingContext *context, size_t num_tokens, char **toke
         }
         // - - -
         
-        // V. Is token operator?
+        // IV. Is token operator?
         Operator *op = NULL;
         
         // Infix, Prefix (await=true) -> Function (false), Leaf (false), Prefix (true)
@@ -339,7 +340,7 @@ ParserError parse_tokens(ParsingContext *context, size_t num_tokens, char **toke
             ERROR(PERR_UNEXPECTED_SUBEXPRESSION);
         }
         
-        // VI. Token must be variable or constant (leaf)
+        // V. Token must be variable or constant (leaf)
         Node *node = malloc_wrapper(sizeof(Node));
         void *constant = malloc_wrapper(ctx->value_size);
 
@@ -367,9 +368,12 @@ ParserError parse_tokens(ParsingContext *context, size_t num_tokens, char **toke
         if (!node_push(node)) goto exit;
     }
     
-    // V. Pop all remaining operators
+    // 4. Pop all remaining operators
     while (num_ops > 0)
     {
+        // Don't report missing closing parentheses for now
+        if (!op_pop_and_insert()) goto exit;
+        /*
         if (op_peek() == NULL)
         {
             ERROR(PERR_EXCESS_OPENING_PARENTHESIS);
@@ -378,9 +382,10 @@ ParserError parse_tokens(ParsingContext *context, size_t num_tokens, char **toke
         {
             if (!op_pop_and_insert()) goto exit;
         }
+        */
     }
     
-    // VI. Build result and return value
+    // 5. Build result and return value
     switch (num_nodes)
     {
         case 0:

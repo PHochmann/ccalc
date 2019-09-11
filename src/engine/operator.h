@@ -1,6 +1,5 @@
 #pragma once
 #include <stdlib.h>
-#include "constants.h"
 
 typedef enum
 {
@@ -18,6 +17,11 @@ typedef enum
 } OpPlacement;
 
 typedef unsigned char Precedence;
+
+extern const size_t DYNAMIC_ARITY;
+extern const size_t MAX_ARITY;
+extern const Precedence MAX_PRECEDENCE;
+extern const OpAssociativity STANDARD_ASSOC;
 
 typedef struct
 {

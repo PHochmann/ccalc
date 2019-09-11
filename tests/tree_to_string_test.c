@@ -4,7 +4,6 @@
 #include "tree_to_string_test.h"
 
 #include "../src/commands/arith_context.h"
-#include "../src/engine/constants.h"
 #include "../src/engine/context.h"
 #include "../src/engine/node.h"
 #include "../src/engine/parser.h"

@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include "../engine/node.h"
 #include "../engine/parser.h"
 

@@ -5,6 +5,7 @@
 #include "core.h"
 #include "util.h"
 #include "../engine/operator.h"
+#include "../engine/colors.h"
 
 static const size_t TRIG_IND      = 18; // Index of first trigonometric function
 static const size_t MISC_FUNC_IND = 30; // Index of first misc. function
@@ -19,7 +20,7 @@ bool help_check(char *input)
 
 void print_op(Operator *op)
 {
-    printf(OP_COLOR);
+    printf(B_WHITE F_BLACK);
     switch (op->placement)
     {
         case OP_PLACE_PREFIX:

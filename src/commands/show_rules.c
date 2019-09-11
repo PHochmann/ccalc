@@ -3,7 +3,6 @@
 #include "arith_context.h"
 #include "show_rules.h"
 #include "assignments.h"
-#include "../engine/constants.h"
 #include "../engine/operator.h"
 #include "../engine/string_util.h"
 

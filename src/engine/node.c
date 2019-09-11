@@ -3,6 +3,12 @@
 #include <sys/types.h>
 #include "node.h"
 
+// When traversing a tree, a stack must be maintained
+const size_t MAX_TREE_SEARCH_STACK_SIZE = 100;
+
+// Amount of distinct variables usable within a tree. Used in matching and variable-list
+const size_t MAX_VAR_COUNT = 20;
+
 Node get_node(NodeType type)
 {
     Node res;
@@ -70,24 +76,24 @@ void free_tree_preserved(Node *tree)
     }
 }
 
-/* Returns true iff variable node exists in tree
+/* Returns number of variable nodes in tree
    False indicates safe evaluation */
-bool tree_contains_vars(Node *tree)
+size_t tree_count_vars(Node *tree)
 {
     if (tree == NULL) return false;
     
     switch (tree->type)
     {
         case NTYPE_CONSTANT:
-            return false;
+            return 0;
             
         case NTYPE_VARIABLE:
-            return true;
+            return 1;
             
         case NTYPE_OPERATOR:
             for (size_t i = 0; i < tree->num_children; i++)
             {
-                if (tree_contains_vars(tree->children[i])) return true;
+                return tree_count_vars(tree->children[i]);
             }
             return false;
     }
@@ -104,7 +110,7 @@ size_t tree_get_var_instances(Node *tree, char *variable, Node **out_instances)
 {
     if (tree == NULL) return -1;
     
-    Node *node_stack[MAX_STACK_SIZE];
+    Node *node_stack[MAX_TREE_SEARCH_STACK_SIZE];
     node_stack[0] = tree;
     size_t res_count = 0;
     size_t stack_count = 1;
@@ -126,7 +132,7 @@ size_t tree_get_var_instances(Node *tree, char *variable, Node **out_instances)
             case NTYPE_OPERATOR:
                 for (ssize_t i = curr_node->num_children - 1; i >= 0; i--)
                 {
-                    if (stack_count == MAX_STACK_SIZE) return -1;
+                    if (stack_count == MAX_TREE_SEARCH_STACK_SIZE) return -1;
                     node_stack[stack_count++] = curr_node->children[i];
                 }
                 break;
@@ -152,7 +158,7 @@ size_t tree_list_vars(Node *tree, char **out_variables)
     
     size_t res_count = 0;
     
-    Node *node_stack[MAX_STACK_SIZE];
+    Node *node_stack[MAX_TREE_SEARCH_STACK_SIZE];
     node_stack[0] = tree;
     size_t stack_count = 1;
 
@@ -188,7 +194,15 @@ size_t tree_list_vars(Node *tree, char **out_variables)
                 for (ssize_t i = curr_node->num_children - 1; i >= 0; i--)
                 {
                     // Buffer overflow protection
-                    if (stack_count == MAX_STACK_SIZE) return -1;
+                    if (stack_count == MAX_TREE_SEARCH_STACK_SIZE)
+                    {
+                        // Free partial results
+                        for (size_t i = 0; i < res_count; i++)
+                        {
+                            free(variables[i]);
+                        }
+                        return -1;
+                    }
                     
                     node_stack[stack_count++] = curr_node->children[i];
                 }
@@ -339,7 +353,6 @@ Summary: Checks if two trees represent the same expression, i.e. all nodes in "a
 bool tree_equals(ParsingContext *ctx, Node *a, Node *b)
 {
     if (ctx == NULL || a == NULL || b == NULL) return false;
-    
     if (!node_equals(ctx, a, b)) return false;
 
     if (a->type == NTYPE_OPERATOR)
@@ -349,5 +362,6 @@ bool tree_equals(ParsingContext *ctx, Node *a, Node *b)
             if (!tree_equals(ctx, a->children[i], b->children[i])) return false;
         }
     }
+
     return true;
 }

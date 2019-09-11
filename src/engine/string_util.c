@@ -2,12 +2,17 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include "colors.h"
 #include "string_util.h"
 
 #define EMPTY_TAB  "    "
 #define LINE_TAB   "│   "
 #define BRANCH_TAB "├── "
 #define END_TAB    "└── "
+
+#define OP_COLOR    B_WHITE F_BLACK
+#define CONST_COLOR F_YELLOW
+#define VAR_COLOR   F_CYAN
 
 bool begins_with(char *prefix, char *string)
 {

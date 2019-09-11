@@ -1,7 +1,6 @@
 #include <stdbool.h>
 #include <string.h>
 #include "rule.h"
-#include "constants.h" 
 #include "node.h"
 #include "string_util.h" // For begins_with
 
@@ -33,8 +32,8 @@ bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_
     Node *mapped_nodes[MAX_VAR_COUNT];
     size_t num_mapped_vars = 0;
     
-    Node *tree_stack[MAX_STACK_SIZE];
-    Node *pattern_stack[MAX_STACK_SIZE];
+    Node *tree_stack[MAX_TREE_SEARCH_STACK_SIZE];
+    Node *pattern_stack[MAX_TREE_SEARCH_STACK_SIZE];
     size_t num_stack = 0;
     
     tree_stack[0] = tree;
