@@ -30,19 +30,19 @@ struct ParserState
     ParserError result;
 };
 
-bool is_opening_parenthesis(char c)
+bool is_opening_parenthesis(char *c)
 {
-    return c == '(' || c == '[' || c == '{';
+    return strcmp(c, "(") == 0 || strcmp(c, "{") == 0 || strcmp(c, "[") == 0;
 }
 
-bool is_closing_parenthesis(char c)
+bool is_closing_parenthesis(char *c)
 {
-    return c == ')' || c == ']' || c == '}';
+    return strcmp(c, ")") == 0 || strcmp(c, "}") == 0 || strcmp(c, "]") == 0;
 }
 
-bool is_delimiter(char c)
+bool is_delimiter(char *c)
 {
-    return c == ',' || c == ';';
+    return strcmp(c, ",") == 0 || strcmp(c, ";") == 0;
 }
 
 void *malloc_wrapper(struct ParserState *state, size_t size)
@@ -237,8 +237,8 @@ ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, 
         // I. Does glue-op need to be inserted?
         if (!await_subexpression && state.ctx->glue_op != NULL)
         {
-            if (!is_closing_parenthesis(token[0])
-                && !is_delimiter(token[0])
+            if (!is_closing_parenthesis(token)
+                && !is_delimiter(token)
                 && ctx_lookup_op(state.ctx, token, OP_PLACE_INFIX) == NULL
                 && ctx_lookup_op(state.ctx, token, OP_PLACE_POSTFIX) == NULL)
             {
@@ -252,14 +252,14 @@ ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, 
         }
         
         // II. Is token opening parenthesis?
-        if (is_opening_parenthesis(token[0]))
+        if (is_opening_parenthesis(token))
         {
             if (!push_opening_parenthesis(&state)) goto exit;
             continue;
         }
 
         // III. Is token closing parenthesis or argument delimiter?
-        if (is_closing_parenthesis(token[0]))
+        if (is_closing_parenthesis(token))
         {
             await_subexpression = false;
 
@@ -280,7 +280,7 @@ ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, 
                 ERROR(PERR_EXCESS_CLOSING_PARENTHESIS);
             }
             
-            bool empty_params = (i > 0 && is_opening_parenthesis(tokens[i - 1][0]));
+            bool empty_params = (i > 0 && is_opening_parenthesis(tokens[i - 1]));
             if (state.num_ops > 0 && op_peek(&state)->arity != DYNAMIC_ARITY && !empty_params)
             {
                 if (op_peek(&state)->arity == MAX_ARITY)
@@ -296,7 +296,7 @@ ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, 
             continue;
         }
         
-        if (is_delimiter(token[0]))
+        if (is_delimiter(token))
         {
             while (state.num_ops > 0 && op_peek(&state)->op != NULL)
             {
@@ -338,7 +338,7 @@ ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, 
 
                 // Handle unary functions without parenthesis (e.g. "sin2")
                 // If function is last token its arity will be set to 0
-                if (i < num_tokens - 1 && !is_opening_parenthesis(tokens[i + 1][0]))
+                if (i < num_tokens - 1 && !is_opening_parenthesis(tokens[i + 1]))
                 {
                     op_peek(&state)->arity = 1;
                 }
@@ -426,11 +426,9 @@ ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, 
         case 0:
             state.result = PERR_EMPTY; // We haven't constructed a single node
             break;
-
         case 1:
             *out_res = state.node_stack[0]; // We successfully constructed a single AST
             break;
-
         default:
             state.result = PERR_MISSING_OPERATOR; // We have multiple ASTs (need glue-op)
     }

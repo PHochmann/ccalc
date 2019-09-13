@@ -53,6 +53,26 @@ char *perr_to_string(ParserError perr)
 }
 
 /*
+Summary: Replaces end of string by three dots if it needed to be shortened because of a limited buffer size
+Returns: True if string was changed, false if not
+*/
+bool indicate_abbreviation(char *string, size_t actual_length)
+{
+    size_t length = strlen(string);
+    if (length < actual_length && length >= 3)
+    {
+        string[length - 1] = '.';
+        string[length - 2] = '.';
+        string[length - 3] = '.';
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+/*
 Summary: printf-wrapper to filter unimportant prints in non-interactive mode
 */
 void whisper(const char *format, ...)

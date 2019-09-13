@@ -25,26 +25,6 @@ bool begins_with(char *prefix, char *string)
     return strncmp(prefix, string, prefix_length) == 0;
 }
 
-/*
-Summary: Replaces end of string by three dots if it needed to be shortened because of a limited buffer size
-Returns: True if string was changed, false if not
-*/
-bool indicate_abbreviation(char *string, size_t actual_length)
-{
-    size_t length = strlen(string);
-    if (length < actual_length && length >= 3)
-    {
-        string[length - 1] = '.';
-        string[length - 2] = '.';
-        string[length - 3] = '.';
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
 void print_constant(ParsingContext *ctx, Node *node)
 {
     char value[ctx->min_str_len];

@@ -3,11 +3,13 @@
 #include <stdbool.h>
 #include "operator.h"
 
+struct ParsingContext;
+
 typedef bool (*TryParseHandler)(char *in, void *out);
 typedef void (*ToStringHandler)(void *in, char *out);
-typedef bool (*EqualsHandler)(void *a, void *b);
+typedef bool (*EqualsHandler)(struct ParsingContext *ctx, void *a, void *b);
 
-typedef struct
+typedef struct ParsingContext
 {
     size_t value_size;         // e.g. sizeof(bool) for propositional logic, sizeof(double) for arithmetic
     size_t min_str_len;        // Needed to let engine know how much data to allocate for stringed value

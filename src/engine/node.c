@@ -6,7 +6,7 @@
 // When traversing a tree, a stack must be maintained
 const size_t MAX_TREE_SEARCH_STACK_SIZE = 100;
 
-// Amount of distinct variables usable within a tree. Used in matching and variable-list
+// Maximal amount of variables nodes allowed in tree
 const size_t MAX_VAR_COUNT = 20;
 
 Node get_node(NodeType type)
@@ -55,7 +55,6 @@ void free_tree(Node *tree)
 void free_tree_preserved(Node *tree)
 {
     if (tree == NULL) return;
-    
     switch (tree->type)
     {
         case NTYPE_OPERATOR:
@@ -65,14 +64,11 @@ void free_tree_preserved(Node *tree)
             }
             free(tree->children);
             break;
-            
         case NTYPE_CONSTANT:
             free(tree->const_value);
             break;
-            
         case NTYPE_VARIABLE:
             free(tree->var_name);
-            break;
     }
 }
 
@@ -81,59 +77,61 @@ void free_tree_preserved(Node *tree)
 size_t tree_count_vars(Node *tree)
 {
     if (tree == NULL) return false;
-    
+    size_t sum = 0;
+
     switch (tree->type)
     {
         case NTYPE_CONSTANT:
             return 0;
-            
+
         case NTYPE_VARIABLE:
             return 1;
-            
+
         case NTYPE_OPERATOR:
             for (size_t i = 0; i < tree->num_children; i++)
             {
-                return tree_count_vars(tree->children[i]);
+                sum += tree_count_vars(tree->children[i]);
             }
-            return false;
+            return sum;
+
+        default:
+            return 0;
     }
-    
-    return false;
 }
 
 /*
 Summary: Lists all variable nodes of given names (e.g. to replace them)
+Returns: False if tree==NULL, or MAX_TREE_SEARCH_STACK_SIZE or MAX_VAR_COUNT exceeded. True otherwise.
 Params
-    out_instances: Buffer to nodes. Must hold max_var
+    out_instances: Buffer to nodes. Must hold at least MAX_VAR_COUNT Node-pointers.
 */
-size_t tree_get_var_instances(Node *tree, char *variable, Node **out_instances)
+bool tree_get_var_instances(Node *tree, char *var_name, size_t *out_num_instances, Node **out_instances)
 {
-    if (tree == NULL) return -1;
+    if (tree == NULL || var_name == NULL || out_num_instances == NULL || out_instances == NULL) return false;
     
     Node *node_stack[MAX_TREE_SEARCH_STACK_SIZE];
+    size_t num_nodes = 1;
     node_stack[0] = tree;
-    size_t res_count = 0;
-    size_t stack_count = 1;
+    *out_num_instances = 0;
     
-    while (stack_count > 0)
+    while (num_nodes > 0)
     {
-        Node *curr_node = node_stack[--stack_count];
+        Node *curr_node = node_stack[--num_nodes];
         switch (curr_node->type)
         {
             case NTYPE_VARIABLE:
-                if (strcmp(curr_node->var_name, variable) == 0)
+                if (strcmp(curr_node->var_name, var_name) == 0)
                 {
-                    if (res_count == MAX_VAR_COUNT) return -1;
-                    out_instances[res_count] = curr_node;
-                    res_count++;
+                    if (*out_num_instances == MAX_VAR_COUNT) return false;
+                    out_instances[(*out_num_instances)++] = curr_node;
                 }
                 break;
                 
             case NTYPE_OPERATOR:
-                for (ssize_t i = curr_node->num_children - 1; i >= 0; i--)
+                for (size_t i = 0; i < curr_node->num_children; i++)
                 {
-                    if (stack_count == MAX_TREE_SEARCH_STACK_SIZE) return -1;
-                    node_stack[stack_count++] = curr_node->children[i];
+                    if (num_nodes == MAX_TREE_SEARCH_STACK_SIZE) return false;
+                    node_stack[num_nodes++] = curr_node->children[curr_node->num_children - 1 - i];
                 }
                 break;
                 
@@ -142,40 +140,38 @@ size_t tree_get_var_instances(Node *tree, char *variable, Node **out_instances)
         }
     }
     
-    return res_count;
+    return true;
 }
 
 /*
 Summary: Lists all variable names in tree.
-Returns: Length of out_variables (i.e. count of variables in tree without duplicates)
+Returns:
 Params
-    out_variables must hold at least MAX_VAR_COUNT char-pointers or NULL to only count variables
+    out_num_variables: Length of out_variables (i.e. count of variables in tree without duplicates)
+    out_variables: Must hold at least MAX_VAR_COUNT char-pointers or NULL to only count variables
         (strings are copied, don't forget to call free on each of out_variables' items)
 */
-size_t tree_list_vars(Node *tree, char **out_variables)
+bool tree_list_vars(Node *tree, size_t *out_num_variables, char **out_variables)
 {
-    if (tree == NULL) return -1;
-    
-    size_t res_count = 0;
+    if (tree == NULL || out_num_variables == NULL || out_variables == NULL) return false;
     
     Node *node_stack[MAX_TREE_SEARCH_STACK_SIZE];
+    size_t num_nodes = 1;
     node_stack[0] = tree;
-    size_t stack_count = 1;
+    *out_num_variables = 0;
 
-    char *variables[MAX_VAR_COUNT];
-
-    while (stack_count > 0)
+    while (num_nodes != 0)
     {
-        Node *curr_node = node_stack[--stack_count];
+        Node *curr_node = node_stack[--num_nodes];
         bool flag = false; // To break twice
         
         switch (curr_node->type)
         {
             case NTYPE_VARIABLE:
-                for (size_t i = 0; i < res_count; i++)
+                for (size_t i = 0; i < *out_num_variables; i++)
                 {
                     // Don't add variable if we already found it
-                    if (strcmp(variables[i], curr_node->var_name) == 0)
+                    if (strcmp(out_variables[i], curr_node->var_name) == 0)
                     {
                         flag = true;
                         break;
@@ -184,27 +180,27 @@ size_t tree_list_vars(Node *tree, char **out_variables)
                 if (flag) break;
                 
                 // Buffer overflow protection
-                if (res_count == MAX_VAR_COUNT) return -1;
+                if (*out_num_variables == MAX_VAR_COUNT) return false;
                 
-                variables[res_count] = malloc(strlen(curr_node->var_name) + 1);
-                strcpy(variables[res_count++], curr_node->var_name);
+                out_variables[*out_num_variables] = malloc(strlen(curr_node->var_name) + 1);
+                strcpy(out_variables[(*out_num_variables)++], curr_node->var_name);
                 break;
                 
             case NTYPE_OPERATOR:
-                for (ssize_t i = curr_node->num_children - 1; i >= 0; i--)
+                for (size_t i = 0; i < curr_node->num_children; i++)
                 {
                     // Buffer overflow protection
-                    if (stack_count == MAX_TREE_SEARCH_STACK_SIZE)
+                    if (num_nodes == MAX_TREE_SEARCH_STACK_SIZE)
                     {
                         // Free partial results
-                        for (size_t i = 0; i < res_count; i++)
+                        for (size_t i = 0; i < *out_num_variables; i++)
                         {
-                            free(variables[i]);
+                            free(out_variables[i]);
                         }
-                        return -1;
+                        return false;
                     }
                     
-                    node_stack[stack_count++] = curr_node->children[i];
+                    node_stack[num_nodes++] = curr_node->children[curr_node->num_children - 1 - i];
                 }
                 break;
                 
@@ -212,49 +208,35 @@ size_t tree_list_vars(Node *tree, char **out_variables)
                 break;
         }
     }
-    
-    if (out_variables != NULL)
-    {
-        for (size_t i = 0; i < res_count; i++)
-        {
-            out_variables[i] = variables[i];
-        }
-    }
-    else
-    {
-        // When out_variables is NULL, we only want to count variables
-        for (size_t i = 0; i < res_count; i++)
-        {
-            free(variables[i]);
-        }
-    }
 
-    return res_count;
+    return true;
 }
 
 /*
 Summary: Substitutes any occurrence of a variable with certain name with a given subtree
-Returns: Number of occurrences of variable
+Returns: True if succeeded, otherwise false (due to exceeded MAX_STACK_SIZE etc.)
 */
-size_t tree_substitute_var(ParsingContext *ctx, Node *tree, Node *tree_to_copy, char *var_name)
+bool tree_substitute_var(ParsingContext *ctx, Node *tree, Node *tree_to_copy, char *var_name)
 {
-    if (ctx == NULL || tree == NULL || tree_to_copy == NULL || var_name == NULL) return 0;
+    if (ctx == NULL || tree == NULL || tree_to_copy == NULL || var_name == NULL) return false;
     
-    Node *var_instances[MAX_VAR_COUNT];
-    size_t inst_count = tree_get_var_instances(tree, var_name, var_instances);
-    
-    for (size_t i = 0; i < inst_count; i++)
+    Node *vars[MAX_VAR_COUNT];
+    size_t num_vars;
+
+    if (!tree_get_var_instances(tree, var_name, &num_vars, vars)) return false;
+
+    for (size_t i = 0; i < num_vars; i++)
     {
-        tree_replace(var_instances[i], tree_copy(ctx, tree_to_copy));
+        tree_replace(vars[i], tree_copy(ctx, tree_to_copy));
     }
     
-    return inst_count;
+    return true;
 }
 
 /*
 Summary: frees all child-trees and replaces root value-wise
 Params
-    new_node: Tree 'destination' is replaced with. You may want to copy it before.
+    new_node: Tree, destination is replaced with. You may want to copy it before.
 */
 void tree_replace(Node *destination, Node new_node)
 {
@@ -299,21 +281,6 @@ Node tree_copy(ParsingContext *ctx, Node *tree)
 }
 
 /*
-Summary: Fallback in node_equals that is used when no EqualsHandler is defined in context
-*/
-bool bytewise_equals(void *a, void *b, size_t value_size)
-{
-    if (a == NULL || b == NULL) return false;
-
-    for (size_t i = 0; i < value_size; i++)
-    {
-        if (((char*)a)[i] != ((char*)b)[i]) return false;
-    }
-    
-    return true;
-}
-
-/*
 Summary: Checks if two nodes are equal, i.e. have the same type and respective further values
 */
 bool node_equals(ParsingContext *ctx, Node *a, Node *b)
@@ -330,14 +297,7 @@ bool node_equals(ParsingContext *ctx, Node *a, Node *b)
             break;
             
         case NTYPE_CONSTANT:
-            if (ctx->equals == NULL)
-            {
-                if (!bytewise_equals(a->const_value, b->const_value, ctx->value_size)) return false;
-            }
-            else
-            {
-                if (!ctx->equals(a->const_value, b->const_value)) return false;
-            }
+            if (!ctx->equals(ctx, a->const_value, b->const_value)) return false;
             break;
             
         case NTYPE_VARIABLE:

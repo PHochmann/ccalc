@@ -4,7 +4,7 @@
 #include "operator.h"
 
 extern const size_t MAX_TREE_SEARCH_STACK_SIZE;
-extern const size_t MAX_VAR_COUNT;
+extern const size_t MAX_VAR_COUNT; // Count of distinct variables
 
 typedef enum
 {
@@ -35,9 +35,9 @@ Node get_operator_node(Operator *op, size_t num_children);
 void free_tree(Node *node);
 void free_tree_preserved(Node *tree);
 size_t tree_count_vars(Node *node);
-size_t tree_get_var_instances(Node *tree, char *variable, Node **out_instances);
-size_t tree_list_vars(Node *tree, char **out_variables);
-size_t tree_substitute_var(ParsingContext *ctx, Node *tree, Node *tree_to_copy, char *var_name);
+bool tree_get_var_instances(Node *tree, char *var_name, size_t *out_num_instances, Node **out_instances);
+bool tree_list_vars(Node *tree, size_t *out_num_variables, char **out_variables);
+bool tree_substitute_var(ParsingContext *ctx, Node *tree, Node *tree_to_copy, char *var_name);
 void tree_replace(Node *destination, Node new_node);
 Node tree_copy(ParsingContext *ctx, Node *node);
 bool node_equals(ParsingContext *ctx, Node *a, Node *b);

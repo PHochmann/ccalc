@@ -166,7 +166,7 @@ void transform_by_rule(RewriteRule *rule, Matching *matching)
 
     for (size_t i = 0; i < matching->num_mapped; i++)
     {
-        num_instances[i] = tree_get_var_instances(&transformed, matching->mapped_vars[i], var_instances[i]);
+        tree_get_var_instances(&transformed, matching->mapped_vars[i], &num_instances[i], var_instances[i]);
     }
     
     for (size_t i = 0; i < matching->num_mapped; i++)

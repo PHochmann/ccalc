@@ -105,7 +105,7 @@ void definition_exec(ParsingContext *ctx, char *input)
         }
     }
 
-    if (tree_list_vars(left_n, NULL) != left_n->num_children)
+    if (tree_count_vars(left_n) != left_n->num_children)
     {
         free_tree(left_n);
         free(name);

@@ -51,9 +51,15 @@ bool parse_input_wrapper(ParsingContext *ctx, char *input, Node **out_res, bool 
     if (constant)
     {
         char *vars[MAX_VAR_COUNT];
-        size_t num_variables = tree_list_vars(*out_res, vars);
+        size_t num_vars;
+        
+        if (!tree_list_vars(*out_res, &num_vars, vars))
+        {
+            printf("Error: %s\n", perr_to_string(PERR_STACK_EXCEEDED));
+            return false;
+        }
 
-        for (size_t i = 0; i < num_variables; i++)
+        for (size_t i = 0; i < num_vars; i++)
         {
             // Make interactive even when loading a file
             bool temp = set_interactive(isatty(STDIN_FILENO));

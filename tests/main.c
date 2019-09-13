@@ -21,17 +21,16 @@ int main()
     for (size_t i = 0; i < NUM_TESTS; i++)
     {
         Test test = test_getters[i]();
-        printf("%s:", test.name);
-
         int error_code = test.suite();
+
         if (error_code != 0)
         {
-            printf(F_RED "Test returned %d" COL_RESET "\n", error_code);
+            printf("%s: " F_RED "Test returned %d" COL_RESET "\n", test.name, error_code);
             return error_code;
         }
         else
         {
-            printf(" passed (%d)\n", test.num_cases);
+            printf("%s: passed all %d cases\n", test.name, test.num_cases);
             total_cases += test.num_cases;
         }
     }

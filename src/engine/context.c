@@ -4,6 +4,21 @@
 #include "context.h"
 
 /*
+Summary: Fallback in node_equals that is used when no EqualsHandler is defined in context
+*/
+bool bytewise_equals(ParsingContext *ctx, void *a, void *b)
+{
+    if (a == NULL || b == NULL) return false;
+
+    for (size_t i = 0; i < ctx->value_size; i++)
+    {
+        if (((char*)a)[i] != ((char*)b)[i]) return false;
+    }
+    
+    return true;
+}
+
+/*
 Summary: This method is used to create a new ParsingContext without glue-op and operators
     Use ctx_add_op and ctx_add_glue_op to add them to new context
 Parameters:
@@ -25,6 +40,8 @@ ParsingContext get_context(
     ToStringHandler to_string,
     EqualsHandler equals)
 {
+    if (equals == NULL) equals = bytewise_equals;
+
     ParsingContext res = (ParsingContext){
         .value_size = value_size,
         .min_str_len = min_str_len,
