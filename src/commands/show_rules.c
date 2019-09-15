@@ -5,10 +5,9 @@
 #include "arith_context.h"
 #include "arith_rules.h"
 #include "assignments.h"
+#include "util.h"
 #include "../engine/operator.h"
 #include "../engine/string_util.h"
-
-static const size_t MAX_STRING_LENGTH = 200;
 
 void show_rules_init() { }
 
@@ -19,11 +18,9 @@ bool show_rules_check(char *input)
 
 void print_rule(ParsingContext *ctx, RewriteRule *rule)
 {
-    char l[MAX_STRING_LENGTH];
-    char r[MAX_STRING_LENGTH];
-    tree_inline(ctx, rule->before, l, MAX_STRING_LENGTH, true);
-    tree_inline(ctx, rule->after, r, MAX_STRING_LENGTH, true);
-    printf("%s -> %s", l, r);
+    print_tree_inlined(ctx, rule->before);
+    printf(" -> ");
+    print_tree_inlined(ctx, rule->after);
 }
 
 /*

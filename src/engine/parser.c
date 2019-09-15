@@ -448,9 +448,9 @@ ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, 
     return state.result;
 }
 
-/* Parsing algorithm ends here. What follows are functions to invoke the parser conveniently */
+/* Parsing algorithm ends here. What follows are functions to invoke the parser conveniently. */
 
-static size_t MAX_TOKENS = 100;
+static const size_t MAX_TOKENS = 100;
 
 /*
 Summary: Parses string, tokenized with default tokenizer, to abstract syntax tree
@@ -471,7 +471,8 @@ ParserError parse_input(ParsingContext *ctx, char *input, Node **out_res)
 }
 
 /*
-Returns: Abstract syntax tree or NULL when error occurred
+Summary: Calls parse_input, omits ParserError
+Returns: AST or NULL when error occurred
 */
 Node *parse_conveniently(ParsingContext *ctx, char *input)
 {

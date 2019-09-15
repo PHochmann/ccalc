@@ -61,8 +61,6 @@ Returns: Result after recursive application of all operators
 */
 double arith_eval(Node *tree)
 {
-    double res = 0;
-
     switch (tree->type)
     {
         case NTYPE_CONSTANT:
@@ -92,12 +90,14 @@ double arith_eval(Node *tree)
                 case 9: // +x
                     return EVAL(0);
                 case 10: // x!
-                    res = 1;
+                {
+                    double res = 1;
                     for (double i = trunc(EVAL(0)); i > 1; i--)
                     {
                         res *= i;
                     }
                     return res;
+                }
                 case 11: // x%
                     return EVAL(0) / 100;
                 case 12: // exp(x)
@@ -139,21 +139,25 @@ double arith_eval(Node *tree)
                 case 30: // atanh(x)
                     return atanh(EVAL(0));
                 case 31: // max(x, y, ...)
-                    res = -INFINITY;
+                {
+                    double res = -INFINITY;
                     for (size_t i = 0; i < tree->num_children; i++)
                     {
                         double child_val = EVAL(i);
                         if (child_val > res) res = child_val;
                     }
                     return res;
+                }
                 case 32: // min(x, y, ...)
-                    res = INFINITY;
+                {
+                    double res = INFINITY;
                     for (size_t i = 0; i < tree->num_children; i++)
                     {
                         double child_val = EVAL(i);
                         if (child_val < res) res = child_val;
                     }
                     return res;
+                }
                 case 33: // abs(x)
                     return fabs(EVAL(0));
                 case 34: // ceil(x)
@@ -167,18 +171,24 @@ double arith_eval(Node *tree)
                 case 38: // frac(x)
                     return EVAL(0) - floor(EVAL(0));
                 case 39: // sum(x, y, ...)
-                    res = 0;
+                {
+                    double res = 0;
                     for (size_t i = 0; i < tree->num_children; i++) res += EVAL(i);
                     return res;
+                }
                 case 40: // prod(x, y, ...)
-                    res = 1;
+                {
+                    double res = 1;
                     for (size_t i = 0; i < tree->num_children; i++) res *= EVAL(i);
                     return res;
+                }
                 case 41: // avg(x, y, ...)
+                {
                     if (tree->num_children == 0) return 0;
-                    res = 0;
+                    double res = 0;
                     for (size_t i = 0; i < tree->num_children; i++) res += EVAL(i);
                     return res / tree->num_children;
+                }
                 case 42: // rand(x, y)
                     return random_between(EVAL(0), EVAL(1));
                 case 43: // gamma(x)
@@ -217,9 +227,9 @@ bool arith_try_parse(char *in, void *out)
     return *end_ptr == '\0';
 }
 
-void arith_to_string(void *in, char *str)
+size_t arith_to_string(void *in, size_t buffer_size, char *str)
 {
-    snprintf(str, ARITH_STRING_LENGTH, "%-.30g", *((double*)in));
+    return snprintf(str, buffer_size, "%-.30g", *((double*)in));
 }
 
 /*

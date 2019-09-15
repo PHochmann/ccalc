@@ -73,11 +73,15 @@ Summary: Loop to ask user or file for command, ignores comments
 void process_input(FILE *file)
 {
     char *input = NULL;
+
     while (ask_input(INTERACTIVE_ASK_PREFIX, file, &input))
     {
         if (!begins_with(COMMENT_PREFIX, input)) parse_command(input);
         free(input);
     }
+
+    // Loop was exited because input was EOF
+    if (g_interactive) printf("\n");
 }
 
 /*

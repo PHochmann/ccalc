@@ -34,7 +34,7 @@ Parameters:
 */
 ParsingContext get_context(
     size_t value_size,
-    size_t min_str_len,
+    size_t recomm_str_len,
     size_t max_ops,
     TryParseHandler try_parse,
     ToStringHandler to_string,
@@ -44,7 +44,7 @@ ParsingContext get_context(
 
     ParsingContext res = (ParsingContext){
         .value_size = value_size,
-        .min_str_len = min_str_len,
+        .recomm_str_len = recomm_str_len,
         .max_ops = max_ops,
         .num_ops = 0,
         .try_parse = try_parse,

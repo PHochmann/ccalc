@@ -7,6 +7,7 @@ bool g_debug; // When set to true, help will contain more information and AST of
 
 void init_util();
 char *perr_to_string(ParserError perr);
+void print_tree_inlined(ParsingContext *ctx, Node *node);
 void whisper(const char *format, ...);
 bool ask_input(char *prompt, FILE *file, char **out_input);
 

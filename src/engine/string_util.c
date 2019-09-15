@@ -1,21 +1,18 @@
-#include <sys/types.h>
+#include <stdarg.h>
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include "string_util.h"
 
+#define OP_COLOR    "\x1B[47m\x1B[22;30m" // White background, black foreground
+#define CONST_COLOR "\x1B[1;33m"          // Yellow
+#define VAR_COLOR   "\x1B[1;36m"          // Cyan
+#define COL_RESET   "\033[0m"
+
 #define EMPTY_TAB  "    "
 #define LINE_TAB   "│   "
 #define BRANCH_TAB "├── "
 #define END_TAB    "└── "
-
-#define COL_RESET "\033[0m"
-// White background, black foreground
-#define OP_COLOR    "\x1B[47m" "\x1B[22;30m"
-// Yellow
-#define CONST_COLOR "\x1B[1;33m"
-// Cyan
-#define VAR_COLOR   "\x1B[1;36m"
 
 bool begins_with(char *prefix, char *string)
 {
@@ -27,8 +24,8 @@ bool begins_with(char *prefix, char *string)
 
 void print_constant(ParsingContext *ctx, Node *node)
 {
-    char value[ctx->min_str_len];
-    ctx->to_string(node->const_value, value);
+    char value[ctx->recomm_str_len];
+    ctx->to_string(node->const_value, ctx->recomm_str_len, value);
     printf(CONST_COLOR "%s" COL_RESET, value);
 }
 
@@ -80,169 +77,191 @@ void print_tree_visual(ParsingContext *ctx, Node *node)
     print_tree_visual_rec(ctx, node, 0, 0);
 }
 
-void print_buffered(char *string, char **buffer, ssize_t *buffer_size)
+// Global vars of state of buffered print:
+static char *buf;
+static size_t buf_size;
+static size_t num_written;
+
+// Updates global vars after snprintf
+void update_vars(int res)
 {
-    while (*string != '\0')
+    if (res >= 0)
     {
-        if (*buffer_size > 0)
-        {
-            **buffer = *string;
-            (*buffer)++;
-        }
-        (*buffer_size)--;
-        string++;
+        num_written += res;
+    }
+    else
+    {
+        return;
+    }
+    
+    buf += res; // Advance buffer
+
+    if ((size_t)res <= buf_size)
+    {
+        buf_size -= res;
+    }
+    else
+    {
+        buf_size = 0;
     }
 }
 
-/*
-Summary: Same as print_buffered, but doesn't fragment string (useful for ANSI color codes)
-*/
-void print_buffered_protected(char *string, char **buffer, ssize_t *buffer_size)
+// Helper function to print and advance buffer
+void to_buf(const char *format, ...)
 {
-    if (*buffer_size < (ssize_t)strlen(string)) return;
-    print_buffered(string, buffer, buffer_size);
+    va_list args;
+    va_start(args, format);
+    update_vars(vsnprintf(buf, buf_size, format, args));
+    va_end(args);
 }
 
-void tree_inline_rec(ParsingContext *ctx, Node *node, char **buffer, ssize_t *buffer_size, bool colours, bool l, bool r)
+void p_open()
 {
-    char constant_value[ctx->min_str_len];
+    to_buf("(");
+}
 
+void p_close()
+{
+    to_buf(")");
+}
+
+void tree_inline_rec(ParsingContext *ctx, Node *node, bool l, bool r)
+{
     switch (node->type)
     {
         case NTYPE_CONSTANT:
-            if (colours) print_buffered_protected(CONST_COLOR, buffer, buffer_size);
-            ctx->to_string(node->const_value, constant_value);
-            print_buffered(constant_value, buffer, buffer_size);
-            if (colours) print_buffered_protected(COL_RESET, buffer, buffer_size);
+            to_buf(CONST_COLOR);
+            update_vars(ctx->to_string(node->const_value, buf_size, buf));
+            to_buf(COL_RESET);
             break;
             
         case NTYPE_VARIABLE:
-            if (colours) print_buffered_protected(VAR_COLOR, buffer, buffer_size);
-            print_buffered(node->var_name, buffer, buffer_size);
-            if (colours) print_buffered_protected(COL_RESET, buffer, buffer_size);
+            to_buf(VAR_COLOR "%s" COL_RESET, node->var_name);
             break;
             
         case NTYPE_OPERATOR:
             switch (node->op->placement)
             {
                 case OP_PLACE_PREFIX:
+                    // Constants do not need to be left-protected
                     if (node->op->arity == 0) l = false;
 
-                    if (l) print_buffered("(", buffer, buffer_size);
-                    print_buffered(node->op->name, buffer, buffer_size);
+                    if (l) p_open();
+                    to_buf(node->op->name);
                     
                     if (node->op->arity != 0)
                     {
                         if (node->children[0]->type == NTYPE_OPERATOR
                             && node->children[0]->op->precedence <= node->op->precedence)
                         {
-                            print_buffered("(", buffer, buffer_size);
-                            tree_inline_rec(ctx, node->children[0], buffer, buffer_size, colours, false, false);
-                            print_buffered(")", buffer, buffer_size);
+                            p_open();
+                            tree_inline_rec(ctx, node->children[0], false, false);
+                            p_close();
                         }
                         else
                         {
-                            tree_inline_rec(ctx, node->children[0], buffer, buffer_size, colours, true, !l && r);
+                            tree_inline_rec(ctx, node->children[0], true, !l && r);
                         }
                     }
                     
-                    if (l) print_buffered(")", buffer, buffer_size);
+                    if (l) p_close();
                     break;
                     
                 case OP_PLACE_POSTFIX:
-                    if (r) print_buffered("(", buffer, buffer_size);
+                    if (r) p_open();
                     
                     if (node->op->arity != 0)
                     {
                         if (node->children[0]->type == NTYPE_OPERATOR
                             && node->children[0]->op->precedence < node->op->precedence)
                         {
-                            print_buffered("(", buffer, buffer_size);
-                            tree_inline_rec(ctx, node->children[0], buffer, buffer_size, colours, false, false);
-                            print_buffered(")", buffer, buffer_size);
+                            p_open();
+                            tree_inline_rec(ctx, node->children[0], false, false);
+                            p_close();
                         }
                         else
                         {
-                            tree_inline_rec(ctx, node->children[0], buffer, buffer_size, colours, l && !r, true);
+                            tree_inline_rec(ctx, node->children[0], l && !r, true);
                         }
                     }
                     
-                    print_buffered(node->op->name, buffer, buffer_size);
-                    if (r) print_buffered(")", buffer, buffer_size);
+                    to_buf("%s", node->op->name);
+                    if (r) p_close();
                     break;
                     
                 case OP_PLACE_FUNCTION:
-                    print_buffered(node->op->name, buffer, buffer_size);
-                    print_buffered("(", buffer, buffer_size);
+                    to_buf("%s(", node->op->name);
                     for (size_t i = 0; i < node->num_children; i++)
                     {
-                        tree_inline_rec(ctx, node->children[i], buffer, buffer_size, colours, false, false);
-                        if (i != (node->num_children - 1)) print_buffered(", ", buffer, buffer_size);
+                        tree_inline_rec(ctx, node->children[i], false, false);
+                        if (i < node->num_children - 1) to_buf(", ");
                     }
-                    print_buffered(")", buffer, buffer_size);
+                    p_close();
                     break;
                     
                 case OP_PLACE_INFIX:
-                    if (node->children[0]->type == NTYPE_OPERATOR
-                        && (node->children[0]->op->precedence < node->op->precedence
-                            || (node->children[0]->op->precedence == node->op->precedence
+                {
+                    Node *childA = node->children[0];
+                    Node *childB = node->children[1];
+
+                    if (childA->type == NTYPE_OPERATOR
+                        && (childA->op->precedence < node->op->precedence
+                            || (childA->op->precedence == node->op->precedence
                                 && (node->op->assoc == OP_ASSOC_RIGHT
                                     || (node->op->assoc == OP_ASSOC_BOTH
                                         && (STANDARD_ASSOC == OP_ASSOC_RIGHT
-                                            && node->op != node->children[0]->op))))))
+                                            && node->op != childA->op))))))
                     {
-                        print_buffered("(", buffer, buffer_size);
-                        tree_inline_rec(ctx, node->children[0], buffer, buffer_size, colours, false, false);
-                        print_buffered(")", buffer, buffer_size);
+                        p_open();
+                        tree_inline_rec(ctx, childA, false, false);
+                        p_close();
                     }
                     else
                     {
-                        tree_inline_rec(ctx, node->children[0], buffer, buffer_size, colours, l, true);
+                        tree_inline_rec(ctx, childA, l, true);
                     }
 
                     if (strlen(node->op->name) == 1)
                     {
-                        print_buffered(node->op->name, buffer, buffer_size);
+                        to_buf("%s", node->op->name);
                     }
                     else
                     {
-                        print_buffered(" ", buffer, buffer_size);
-                        print_buffered(node->op->name, buffer, buffer_size);
-                        print_buffered(" ", buffer, buffer_size);
+                        to_buf(" %s ", node->op->name);
                     }
                     
-                    if (node->children[1]->type == NTYPE_OPERATOR
-                        && (node->children[1]->op->precedence < node->op->precedence
-                            || (node->children[1]->op->precedence == node->op->precedence
+                    if (childB->type == NTYPE_OPERATOR
+                        && (childB->op->precedence < node->op->precedence
+                            || (childB->op->precedence == node->op->precedence
                                 && (node->op->assoc == OP_ASSOC_LEFT
                                     || (node->op->assoc == OP_ASSOC_BOTH
                                         && (STANDARD_ASSOC == OP_ASSOC_LEFT
-                                            && node->op != node->children[1]->op))))))
+                                            && node->op != childB->op))))))
                     {
-                        print_buffered("(", buffer, buffer_size);
-                        tree_inline_rec(ctx, node->children[1], buffer, buffer_size, colours, false, false);
-                        print_buffered(")", buffer, buffer_size);
+                        p_open();
+                        tree_inline_rec(ctx, childB, false, false);
+                        p_close();
                     }
                     else
                     {
-                        tree_inline_rec(ctx, node->children[1], buffer, buffer_size, colours, true, r);
+                        tree_inline_rec(ctx, childB, true, r);
                     }
+                }
             }
-            
-            break;
-    }
+        }
 }
 
-/*
-Summary: Fills buffer with representation of tree
-Returns: Total length of representation, even if buffer was too small (without \n)
-*/
-size_t tree_inline(ParsingContext *ctx, Node *node, char *buffer, size_t buffer_size, bool colours)
+// Summary: Fills buffer with representation of tree
+// Returns: Length of output, even if buffer was not sufficient (without \0)
+size_t tree_inline(ParsingContext *ctx, Node *node, char *buffer, size_t buffer_size)
 {
-    if (ctx == NULL || node == NULL) return 0;
-
-    ssize_t buffer_size_copy = buffer_size - 1;
-    tree_inline_rec(ctx, node, &buffer, &buffer_size_copy, colours, false, false);
+    // In case nothing is printed, we still want to have a proper string
     if (buffer_size != 0) *buffer = '\0';
-    return buffer_size - buffer_size_copy - 1;
+
+    buf = buffer;
+    buf_size = buffer_size;
+    num_written = 0;
+
+    tree_inline_rec(ctx, node, false, false);
+    return num_written;
 }

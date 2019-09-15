@@ -14,7 +14,6 @@
 #define ANS_VAR                 "ans"
 #define TTY_ASK_VARIABLE_PROMPT "? > "
 
-static const size_t MAX_DEBUG_LENGTH = 500;
 static const size_t MAX_ITERATIONS   = 50;
 
 void evaluation_init()
@@ -27,6 +26,10 @@ bool evaluation_check(__attribute__((unused)) char *input)
     return true;
 }
 
+/*
+Summary: Parses input, does post-processing of input, gives feedback on command line
+Returns: True when input was successfully parsed, false when syntax error in input or aborted when asked for constant
+*/
 bool parse_input_wrapper(ParsingContext *ctx, char *input, Node **out_res, bool apply_rules, bool apply_ans, bool constant)
 {
     ParserError perr = parse_input(ctx, input, out_res);
@@ -96,7 +99,7 @@ bool parse_input_wrapper(ParsingContext *ctx, char *input, Node **out_res, bool 
             }
             else
             {
-                // EOL when asked for constant
+                // EOF when asked for constant
                 printf("\n");
                 set_interactive(temp);
                 return false;
@@ -122,15 +125,14 @@ void evaluation_exec(ParsingContext *ctx, char *input)
         if (g_debug)
         {
             print_tree_visual(ctx, res);
-            char inlined_tree[MAX_DEBUG_LENGTH];
-            size_t size = tree_inline(ctx, res, inlined_tree, MAX_DEBUG_LENGTH, true);
-            indicate_abbreviation(inlined_tree, size);
-            printf("= %s\n", inlined_tree);
+            printf("= ");
+            print_tree_inlined(ctx, res);
+            printf("\n");
         }
         
         double eval = arith_eval(res);
-        char result_str[ctx->min_str_len];
-        ctx->to_string((void*)(&eval), result_str);
+        char result_str[ctx->recomm_str_len];
+        ctx->to_string((void*)(&eval), ctx->recomm_str_len, result_str);
 
         if (g_interactive)
         {

@@ -5,8 +5,12 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "util.h"
+#include "../engine/string_util.h"
+
+#define COL_RESET   "\033[0m"
 
 static const size_t MAX_INPUT_LENGTH = 100;
+static const size_t MAX_INLINED_LENGTH = 10;
 
 void init_util()
 {
@@ -52,24 +56,14 @@ char *perr_to_string(ParserError perr)
     }
 }
 
-/*
-Summary: Replaces end of string by three dots if it needed to be shortened because of a limited buffer size
-Returns: True if string was changed, false if not
-*/
-bool indicate_abbreviation(char *string, size_t actual_length)
+// Summary: Prints result of tree inline, including correct color even after truncation, and indicated abbreviation
+void print_tree_inlined(ParsingContext *ctx, Node *node)
 {
-    size_t length = strlen(string);
-    if (length < actual_length && length >= 3)
-    {
-        string[length - 1] = '.';
-        string[length - 2] = '.';
-        string[length - 3] = '.';
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    char buffer[MAX_INLINED_LENGTH + 1];
+    size_t result = tree_inline(ctx, node, buffer, MAX_INLINED_LENGTH + 1);
+    printf("%s", buffer);
+    printf(COL_RESET);
+    if (result > MAX_INLINED_LENGTH) printf("...");
 }
 
 /*
