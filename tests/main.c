@@ -16,6 +16,7 @@ static Test (*test_getters[])() = {
 
 int main()
 {
+    bool error = false;
     int total_cases = 0;
 
     for (size_t i = 0; i < NUM_TESTS; i++)
@@ -26,7 +27,7 @@ int main()
         if (error_code != 0)
         {
             printf("%s: " F_RED "Test returned %d" COL_RESET "\n", test.name, error_code);
-            return error_code;
+            error = true;
         }
         else
         {
@@ -35,6 +36,10 @@ int main()
         }
     }
 
-    printf(F_GREEN "All tests passed (Version: %s, Cases: %d)" COL_RESET "\n", VERSION, total_cases);
-    return 0;
+    if (!error)
+    {
+        printf(F_GREEN "All tests passed (Version: %s, Cases: %d)" COL_RESET "\n", VERSION, total_cases);
+    }
+
+    return error ? EXIT_FAILURE : EXIT_SUCCESS;
 }

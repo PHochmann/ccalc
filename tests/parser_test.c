@@ -150,7 +150,7 @@ int parser_test()
     
     if (error_index != -1)
     {
-        printf("\nError in value test %d: '%s'\n", error_index, valueTests[error_index].input);
+        printf("Error in value test %d: '%s'\n", error_index, valueTests[error_index].input);
         return -1;
     }
 
@@ -158,7 +158,7 @@ int parser_test()
 
     if (error_index != -1)
     {
-        printf("\nError in error test %d: '%s'\n", error_index, errorTests[error_index].input);
+        printf("Error in error test %d: '%s'\n", error_index, errorTests[error_index].input);
         return -1;
     }
 

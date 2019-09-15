@@ -126,7 +126,7 @@ void evaluation_exec(ParsingContext *ctx, char *input)
         {
             print_tree_visual(ctx, res);
             printf("= ");
-            print_tree_inlined(ctx, res);
+            print_tree_inlined(ctx, res, true);
             printf("\n");
         }
         

@@ -18,9 +18,9 @@ bool show_rules_check(char *input)
 
 void print_rule(ParsingContext *ctx, RewriteRule *rule)
 {
-    print_tree_inlined(ctx, rule->before);
+    print_tree_inlined(ctx, rule->before, true);
     printf(" -> ");
-    print_tree_inlined(ctx, rule->after);
+    print_tree_inlined(ctx, rule->after, true);
 }
 
 /*

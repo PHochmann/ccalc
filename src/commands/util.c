@@ -10,7 +10,7 @@
 #define COL_RESET   "\033[0m"
 
 static const size_t MAX_INPUT_LENGTH = 100;
-static const size_t MAX_INLINED_LENGTH = 10;
+static const size_t MAX_INLINED_LENGTH = 100;
 
 void init_util()
 {
@@ -57,12 +57,12 @@ char *perr_to_string(ParserError perr)
 }
 
 // Summary: Prints result of tree inline, including correct color even after truncation, and indicated abbreviation
-void print_tree_inlined(ParsingContext *ctx, Node *node)
+void print_tree_inlined(ParsingContext *ctx, Node *node, bool color)
 {
     char buffer[MAX_INLINED_LENGTH + 1];
-    size_t result = tree_inline(ctx, node, buffer, MAX_INLINED_LENGTH + 1);
+    size_t result = tree_inline(ctx, node, buffer, MAX_INLINED_LENGTH + 1, color);
     printf("%s", buffer);
-    printf(COL_RESET);
+    if (color) printf(COL_RESET);
     if (result > MAX_INLINED_LENGTH) printf("...");
 }
 

@@ -78,8 +78,10 @@ void print_tree_visual(ParsingContext *ctx, Node *node)
 }
 
 // Global vars of state of buffered print:
+static ParsingContext *ctx;
 static char *buf;
 static size_t buf_size;
+static bool col;
 static size_t num_written;
 
 // Updates global vars after snprintf
@@ -125,18 +127,18 @@ void p_close()
     to_buf(")");
 }
 
-void tree_inline_rec(ParsingContext *ctx, Node *node, bool l, bool r)
+void tree_inline_rec(Node *node, bool l, bool r)
 {
     switch (node->type)
     {
         case NTYPE_CONSTANT:
-            to_buf(CONST_COLOR);
+            if (col) to_buf(CONST_COLOR);
             update_vars(ctx->to_string(node->const_value, buf_size, buf));
-            to_buf(COL_RESET);
+            if (col) to_buf(COL_RESET);
             break;
             
         case NTYPE_VARIABLE:
-            to_buf(VAR_COLOR "%s" COL_RESET, node->var_name);
+            to_buf(col ? VAR_COLOR "%s" COL_RESET : "%s", node->var_name);
             break;
             
         case NTYPE_OPERATOR:
@@ -155,12 +157,12 @@ void tree_inline_rec(ParsingContext *ctx, Node *node, bool l, bool r)
                             && node->children[0]->op->precedence <= node->op->precedence)
                         {
                             p_open();
-                            tree_inline_rec(ctx, node->children[0], false, false);
+                            tree_inline_rec(node->children[0], false, false);
                             p_close();
                         }
                         else
                         {
-                            tree_inline_rec(ctx, node->children[0], true, !l && r);
+                            tree_inline_rec(node->children[0], true, !l && r);
                         }
                     }
                     
@@ -176,12 +178,12 @@ void tree_inline_rec(ParsingContext *ctx, Node *node, bool l, bool r)
                             && node->children[0]->op->precedence < node->op->precedence)
                         {
                             p_open();
-                            tree_inline_rec(ctx, node->children[0], false, false);
+                            tree_inline_rec(node->children[0], false, false);
                             p_close();
                         }
                         else
                         {
-                            tree_inline_rec(ctx, node->children[0], l && !r, true);
+                            tree_inline_rec(node->children[0], l && !r, true);
                         }
                     }
                     
@@ -193,7 +195,7 @@ void tree_inline_rec(ParsingContext *ctx, Node *node, bool l, bool r)
                     to_buf("%s(", node->op->name);
                     for (size_t i = 0; i < node->num_children; i++)
                     {
-                        tree_inline_rec(ctx, node->children[i], false, false);
+                        tree_inline_rec(node->children[i], false, false);
                         if (i < node->num_children - 1) to_buf(", ");
                     }
                     p_close();
@@ -213,12 +215,12 @@ void tree_inline_rec(ParsingContext *ctx, Node *node, bool l, bool r)
                                             && node->op != childA->op))))))
                     {
                         p_open();
-                        tree_inline_rec(ctx, childA, false, false);
+                        tree_inline_rec(childA, false, false);
                         p_close();
                     }
                     else
                     {
-                        tree_inline_rec(ctx, childA, l, true);
+                        tree_inline_rec(childA, l, true);
                     }
 
                     if (strlen(node->op->name) == 1)
@@ -239,12 +241,12 @@ void tree_inline_rec(ParsingContext *ctx, Node *node, bool l, bool r)
                                             && node->op != childB->op))))))
                     {
                         p_open();
-                        tree_inline_rec(ctx, childB, false, false);
+                        tree_inline_rec(childB, false, false);
                         p_close();
                     }
                     else
                     {
-                        tree_inline_rec(ctx, childB, true, r);
+                        tree_inline_rec(childB, true, r);
                     }
                 }
             }
@@ -253,15 +255,17 @@ void tree_inline_rec(ParsingContext *ctx, Node *node, bool l, bool r)
 
 // Summary: Fills buffer with representation of tree
 // Returns: Length of output, even if buffer was not sufficient (without \0)
-size_t tree_inline(ParsingContext *ctx, Node *node, char *buffer, size_t buffer_size)
+size_t tree_inline(ParsingContext *context, Node *node, char *buffer, size_t buffer_size, bool color)
 {
     // In case nothing is printed, we still want to have a proper string
     if (buffer_size != 0) *buffer = '\0';
 
+    ctx = context;
     buf = buffer;
     buf_size = buffer_size;
+    col = color;
     num_written = 0;
 
-    tree_inline_rec(ctx, node, false, false);
+    tree_inline_rec(node, false, false);
     return num_written;
 }
