@@ -27,7 +27,7 @@ When starting the calculator normally, you can enter expressions and commands in
 | ```<function> := <after>``` | Adds new function.                                                 |
 | ```<before> -> <after>```   | Defines new rule. The following special variable names can be used to restrict matchings (```x``` used as example, can be any variable name): <ul><li>```name_x``` will only bind to variables named x</li><li>```var_x``` will only bind to variables</li><li>```const_x``` will only bind to constants</li></ul> |
 | ```load <path>```           | Loads file as if its content had been typed in line by line.       |
-| ```tree <expression>```     | Visually prints abstract syntax tree of expression.                |
+| ```tree <expr>```     | Visually prints abstract syntax tree of expression.                |
 | ```quit```                  | Closes calculator.                                                 |
 
 ### Infix operators
