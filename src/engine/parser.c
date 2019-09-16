@@ -464,9 +464,9 @@ ParserError parse_input(ParsingContext *ctx, char *input, Node **out_res)
     // Parsing
     if (!tokenize(ctx, input, MAX_TOKENS, &num_tokens, tokens)) return PERR_MAX_TOKENS_EXCEEDED;
     ParserError result = parse_tokens(ctx, num_tokens, tokens, out_res);
-
     // Cleanup
     for (size_t i = 0; i < num_tokens; i++) free(tokens[i]);
+    
     return result;
 }
 

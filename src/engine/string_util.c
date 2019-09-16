@@ -77,68 +77,71 @@ void print_tree_visual(ParsingContext *ctx, Node *node)
     print_tree_visual_rec(ctx, node, 0, 0);
 }
 
-// Global vars of state of buffered print:
-static ParsingContext *ctx;
-static char *buf;
-static size_t buf_size;
-static bool col;
-static size_t num_written;
+// Singleton to encapsulate current state
+struct PrintingState
+{
+    ParsingContext *ctx;
+    char *buf;
+    size_t buf_size;
+    bool col;
+    size_t num_written;
+};
 
-// Updates global vars after snprintf
-void update_vars(int res)
+// Updates state after snprintf
+void update_state(struct PrintingState *state, int res)
 {
     if (res >= 0)
     {
-        num_written += res;
+        state->num_written += res;
     }
     else
     {
         return;
     }
     
-    buf += res; // Advance buffer
+    state->buf += res; // Advance buffer
 
-    if ((size_t)res <= buf_size)
+    if ((size_t)res <= state->buf_size)
     {
-        buf_size -= res;
+        state->buf_size -= res;
     }
     else
     {
-        buf_size = 0;
+        state->buf_size = 0;
     }
 }
 
 // Helper function to print and advance buffer
-void to_buf(const char *format, ...)
+void to_buf(struct PrintingState *state, const char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    update_vars(vsnprintf(buf, buf_size, format, args));
+    update_state(state, vsnprintf(state->buf, state->buf_size, format, args));
     va_end(args);
 }
 
-void p_open()
+void p_open(struct PrintingState *state)
 {
-    to_buf("(");
+    to_buf(state, "(");
 }
 
-void p_close()
+void p_close(struct PrintingState *state)
 {
-    to_buf(")");
+    to_buf(state, ")");
 }
 
-void tree_inline_rec(Node *node, bool l, bool r)
+void tree_inline_rec(struct PrintingState *state, Node *node, bool l, bool r)
 {
     switch (node->type)
     {
         case NTYPE_CONSTANT:
-            if (col) to_buf(CONST_COLOR);
-            update_vars(ctx->to_string(node->const_value, buf_size, buf));
-            if (col) to_buf(COL_RESET);
+            if (state->col) to_buf(state, CONST_COLOR);
+            update_state(state, state->ctx->to_string(node->const_value, state->buf_size, state->buf));
+            if (state->col) to_buf(state, COL_RESET);
             break;
             
         case NTYPE_VARIABLE:
-            to_buf(col ? VAR_COLOR "%s" COL_RESET : "%s", node->var_name);
+            to_buf(state, state->col ? VAR_COLOR "%s" COL_RESET : "%s", node->var_name);
             break;
             
         case NTYPE_OPERATOR:
@@ -148,57 +151,57 @@ void tree_inline_rec(Node *node, bool l, bool r)
                     // Constants do not need to be left-protected
                     if (node->op->arity == 0) l = false;
 
-                    if (l) p_open();
-                    to_buf(node->op->name);
+                    if (l) p_open(state);
+                    to_buf(state, node->op->name);
                     
                     if (node->op->arity != 0)
                     {
                         if (node->children[0]->type == NTYPE_OPERATOR
                             && node->children[0]->op->precedence <= node->op->precedence)
                         {
-                            p_open();
-                            tree_inline_rec(node->children[0], false, false);
-                            p_close();
+                            p_open(state);
+                            tree_inline_rec(state, node->children[0], false, false);
+                            p_close(state);
                         }
                         else
                         {
-                            tree_inline_rec(node->children[0], true, !l && r);
+                            tree_inline_rec(state, node->children[0], true, !l && r);
                         }
                     }
                     
-                    if (l) p_close();
+                    if (l) p_close(state);
                     break;
                     
                 case OP_PLACE_POSTFIX:
-                    if (r) p_open();
+                    if (r) p_open(state);
                     
                     if (node->op->arity != 0)
                     {
                         if (node->children[0]->type == NTYPE_OPERATOR
                             && node->children[0]->op->precedence < node->op->precedence)
                         {
-                            p_open();
-                            tree_inline_rec(node->children[0], false, false);
-                            p_close();
+                            p_open(state);
+                            tree_inline_rec(state, node->children[0], false, false);
+                            p_close(state);
                         }
                         else
                         {
-                            tree_inline_rec(node->children[0], l && !r, true);
+                            tree_inline_rec(state, node->children[0], l && !r, true);
                         }
                     }
                     
-                    to_buf("%s", node->op->name);
-                    if (r) p_close();
+                    to_buf(state, "%s", node->op->name);
+                    if (r) p_close(state);
                     break;
                     
                 case OP_PLACE_FUNCTION:
-                    to_buf("%s(", node->op->name);
+                    to_buf(state, "%s(", node->op->name);
                     for (size_t i = 0; i < node->num_children; i++)
                     {
-                        tree_inline_rec(node->children[i], false, false);
-                        if (i < node->num_children - 1) to_buf(", ");
+                        tree_inline_rec(state, node->children[i], false, false);
+                        if (i < node->num_children - 1) to_buf(state, ", ");
                     }
-                    p_close();
+                    p_close(state);
                     break;
                     
                 case OP_PLACE_INFIX:
@@ -211,25 +214,25 @@ void tree_inline_rec(Node *node, bool l, bool r)
                             || (childA->op->precedence == node->op->precedence
                                 && (node->op->assoc == OP_ASSOC_RIGHT
                                     || (node->op->assoc == OP_ASSOC_BOTH
-                                        && (STANDARD_ASSOC == OP_ASSOC_RIGHT
-                                            && node->op != childA->op))))))
+                                        && STANDARD_ASSOC == OP_ASSOC_RIGHT
+                                        && node->op != childA->op)))))
                     {
-                        p_open();
-                        tree_inline_rec(childA, false, false);
-                        p_close();
+                        p_open(state);
+                        tree_inline_rec(state, childA, false, false);
+                        p_close(state);
                     }
                     else
                     {
-                        tree_inline_rec(childA, l, true);
+                        tree_inline_rec(state, childA, l, true);
                     }
 
                     if (strlen(node->op->name) == 1)
                     {
-                        to_buf("%s", node->op->name);
+                        to_buf(state, "%s", node->op->name);
                     }
                     else
                     {
-                        to_buf(" %s ", node->op->name);
+                        to_buf(state, " %s ", node->op->name);
                     }
                     
                     if (childB->type == NTYPE_OPERATOR
@@ -237,16 +240,16 @@ void tree_inline_rec(Node *node, bool l, bool r)
                             || (childB->op->precedence == node->op->precedence
                                 && (node->op->assoc == OP_ASSOC_LEFT
                                     || (node->op->assoc == OP_ASSOC_BOTH
-                                        && (STANDARD_ASSOC == OP_ASSOC_LEFT
-                                            && node->op != childB->op))))))
+                                        && STANDARD_ASSOC == OP_ASSOC_LEFT
+                                        && node->op != childB->op)))))
                     {
-                        p_open();
-                        tree_inline_rec(childB, false, false);
-                        p_close();
+                        p_open(state);
+                        tree_inline_rec(state, childB, false, false);
+                        p_close(state);
                     }
                     else
                     {
-                        tree_inline_rec(childB, true, r);
+                        tree_inline_rec(state, childB, true, r);
                     }
                 }
             }
@@ -260,12 +263,14 @@ size_t tree_inline(ParsingContext *context, Node *node, char *buffer, size_t buf
     // In case nothing is printed, we still want to have a proper string
     if (buffer_size != 0) *buffer = '\0';
 
-    ctx = context;
-    buf = buffer;
-    buf_size = buffer_size;
-    col = color;
-    num_written = 0;
+    struct PrintingState state = {
+        .ctx = context,
+        .buf = buffer,
+        .buf_size = buffer_size,
+        .col = color,
+        .num_written = 0
+    };
 
-    tree_inline_rec(node, false, false);
-    return num_written;
+    tree_inline_rec(&state, node, false, false);
+    return state.num_written;
 }
