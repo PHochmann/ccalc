@@ -1,6 +1,5 @@
 #pragma once
 #include "../engine/context.h"
-#include "../engine/rule.h"
 
 void definition_init();
 bool definition_check(char *input);

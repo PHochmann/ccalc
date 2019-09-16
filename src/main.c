@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "commands/core.h"
+#include "commands/console_util.h"
 
 /*
 Simple calculator written in C in which you can define your own functions and pattern matching rules
@@ -19,7 +20,7 @@ int main(int argc, char *argv[])
         parse_command(argv[i]);
     }
     
-    // If we are connected to a shell, set interactive=true to use readline
+    // If we are connected to a shell, set interactive = true to use readline
     if (isatty(STDIN_FILENO))
     {
         set_interactive(true);

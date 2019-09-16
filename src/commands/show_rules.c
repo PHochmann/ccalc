@@ -5,7 +5,7 @@
 #include "arith_context.h"
 #include "arith_rules.h"
 #include "assignments.h"
-#include "util.h"
+#include "console_util.h"
 #include "../engine/operator.h"
 #include "../engine/string_util.h"
 
@@ -47,6 +47,6 @@ void show_rules_exec(ParsingContext *ctx, char *input)
     {
         arith_reset_ctx(); // To remove user-defined functions from parsing context
         arith_reset_rules(); // To remove any user-defined rules
-        printf("Rules cleared.\n");
+        printf("Rules and functions cleared.\n");
     }
 }

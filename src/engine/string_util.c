@@ -77,6 +77,8 @@ void print_tree_visual(ParsingContext *ctx, Node *node)
     print_tree_visual_rec(ctx, node, 0, 0);
 }
 
+// Algorithm to print tree visually ends here. What follows is an algorithm to stringify a tree into a single line.
+
 // Singleton to encapsulate current state
 struct PrintingState
 {
@@ -120,6 +122,7 @@ void to_buf(struct PrintingState *state, const char *format, ...)
     va_end(args);
 }
 
+// Helper functions
 void p_open(struct PrintingState *state)
 {
     to_buf(state, "(");
@@ -130,6 +133,126 @@ void p_close(struct PrintingState *state)
     to_buf(state, ")");
 }
 
+void tree_inline_rec(struct PrintingState *state, Node *node, bool l, bool r);
+
+void inline_prefix(struct PrintingState *state, Node *node, bool l, bool r)
+{
+    // Constants do not need to be left-protected
+    if (node->op->arity == 0) l = false;
+
+    if (l) p_open(state);
+    to_buf(state, node->op->name);
+    
+    // When it is not a constant...
+    if (node->op->arity != 0)
+    {
+        if (node->children[0]->type == NTYPE_OPERATOR
+            && node->children[0]->op->precedence <= node->op->precedence)
+        {
+            p_open(state);
+            tree_inline_rec(state, node->children[0], false, false);
+            p_close(state);
+        }
+        else
+        {
+            // Subexpression needs to be right-protected when expression of 'node' is not encapsulated in parentheses
+            // (!l, Otherwise redundant parentheses would be printed) and itself needs to be right-protected
+            tree_inline_rec(state, node->children[0], true, !l && r);
+        }
+    }
+    
+    if (l) p_close(state);
+}
+
+void inline_postfix(struct PrintingState *state, Node *node, bool l, bool r)
+{
+    if (r) p_open(state);
+
+    // It should be safe to dereference first child
+    if (node->children[0]->type == NTYPE_OPERATOR
+        && node->children[0]->op->precedence < node->op->precedence)
+    {
+        p_open(state);
+        tree_inline_rec(state, node->children[0], false, false);
+        p_close(state);
+    }
+    else
+    {
+        // See analog case of infix operator for conditions for left-protection
+        tree_inline_rec(state, node->children[0], l && !r, true);
+    }
+    
+    to_buf(state, "%s", node->op->name);
+    if (r) p_close(state);
+}
+
+void inline_function(struct PrintingState *state, Node *node)
+{
+    to_buf(state, "%s(", node->op->name);
+    for (size_t i = 0; i < node->num_children; i++)
+    {
+        tree_inline_rec(state, node->children[i], false, false);
+        if (i < node->num_children - 1) to_buf(state, ", ");
+    }
+    p_close(state);
+}
+
+void inline_infix(struct PrintingState *state, Node *node, bool l, bool r)
+{
+    Node *childA = node->children[0];
+    Node *childB = node->children[1];
+
+    // Checks if left operand of infix operator which itself is an operator needs to be wrapped in parentheses
+    // This is the case when:
+    //    - It has a lower precedence
+    //    - It has the same precedence but associates to the right
+    //      (Same precedence -> same associativity, see consistency rules for operator set in context.c)
+    // Note: When any of the operators has OP_ASSOC_BOTH, you do not need parentheses
+    if (childA->type == NTYPE_OPERATOR
+        && (childA->op->precedence < node->op->precedence
+            || (childA->op->precedence == node->op->precedence
+                && node->op->assoc == OP_ASSOC_RIGHT)))
+    {
+        p_open(state);
+        tree_inline_rec(state, childA, false, false);
+        p_close(state);
+    }
+    else
+    {
+        tree_inline_rec(state, childA, l, true);
+    }
+
+    if (strlen(node->op->name) == 1)
+    {
+        to_buf(state, "%s", node->op->name);
+    }
+    else
+    {
+        to_buf(state, " %s ", node->op->name);
+    }
+    
+    // Checks if right operand of infix operator needs to be wrapped in parentheses (see analog case for left operand)
+    if (childB->type == NTYPE_OPERATOR
+        && (childB->op->precedence < node->op->precedence
+            || (childB->op->precedence == node->op->precedence
+                && node->op->assoc == OP_ASSOC_LEFT)))
+    {
+        p_open(state);
+        tree_inline_rec(state, childB, false, false);
+        p_close(state);
+    }
+    else
+    {
+        tree_inline_rec(state, childB, true, r);
+    }
+}
+
+/*
+Params
+    l, r: Indicates whether subexpression represented by 'node' needs to be protected to the left or right.
+        It needs to be protected when it is adjacent to an operator on this side.
+        When the subexpression starts (ends) with an operator and needs to be protected to the left (right), a parenthesis is printed in between.
+*/
 void tree_inline_rec(struct PrintingState *state, Node *node, bool l, bool r)
 {
     switch (node->type)
@@ -148,110 +271,17 @@ void tree_inline_rec(struct PrintingState *state, Node *node, bool l, bool r)
             switch (node->op->placement)
             {
                 case OP_PLACE_PREFIX:
-                    // Constants do not need to be left-protected
-                    if (node->op->arity == 0) l = false;
-
-                    if (l) p_open(state);
-                    to_buf(state, node->op->name);
-                    
-                    if (node->op->arity != 0)
-                    {
-                        if (node->children[0]->type == NTYPE_OPERATOR
-                            && node->children[0]->op->precedence <= node->op->precedence)
-                        {
-                            p_open(state);
-                            tree_inline_rec(state, node->children[0], false, false);
-                            p_close(state);
-                        }
-                        else
-                        {
-                            tree_inline_rec(state, node->children[0], true, !l && r);
-                        }
-                    }
-                    
-                    if (l) p_close(state);
+                    inline_prefix(state, node, l, r);
                     break;
-                    
                 case OP_PLACE_POSTFIX:
-                    if (r) p_open(state);
-                    
-                    if (node->op->arity != 0)
-                    {
-                        if (node->children[0]->type == NTYPE_OPERATOR
-                            && node->children[0]->op->precedence < node->op->precedence)
-                        {
-                            p_open(state);
-                            tree_inline_rec(state, node->children[0], false, false);
-                            p_close(state);
-                        }
-                        else
-                        {
-                            tree_inline_rec(state, node->children[0], l && !r, true);
-                        }
-                    }
-                    
-                    to_buf(state, "%s", node->op->name);
-                    if (r) p_close(state);
+                    inline_postfix(state, node, l, r);
                     break;
-                    
                 case OP_PLACE_FUNCTION:
-                    to_buf(state, "%s(", node->op->name);
-                    for (size_t i = 0; i < node->num_children; i++)
-                    {
-                        tree_inline_rec(state, node->children[i], false, false);
-                        if (i < node->num_children - 1) to_buf(state, ", ");
-                    }
-                    p_close(state);
+                    inline_function(state, node);
                     break;
-                    
                 case OP_PLACE_INFIX:
-                {
-                    Node *childA = node->children[0];
-                    Node *childB = node->children[1];
-
-                    if (childA->type == NTYPE_OPERATOR
-                        && (childA->op->precedence < node->op->precedence
-                            || (childA->op->precedence == node->op->precedence
-                                && (node->op->assoc == OP_ASSOC_RIGHT
-                                    || (node->op->assoc == OP_ASSOC_BOTH
-                                        && STANDARD_ASSOC == OP_ASSOC_RIGHT
-                                        && node->op != childA->op)))))
-                    {
-                        p_open(state);
-                        tree_inline_rec(state, childA, false, false);
-                        p_close(state);
-                    }
-                    else
-                    {
-                        tree_inline_rec(state, childA, l, true);
-                    }
-
-                    if (strlen(node->op->name) == 1)
-                    {
-                        to_buf(state, "%s", node->op->name);
-                    }
-                    else
-                    {
-                        to_buf(state, " %s ", node->op->name);
-                    }
-                    
-                    if (childB->type == NTYPE_OPERATOR
-                        && (childB->op->precedence < node->op->precedence
-                            || (childB->op->precedence == node->op->precedence
-                                && (node->op->assoc == OP_ASSOC_LEFT
-                                    || (node->op->assoc == OP_ASSOC_BOTH
-                                        && STANDARD_ASSOC == OP_ASSOC_LEFT
-                                        && node->op != childB->op)))))
-                    {
-                        p_open(state);
-                        tree_inline_rec(state, childB, false, false);
-                        p_close(state);
-                    }
-                    else
-                    {
-                        tree_inline_rec(state, childB, true, r);
-                    }
-                }
+                    inline_infix(state, node, l, r);
+                    break;
             }
         }
 }

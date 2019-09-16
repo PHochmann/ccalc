@@ -4,10 +4,11 @@
 #include "assignments.h"
 #include "evaluation.h"
 #include "arith_rules.h"
-#include "util.h"
+#include "console_util.h"
 #include "../engine/node.h"
 #include "../engine/tokenizer.h"
 #include "../engine/parser.h"
+#include "../engine/rule.h"
 
 #define DEFINITION_OP   ":="
 #define RULE_OP         "->"

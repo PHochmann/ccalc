@@ -3,7 +3,7 @@
 #include "arith_context.h"
 #include "help.h"
 #include "core.h"
-#include "util.h"
+#include "console_util.h"
 #include "../engine/operator.h"
 
 #define COL_RESET "\033[0m"
@@ -101,7 +101,7 @@ void print_op(Operator *op)
 void help_exec(ParsingContext *ctx, __attribute__((unused)) char *input)
 {
     printf("Calculator %s (c) 2019, Philipp Hochmann\n"
-           "Commands: debug, help, rules [clear], <function> := <after>, <before> -> <after>, load <path>\n",
+           "Commands: help, rules [clear], <function> := <after>, <before> -> <after>, load <path>, tree <expr>\n",
         VERSION);
 
     printf("\nBasic operators:\n");

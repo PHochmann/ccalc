@@ -5,7 +5,7 @@
 #include <string.h>
 #include "load.h"
 #include "core.h"
-#include "util.h"
+#include "console_util.h"
 #include "../engine/string_util.h"
 
 #define COMMAND "load "
