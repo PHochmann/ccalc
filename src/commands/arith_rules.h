@@ -2,7 +2,7 @@
 #include "../engine/context.h"
 #include "../engine/rule.h"
 
-#define ARITH_MAX_RULES 10
+#define ARITH_MAX_RULES 20
 
 // Exported to let show_rules command know which rules to display
 extern const size_t ARITH_NUM_PREDEFINED_RULES;

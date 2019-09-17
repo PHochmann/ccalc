@@ -222,14 +222,7 @@ void inline_infix(struct PrintingState *state, Node *node, bool l, bool r)
         tree_inline_rec(state, childA, l, true);
     }
 
-    if (strlen(node->op->name) == 1)
-    {
-        to_buf(state, "%s", node->op->name);
-    }
-    else
-    {
-        to_buf(state, " %s ", node->op->name);
-    }
+    to_buf(state, strlen(node->op->name) == 1 ? "%s" : " %s ", node->op->name);
     
     // Checks if right operand of infix operator needs to be wrapped in parentheses (see analog case for left operand)
     if (childB->type == NTYPE_OPERATOR

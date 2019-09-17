@@ -47,7 +47,6 @@ void definition_exec(ParsingContext *ctx, char *input)
     right_input += strlen(DEFINITION_OP);
     
     // Tokenize function definition to get its name. Name is first token.
-    ParserError perr;
     char *tokens[MAX_TOKENS];
     size_t num_tokens = 0;
 
@@ -76,11 +75,10 @@ void definition_exec(ParsingContext *ctx, char *input)
     
     Node *left_n;
     
-    if ((perr = parse_input(ctx, input, &left_n)) != PERR_SUCCESS)
+    if (!parse_input_wrapper_with_error(ctx, input, MSG_ERROR_LEFT "%s\n", &left_n, false, true, false))
     {
         ctx->num_ops--;
         free(name);
-        printf(MSG_ERROR_LEFT "%s\n", perr_to_string(perr));
         return;
     }
 
@@ -106,7 +104,16 @@ void definition_exec(ParsingContext *ctx, char *input)
         }
     }
 
-    if (tree_count_vars(left_n) != left_n->num_children)
+    size_t num_distinct_vars;
+    if (!tree_list_vars(left_n, &num_distinct_vars, NULL))
+    {
+        free_tree(left_n);
+        free(name);
+        printf(MSG_ERROR_LEFT "Max. arity of function exceeded\n");
+        return;
+    }
+
+    if (num_distinct_vars != left_n->num_children)
     {
         free_tree(left_n);
         free(name);
@@ -124,11 +131,10 @@ void definition_exec(ParsingContext *ctx, char *input)
     
     Node *right_n;
 
-    if ((perr = parse_input(ctx, right_input, &right_n)) != PERR_SUCCESS)
+    if (!parse_input_wrapper_with_error(ctx, right_input, MSG_ERROR_RIGHT "%s\n", &right_n, false, true, false))
     {
         free_tree(left_n);
         free(name);
-        printf(MSG_ERROR_RIGHT "%s\n", perr_to_string(perr));
         return;
     }
 
@@ -171,17 +177,14 @@ void rule_exec(ParsingContext *ctx, char *input)
     
     Node *before_n;
     Node *after_n;
-    ParserError perr;
     
-    if ((perr = parse_input(ctx, input, &before_n)) != PERR_SUCCESS)
+    if (!parse_input_wrapper_with_error(ctx, input, MSG_ERROR_LEFT "%s\n", &before_n, false, true, false))
     {
-        printf(MSG_ERROR_LEFT "%s\n", perr_to_string(perr));
         return;
     }
     
-    if ((perr = parse_input(ctx, right_input, &after_n)) != PERR_SUCCESS)
+    if (!parse_input_wrapper_with_error(ctx, right_input, MSG_ERROR_RIGHT "%s\n", &after_n, false, true, false))
     {
-        printf(MSG_ERROR_RIGHT "%s\n", perr_to_string(perr));
         free_tree(before_n);
         return;
     }

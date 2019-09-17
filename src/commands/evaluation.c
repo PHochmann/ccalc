@@ -25,32 +25,22 @@ Summary: The evaluation command is executed when input is no other command (henc
 */
 void evaluation_exec(ParsingContext *ctx, char *input)
 {
-    Node *res;
+    Node *tree;
     
-    if (parse_input_wrapper(ctx, input, &res, true, true, true))
+    if (parse_input_wrapper(ctx, input, &tree, true, true, true))
     {
-        // Show AST and string when debug=true
         if (g_debug)
         {
             printf("= ");
-            print_tree_inlined(ctx, res, true);
+            print_tree_inlined(ctx, tree, true);
             printf("\n");
         }
         
-        double eval = arith_eval(res);
+        double result = arith_eval(tree);
         char result_str[ctx->recomm_str_len];
-        ctx->to_string((void*)(&eval), ctx->recomm_str_len, result_str);
-
-        if (g_interactive)
-        {
-            printf("= %s\n", result_str);
-        }
-        else
-        {
-            printf("%s\n", result_str);
-        }
-        
+        ctx->to_string((void*)(&result), ctx->recomm_str_len, result_str);
+        printf(g_interactive ? "= %s\n" : "%s\n", result_str);
         if (g_ans != NULL) free_tree(g_ans);
-        g_ans = res;
+        g_ans = tree;
     }
 }

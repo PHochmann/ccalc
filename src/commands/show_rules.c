@@ -16,13 +16,6 @@ bool show_rules_check(char *input)
     return strcmp(input, "rules") == 0 || strcmp(input, "rules clear") == 0;
 }
 
-void print_rule(ParsingContext *ctx, RewriteRule *rule)
-{
-    print_tree_inlined(ctx, rule->before, true);
-    printf(" -> ");
-    print_tree_inlined(ctx, rule->after, true);
-}
-
 /*
 Summary: Prints a string representation for currently defined rules
 */
@@ -38,8 +31,9 @@ void show_rules_exec(ParsingContext *ctx, char *input)
 
         for (size_t i = ARITH_NUM_PREDEFINED_RULES; i < g_num_rules; i++)
         {
-            printf("%zu: ", i + 1);
-            print_rule(ctx, &g_rules[i]);
+            print_tree_inlined(ctx, g_rules[i].before, true);
+            printf(" -> ");
+            print_tree_inlined(ctx, g_rules[i].after, true);
             printf("\n");
         }
     }

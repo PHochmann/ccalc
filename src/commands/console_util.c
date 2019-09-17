@@ -134,26 +134,28 @@ bool ask_input(char *prompt, FILE *file, char **out_input)
 }
 
 /*
-Summary: Parses input, does post-processing of input, gives feedback on command line
-Returns: True when input was successfully parsed, false when syntax error in input or aborted when asked for constant
+Summary:
+    Parses input, does post-processing of input, gives feedback on command line
+Returns:
+    True when input was successfully parsed, false when syntax error in input or aborted when asked for constant
 */
-bool parse_input_wrapper(ParsingContext *ctx, char *input, Node **out_res, bool apply_rules, bool apply_ans, bool constant)
+bool parse_input_wrapper_with_error(ParsingContext *ctx, char *input, char *error_fmt, Node **out_res, bool apply_rules, bool replace_ans, bool constant)
 {
     ParserError perr = parse_input(ctx, input, out_res);
     if (perr != PERR_SUCCESS)
     {
-        if (perr != PERR_EMPTY)
-        {
-            printf("Error: %s\n", perr_to_string(perr));
-        }
-        
+        printf(error_fmt, perr_to_string(perr));
         return false;
     }
+
+    // Always apply predefined rules afterwards, even when apply_rules is set to false
+    apply_ruleset(*out_res, ARITH_NUM_PREDEFINED_RULES, g_rules, MAX_RULE_ITERATIONS);
     
-    if (apply_ans && g_ans != NULL) tree_substitute_var(ctx, *out_res, g_ans, ANS_VAR);
+    if (replace_ans && g_ans != NULL) tree_substitute_var(ctx, *out_res, g_ans, ANS_VAR);
     if (apply_rules)
     {
-        size_t appliances = apply_ruleset(*out_res, g_num_rules, g_rules, MAX_RULE_ITERATIONS);
+        // Apply user-defined rules
+        size_t appliances = apply_ruleset(*out_res, g_num_rules - ARITH_NUM_PREDEFINED_RULES, g_rules + ARITH_NUM_PREDEFINED_RULES, MAX_RULE_ITERATIONS);
         if (appliances == MAX_RULE_ITERATIONS) whisper("Warning: Possibly non-terminating ruleset\n");
     }
 
@@ -182,7 +184,7 @@ bool parse_input_wrapper(ParsingContext *ctx, char *input, Node **out_res, bool 
             if (ask_input(prompt, stdin, &input))
             {
                 Node *res_var;
-                if (!parse_input_wrapper(ctx, input, &res_var, apply_rules, apply_ans, false))
+                if (!parse_input_wrapper(ctx, input, &res_var, apply_rules, replace_ans, false))
                 {
                     // Error while parsing - ask again
                     free(input);
@@ -217,4 +219,9 @@ bool parse_input_wrapper(ParsingContext *ctx, char *input, Node **out_res, bool 
     }
     
     return true;
+}
+
+bool parse_input_wrapper(ParsingContext *ctx, char *input, Node **out_res, bool apply_rules, bool replace_ans, bool constant)
+{
+    return parse_input_wrapper_with_error(ctx, input, "Error: %s\n", out_res, apply_rules, replace_ans, constant);
 }

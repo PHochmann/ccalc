@@ -122,6 +122,9 @@ bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_
     return true;
 }
 
+/*
+Summary: Frees everything except matched_tree
+*/
 void free_matching(Matching matching)
 {
     for (size_t i = 0; i < matching.num_mapped; i++)
@@ -155,12 +158,12 @@ bool find_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out
 /*
 Summary: Substitutes subtree in which matching was found according to rule
 */
-void transform_by_rule(RewriteRule *rule, Matching *matching)
+void transform_matched_by_rule(ParsingContext *ctx, Node *rule_after, Matching *matching)
 {
-    if (rule == NULL || matching == NULL) return;
+    if (ctx == NULL || rule_after == NULL || matching == NULL) return;
     
     // We need to save all variable instances in "after" before we substitute because variable names are not sanitized
-    Node transformed = tree_copy(rule->context, rule->after);
+    Node transformed = tree_copy(ctx, rule_after);
     Node *var_instances[matching->num_mapped][MAX_VAR_COUNT];
     size_t num_instances[matching->num_mapped];
 
@@ -173,7 +176,7 @@ void transform_by_rule(RewriteRule *rule, Matching *matching)
     {
         for (size_t j = 0; j < num_instances[i]; j++)
         {
-            tree_replace(var_instances[i][j], tree_copy(rule->context, matching->mapped_nodes[i]));
+            tree_replace(var_instances[i][j], tree_copy(ctx, matching->mapped_nodes[i]));
         }
     }
     
@@ -190,8 +193,28 @@ bool apply_rule(Node *tree, RewriteRule *rule)
     // Try to find matching in tree with pattern specified in rule
     if (!find_matching(rule->context, tree, rule->before, &matching)) return false;
     // If matching is found, transform tree with it
-    transform_by_rule(rule, &matching);
+    transform_matched_by_rule(rule->context, rule->after, &matching);
     free_matching(matching);
+    return true;
+}
+
+// All following functions are experimental!
+
+// Does not change any rules, automatically mallocs new rule's before and after (untested!)
+bool infer_rule(ParsingContext *ctx, RewriteRule *first, RewriteRule *second, RewriteRule *out_rule)
+{
+    Matching conversion;
+    if (!get_matching(ctx, second->before, first->after, &conversion)) return false;
+
+    // We don't want to transform the same node, but a fresh copy
+    conversion.matched_tree = malloc(sizeof(Node));
+
+    // Transform first rule's left side by matching. This is the new rule's left side.
+    transform_matched_by_rule(ctx, first->before, &conversion);
+    *out_rule = get_rule(ctx, conversion.matched_tree, malloc(sizeof(Node)));
+    // The new rule's right side is the same as the second rule's left side. Copy it.
+    *out_rule->after = tree_copy(ctx, second->after);
+
     return true;
 }
 
