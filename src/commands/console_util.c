@@ -6,10 +6,9 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-#include "../engine/string_util.h"
+#include "../string_util.h"
+#include "../arith_rules.h"
 #include "console_util.h"
-#include "evaluation.h"
-#include "arith_rules.h"
 
 #define COL_RESET   "\033[0m"
 
@@ -23,7 +22,8 @@ static const size_t MAX_RULE_ITERATIONS   = 50;
 void init_util()
 {
     g_interactive = false;
-
+    g_debug = false;
+    g_ans = NULL;
     // Disable tab completion
     rl_bind_key('\t', rl_insert);
 }

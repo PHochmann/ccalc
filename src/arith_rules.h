@@ -1,6 +1,6 @@
 #pragma once
-#include "../engine/context.h"
-#include "../engine/rule.h"
+#include "parsing/context.h"
+#include "matching/rule.h"
 
 #define ARITH_MAX_RULES 20
 

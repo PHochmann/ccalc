@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
+
 #include "string_util.h"
 
 #define OP_COLOR    "\x1B[47m\x1B[22;30m" // White background, black foreground
@@ -207,7 +208,6 @@ void inline_infix(struct PrintingState *state, Node *node, bool l, bool r)
     //    - It has a lower precedence
     //    - It has the same precedence but associates to the right
     //      (Same precedence -> same associativity, see consistency rules for operator set in context.c)
-    // Note: When any of the operators has OP_ASSOC_BOTH, you do not need parentheses
     if (childA->type == NTYPE_OPERATOR
         && (childA->op->precedence < node->op->precedence
             || (childA->op->precedence == node->op->precedence

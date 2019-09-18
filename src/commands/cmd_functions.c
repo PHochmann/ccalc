@@ -1,31 +1,31 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "show_rules.h"
-#include "arith_context.h"
-#include "arith_rules.h"
-#include "assignments.h"
+#include "cmd_functions.h"
 #include "console_util.h"
-#include "../engine/operator.h"
-#include "../engine/string_util.h"
 
-void show_rules_init() { }
+#include "../arith_context.h"
+#include "../arith_rules.h"
+#include "../parsing/operator.h"
+#include "../string_util.h"
 
-bool show_rules_check(char *input)
+void cmd_functions_init() { }
+
+bool cmd_functions_check(char *input)
 {
-    return strcmp(input, "rules") == 0 || strcmp(input, "rules clear") == 0;
+    return strcmp(input, "functions") == 0 || strcmp(input, "functions clear") == 0;
 }
 
 /*
 Summary: Prints a string representation for currently defined rules
 */
-void show_rules_exec(ParsingContext *ctx, char *input)
+void cmd_functions_exec(ParsingContext *ctx, char *input)
 {
-    if (strcmp(input, "rules") == 0)
+    if (strcmp(input, "functions") == 0)
     {
         if (g_num_rules == ARITH_NUM_PREDEFINED_RULES)
         {
-            printf("No rules defined.\n");
+            printf("No functions defined.\n");
             return;
         }
 
@@ -37,10 +37,10 @@ void show_rules_exec(ParsingContext *ctx, char *input)
             printf("\n");
         }
     }
-    else // input must be "rules clear"
+    else // input must be "functions clear"
     {
         arith_reset_ctx(); // To remove user-defined functions from parsing context
         arith_reset_rules(); // To remove any user-defined rules
-        printf("Rules and functions cleared.\n");
+        printf("Functions cleared.\n");
     }
 }

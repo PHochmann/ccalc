@@ -2,10 +2,10 @@
 #include <math.h>
 
 #include "parser_test.h"
-#include "../src/commands/arith_context.h"
-#include "../src/engine/context.h"
-#include "../src/engine/node.h"
-#include "../src/engine/parser.h"
+#include "../src/arith_context.h"
+#include "../src/parsing/context.h"
+#include "../src/parsing/node.h"
+#include "../src/parsing/parser.h"
 
 // To check if parsed tree evaluates to expected value
 struct ValueTest {

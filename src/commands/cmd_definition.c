@@ -1,14 +1,16 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "assignments.h"
-#include "evaluation.h"
-#include "arith_rules.h"
+#include "../arith_rules.h"
+
+#include "../parsing/node.h"
+#include "../parsing/tokenizer.h"
+#include "../parsing/parser.h"
+#include "../matching/rule.h"
+
+#include "cmd_definition.h"
+#include "cmd_evaluation.h"
 #include "console_util.h"
-#include "../engine/node.h"
-#include "../engine/tokenizer.h"
-#include "../engine/parser.h"
-#include "../engine/rule.h"
 
 #define DEFINITION_OP   ":="
 #define RULE_OP         "->"
@@ -17,9 +19,9 @@
 
 static const size_t MAX_TOKENS = 100;
 
-void definition_init() { }
+void cmd_definition_init() { }
 
-bool definition_check(char *input)
+bool cmd_definition_check(char *input)
 {
     return strstr(input, DEFINITION_OP) != NULL;
 }
@@ -27,7 +29,7 @@ bool definition_check(char *input)
 /*
 Summary: Adds a new function symbol to context and adds a new rule to substitute function with its right hand side
 */
-void definition_exec(ParsingContext *ctx, char *input)
+void cmd_definition_exec(ParsingContext *ctx, char *input)
 {
     if (ctx->num_ops == ctx->max_ops)
     {
@@ -148,50 +150,4 @@ void definition_exec(ParsingContext *ctx, char *input)
     g_rules[g_num_rules++] = get_rule(ctx, left_n, right_n);
     
     whisper("Added function\n");
-}
-
-// Rule definition command
-
-void rule_init() { }
-
-bool rule_check(char *input)
-{
-    return strstr(input, "->") != NULL;
-}
-
-/*
-Summary: Adds new substitution rule
-*/
-void rule_exec(ParsingContext *ctx, char *input)
-{
-    if (g_num_rules == ARITH_MAX_RULES)
-    {
-        printf("Can't add any more rules\n");
-        return;
-    }
-    
-    char *right_input = strstr(input, RULE_OP);
-    // Overwrite first char of operator to make left hand side a proper string
-    *right_input = '\0';
-    right_input += strlen(RULE_OP);
-    
-    Node *before_n;
-    Node *after_n;
-    
-    if (!parse_input_wrapper_with_error(ctx, input, MSG_ERROR_LEFT "%s\n", &before_n, false, true, false))
-    {
-        return;
-    }
-    
-    if (!parse_input_wrapper_with_error(ctx, right_input, MSG_ERROR_RIGHT "%s\n", &after_n, false, true, false))
-    {
-        free_tree(before_n);
-        return;
-    }
-    
-    tree_substitute_var(ctx, before_n, g_ans, "ans");
-    tree_substitute_var(ctx, after_n, g_ans, "ans");
-    g_rules[g_num_rules++] = get_rule(ctx, before_n, after_n);
-    
-    whisper("Rule added\n");
 }

@@ -1,21 +1,17 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "arith_context.h"
-#include "arith_rules.h"
-#include "evaluation.h"
+#include "cmd_evaluation.h"
 #include "core.h"
 #include "console_util.h"
-#include "assignments.h"
 
-#include "../engine/string_util.h"
+#include "../arith_context.h"
+#include "../arith_rules.h"
+#include "../string_util.h"
 
-void evaluation_init()
-{
-    g_ans = NULL;
-}
+void cmd_evaluation_init() { }
 
-bool evaluation_check(__attribute__((unused)) char *input)
+bool cmd_evaluation_check(__attribute__((unused)) char *input)
 {
     return true;
 }
@@ -23,7 +19,7 @@ bool evaluation_check(__attribute__((unused)) char *input)
 /*
 Summary: The evaluation command is executed when input is no other command (hence last in command array at core.c)
 */
-void evaluation_exec(ParsingContext *ctx, char *input)
+void cmd_evaluation_exec(ParsingContext *ctx, char *input)
 {
     Node *tree;
     

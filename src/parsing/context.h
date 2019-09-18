@@ -12,7 +12,7 @@ typedef bool (*EqualsHandler)(struct ParsingContext *ctx, void *a, void *b);
 typedef struct ParsingContext
 {
     size_t value_size;         // e.g. sizeof(bool) for propositional logic, sizeof(double) for arithmetic
-    size_t recomm_str_len;        // Needed to let engine know how much data to allocate for stringed value
+    size_t recomm_str_len;        // Needed to let parsing know how much data to allocate for stringed value
     size_t num_ops;            // Current count of operators 
     size_t max_ops;            // Maximum count of operators (limited by buffer size)
     TryParseHandler try_parse; // Used to detect a literal token

@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <string.h>
-#include "arith_context.h"
-#include "help.h"
+
+#include "cmd_help.h"
 #include "core.h"
 #include "console_util.h"
-#include "../engine/operator.h"
+
+#include "../parsing/operator.h"
+#include "../arith_context.h"
 
 #define COL_RESET "\033[0m"
 // White background, black foreground
@@ -15,9 +17,9 @@ static const size_t TRIG_IND      = 19; // Index of first trigonometric function
 static const size_t MISC_FUNC_IND = 31; // Index of first misc. function
 static const size_t CONSTANTS_IND = 45; // Index of first constant
 
-void help_init() { }
+void cmd_help_init() { }
 
-bool help_check(char *input)
+bool cmd_help_check(char *input)
 {
     return strcmp(input, "help") == 0;
 }
@@ -73,9 +75,6 @@ void print_op(Operator *op)
             char assoc = '?';
             switch (op->assoc)
             {
-                case OP_ASSOC_BOTH:
-                    assoc = 'B';
-                    break;
                 case OP_ASSOC_LEFT:
                     assoc = 'L';
                     break;
@@ -98,7 +97,7 @@ void print_op(Operator *op)
     }
 }
 
-void help_exec(ParsingContext *ctx, __attribute__((unused)) char *input)
+void cmd_help_exec(ParsingContext *ctx, __attribute__((unused)) char *input)
 {
     printf("Calculator %s (c) 2019, Philipp Hochmann\n"
            "Commands: help, rules [clear], <function> := <after>, <before> -> <after>, load <path>, tree <expr>\n",

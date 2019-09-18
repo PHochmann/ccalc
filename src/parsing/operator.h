@@ -5,7 +5,6 @@ typedef enum
 {
     OP_ASSOC_RIGHT,
     OP_ASSOC_LEFT,
-    OP_ASSOC_BOTH // Parser treats BOTH as STANDARD_ASSOC, only needed for printing
 } OpAssociativity;
 
 typedef enum

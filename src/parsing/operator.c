@@ -10,9 +10,6 @@ const size_t MAX_ARITY = 100;
 // Since precendece is a char
 const Precedence MAX_PRECEDENCE = 255;
 
-// Associativity parses uses for OP_ASSOC_BOTH operands
-const OpAssociativity STANDARD_ASSOC = OP_ASSOC_LEFT;
-
 Operator op_get_function(char *name, size_t arity)
 {
     return (Operator){

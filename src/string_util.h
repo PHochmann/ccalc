@@ -1,6 +1,6 @@
 #include <stdbool.h>
-#include "context.h"
-#include "node.h"
+#include "parsing/context.h"
+#include "parsing/node.h"
 
 bool begins_with(char *prefix, char *string);
 void print_tree_visual(ParsingContext *ctx, Node *node);

@@ -1,6 +1,7 @@
-#include "../engine/parser.h"
+#include "parsing/parser.h"
+
 #include "arith_rules.h"
-#include "console_util.h"
+#include "commands/console_util.h" // Temporary
 
 const size_t ARITH_NUM_PREDEFINED_RULES = 9;
 

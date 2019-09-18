@@ -170,13 +170,10 @@ bool op_push(struct ParserState *state, struct OpData op_d)
         // Shunting-yard algorithm: Pop until operator of higher precedence or '(' is on top of stack 
         if (op->placement == OP_PLACE_INFIX || op->placement == OP_PLACE_POSTFIX)
         {
-            OpAssociativity assoc = op->assoc;
-            if (op->assoc == OP_ASSOC_BOTH) assoc = STANDARD_ASSOC;
-
             while (state->num_ops > 0
                 && op_peek(state)->op != NULL
                 && (op->precedence < op_peek(state)->op->precedence
-                    || (op->precedence == op_peek(state)->op->precedence && assoc == OP_ASSOC_LEFT)))
+                    || (op->precedence == op_peek(state)->op->precedence && op->assoc == OP_ASSOC_LEFT)))
             {
                 if (!op_pop_and_insert(state)) return false;
             }

@@ -1,20 +1,20 @@
 #include <string.h>
 
-#include "../engine/parser.h"
-#include "../engine/string_util.h"
-#include "show_tree.h"
+#include "../parsing/parser.h"
+#include "../string_util.h"
+#include "cmd_tree.h"
 #include "console_util.h"
 
 #define COMMAND "tree "
 
-void show_tree_init() { }
+void cmd_tree_init() { }
 
-bool show_tree_check(char *input)
+bool cmd_tree_check(char *input)
 {
     return begins_with(COMMAND, input);
 }
 
-void show_tree_exec(ParsingContext *ctx, char *input)
+void cmd_tree_exec(ParsingContext *ctx, char *input)
 {
     input += strlen(COMMAND);
     Node *res;

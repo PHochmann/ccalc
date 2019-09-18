@@ -3,11 +3,12 @@
 
 #include "tree_to_string_test.h"
 
-#include "../src/commands/arith_context.h"
-#include "../src/engine/context.h"
-#include "../src/engine/node.h"
-#include "../src/engine/parser.h"
-#include "../src/engine/string_util.h"
+#include "../src/arith_context.h"
+#include "../src/string_util.h"
+
+#include "../src/parsing/context.h"
+#include "../src/parsing/node.h"
+#include "../src/parsing/parser.h"
 
 struct TreeToStringTest {
     char *string_to_tree;

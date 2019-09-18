@@ -25,7 +25,7 @@ Parameters:
     value_size: Size of a constant in bytes
         (e.g. sizeof(double) for arithmetics, sizeof(bool) for propositional logic)
     min_str_len: Minimum amount of chars (without \0) a buffer supplied to to_string should hold
-        (not relevant for engine, only for own account)
+        (not relevant for parsing, only for own account)
     max_ops: Number of operators that should fit into reserved buffer
     try_parse: Function that is called when trying to parse a constant
     to_string: Function that makes a constant readable
@@ -88,7 +88,6 @@ bool ctx_add_ops(ParsingContext *ctx, size_t count, ...)
 /*
 Summary: Adds operator to context
     To associate every operand with exactly one operator in a unique manner, infix operators with the same precedence must have the same associativity.
-    OP_ASSOC_BOTH is treated as STANDARD_ASSOC
 Returns: ID of new operator, -1 if one of the following:
     * buffer is full
     * ctx is NULL
@@ -116,14 +115,8 @@ int ctx_add_op(ParsingContext *ctx, Operator op)
         {
             if (ctx->operators[i].placement == OP_PLACE_INFIX
                 && ctx->operators[i].precedence == op.precedence)
-            {
-                OpAssociativity a_assoc = ctx->operators[i].assoc;
-                OpAssociativity b_assoc = op.assoc;
-                
-                if (a_assoc == OP_ASSOC_BOTH) a_assoc = STANDARD_ASSOC;
-                if (b_assoc == OP_ASSOC_BOTH) b_assoc = STANDARD_ASSOC;
-                
-                if (a_assoc != b_assoc)
+            {                
+                if (ctx->operators[i].assoc != op.assoc)
                 {
                     return -1;
                 }

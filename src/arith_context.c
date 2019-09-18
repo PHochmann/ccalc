@@ -261,9 +261,9 @@ ParsingContext *arith_init_ctx()
     
     ctx_add_ops(&arith_ctx, ARITH_NUM_OPS,
         op_get_prefix("$", 0),
-        op_get_infix("+", 2, OP_ASSOC_BOTH),
+        op_get_infix("+", 2, OP_ASSOC_LEFT),
         op_get_infix("-", 2, OP_ASSOC_LEFT),
-        op_get_infix("*", 3, OP_ASSOC_BOTH),
+        op_get_infix("*", 3, OP_ASSOC_LEFT),
         op_get_infix("/", 3, OP_ASSOC_LEFT),
         op_get_infix("^", 4, OP_ASSOC_RIGHT),
         op_get_infix("C", 1, OP_ASSOC_LEFT),
