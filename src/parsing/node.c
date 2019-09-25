@@ -77,7 +77,6 @@ void free_tree_preserved(Node *tree)
 size_t tree_count_vars(Node *tree)
 {
     if (tree == NULL) return false;
-    size_t sum = 0;
 
     switch (tree->type)
     {
@@ -88,11 +87,14 @@ size_t tree_count_vars(Node *tree)
             return 1;
 
         case NTYPE_OPERATOR:
+        {
+            size_t sum = 0;
             for (size_t i = 0; i < tree->num_children; i++)
             {
                 sum += tree_count_vars(tree->children[i]);
             }
             return sum;
+        }
 
         default:
             return 0;
@@ -101,7 +103,7 @@ size_t tree_count_vars(Node *tree)
 
 /*
 Summary: Lists all variable nodes of given names (e.g. to replace them)
-Returns: False if tree==NULL, or MAX_TREE_SEARCH_STACK_SIZE or MAX_VAR_COUNT exceeded. True otherwise.
+Returns: False if NULL in args, or MAX_TREE_SEARCH_STACK_SIZE or MAX_VAR_COUNT exceeded. True otherwise.
 Params
     out_instances: Buffer to nodes. Must hold at least MAX_VAR_COUNT Node-pointers.
 */
@@ -155,13 +157,11 @@ bool tree_list_vars(Node *tree, size_t *out_num_variables, char **out_variables)
 {
     if (tree == NULL || out_num_variables == NULL) return false;
     
+    char *variables[MAX_VAR_COUNT];
     Node *node_stack[MAX_TREE_SEARCH_STACK_SIZE];
     size_t num_nodes = 1;
     node_stack[0] = tree;
     *out_num_variables = 0;
-
-    // Needed to cleanup when out_variables is NULL
-    bool cleanup = false;
 
     while (num_nodes != 0)
     {
@@ -174,7 +174,7 @@ bool tree_list_vars(Node *tree, size_t *out_num_variables, char **out_variables)
                 for (size_t i = 0; i < *out_num_variables; i++)
                 {
                     // Don't add variable if we already found it
-                    if (strcmp(out_variables[i], curr_node->var_name) == 0)
+                    if (strcmp(variables[i], curr_node->var_name) == 0)
                     {
                         flag = true;
                         break;
@@ -184,8 +184,8 @@ bool tree_list_vars(Node *tree, size_t *out_num_variables, char **out_variables)
                 
                 // Buffer overflow protection
                 if (*out_num_variables == MAX_VAR_COUNT) goto exit;
-                out_variables[*out_num_variables] = malloc(strlen(curr_node->var_name) + 1);
-                strcpy(out_variables[(*out_num_variables)++], curr_node->var_name);
+                variables[*out_num_variables] = malloc(strlen(curr_node->var_name) + 1);
+                strcpy(variables[(*out_num_variables)++], curr_node->var_name);
                 break;
                 
             case NTYPE_OPERATOR:
@@ -201,13 +201,20 @@ bool tree_list_vars(Node *tree, size_t *out_num_variables, char **out_variables)
         }
     }
 
+    // Needed to cleanup when out_variables is NULL
+    bool success = false;
+
     if (out_variables != NULL)
     {
+        for (size_t i = 0; i < *out_num_variables; i++)
+        {
+            out_variables[i] = variables[i];
+        }
         return true;
     }
     else
     {
-        cleanup = true;
+        success = true;
     }
     
     exit:
@@ -215,11 +222,11 @@ bool tree_list_vars(Node *tree, size_t *out_num_variables, char **out_variables)
     // Free partial results
     for (size_t i = 0; i < *out_num_variables; i++)
     {
-        free(out_variables[i]);
+        free(variables[i]);
     }
 
     // 'cleanup' is false when jumping to label on error, otherwise true
-    return cleanup;
+    return success;
 }
 
 /*

@@ -23,18 +23,6 @@ bool begins_with(char *prefix, char *string)
     return strncmp(prefix, string, prefix_length) == 0;
 }
 
-void print_constant(ParsingContext *ctx, Node *node)
-{
-    char value[ctx->recomm_str_len];
-    ctx->to_string(node->const_value, ctx->recomm_str_len, value);
-    printf(CONST_COLOR "%s" COL_RESET, value);
-}
-
-void print_variable(Node *node)
-{
-    printf(VAR_COLOR "%s" COL_RESET, node->var_name);
-}
-
 void print_tree_visual_rec(ParsingContext *ctx, Node *node, unsigned char layer, unsigned int vert_lines)
 {
     if (layer != 0)
@@ -49,6 +37,7 @@ void print_tree_visual_rec(ParsingContext *ctx, Node *node, unsigned char layer,
     switch (node->type)
     {
         case NTYPE_OPERATOR:
+        {
             printf(OP_COLOR "%s" COL_RESET "\n", node->op->name);
             for (size_t i = 0; i < node->num_children; i++)
             {
@@ -56,16 +45,21 @@ void print_tree_visual_rec(ParsingContext *ctx, Node *node, unsigned char layer,
                     (i == node->num_children - 1) ? vert_lines : (vert_lines | ((unsigned int)1 << layer)));
             }
             break;
+        }
             
         case NTYPE_CONSTANT:
-            print_constant(ctx, node);
-            printf("\n");
+        {
+            char value[ctx->recommended_str_len];
+            ctx->to_string(node->const_value, ctx->recommended_str_len, value);
+            printf(CONST_COLOR "%s" COL_RESET "\n", value);
             break;
+        }
             
         case NTYPE_VARIABLE:
-            print_variable(node);
-            printf("\n");
+        {
+            printf(VAR_COLOR "%s" COL_RESET "\n", node->var_name);
             break;
+        }
     }
 }
 

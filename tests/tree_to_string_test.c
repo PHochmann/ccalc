@@ -3,7 +3,7 @@
 
 #include "tree_to_string_test.h"
 
-#include "../src/arith_context.h"
+#include "../src/arithmetics/arith_context.h"
 #include "../src/string_util.h"
 
 #include "../src/parsing/context.h"
@@ -15,15 +15,14 @@ struct TreeToStringTest {
     char *tree_to_string;
 };
 
-// Todo: More test cases!
 static const size_t NUM_TESTS = 7;
 static struct TreeToStringTest tests[] = {
     { "--a", "-(-a)"},
     { "--b!!", "(-(-b)!)!"},
     { "(1+2)+3", "1+2+3" },
-    { "1+(2+3)", "1+2+3" },
+    { "1+(2+3)", "1+(2+3)" },
     { "1+2-3", "1+2-3" },
-    { "1+(2-3)", "1+2-3" }, // Todo: Is this right behaviour?
+    { "1+(2-3)", "1+(2-3)" },
     { "-sqrt(abs(--a!!*--sum(-b+c-d+e, f^g^h-i, -sum(j, k), l+m)*--n!!))", "-sqrt(abs(((-(-a)!)!)*(-(-sum(-b+c-d+e, f^g^h-i, -sum(j, k), l+m)))*(-(-n)!)!))" }
 };
 

@@ -137,31 +137,3 @@ bool find_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out
     
     return false;
 }
-
-/*
-Summary: Substitutes subtree in which matching was found according to rule
-*/
-void transform_matched_by_rule(ParsingContext *ctx, Node *rule_after, Matching *matching)
-{
-    if (ctx == NULL || rule_after == NULL || matching == NULL) return;
-    
-    // We need to save all variable instances in "after" before we substitute because variable names are not sanitized
-    Node transformed = tree_copy(ctx, rule_after);
-    Node *var_instances[matching->num_mapped][MAX_VAR_COUNT];
-    size_t num_instances[matching->num_mapped];
-
-    for (size_t i = 0; i < matching->num_mapped; i++)
-    {
-        tree_get_var_instances(&transformed, matching->mapped_vars[i], &num_instances[i], var_instances[i]);
-    }
-    
-    for (size_t i = 0; i < matching->num_mapped; i++)
-    {
-        for (size_t j = 0; j < num_instances[i]; j++)
-        {
-            tree_replace(var_instances[i][j], tree_copy(ctx, matching->mapped_nodes[i]));
-        }
-    }
-    
-    tree_replace(matching->matched_tree, transformed);
-}

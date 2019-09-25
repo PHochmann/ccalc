@@ -1,19 +1,16 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../arith_rules.h"
-
 #include "../parsing/node.h"
 #include "../parsing/tokenizer.h"
 #include "../parsing/parser.h"
-#include "../matching/rule.h"
-
+#include "../matching/rewrite_rule.h"
+#include "../arithmetics/arith_rules.h"
 #include "cmd_definition.h"
 #include "cmd_evaluation.h"
 #include "console_util.h"
 
 #define DEFINITION_OP   ":="
-#define RULE_OP         "->"
 #define MSG_ERROR_LEFT  "Error in left expression: "
 #define MSG_ERROR_RIGHT "Error in right expression: "
 
@@ -77,7 +74,7 @@ void cmd_definition_exec(ParsingContext *ctx, char *input)
     
     Node *left_n;
     
-    if (!parse_input_wrapper_with_error(ctx, input, MSG_ERROR_LEFT "%s\n", &left_n, false, true, false))
+    if (!parse_input_console(ctx, input, MSG_ERROR_LEFT "%s\n", &left_n, false, false))
     {
         ctx->num_ops--;
         free(name);
@@ -133,21 +130,19 @@ void cmd_definition_exec(ParsingContext *ctx, char *input)
     
     Node *right_n;
 
-    if (!parse_input_wrapper_with_error(ctx, right_input, MSG_ERROR_RIGHT "%s\n", &right_n, false, true, false))
+    if (!parse_input_console(ctx, right_input, MSG_ERROR_RIGHT "%s\n", &right_n, false, false))
     {
         free_tree(left_n);
         free(name);
         return;
     }
 
-    // Replace ans
-    tree_substitute_var(ctx, right_n, g_ans, "ans");
     // Assign correct arity
     ctx->operators[ctx->num_ops].arity = left_n->num_children;
     // Activate added function
     ctx->num_ops++;
     // Add rule to eliminate function before evaluation
-    g_rules[g_num_rules++] = get_rule(ctx, left_n, right_n);
+    g_rules[g_num_rules++] = get_rule(left_n, right_n);
     
     whisper("Added function\n");
 }

@@ -4,10 +4,10 @@
 #include "cmd_evaluation.h"
 #include "core.h"
 #include "console_util.h"
-
-#include "../arith_context.h"
-#include "../arith_rules.h"
 #include "../string_util.h"
+#include "../parsing/node.h"
+#include "../arithmetics/arith_context.h"
+#include "../arithmetics/arith_rules.h"
 
 void cmd_evaluation_init() { }
 
@@ -23,20 +23,11 @@ void cmd_evaluation_exec(ParsingContext *ctx, char *input)
 {
     Node *tree;
     
-    if (parse_input_wrapper(ctx, input, &tree, true, true, true))
-    {
-        if (g_debug)
-        {
-            printf("= ");
-            print_tree_inlined(ctx, tree, true);
-            printf("\n");
-        }
-        
+    if (parse_input_console(ctx, input, "Error: %s\n", &tree, true, true))
+    {        
         double result = arith_eval(tree);
-        char result_str[ctx->recomm_str_len];
-        ctx->to_string((void*)(&result), ctx->recomm_str_len, result_str);
+        char result_str[ctx->recommended_str_len];
+        ctx->to_string((void*)(&result), ctx->recommended_str_len, result_str);
         printf(g_interactive ? "= %s\n" : "%s\n", result_str);
-        if (g_ans != NULL) free_tree(g_ans);
-        g_ans = tree;
     }
 }

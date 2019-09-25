@@ -34,22 +34,20 @@ Parameters:
 */
 ParsingContext get_context(
     size_t value_size,
-    size_t recomm_str_len,
+    size_t recommended_str_len,
     size_t max_ops,
     TryParseHandler try_parse,
     ToStringHandler to_string,
     EqualsHandler equals)
 {
-    if (equals == NULL) equals = bytewise_equals;
-
     ParsingContext res = (ParsingContext){
         .value_size = value_size,
-        .recomm_str_len = recomm_str_len,
+        .recommended_str_len = recommended_str_len,
         .max_ops = max_ops,
         .num_ops = 0,
         .try_parse = try_parse,
         .to_string = to_string,
-        .equals = equals,
+        .equals = equals != NULL ? equals : bytewise_equals,
         .operators = malloc(sizeof(Operator) * max_ops),
         .glue_op = NULL,
     };

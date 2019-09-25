@@ -2,7 +2,7 @@
 #include <math.h>
 
 #include "parser_test.h"
-#include "../src/arith_context.h"
+#include "../src/arithmetics/arith_context.h"
 #include "../src/parsing/context.h"
 #include "../src/parsing/node.h"
 #include "../src/parsing/parser.h"

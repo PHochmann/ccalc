@@ -7,23 +7,19 @@
 #include <readline/history.h>
 
 #include "../string_util.h"
-#include "../arith_rules.h"
+#include "../arithmetics/arith_rules.h"
 #include "console_util.h"
 
 #define COL_RESET   "\033[0m"
-
-#define ANS_VAR                 "ans"
 #define TTY_ASK_VARIABLE_PROMPT "? > "
 
-static const size_t MAX_INPUT_LENGTH = 100;
-static const size_t MAX_INLINED_LENGTH = 100;
-static const size_t MAX_RULE_ITERATIONS   = 50;
+static const size_t MAX_INPUT_LENGTH    = 100;
+static const size_t MAX_INLINED_LENGTH  = 100;
+static const size_t MAX_RULE_ITERATIONS = 50;
 
-void init_util()
+void init_console_util()
 {
     g_interactive = false;
-    g_debug = false;
-    g_ans = NULL;
     // Disable tab completion
     rl_bind_key('\t', rl_insert);
 }
@@ -139,24 +135,20 @@ Summary:
 Returns:
     True when input was successfully parsed, false when syntax error in input or aborted when asked for constant
 */
-bool parse_input_wrapper_with_error(ParsingContext *ctx, char *input, char *error_fmt, Node **out_res, bool apply_rules, bool replace_ans, bool constant)
+bool parse_input_console(ParsingContext *ctx, char *input, char *error_fmt, Node **out_res, bool constant, bool update_ans)
 {
     ParserError perr = parse_input(ctx, input, out_res);
     if (perr != PERR_SUCCESS)
     {
         printf(error_fmt, perr_to_string(perr));
         return false;
-    }
+    };
 
-    // Always apply predefined rules afterwards, even when apply_rules is set to false
-    apply_ruleset(*out_res, ARITH_NUM_PREDEFINED_RULES, g_rules, MAX_RULE_ITERATIONS);
-    
-    if (replace_ans && g_ans != NULL) tree_substitute_var(ctx, *out_res, g_ans, ANS_VAR);
-    if (apply_rules)
+    if (!transform_input(ctx, *out_res, update_ans))
     {
-        // Apply user-defined rules
-        size_t appliances = apply_ruleset(*out_res, g_num_rules - ARITH_NUM_PREDEFINED_RULES, g_rules + ARITH_NUM_PREDEFINED_RULES, MAX_RULE_ITERATIONS);
-        if (appliances == MAX_RULE_ITERATIONS) whisper("Warning: Possibly non-terminating ruleset\n");
+        printf(error_fmt, "Math Error");
+        free_tree(*out_res);
+        return false;
     }
 
     // Make expression constant by asking for values and binding them to variables
@@ -184,7 +176,7 @@ bool parse_input_wrapper_with_error(ParsingContext *ctx, char *input, char *erro
             if (ask_input(prompt, stdin, &input))
             {
                 Node *res_var;
-                if (!parse_input_wrapper(ctx, input, &res_var, apply_rules, replace_ans, false))
+                if (!parse_input_console(ctx, input, error_fmt, &res_var, false, update_ans))
                 {
                     // Error while parsing - ask again
                     free(input);
@@ -219,9 +211,4 @@ bool parse_input_wrapper_with_error(ParsingContext *ctx, char *input, char *erro
     }
     
     return true;
-}
-
-bool parse_input_wrapper(ParsingContext *ctx, char *input, Node **out_res, bool apply_rules, bool replace_ans, bool constant)
-{
-    return parse_input_wrapper_with_error(ctx, input, "Error: %s\n", out_res, apply_rules, replace_ans, constant);
 }

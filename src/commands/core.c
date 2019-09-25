@@ -5,14 +5,14 @@
 #include "core.h"
 #include "cmd_evaluation.h"
 #include "cmd_help.h"
-#include "cmd_functions.h"
+#include "cmd_clear.h"
 #include "cmd_load.h"
-#include "cmd_tree.h"
+#include "cmd_debug.h"
 #include "cmd_definition.h"
 #include "console_util.h"
 
-#include "../arith_context.h"
-#include "../arith_rules.h"
+#include "../arithmetics/arith_context.h"
+#include "../arithmetics/arith_rules.h"
 #include "../string_util.h"
 
 #define INTERACTIVE_ASK_PREFIX "> "
@@ -34,18 +34,15 @@ void cmd_quit_init();
 bool cmd_quit_check(char *input);
 void cmd_quit_exec(ParsingContext *ctx, char *input);
 
-/*
-Evaluation is last command because its check function always returns true
-*/
-static const size_t NUM_COMMANDS = 8;
+static const size_t NUM_COMMANDS = 7;
 static const struct Command commands[] = {
     { cmd_quit_init,       cmd_quit_check,       cmd_quit_exec },
-    { cmd_debug_init,      cmd_debug_check,      cmd_debug_exec},
     { cmd_help_init,       cmd_help_check,       cmd_help_exec},
     { cmd_definition_init, cmd_definition_check, cmd_definition_exec},
-    { cmd_functions_init,  cmd_functions_check,  cmd_functions_exec},
-    { cmd_tree_init,       cmd_tree_check,       cmd_tree_exec },
+    { cmd_clear_init,      cmd_clear_check,      cmd_clear_exec},
+    { cmd_debug_init,       cmd_debug_check,       cmd_debug_exec },
     { cmd_load_init,       cmd_load_check,       cmd_load_exec},
+    /* Evaluation is last command. Its check function always returns true. */
     { cmd_evaluation_init, cmd_evaluation_check, cmd_evaluation_exec}
 };
 
@@ -54,7 +51,7 @@ Summary: Sets parsing context and initializes commands
 */
 void init_commands()
 {
-    init_util();
+    init_console_util();
     ctx = arith_init_ctx();
     arith_init_rules(ctx);
 
@@ -96,24 +93,6 @@ void parse_command(char *input)
             return;
         }
     }
-}
-
-// Debug command:
-
-void cmd_debug_init()
-{
-    g_debug = false;
-}
-
-bool cmd_debug_check(char *input)
-{
-    return strcmp(input, "debug") == 0;
-}
-
-void cmd_debug_exec(__attribute__((unused)) ParsingContext *ctx, __attribute__((unused)) char *input)
-{
-    g_debug = !g_debug;
-    whisper("debug %s\n", g_debug ? "on" : "off");
 }
 
 // Quit command:

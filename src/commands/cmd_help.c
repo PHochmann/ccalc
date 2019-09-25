@@ -6,13 +6,14 @@
 #include "console_util.h"
 
 #include "../parsing/operator.h"
-#include "../arith_context.h"
+#include "../arithmetics/arith_context.h"
+#include "../arithmetics/arith_rules.h"
 
 #define COL_RESET "\033[0m"
 // White background, black foreground
 #define OP_COLOR "\x1B[47m" "\x1B[22;30m"
 
-static const size_t BASIC_IND     =  1; // Index of first basic operator ($x before, should no be shown)
+static const size_t BASIC_IND     =  2; // Index of first basic operator ($x before, should no be shown)
 static const size_t TRIG_IND      = 19; // Index of first trigonometric function
 static const size_t MISC_FUNC_IND = 31; // Index of first misc. function
 static const size_t CONSTANTS_IND = 45; // Index of first constant
@@ -66,41 +67,14 @@ void print_op(Operator *op)
             }
             break;
     }
-
-    // Print additional information when debug mode is active
-    if (g_debug && op->arity > 0 && op->placement != OP_PLACE_FUNCTION)
-    {
-        if (op->placement == OP_PLACE_INFIX)
-        {
-            char assoc = '?';
-            switch (op->assoc)
-            {
-                case OP_ASSOC_LEFT:
-                    assoc = 'L';
-                    break;
-                case OP_ASSOC_RIGHT:
-                    assoc = 'R';
-                    break;
-            }
-
-            printf(COL_RESET "%d,%c ", op->precedence, assoc);
-        }
-        else
-        {
-            printf(COL_RESET "%d ", op->precedence);
-        }
-        
-    }
-    else
-    {
-        printf(COL_RESET " ");
-    }
+    
+    printf(COL_RESET " ");
 }
 
 void cmd_help_exec(ParsingContext *ctx, __attribute__((unused)) char *input)
 {
     printf("Calculator %s (c) 2019, Philipp Hochmann\n"
-           "Commands: help, rules [clear], <function> := <after>, <before> -> <after>, load <path>, tree <expr>\n",
+           "Commands: help, clear, <function> := <after>, load <path>, quit\n",
         VERSION);
 
     printf("\nBasic operators:\n");
@@ -131,9 +105,12 @@ void cmd_help_exec(ParsingContext *ctx, __attribute__((unused)) char *input)
     if (ctx->num_ops > ARITH_NUM_OPS)
     {
         printf("\nUser-defined functions:\n");
-        for (size_t i = ARITH_NUM_OPS; i < ctx->num_ops; i++)
+        for (size_t i = ARITH_NUM_PREDEFINED_RULES; i < g_num_rules; i++)
         {
-            print_op(&ctx->operators[i]);
+            print_tree_inlined(ctx, g_rules[i].before, true);
+            printf(" := ");
+            print_tree_inlined(ctx, g_rules[i].after, true);
+            printf("\n");
         }
     }
 
