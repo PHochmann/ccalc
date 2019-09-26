@@ -9,7 +9,7 @@
 
 // Must not be static because can be exported
 const size_t ARITH_STRING_LENGTH = 30; // Including \0
-const size_t ARITH_NUM_OPS       = 51;
+const size_t ARITH_NUM_OPS       = 50;
 const size_t ARITH_MAX_OPS =       60;
 
 static ParsingContext arith_ctx;
@@ -71,30 +71,27 @@ double arith_eval(Node *tree)
             {
                 case 0: // $x
                     return EVAL(0);
-                case 1: // x'
-                    printf("Tried to directly evaluate derivation!");
-                    return -1;
-                case 2: // x+y
+                case 1: // x+y
                     return EVAL(0) + EVAL(1);
-                case 3: // x-y
+                case 2: // x-y
                     return EVAL(0) - EVAL(1);
-                case 4: // x*y
+                case 3: // x*y
                     return EVAL(0) * EVAL(1);
-                case 5: // x/y
+                case 4: // x/y
                     return EVAL(0) / EVAL(1);
-                case 6: // x^y
+                case 5: // x^y
                     return pow(EVAL(0), EVAL(1));
-                case 7: // x C y
+                case 6: // x C y
                     return (double)binomial(
                         labs((long)trunc(EVAL(0))),
                         labs((long)trunc(EVAL(1))));
-                case 8: // x mod y
+                case 7: // x mod y
                     return fmod(EVAL(0), EVAL(1));
-                case 9: // -x
+                case 8: // -x
                     return -EVAL(0);
-                case 10: // +x
+                case 9: // +x
                     return EVAL(0);
-                case 11: // x!
+                case 10: // x!
                 {
                     double res = 1;
                     for (double i = trunc(EVAL(0)); i > 1; i--)
@@ -103,47 +100,47 @@ double arith_eval(Node *tree)
                     }
                     return res;
                 }
-                case 12: // x%
+                case 11: // x%
                     return EVAL(0) / 100;
-                case 13: // exp(x)
+                case 12: // exp(x)
                     return exp(EVAL(0));
-                case 14: // root(x, n)
+                case 13: // root(x, n)
                     return pow(EVAL(0), 1 / EVAL(1));
-                case 15: // sqrt(x)
+                case 14: // sqrt(x)
                     return sqrt(EVAL(0));
-                case 16: // log(x, n)
+                case 15: // log(x, n)
                     return log(EVAL(0)) / log(EVAL(1));
-                case 17: // ln(x)
+                case 16: // ln(x)
                     return log(EVAL(0));
-                case 18: // ld(x)
+                case 17: // ld(x)
                     return log2(EVAL(0));
-                case 19: // log(x)
+                case 18: // log(x)
                     return log10(EVAL(0));
-                case 20: // sin(x)
+                case 19: // sin(x)
                     return sin(EVAL(0));
-                case 21: // cos(x)
+                case 20: // cos(x)
                     return cos(EVAL(0));
-                case 22: // tan(x)
+                case 21: // tan(x)
                     return tan(EVAL(0));
-                case 23: // asin(x)
+                case 22: // asin(x)
                     return asin(EVAL(0));
-                case 24: // acos(x)
+                case 23: // acos(x)
                     return acos(EVAL(0));
-                case 25: // atan(x)
+                case 24: // atan(x)
                     return atan(EVAL(0));
-                case 26: // sinh(x)
+                case 25: // sinh(x)
                     return sinh(EVAL(0));
-                case 27: // cosh(x)
+                case 26: // cosh(x)
                     return cosh(EVAL(0));
-                case 28: // tanh(x)
+                case 27: // tanh(x)
                     return tanh(EVAL(0));
-                case 29: // asinh(x)
+                case 28: // asinh(x)
                     return asinh(EVAL(0));
-                case 30: // acosh(x)
+                case 29: // acosh(x)
                     return acosh(EVAL(0));
-                case 31: // atanh(x)
+                case 30: // atanh(x)
                     return atanh(EVAL(0));
-                case 32: // max(x, y, ...)
+                case 31: // max(x, y, ...)
                 {
                     double res = -INFINITY;
                     for (size_t i = 0; i < tree->num_children; i++)
@@ -153,7 +150,7 @@ double arith_eval(Node *tree)
                     }
                     return res;
                 }
-                case 33: // min(x, y, ...)
+                case 32: // min(x, y, ...)
                 {
                     double res = INFINITY;
                     for (size_t i = 0; i < tree->num_children; i++)
@@ -163,52 +160,52 @@ double arith_eval(Node *tree)
                     }
                     return res;
                 }
-                case 34: // abs(x)
+                case 33: // abs(x)
                     return fabs(EVAL(0));
-                case 35: // ceil(x)
+                case 34: // ceil(x)
                     return ceil(EVAL(0));
-                case 36: // floor(x)
+                case 35: // floor(x)
                     return floor(EVAL(0));
-                case 37: // round(x)
+                case 36: // round(x)
                     return round(EVAL(0));
-                case 38: // trunc(x)
+                case 37: // trunc(x)
                     return trunc(EVAL(0));
-                case 39: // frac(x)
+                case 38: // frac(x)
                     return EVAL(0) - floor(EVAL(0));
-                case 40: // sum(x, y, ...)
+                case 39: // sum(x, y, ...)
                 {
                     double res = 0;
                     for (size_t i = 0; i < tree->num_children; i++) res += EVAL(i);
                     return res;
                 }
-                case 41: // prod(x, y, ...)
+                case 40: // prod(x, y, ...)
                 {
                     double res = 1;
                     for (size_t i = 0; i < tree->num_children; i++) res *= EVAL(i);
                     return res;
                 }
-                case 42: // avg(x, y, ...)
+                case 41: // avg(x, y, ...)
                 {
                     if (tree->num_children == 0) return 0;
                     double res = 0;
                     for (size_t i = 0; i < tree->num_children; i++) res += EVAL(i);
                     return res / tree->num_children;
                 }
-                case 43: // rand(x, y)
+                case 42: // rand(x, y)
                     return random_between(EVAL(0), EVAL(1));
-                case 44: // gamma(x)
+                case 43: // gamma(x)
                     return tgamma(EVAL(0));
-                case 45: // fib(x)
+                case 44: // fib(x)
                     return fibonacci(trunc(EVAL(0)));
-                case 46: // pi
+                case 45: // pi
                     return 3.14159265359;
-                case 47: // e
+                case 46: // e
                     return 2.71828182846;
-                case 48: // phi
+                case 47: // phi
                     return 1.61803398874;
-                case 49: // clight (m/s)
+                case 48: // clight (m/s)
                     return 299792458;
-                case 50: // csound (m/s)
+                case 49: // csound (m/s)
                     return 343.2;
 
                 default:
@@ -266,7 +263,6 @@ ParsingContext *arith_init_ctx()
     
     ctx_add_ops(&arith_ctx, ARITH_NUM_OPS,
         op_get_prefix("$", 0),
-        op_get_postfix("'", 5),
         op_get_infix("+", 2, OP_ASSOC_LEFT),
         op_get_infix("-", 2, OP_ASSOC_LEFT),
         op_get_infix("*", 3, OP_ASSOC_LEFT),
@@ -318,7 +314,7 @@ ParsingContext *arith_init_ctx()
         op_get_constant("csound"));
     
     // Set multiplication as glue-op
-    ctx_set_glue_op(&arith_ctx, &arith_ctx.operators[4]);
+    ctx_set_glue_op(&arith_ctx, &arith_ctx.operators[3]);
 
     srand(time(NULL));
     return &arith_ctx;

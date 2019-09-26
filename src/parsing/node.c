@@ -225,6 +225,7 @@ bool tree_list_vars(Node *tree, size_t *out_num_variables, char **out_variables)
                 
                 // Buffer overflow protection
                 if (*out_num_variables == MAX_VAR_COUNT) goto error;
+                
                 out_variables[*out_num_variables] = malloc(strlen(curr_node->var_name) + 1);
                 strcpy(out_variables[(*out_num_variables)++], curr_node->var_name);
                 break;

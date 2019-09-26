@@ -176,7 +176,7 @@ bool parse_input_console(ParsingContext *ctx, char *input, char *error_fmt, Node
             if (ask_input(prompt, stdin, &input))
             {
                 Node *res_var;
-                if (!parse_input_console(ctx, input, error_fmt, &res_var, false, update_ans))
+                if (!parse_input_console(ctx, input, error_fmt, &res_var, false, false))
                 {
                     // Error while parsing - ask again
                     free(input);

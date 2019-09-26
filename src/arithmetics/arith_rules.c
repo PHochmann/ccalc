@@ -8,7 +8,7 @@
 #define PARSE(n) parse_conveniently(ctx, n)
 #define ANS_VAR "ans"
 
-const size_t ARITH_NUM_PREDEFINED_RULES = 30; // 40
+const size_t ARITH_NUM_PREDEFINED_RULES = 1;
 
 // Functions to add rules at runtime (custom functions)
 
@@ -47,12 +47,6 @@ bool parse_rules(ParsingContext *ctx, size_t num_rules, char **input, RewriteRul
     return true;
 }
 
-bool is_constant_op(__attribute__((unused)) ParsingContext *ctx, Node *tree)
-{
-    return tree->type == NTYPE_OPERATOR && tree_count_vars(tree) == 0
-        && !find_matching_discarded(ctx, tree, PARSE("x'"));
-}
-
 /*
 Summary: Tries to apply rules (priorized by order) until no rule can be applied any more
 */
@@ -74,15 +68,13 @@ void apply_ruleset(ParsingContext *ctx, Node *tree, size_t num_rules, RewriteRul
     }
 }
 
-// Ideas:
-// x+(-x) -> 0
-
 void arith_init_rules(ParsingContext *ctx)
 {
     g_num_rules = ARITH_NUM_PREDEFINED_RULES;
     parse_rules(ctx, ARITH_NUM_PREDEFINED_RULES,
         (char*[]){
             "$x", "x",
+            /*
             // Normal form
             "x+(y+z)", "x+y+z",
             "x*(y*z)", "x*y*z",
@@ -115,6 +107,7 @@ void arith_init_rules(ParsingContext *ctx)
             "x^1", "x",
             "x^0", "1",
             "ln(x^y)", "y*ln(x)",
+            */
         },
         g_rules);
 }
@@ -132,12 +125,6 @@ char *transform_input(ParsingContext *ctx, Node *tree, bool update_ans)
 
     // Apply rules
     apply_ruleset(ctx, tree, g_num_rules, g_rules);
-
-    // Check for remaining derivation operators
-    if (find_matching_discarded(ctx, tree, PARSE("x'")))
-    {
-        return "Derivation currently not implemented";
-    }
 
     // Update ans
     if (update_ans)
