@@ -11,13 +11,13 @@ Scientific calculator written in C in which you can define your own functions
 When starting the calculator normally, you can enter expressions and commands interactively. Passed arguments will be evaluated beforehand. You can pipe in contents which will be evaluated as if typed in, after that the calculator terminates and does not enter interactive mode.
 
 ### Syntax
-* Any input which is not a command will be interpreted as an expression.
+* Just type in a mathematical expression to evaluate it.
 * ```ans``` can be used to reference previous result.
 * Two subexpressions next to each other without an infix operator will be multiplied (e.g. ```2a``` or ```(x-1)(y+1)```).
 * You can define functions (and even overload them by arity) and constants (e.g. ```myFunc(x) := x^2```, ```myConst := 42```).
 * When applying unary functions to a literal, you can omit parentheses (e.g. ```sin2```).
 * Any line starting with ```'``` will be ignored (useful for comments in files to be loaded).
-* You can use ```$``` to parse the following expression with maximal precedence (inspired by Haskell's syntax).
+* You can use ```$``` to parse the following expression with maximal precedence, like in Haskell.
 
 ### Available commands
 | Command                     | Description                                                  |
