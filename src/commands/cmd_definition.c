@@ -129,6 +129,7 @@ void add_constant(ParsingContext *ctx, char *name, char *right)
 
     ctx_add_op(ctx, op_get_constant(name));
     g_rules[g_num_rules++] = get_rule(parse_conveniently(ctx, name), right_n);
+    return;
 
     cleanup:
     free(name);

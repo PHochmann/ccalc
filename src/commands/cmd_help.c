@@ -104,15 +104,15 @@ void cmd_help_exec(ParsingContext *ctx, __attribute__((unused)) char *input)
     // Print user-defined functions if there are any
     if (g_num_rules > ARITH_NUM_PREDEFINED_RULES)
     {
-        printf("\nUser-defined functions and constants:\n");
+        printf("\nUser-defined functions and constants:");
         for (size_t i = ARITH_NUM_PREDEFINED_RULES; i < g_num_rules; i++)
         {
+            printf("\n");
             print_tree_inlined(ctx, g_rules[i].before, true);
             printf(" := ");
             print_tree_inlined(ctx, g_rules[i].after, true);
-            printf("\n");
         }
     }
 
-    printf("\n");
+    printf("\n\n");
 }
