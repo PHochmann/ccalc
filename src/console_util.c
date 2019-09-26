@@ -6,16 +6,15 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-#include "../string_util.h"
-#include "../arithmetics/arith_rules.h"
+#include "string_util.h"
+#include "arithmetics/arith_rules.h"
 #include "console_util.h"
 
 #define COL_RESET   "\033[0m"
 #define TTY_ASK_VARIABLE_PROMPT "? > "
 
 static const size_t MAX_INPUT_LENGTH    = 100;
-static const size_t MAX_INLINED_LENGTH  = 100;
-static const size_t MAX_RULE_ITERATIONS = 50;
+static const size_t MAX_INLINED_LENGTH  = 200;
 
 void init_console_util()
 {
@@ -144,9 +143,10 @@ bool parse_input_console(ParsingContext *ctx, char *input, char *error_fmt, Node
         return false;
     };
 
-    if (!transform_input(ctx, *out_res, update_ans))
+    char *error_msg = transform_input(ctx, *out_res, update_ans);
+    if (error_msg != NULL)
     {
-        printf(error_fmt, "Math Error");
+        printf(error_fmt, error_msg);
         free_tree(*out_res);
         return false;
     }

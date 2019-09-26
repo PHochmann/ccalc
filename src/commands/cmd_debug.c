@@ -3,7 +3,7 @@
 #include "../parsing/parser.h"
 #include "../string_util.h"
 #include "cmd_debug.h"
-#include "console_util.h"
+#include "../console_util.h"
 
 #define COMMAND "debug "
 

@@ -69,6 +69,11 @@ double arith_eval(Node *tree)
         case NTYPE_OPERATOR:
             switch ((size_t)(tree->op - arith_ctx.operators))
             {
+                case 0: // $x
+                    return EVAL(0);
+                case 1: // x'
+                    printf("Tried to directly evaluate derivation!");
+                    return -1;
                 case 2: // x+y
                     return EVAL(0) + EVAL(1);
                 case 3: // x-y

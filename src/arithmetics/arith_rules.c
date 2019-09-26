@@ -1,12 +1,14 @@
 #include <stdio.h>
 
-#include "../parsing/parser.h"
 #include "arith_rules.h"
+#include "arith_context.h"
+#include "../parsing/parser.h"
+#include "../console_util.h"
 
 #define PARSE(n) parse_conveniently(ctx, n)
 #define ANS_VAR "ans"
 
-const size_t ARITH_NUM_PREDEFINED_RULES = 8;
+const size_t ARITH_NUM_PREDEFINED_RULES = 30; // 40
 
 // Functions to add rules at runtime (custom functions)
 
@@ -45,6 +47,12 @@ bool parse_rules(ParsingContext *ctx, size_t num_rules, char **input, RewriteRul
     return true;
 }
 
+bool is_constant_op(__attribute__((unused)) ParsingContext *ctx, Node *tree)
+{
+    return tree->type == NTYPE_OPERATOR && tree_count_vars(tree) == 0
+        && !find_matching_discarded(ctx, tree, PARSE("x'"));
+}
+
 /*
 Summary: Tries to apply rules (priorized by order) until no rule can be applied any more
 */
@@ -57,14 +65,17 @@ void apply_ruleset(ParsingContext *ctx, Node *tree, size_t num_rules, RewriteRul
         {
             if (apply_rule(ctx, tree, &rules[j]))
             {
-                //printf("%zu ", j);
                 applied_flag = true;
                 break;
             }
         }
+
         if (!applied_flag) return;
     }
 }
+
+// Ideas:
+// x+(-x) -> 0
 
 void arith_init_rules(ParsingContext *ctx)
 {
@@ -72,20 +83,47 @@ void arith_init_rules(ParsingContext *ctx)
     parse_rules(ctx, ARITH_NUM_PREDEFINED_RULES,
         (char*[]){
             "$x", "x",
+            // Normal form
             "x+(y+z)", "x+y+z",
             "x*(y*z)", "x*y*z",
-            // Derivation
-            "name_x'", "1",
-            "const_x'", "0",
-            "var_x'", "0",
-            "(x+y)'", "x'+y'",
-            "(x*y)'", "(x'*y)+(x*y')",
+            // Operator reduction
+            "+x", "x",
+            "x%", "x/100",
+            "ld(x)", "log(x, 2)",
+            "lg(x)", "log(x, 10)",
+            "log(x, y)", "ln(x)/ln(y)",
+            "exp(x)", "e^x",
+            // Simplification
+            "--x", "x",
+            "0*x", "0",
+            "x*0", "0",
+            "0+x", "x",
+            "x+0", "x",
+            "x+x", "2x",
+            "x+n*x", "(n+1)*x",
+            "x*1", "x",
+            "1*x", "x",
+            "x*x", "x^2",
+            "x*x^n", "x^(n+1)",
+            "x/1", "x",
+            "0/x", "0",
+            "x/x", "1",
+            "x*(y/z)", "(x*y)/z",
+            "(y/z)*x", "(x*y)/z",
+            "(x^y)^z", "x^(y*z)",
+            "log(x, x)", "1",
+            "x^1", "x",
+            "x^0", "1",
+            "ln(x^y)", "y*ln(x)",
         },
         g_rules);
 }
 
-// Returns false to indicate math error
-bool transform_input(ParsingContext *ctx, Node *tree, bool update_ans)
+/*
+Summary: Does post-processing of correctly parsed input (i.e. replacing ans and applying RewriteRules)
+Returns: Error message or NULL when no error occurred
+*/
+char *transform_input(ParsingContext *ctx, Node *tree, bool update_ans)
 {
     static Node *ans = NULL; // Constant node that contains result of last evaluation
 
@@ -95,20 +133,18 @@ bool transform_input(ParsingContext *ctx, Node *tree, bool update_ans)
     // Apply rules
     apply_ruleset(ctx, tree, g_num_rules, g_rules);
 
-    Matching matching;
-    if (find_matching(ctx, tree, PARSE("x'"), &matching))
+    // Check for remaining derivation operators
+    if (find_matching_discarded(ctx, tree, PARSE("x'")))
     {
-        printf("Encountered operator with no derivation rule\n");
-        free_matching(matching);
-        return false;
+        return "Derivation currently not implemented";
     }
 
     // Update ans
     if (update_ans)
     {
         if (ans != NULL) free_tree(ans);
-        ans = tree; // Would be safer to copy tree, but is not needed for now
+        ans = tree; // Would be safer to copy tree, but it is not needed for now
     }
 
-    return true;
+    return NULL;
 }

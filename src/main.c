@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
+#include "console_util.h"
 #include "commands/core.h"
-#include "commands/console_util.h"
 
 /*
 Simple calculator written in C in which you can define your own functions and pattern matching rules

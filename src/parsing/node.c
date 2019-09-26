@@ -72,6 +72,24 @@ void free_tree_preserved(Node *tree)
     }
 }
 
+Node *tree_search(ParsingContext *ctx, Node *tree, bool (*predicate)(ParsingContext*, Node*))
+{
+    // Basic case
+    if (predicate(ctx, tree)) return tree;
+    
+    // Recursive case
+    if (tree->type == NTYPE_OPERATOR)
+    {
+        for (size_t i = 0; i < tree->num_children; i++)
+        {
+            Node *recursive_res = tree_search(ctx, tree->children[i], predicate);
+            if (recursive_res != NULL) return recursive_res;
+        }
+    }
+    
+    return NULL;
+}
+
 /* Returns number of variable nodes in tree
    False indicates safe evaluation */
 size_t tree_count_vars(Node *tree)
@@ -99,6 +117,22 @@ size_t tree_count_vars(Node *tree)
         default:
             return 0;
     }
+}
+
+bool tree_count_vars_distinct(Node *tree, size_t *out_num_variables)
+{
+    // out-discard pattern
+
+    char *vars[MAX_VAR_COUNT];
+    if (tree_list_vars(tree, out_num_variables, vars))
+    {
+        for (size_t i = 0; i < *out_num_variables; i++)
+        {
+            free(vars[i]);
+        }
+        return true;
+    }
+    return false;
 }
 
 /*
@@ -145,6 +179,14 @@ bool tree_get_var_instances(Node *tree, char *var_name, size_t *out_num_instance
     return true;
 }
 
+bool tree_count_var_instances(Node *tree, char *var_name, size_t *out_num_instances)
+{
+    // out-discard pattern
+
+    Node *instances[MAX_VAR_COUNT];
+    return tree_get_var_instances(tree, var_name, out_num_instances, instances);
+}
+
 /*
 Summary: Lists all variable names in tree.
 Returns: False if stack exceeded or MAX_VAR_COUNT exceeded
@@ -155,9 +197,8 @@ Params
 */
 bool tree_list_vars(Node *tree, size_t *out_num_variables, char **out_variables)
 {
-    if (tree == NULL || out_num_variables == NULL) return false;
+    if (tree == NULL || out_num_variables == NULL || out_variables == NULL) return false;
     
-    char *variables[MAX_VAR_COUNT];
     Node *node_stack[MAX_TREE_SEARCH_STACK_SIZE];
     size_t num_nodes = 1;
     node_stack[0] = tree;
@@ -174,7 +215,7 @@ bool tree_list_vars(Node *tree, size_t *out_num_variables, char **out_variables)
                 for (size_t i = 0; i < *out_num_variables; i++)
                 {
                     // Don't add variable if we already found it
-                    if (strcmp(variables[i], curr_node->var_name) == 0)
+                    if (strcmp(out_variables[i], curr_node->var_name) == 0)
                     {
                         flag = true;
                         break;
@@ -183,15 +224,15 @@ bool tree_list_vars(Node *tree, size_t *out_num_variables, char **out_variables)
                 if (flag) break;
                 
                 // Buffer overflow protection
-                if (*out_num_variables == MAX_VAR_COUNT) goto exit;
-                variables[*out_num_variables] = malloc(strlen(curr_node->var_name) + 1);
-                strcpy(variables[(*out_num_variables)++], curr_node->var_name);
+                if (*out_num_variables == MAX_VAR_COUNT) goto error;
+                out_variables[*out_num_variables] = malloc(strlen(curr_node->var_name) + 1);
+                strcpy(out_variables[(*out_num_variables)++], curr_node->var_name);
                 break;
                 
             case NTYPE_OPERATOR:
                 for (size_t i = 0; i < curr_node->num_children; i++)
                 {
-                    if (num_nodes == MAX_TREE_SEARCH_STACK_SIZE) goto exit;
+                    if (num_nodes == MAX_TREE_SEARCH_STACK_SIZE) goto error;
                     node_stack[num_nodes++] = curr_node->children[curr_node->num_children - 1 - i];
                 }
                 break;
@@ -201,32 +242,15 @@ bool tree_list_vars(Node *tree, size_t *out_num_variables, char **out_variables)
         }
     }
 
-    // Needed to cleanup when out_variables is NULL
-    bool success = false;
-
-    if (out_variables != NULL)
-    {
-        for (size_t i = 0; i < *out_num_variables; i++)
-        {
-            out_variables[i] = variables[i];
-        }
-        return true;
-    }
-    else
-    {
-        success = true;
-    }
+    return true;
     
-    exit:
-
+    error:
     // Free partial results
     for (size_t i = 0; i < *out_num_variables; i++)
     {
-        free(variables[i]);
+        free(out_variables[i]);
     }
-
-    // 'cleanup' is false when jumping to label on error, otherwise true
-    return success;
+    return false;
 }
 
 /*

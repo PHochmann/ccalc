@@ -9,7 +9,7 @@
 #include "cmd_load.h"
 #include "cmd_debug.h"
 #include "cmd_definition.h"
-#include "console_util.h"
+#include "../console_util.h"
 
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"

@@ -3,7 +3,7 @@
 
 #include "cmd_help.h"
 #include "core.h"
-#include "console_util.h"
+#include "../console_util.h"
 
 #include "../parsing/operator.h"
 #include "../arithmetics/arith_context.h"
@@ -102,9 +102,9 @@ void cmd_help_exec(ParsingContext *ctx, __attribute__((unused)) char *input)
     }
 
     // Print user-defined functions if there are any
-    if (ctx->num_ops > ARITH_NUM_OPS)
+    if (g_num_rules > ARITH_NUM_PREDEFINED_RULES)
     {
-        printf("\nUser-defined functions:\n");
+        printf("\nUser-defined functions and constants:\n");
         for (size_t i = ARITH_NUM_PREDEFINED_RULES; i < g_num_rules; i++)
         {
             print_tree_inlined(ctx, g_rules[i].before, true);
@@ -114,5 +114,5 @@ void cmd_help_exec(ParsingContext *ctx, __attribute__((unused)) char *input)
         }
     }
 
-    printf("\n\n");
+    printf("\n");
 }

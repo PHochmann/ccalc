@@ -17,3 +17,4 @@ typedef bool *(*MatchHandler)(ParsingContext *ctx, Matching matching);
 bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_matching);
 void free_matching(Matching matching);
 bool find_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_matching);
+bool find_matching_discarded(ParsingContext *ctx, Node *tree, Node *pattern);

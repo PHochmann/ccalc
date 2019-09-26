@@ -90,7 +90,7 @@ bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_
     }
     
     // We successfully found matching! Construct it:
-    out_matching->matched_tree = tree;
+    out_matching->matched_tree = tree; // Not copied, because afterwards usually used to replace subtree
     out_matching->num_mapped = num_mapped_vars;
     out_matching->mapped_vars = malloc(sizeof(char*) * num_mapped_vars);
     out_matching->mapped_nodes = malloc(sizeof(Node*) * num_mapped_vars);
@@ -135,5 +135,21 @@ bool find_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out
         }
     }
     
+    return false;
+}
+
+/*
+Summary: Basically the same as find_matching, but discards matching
+*/
+bool find_matching_discarded(ParsingContext *ctx, Node *tree, Node *pattern)
+{
+    // Out-discard pattern
+    
+    Matching matching;
+    if (find_matching(ctx, tree, pattern, &matching))
+    {
+        free_matching(matching);
+        return true;
+    }
     return false;
 }

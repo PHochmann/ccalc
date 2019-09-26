@@ -2,7 +2,7 @@
 #include "../parsing/context.h"
 #include "../parsing/node.h"
 
-// Exported to let help command detect user-defined functions in ctx
+// Exported for help command
 extern const size_t ARITH_NUM_OPS;
 
 double arith_eval(Node *node);

@@ -1,8 +1,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "../parsing/node.h"
-#include "../parsing/parser.h"
+#include "parsing/node.h"
+#include "parsing/parser.h"
 
 bool g_interactive; // When set to true, whispered prints will be displayed and readline will be used
 
