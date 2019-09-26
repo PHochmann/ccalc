@@ -3,26 +3,26 @@
 
 #include "tree_to_string_test.h"
 
-#include "../src/commands/arith_context.h"
-#include "../src/engine/context.h"
-#include "../src/engine/node.h"
-#include "../src/engine/parser.h"
-#include "../src/engine/string_util.h"
+#include "../src/arithmetics/arith_context.h"
+#include "../src/string_util.h"
+
+#include "../src/parsing/context.h"
+#include "../src/parsing/node.h"
+#include "../src/parsing/parser.h"
 
 struct TreeToStringTest {
     char *string_to_tree;
     char *tree_to_string;
 };
 
-// Todo: More test cases!
 static const size_t NUM_TESTS = 7;
 static struct TreeToStringTest tests[] = {
     { "--a", "-(-a)"},
     { "--b!!", "(-(-b)!)!"},
     { "(1+2)+3", "1+2+3" },
-    { "1+(2+3)", "1+2+3" },
+    { "1+(2+3)", "1+(2+3)" },
     { "1+2-3", "1+2-3" },
-    { "1+(2-3)", "1+2-3" }, // Todo: Is this right behaviour?
+    { "1+(2-3)", "1+(2-3)" },
     { "-sqrt(abs(--a!!*--sum(-b+c-d+e, f^g^h-i, -sum(j, k), l+m)*--n!!))", "-sqrt(abs(((-(-a)!)!)*(-(-sum(-b+c-d+e, f^g^h-i, -sum(j, k), l+m)))*(-(-n)!)!))" }
 };
 

@@ -1,5 +1,5 @@
 # Calculator
-Scientific calculator written in C in which you can define your own functions and pattern matching rules
+Scientific calculator written in C in which you can define your own functions
 
 ## Setup guide
 1. Clone repository.
@@ -20,15 +20,14 @@ When starting the calculator normally, you can enter expressions and commands in
 * You can use ```$``` to parse the following expression with maximal precedence (inspired by Haskell's syntax).
 
 ### Available commands
-| Command                     | Description                                                        |
-| ---                         | ---                                                                |
-| ```help```                  | Lists all available operators.                                     |
-| ```rules [clear]```         | Lists all defined rules or clears all rules and defined functions. |
-| ```<function> := <after>``` | Adds new function.                                                 |
-| ```<before> -> <after>```   | Defines new rule. The following special variable names can be used to restrict matchings (```x``` used as example, can be any variable name): <ul><li>```name_x``` will only bind to variables named x</li><li>```var_x``` will only bind to variables</li><li>```const_x``` will only bind to constants</li></ul> |
-| ```load <path>```           | Loads file as if its content had been typed in line by line.       |
-| ```tree <expr>```     | Visually prints abstract syntax tree of expression.                |
-| ```quit```                  | Closes calculator.                                                 |
+| Command                     | Description                                                  |
+| ---                         | ---                                                          |
+| ```help```                  | Lists all available operators.                               |
+| ```clear```                 | Clears all user-defined functions.                           |
+| ```<function> := <after>``` | Adds new function.                                           |
+| ```load <path>```           | Loads file as if its content had been typed in line by line. |
+| ```debug <expr>```           | Visually prints abstract syntax tree of expression.         |
+| ```quit```                  | Closes calculator.                                           |
 
 ### Infix operators
 | Name      | Associativity | Precedence | Description          |

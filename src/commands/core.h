@@ -1,10 +1,10 @@
 #pragma once
 #include <stdbool.h>
 #include <stdarg.h>
-#include "../engine/context.h"
-#include "../engine/node.h"
+#include "../parsing/context.h"
+#include "../parsing/node.h"
 
-#define VERSION "1.3.5"
+#define VERSION "1.3.6"
 
 void init_commands();
 void process_input(FILE *file);
