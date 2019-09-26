@@ -14,7 +14,7 @@ When starting the calculator normally, you can enter expressions and commands in
 * Any input which is not a command will be interpreted as an expression.
 * ```ans``` can be used to reference previous result.
 * Two subexpressions next to each other without an infix operator will be multiplied (e.g. ```2a``` or ```(x-1)(y+1)```).
-* To define a constant, you can define a function without arguments (e.g. ```myConst() := 42```) or a pattern matching rule that only applies to a variable of a specific name (e.g. ```name_myConst -> 42```).
+* You can define functions (and even overload them by arity) and constants (e.g. ```myFunc(x) := x^2```, ```myConst := 42```).
 * When applying unary functions to a literal, you can omit parentheses (e.g. ```sin2```).
 * Any line starting with ```'``` will be ignored (useful for comments in files to be loaded).
 * You can use ```$``` to parse the following expression with maximal precedence (inspired by Haskell's syntax).
@@ -24,9 +24,9 @@ When starting the calculator normally, you can enter expressions and commands in
 | ---                         | ---                                                          |
 | ```help```                  | Lists all available operators.                               |
 | ```clear```                 | Clears all user-defined functions.                           |
-| ```<function> := <after>``` | Adds new function.                                           |
+| ```<expr> := <after>```     | Adds new function or constant.                               |
 | ```load <path>```           | Loads file as if its content had been typed in line by line. |
-| ```debug <expr>```           | Visually prints abstract syntax tree of expression.         |
+| ```debug <expr>```          | Visually prints abstract syntax tree of expression.          |
 | ```quit```                  | Closes calculator.                                           |
 
 ### Infix operators
