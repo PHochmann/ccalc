@@ -22,17 +22,15 @@ struct Command
 {
     void (*initHandler)();
     bool (*checkHandler)(char *input);
-    void (*execHandler)(ParsingContext *ctx, char *input);
+    void (*execHandler)(char *input);
 };
-
-static ParsingContext *ctx;
 
 void cmd_debug_init();
 bool cmd_debug_check(char *input);
-void cmd_debug_exec(ParsingContext *ctx, char *input);
+void cmd_debug_exec(char *input);
 void cmd_quit_init();
 bool cmd_quit_check(char *input);
-void cmd_quit_exec(ParsingContext *ctx, char *input);
+void cmd_quit_exec(char *input);
 
 static const size_t NUM_COMMANDS = 7;
 static const struct Command commands[] = {
@@ -40,7 +38,7 @@ static const struct Command commands[] = {
     { cmd_help_init,       cmd_help_check,       cmd_help_exec},
     { cmd_definition_init, cmd_definition_check, cmd_definition_exec},
     { cmd_clear_init,      cmd_clear_check,      cmd_clear_exec},
-    { cmd_debug_init,       cmd_debug_check,       cmd_debug_exec },
+    { cmd_debug_init,      cmd_debug_check,      cmd_debug_exec },
     { cmd_load_init,       cmd_load_check,       cmd_load_exec},
     /* Evaluation is last command. Its check function always returns true. */
     { cmd_evaluation_init, cmd_evaluation_check, cmd_evaluation_exec}
@@ -52,8 +50,8 @@ Summary: Sets parsing context and initializes commands
 void init_commands()
 {
     init_console_util();
-    ctx = arith_init_ctx();
-    arith_init_rules(ctx);
+    arith_init_ctx();
+    arith_init_rules();
 
     for (size_t i = 0; i < NUM_COMMANDS; i++)
     {
@@ -89,7 +87,7 @@ void parse_command(char *input)
     {
         if (commands[i].checkHandler(input))
         {
-            commands[i].execHandler(ctx, input);
+            commands[i].execHandler(input);
             return;
         }
     }
@@ -104,7 +102,7 @@ bool cmd_quit_check(char *input)
     return strcmp(input, "quit") == 0;
 }
 
-void cmd_quit_exec(__attribute__((unused)) ParsingContext *ctx, __attribute__((unused)) char *input)
+void cmd_quit_exec(__attribute__((unused)) char *input)
 {
     exit(EXIT_SUCCESS);
 }

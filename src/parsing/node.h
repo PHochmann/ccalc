@@ -32,6 +32,7 @@ typedef struct Node
 Node get_variable_node(char *var_name);
 Node get_constant_node(void *value);
 Node get_operator_node(Operator *op, size_t num_children);
+Node *malloc_node(Node node);
 void free_tree(Node *node);
 void free_tree_preserved(Node *tree);
 Node *tree_search(ParsingContext *ctx, Node *tree, bool (*predicate)(ParsingContext*, Node*));

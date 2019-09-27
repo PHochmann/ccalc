@@ -5,10 +5,6 @@
 #include "../parsing/node.h"
 #include "../string_util.h" // For begins_with
 
-#define VAR_PREFIX "var_"
-#define CONST_PREFIX "const_"
-#define NAME_PREFIX "name_"
-
 /*
 Summary: Tries to match "tree" against "pattern" (only in root)
 Returns: True, if matching is found, false if NULL-pointers given in arguments or no matching found

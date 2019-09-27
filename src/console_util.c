@@ -134,7 +134,7 @@ Summary:
 Returns:
     True when input was successfully parsed, false when syntax error in input or aborted when asked for constant
 */
-bool parse_input_console(ParsingContext *ctx, char *input, char *error_fmt, Node **out_res, bool constant, bool update_ans)
+bool parse_input_from_console(ParsingContext *ctx, char *input, char *error_fmt, Node **out_res, bool constant, bool update_ans)
 {
     ParserError perr = parse_input(ctx, input, out_res);
     if (perr != PERR_SUCCESS)
@@ -143,13 +143,7 @@ bool parse_input_console(ParsingContext *ctx, char *input, char *error_fmt, Node
         return false;
     };
 
-    char *error_msg = transform_input(ctx, *out_res, update_ans);
-    if (error_msg != NULL)
-    {
-        printf(error_fmt, error_msg);
-        free_tree(*out_res);
-        return false;
-    }
+    transform_input(*out_res, update_ans);
 
     // Make expression constant by asking for values and binding them to variables
     if (constant)
@@ -176,7 +170,7 @@ bool parse_input_console(ParsingContext *ctx, char *input, char *error_fmt, Node
             if (ask_input(prompt, stdin, &input))
             {
                 Node *res_var;
-                if (!parse_input_console(ctx, input, error_fmt, &res_var, false, false))
+                if (!parse_input_from_console(ctx, input, error_fmt, &res_var, false, false))
                 {
                     // Error while parsing - ask again
                     free(input);

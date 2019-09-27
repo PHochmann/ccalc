@@ -19,15 +19,15 @@ bool cmd_evaluation_check(__attribute__((unused)) char *input)
 /*
 Summary: The evaluation command is executed when input is no other command (hence last in command array at core.c)
 */
-void cmd_evaluation_exec(ParsingContext *ctx, char *input)
+void cmd_evaluation_exec(char *input)
 {
     Node *tree;
     
-    if (parse_input_console(ctx, input, "Error: %s\n", &tree, true, true))
+    if (parse_input_from_console(g_ctx, input, "Error: %s\n", &tree, true, true))
     {        
         double result = arith_eval(tree);
-        char result_str[ctx->recommended_str_len];
-        ctx->to_string((void*)(&result), ctx->recommended_str_len, result_str);
+        char result_str[g_ctx->recommended_str_len];
+        g_ctx->to_string((void*)(&result), g_ctx->recommended_str_len, result_str);
         printf(g_interactive ? "= %s\n" : "%s\n", result_str);
     }
 }

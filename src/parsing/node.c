@@ -43,6 +43,13 @@ Node get_operator_node(Operator *op, size_t num_children)
     return res;
 }
 
+Node *malloc_node(Node node)
+{
+    Node *res = malloc(sizeof(Node));
+    *res = node;
+    return res;
+}
+
 // Summary: Calls free() on each node within tree, including variable's names, constant's values and operator's children
 void free_tree(Node *tree)
 {

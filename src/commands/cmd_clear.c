@@ -19,9 +19,9 @@ bool cmd_clear_check(char *input)
 /*
 Summary: Prints a string representation for currently defined rules
 */
-void cmd_clear_exec(__attribute__((unused)) ParsingContext *ctx, __attribute__((unused)) char *input)
+void cmd_clear_exec(__attribute__((unused)) char *input)
 {
     arith_reset_ctx(); // To remove user-defined functions from parsing context
     arith_reset_rules(); // To remove any user-defined rules
-    printf("Functions cleared.\n");
+    whisper("Constants and functions cleared.\n");
 }

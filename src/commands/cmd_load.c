@@ -22,7 +22,7 @@ bool cmd_load_check(char *input)
 /*
 Summary: Opens file and processes its content as from stdin
 */
-void cmd_load_exec(__attribute__((unused)) ParsingContext *ctx, char *input)
+void cmd_load_exec(char *input)
 {
     FILE *file = fopen(input + strlen(COMMAND), "r");
 

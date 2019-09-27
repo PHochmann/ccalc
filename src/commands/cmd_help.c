@@ -71,7 +71,7 @@ void print_op(Operator *op)
     printf(COL_RESET " ");
 }
 
-void cmd_help_exec(ParsingContext *ctx, __attribute__((unused)) char *input)
+void cmd_help_exec(__attribute__((unused)) char *input)
 {
     printf("Calculator %s (c) 2019, Philipp Hochmann\n"
            "Commands: help, clear, <function> := <after>, load <path>, quit\n",
@@ -80,37 +80,37 @@ void cmd_help_exec(ParsingContext *ctx, __attribute__((unused)) char *input)
     printf("\nBasic operators:\n");
     for (size_t i = BASIC_IND; i < TRIG_IND; i++)
     {
-        print_op(&ctx->operators[i]);
+        print_op(&g_ctx->operators[i]);
     }
 
     printf("\nTrigonometric functions:\n");
     for (size_t i = TRIG_IND; i < MISC_FUNC_IND; i++)
     {
-        print_op(&ctx->operators[i]);
+        print_op(&g_ctx->operators[i]);
     }
 
     printf("\nMiscellaneous functions:\n");
     for (size_t i = MISC_FUNC_IND; i < CONSTANTS_IND; i++)
     {
-        print_op(&ctx->operators[i]);
+        print_op(&g_ctx->operators[i]);
     }
 
     printf("\nConstants:\n");
     for (size_t i = CONSTANTS_IND; i < ARITH_NUM_OPS; i++)
     {
-        print_op(&ctx->operators[i]);
+        print_op(&g_ctx->operators[i]);
     }
 
     // Print user-defined functions if there are any
-    if (g_num_rules > ARITH_NUM_PREDEFINED_RULES)
+    if (g_num_rules > ARITH_NUM_RULES)
     {
         printf("\nUser-defined functions and constants:");
-        for (size_t i = ARITH_NUM_PREDEFINED_RULES; i < g_num_rules; i++)
+        for (size_t i = ARITH_NUM_RULES; i < g_num_rules; i++)
         {
             printf("\n");
-            print_tree_inlined(ctx, g_rules[i].before, true);
+            print_tree_inlined(g_ctx, g_rules[i].before, true);
             printf(" := ");
-            print_tree_inlined(ctx, g_rules[i].after, true);
+            print_tree_inlined(g_ctx, g_rules[i].after, true);
         }
     }
 

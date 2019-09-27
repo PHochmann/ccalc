@@ -111,13 +111,13 @@ bool almost_equals(double a, double b)
 }
 
 // Returns: Index of error occurrence, -1 denotes no error
-int perform_value_tests(ParsingContext *ctx)
+int perform_value_tests()
 {
     Node *node = NULL;
     
     for (size_t i = 0; i < NUM_VALUE_TESTS; i++)
     {
-        if (parse_input(ctx, valueTests[i].input, &node) != PERR_SUCCESS
+        if (parse_input(g_ctx, valueTests[i].input, &node) != PERR_SUCCESS
             || !almost_equals(arith_eval(node), valueTests[i].result))
         {
             return i;
@@ -128,13 +128,13 @@ int perform_value_tests(ParsingContext *ctx)
 }
 
 // Returns: Index of error occurrence, -1 denotes no error
-int perform_error_tests(ParsingContext *ctx)
+int perform_error_tests()
 {
     Node *node = NULL;
 
     for (size_t i = 0; i < NUM_ERROR_TESTS; i++)
     {
-        if (parse_input(ctx, errorTests[i].input, &node) != errorTests[i].result)
+        if (parse_input(g_ctx, errorTests[i].input, &node) != errorTests[i].result)
         {
             return i;
         }
@@ -145,8 +145,8 @@ int perform_error_tests(ParsingContext *ctx)
 
 int parser_test()
 {
-    ParsingContext *ctx = arith_init_ctx();
-    int error_index = perform_value_tests(ctx);
+    arith_init_ctx();
+    int error_index = perform_value_tests();
     
     if (error_index != -1)
     {
@@ -154,7 +154,7 @@ int parser_test()
         return -1;
     }
 
-    error_index = perform_error_tests(ctx);
+    error_index = perform_error_tests();
 
     if (error_index != -1)
     {

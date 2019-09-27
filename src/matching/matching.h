@@ -2,6 +2,10 @@
 #include "../parsing/context.h"
 #include "../parsing/node.h"
 
+#define VAR_PREFIX "var_"
+#define CONST_PREFIX "const_"
+#define NAME_PREFIX "name_"
+
 /*
 Contains successful matching
 */

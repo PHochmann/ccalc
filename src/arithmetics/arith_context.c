@@ -7,12 +7,9 @@
 
 #define EVAL(n) arith_eval(tree->children[n])
 
-// Must not be static because can be exported
-const size_t ARITH_STRING_LENGTH = 30; // Including \0
-const size_t ARITH_NUM_OPS       = 50;
-const size_t ARITH_MAX_OPS =       60;
+static const size_t ARITH_STRING_LENGTH = 30; // Including \0
 
-static ParsingContext arith_ctx;
+ParsingContext __g_ctx;
 
 double binomial(double n, double k)
 {
@@ -67,7 +64,7 @@ double arith_eval(Node *tree)
             return *(double*)(tree->const_value);
             
         case NTYPE_OPERATOR:
-            switch ((size_t)(tree->op - arith_ctx.operators))
+            switch ((size_t)(tree->op - __g_ctx.operators))
             {
                 case 0: // $x
                     return EVAL(0);
@@ -240,20 +237,19 @@ Summary: Used to delete user-defined function operators
 void arith_reset_ctx()
 {
     // As operator names are stored on heap, we need to free them
-    for (size_t i = ARITH_NUM_OPS; i < arith_ctx.num_ops; i++)
+    for (size_t i = ARITH_NUM_OPS; i < __g_ctx.num_ops; i++)
     {
-        free(arith_ctx.operators[i].name);
+        free(__g_ctx.operators[i].name);
     }
-    arith_ctx.num_ops = ARITH_NUM_OPS;
+    __g_ctx.num_ops = ARITH_NUM_OPS;
 }
 
 /*
 Summary: Sets arithmetic context stored in global variable
-    It is only passed by pointer, never copied!
 */
-ParsingContext *arith_init_ctx()
+void arith_init_ctx()
 {
-    arith_ctx = get_context(
+    __g_ctx = get_context(
         sizeof(double),
         ARITH_STRING_LENGTH,
         ARITH_MAX_OPS,
@@ -261,7 +257,7 @@ ParsingContext *arith_init_ctx()
         arith_to_string,
         NULL); // Uses bytewise equals
     
-    ctx_add_ops(&arith_ctx, ARITH_NUM_OPS,
+    ctx_add_ops(g_ctx, ARITH_NUM_OPS,
         op_get_prefix("$", 0),
         op_get_infix("+", 2, OP_ASSOC_LEFT),
         op_get_infix("-", 2, OP_ASSOC_LEFT),
@@ -314,8 +310,7 @@ ParsingContext *arith_init_ctx()
         op_get_constant("csound"));
     
     // Set multiplication as glue-op
-    ctx_set_glue_op(&arith_ctx, &arith_ctx.operators[3]);
+    ctx_set_glue_op(g_ctx, &__g_ctx.operators[3]);
 
     srand(time(NULL));
-    return &arith_ctx;
 }

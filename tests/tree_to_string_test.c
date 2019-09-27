@@ -28,12 +28,12 @@ static struct TreeToStringTest tests[] = {
 
 int tree_to_string_test()
 {
-    ParsingContext *ctx = arith_init_ctx();
+    arith_init_ctx();
 
     for (size_t i = 0; i < NUM_TESTS; i++)
     {
         Node *node = NULL;
-        if (parse_input(ctx, tests[i].string_to_tree, &node) != PERR_SUCCESS)
+        if (parse_input(g_ctx, tests[i].string_to_tree, &node) != PERR_SUCCESS)
         {
             printf("Error in tree inline test %zu: Parser Error\n", i);
             return -1;
@@ -41,7 +41,7 @@ int tree_to_string_test()
 
         size_t expected_length = strlen(tests[i].tree_to_string);
         char expected_string[expected_length + 1];
-        if (tree_inline(ctx, node, expected_string, expected_length + 1, false) != expected_length)
+        if (tree_inline(g_ctx, node, expected_string, expected_length + 1, false) != expected_length)
         {
             printf("Error in tree inline test %zu: Unexpected length\n", i);
             return -1;
