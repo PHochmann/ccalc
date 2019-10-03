@@ -6,6 +6,7 @@
 
 bool g_interactive; // When set to true, whispered prints will be displayed and readline will be used
 
+void unload_console_util();
 void init_console_util();
 char *perr_to_string(ParserError perr);
 bool set_interactive(bool value);

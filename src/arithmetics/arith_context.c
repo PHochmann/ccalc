@@ -244,6 +244,16 @@ void arith_reset_ctx()
     __g_ctx.num_ops = ARITH_NUM_OPS;
 }
 
+void arith_unload_ctx()
+{
+    // Free custom operator's names
+    for (size_t i = ARITH_NUM_OPS; i < g_ctx->num_ops; i++)
+    {
+        free(g_ctx->operators[i].name);
+    }
+    free_context(g_ctx);
+}
+
 /*
 Summary: Sets arithmetic context stored in global variable
 */

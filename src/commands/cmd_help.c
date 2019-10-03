@@ -18,8 +18,6 @@ static const size_t TRIG_IND      = 19; // Index of first trigonometric function
 static const size_t MISC_FUNC_IND = 31; // Index of first misc. function
 static const size_t CONSTANTS_IND = 45; // Index of first constant
 
-void cmd_help_init() { }
-
 bool cmd_help_check(char *input)
 {
     return strcmp(input, "help") == 0;

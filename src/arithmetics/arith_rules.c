@@ -8,7 +8,7 @@
 #define PARSE(n) parse_conveniently(n)
 #define ANS_VAR "ans"
 
-// Functions to add rules at runtime (custom functions)
+Node *ans = NULL; // Constant node that contains result of last evaluation
 
 void arith_reset_rules()
 {
@@ -19,8 +19,6 @@ void arith_reset_rules()
 
     g_num_rules = ARITH_NUM_RULES;
 }
-
-// - - -
 
 bool parse_rule(char *before, char *after, RewriteRule *out_rule)
 {
@@ -66,12 +64,24 @@ void apply_ruleset(Node *tree, size_t num_rules, RewriteRule *rules)
     }
 }
 
+void arith_unload_rules()
+{
+    if (ans != NULL) free_tree(ans);
+    for (size_t i = 0; i < g_num_rules; i++)
+    {
+        free_rule(g_rules[i]);
+    }
+}
+
 void arith_init_rules()
 {
     g_num_rules = ARITH_NUM_RULES;
     parse_rules(ARITH_NUM_RULES,
         (char*[]){
             "$x", "x",
+            "x+(y+z)", "x+y+z",
+            "x*(y*z)", "x*y*z",
+            "--x", "x",
         },
         g_rules);
 }
@@ -82,8 +92,6 @@ Returns: Error message or NULL when no error occurred
 */
 void transform_input(Node *tree, bool update_ans)
 {
-    static Node *ans = NULL; // Constant node that contains result of last evaluation
-
     // Replace ans
     if (ans != NULL) tree_substitute_var(g_ctx, tree, ans, ANS_VAR);
 

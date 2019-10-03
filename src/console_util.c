@@ -16,11 +16,20 @@
 static const size_t MAX_INPUT_LENGTH    = 100;
 static const size_t MAX_INLINED_LENGTH  = 200;
 
+void unload_console_util()
+{
+#ifdef USE_READLINE
+    rl_clear_history();
+#endif
+}
+
 void init_console_util()
 {
     g_interactive = false;
+#ifdef USE_READLINE
     // Disable tab completion
     rl_bind_key('\t', rl_insert);
+#endif
 }
 
 /*
@@ -96,6 +105,40 @@ void whisper(const char *format, ...)
     }
 }
 
+#ifdef USE_READLINE
+// File is stdin
+bool ask_input_readline(char *prompt, char **out_input)
+{
+    *out_input = readline(prompt);
+    if (*out_input == NULL)
+    {
+        return false;
+    }
+    add_history(*out_input);
+    return true;
+}
+#endif
+
+bool ask_input_getline(char *prompt, FILE *file, char **out_input)
+{
+    if (g_interactive)
+    {
+        printf("%s", prompt);
+    }
+
+    size_t size = MAX_INPUT_LENGTH;
+    *out_input = malloc(MAX_INPUT_LENGTH);
+    if (getline(out_input, &size, file) == -1)
+    {
+        free(*out_input);
+        return false;
+    }
+
+    // Overwrite newline char
+    (*out_input)[strlen(*out_input) - 1] = '\0';
+    return true;
+}
+
 /*
 Summary: Used whenever input is requested. Prompt is only printed when interactive.
 Params
@@ -105,27 +148,13 @@ Params
 */
 bool ask_input(char *prompt, FILE *file, char **out_input)
 {
+#ifdef USE_READLINE
     if (g_interactive)
     {
-        *out_input = readline(prompt);
-        if (*out_input == NULL)
-        {
-            return false;
-        }
-        add_history(*out_input);
+        return ask_input_readline(prompt, out_input);
     }
-    else
-    {
-        size_t size = MAX_INPUT_LENGTH;
-        *out_input = malloc(MAX_INPUT_LENGTH);
-        if (getline(out_input, &size, file) == -1)
-        {
-            return false;
-        }
-        (*out_input)[strlen(*out_input) - 1] = '\0'; // Overwrite newline char
-    }
-
-    return true;
+#endif
+    return ask_input_getline(prompt, file, out_input);
 }
 
 /*

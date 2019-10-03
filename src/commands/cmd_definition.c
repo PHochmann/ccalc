@@ -18,8 +18,6 @@
 
 static const size_t MAX_TOKENS = 100;
 
-void cmd_definition_init() { }
-
 bool cmd_definition_check(char *input)
 {
     return strstr(input, DEFINITION_OP) != NULL;

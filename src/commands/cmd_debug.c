@@ -9,8 +9,6 @@
 
 #define COMMAND "debug "
 
-void cmd_debug_init() { }
-
 bool cmd_debug_check(char *input)
 {
     return begins_with(COMMAND, input);
@@ -18,9 +16,9 @@ bool cmd_debug_check(char *input)
 
 void cmd_debug_exec(char *input)
 {
-    input += strlen(COMMAND);
     Node *res;
-    if (parse_input_from_console(g_ctx, input, "Error: %s", &res, false, false))
+
+    if (parse_input_from_console(g_ctx, input + strlen(COMMAND), "Error: %s", &res, false, false))
     {
         print_tree_visual(g_ctx, res);
     }
@@ -28,4 +26,6 @@ void cmd_debug_exec(char *input)
     printf("= ");
     print_tree_inlined(g_ctx, res, true);
     printf("\n");
+
+    free_tree(res);
 }

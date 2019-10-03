@@ -12,8 +12,6 @@
 
 #define COMMAND "load "
 
-void cmd_load_init() { }
-
 bool cmd_load_check(char *input)
 {
     return begins_with(COMMAND, input);

@@ -9,8 +9,6 @@
 #include "../parsing/operator.h"
 #include "../string_util.h"
 
-void cmd_clear_init() { }
-
 bool cmd_clear_check(char *input)
 {
     return strcmp(input, "clear") == 0;

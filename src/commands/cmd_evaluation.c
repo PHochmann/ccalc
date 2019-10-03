@@ -9,8 +9,6 @@
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
 
-void cmd_evaluation_init() { }
-
 bool cmd_evaluation_check(__attribute__((unused)) char *input)
 {
     return true;

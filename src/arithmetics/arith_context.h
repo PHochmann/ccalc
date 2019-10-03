@@ -11,4 +11,5 @@ extern ParsingContext __g_ctx;
 
 double arith_eval(Node *node);
 void arith_reset_ctx();
+void arith_unload_ctx();
 void arith_init_ctx();
