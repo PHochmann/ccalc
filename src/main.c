@@ -11,7 +11,7 @@ https://github.com/PhilippHochmann/Calculator
 
 int main(int argc, char *argv[])
 {
-    // Build arithmetic context, initialise commands, set interactive = false
+    // Build arithmetic context, initialise commands
     init_commands();
     
     // Parse any arguments non-interactively
@@ -20,13 +20,13 @@ int main(int argc, char *argv[])
         parse_command(argv[i]);
     }
     
-    // If we are connected to a shell, set interactive = true to use readline
+    // If we are connected to a shell, use readline and show whispered messages (interactive mode)
     if (isatty(STDIN_FILENO))
     {
         set_interactive(true);
     }
 
-    // Enter loop to read input lines
+    // Enter loop to read all input lines
     process_input(stdin);
     
     return EXIT_SUCCESS;

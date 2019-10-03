@@ -11,7 +11,7 @@ if [ "$use_readline" = true ]; then
     DEFINES="${DEFINES} -DUSE_READLINE"
 fi
 
-echo "Compiling Calculator"
+echo "Compiling Calculator (use_readline = ${use_readline})"
 mkdir -p ${DIR}/bin
 
 if [ "$1" = "-debug" ] || [ "$1" = "-d" ]; then

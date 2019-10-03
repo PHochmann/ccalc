@@ -42,6 +42,9 @@ static const struct Command commands[] = {
     { cmd_evaluation_check, cmd_evaluation_exec}
 };
 
+/*
+Summary: Frees all ressources so that heap is empty after exit, except data malloced by readline.
+*/
 void unload_commands()
 {
     arith_unload_ctx();

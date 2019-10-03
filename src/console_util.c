@@ -3,8 +3,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+
+#ifdef USE_READLINE
 #include <readline/readline.h>
 #include <readline/history.h>
+#endif
 
 #include "string_util.h"
 #include "arithmetics/arith_rules.h"
@@ -13,8 +16,8 @@
 #define COL_RESET   "\033[0m"
 #define TTY_ASK_VARIABLE_PROMPT "? > "
 
-static const size_t MAX_INPUT_LENGTH    = 100;
-static const size_t MAX_INLINED_LENGTH  = 200;
+static const size_t MAX_INPUT_LENGTH   = 100;
+static const size_t MAX_INLINED_LENGTH = 200;
 
 void unload_console_util()
 {
@@ -30,44 +33,6 @@ void init_console_util()
     // Disable tab completion
     rl_bind_key('\t', rl_insert);
 #endif
-}
-
-/*
-Returns: String representation of ParserError to print
-*/
-char *perr_to_string(ParserError perr)
-{
-    switch (perr)
-    {
-        case PERR_SUCCESS:
-            return "Success";
-        case PERR_MAX_TOKENS_EXCEEDED:
-            return "Max. Tokens exceeded";
-        case PERR_STACK_EXCEEDED:
-            return "Stack exceeded";
-        case PERR_UNEXPECTED_SUBEXPRESSION:
-            return "Unexpected Subexpression";
-        case PERR_EXCESS_OPENING_PARENTHESIS:
-            return "Missing closing parenthesis";
-        case PERR_EXCESS_CLOSING_PARENTHESIS:
-            return "Unexpected closing parenthesis";
-        case PERR_UNEXPECTED_DELIMITER:
-            return "Unexpected delimiter";
-        case PERR_MISSING_OPERATOR:
-            return "Unexpected operand";
-        case PERR_MISSING_OPERAND:
-            return "Missing operand";
-        case PERR_OUT_OF_MEMORY:
-            return "Out of memory";
-        case PERR_FUNCTION_WRONG_ARITY:
-            return "Wrong number of operands of function";
-        case PERR_CHILDREN_EXCEEDED:
-            return "Exceeded maximum number of operands of function"; 
-        case PERR_EMPTY:
-            return "Empty Expression";
-        default:
-            return "Unknown Error";
-    }
 }
 
 /*
@@ -125,7 +90,7 @@ bool ask_input_getline(char *prompt, FILE *file, char **out_input)
     {
         printf("%s", prompt);
     }
-
+    
     size_t size = MAX_INPUT_LENGTH;
     *out_input = malloc(MAX_INPUT_LENGTH);
     if (getline(out_input, &size, file) == -1)
@@ -149,12 +114,52 @@ Params
 bool ask_input(char *prompt, FILE *file, char **out_input)
 {
 #ifdef USE_READLINE
+    // Use readline if it is installed and input comes from a shell
     if (g_interactive)
     {
         return ask_input_readline(prompt, out_input);
     }
 #endif
+
     return ask_input_getline(prompt, file, out_input);
+}
+
+/*
+Returns: String representation of ParserError
+*/
+char *perr_to_string(ParserError perr)
+{
+    switch (perr)
+    {
+        case PERR_SUCCESS:
+            return "Success";
+        case PERR_MAX_TOKENS_EXCEEDED:
+            return "Max. Tokens exceeded";
+        case PERR_STACK_EXCEEDED:
+            return "Stack exceeded";
+        case PERR_UNEXPECTED_SUBEXPRESSION:
+            return "Unexpected Subexpression";
+        case PERR_EXCESS_OPENING_PARENTHESIS:
+            return "Missing closing parenthesis";
+        case PERR_EXCESS_CLOSING_PARENTHESIS:
+            return "Unexpected closing parenthesis";
+        case PERR_UNEXPECTED_DELIMITER:
+            return "Unexpected delimiter";
+        case PERR_MISSING_OPERATOR:
+            return "Unexpected operand";
+        case PERR_MISSING_OPERAND:
+            return "Missing operand";
+        case PERR_OUT_OF_MEMORY:
+            return "Out of memory";
+        case PERR_FUNCTION_WRONG_ARITY:
+            return "Wrong number of operands of function";
+        case PERR_CHILDREN_EXCEEDED:
+            return "Exceeded maximum number of operands of function"; 
+        case PERR_EMPTY:
+            return "Empty Expression";
+        default:
+            return "Unknown Error";
+    }
 }
 
 /*
@@ -170,7 +175,7 @@ bool parse_input_from_console(ParsingContext *ctx, char *input, char *error_fmt,
     {
         printf(error_fmt, perr_to_string(perr));
         return false;
-    };
+    }
 
     transform_input(*out_res, update_ans);
 
