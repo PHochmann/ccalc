@@ -3,9 +3,8 @@ Scientific calculator written in C in which you can define your own constants an
 
 ## Setup guide
 1. Clone repository.
-2. Download and install readline. (On Ubuntu: ```sudo apt-get install libreadline-dev```)
+2. If you want to use readline, download its development files (Ubuntu: ```sudo apt-get install libreadline-dev```). If you do not want to use it, change the first line of ```make.sh``` to ```use_readline=false```.
 3. In root directory, run ```./make.sh [-d]``` to compile sources.
-4. If you want, add alias such as ```c="~/Calculator/bin/calculator.out $@"``` in ~/.bash_aliases (when using the bash) to run program from anywhere. Arguments can be any expression as in interactive mode, which is started when program is executed without additional arguments.
 
 ## How to use it
 When starting the calculator normally, you can enter expressions and commands interactively. Passed arguments will be evaluated beforehand. You can pipe in contents which will be evaluated as if typed in, after that the calculator terminates and does not enter interactive mode.
