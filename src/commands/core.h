@@ -4,7 +4,7 @@
 #include "../parsing/context.h"
 #include "../parsing/node.h"
 
-#define VERSION "1.3.6"
+#define VERSION "1.3.7"
 
 void init_commands();
 void process_input(FILE *file);

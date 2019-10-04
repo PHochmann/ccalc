@@ -23,7 +23,7 @@ typedef struct Node
 {
     NodeType type;          // Operator, constant or variable
     char *var_name;         // For variables
-    double const_value;      // For constant
+    double const_value;     // For constant
     Operator *op;           // For operator, points to operator in ctx
     size_t num_children;    // Size of children buffer
     struct Node **children; // On heap, can not be flexible array member due to tree_replace 
