@@ -13,7 +13,7 @@
 #include "arithmetics/arith_rules.h"
 #include "console_util.h"
 
-#define COL_RESET   "\033[0m"
+#define COL_RESET "\033[0m"
 #define TTY_ASK_VARIABLE_PROMPT "? > "
 
 static const size_t MAX_INPUT_LENGTH   = 100;
@@ -168,7 +168,7 @@ Summary:
 Returns:
     True when input was successfully parsed, false when syntax error in input or aborted when asked for constant
 */
-bool parse_input_from_console(ParsingContext *ctx, char *input, char *error_fmt, Node **out_res, bool constant, bool update_ans)
+bool parse_input_from_console(ParsingContext *ctx, char *input, char *error_fmt, Node **out_res, bool constant)
 {
     ParserError perr = parse_input(ctx, input, out_res);
     if (perr != PERR_SUCCESS)
@@ -177,7 +177,7 @@ bool parse_input_from_console(ParsingContext *ctx, char *input, char *error_fmt,
         return false;
     }
 
-    transform_input(*out_res, update_ans);
+    transform_input(*out_res);
 
     // Make expression constant by asking for values and binding them to variables
     if (constant)
@@ -204,7 +204,7 @@ bool parse_input_from_console(ParsingContext *ctx, char *input, char *error_fmt,
             if (ask_input(prompt, stdin, &input))
             {
                 Node *res_var;
-                if (!parse_input_from_console(ctx, input, error_fmt, &res_var, false, false))
+                if (!parse_input_from_console(ctx, input, error_fmt, &res_var, false))
                 {
                     // Error while parsing - ask again
                     free(input);

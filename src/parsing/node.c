@@ -25,7 +25,7 @@ Node get_variable_node(char *var_name)
 }
 
 // Returns a new node of type NTYPE_CONSTANT and prepares its attributes
-Node get_constant_node(void *value)
+Node get_constant_node(double value)
 {
     Node res = get_node(NTYPE_CONSTANT);
     res.const_value = value;
@@ -72,7 +72,6 @@ void free_tree_preserved(Node *tree)
             free(tree->children);
             break;
         case NTYPE_CONSTANT:
-            free(tree->const_value);
             break;
         case NTYPE_VARIABLE:
             free(tree->var_name);
@@ -313,11 +312,7 @@ Node tree_copy(ParsingContext *ctx, Node *tree)
             break;
         
         case NTYPE_CONSTANT:
-            res = get_constant_node(malloc(ctx->value_size));
-            for (size_t i = 0; i < ctx->value_size; i++)
-            {
-                *((char*)(res.const_value) + i) = *((char*)(tree->const_value) + i);
-            }
+            res = get_constant_node(tree->const_value);
             break;
             
         case NTYPE_VARIABLE:
@@ -341,19 +336,12 @@ bool node_equals(ParsingContext *ctx, Node *a, Node *b)
     switch (a->type)
     {
         case NTYPE_OPERATOR:
-            if (a->op != b->op) return false;
-            if (a->num_children != b->num_children) return false;
-            break;
-            
+            return a->op == b->op && a->num_children == b->num_children;
         case NTYPE_CONSTANT:
-            if (!ctx->equals(ctx, a->const_value, b->const_value)) return false;
-            break;
-            
+            return a->const_value == b->const_value;
         case NTYPE_VARIABLE:
-            if (strcmp(a->var_name, b->var_name) != 0) return false;
+            return strcmp(a->var_name, b->var_name) == 0;
     }
-    
-    return true;
 }
 
 /*

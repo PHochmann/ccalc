@@ -33,7 +33,7 @@ void add_function(char *name, char *left, char *right)
     Node *right_n = NULL;
     size_t num_distinct_vars;
     
-    if (!parse_input_from_console(g_ctx, left, FMT_ERROR_LEFT, &left_n, false, false))
+    if (!parse_input_from_console(g_ctx, left, FMT_ERROR_LEFT, &left_n, false))
     {
         goto cleanup;
     }
@@ -74,7 +74,7 @@ void add_function(char *name, char *left, char *right)
     // Assign correct arity
     g_ctx->operators[g_ctx->num_ops - 1].arity = left_n->num_children;
 
-    if (!parse_input_from_console(g_ctx, right, FMT_ERROR_RIGHT, &right_n, false, false))
+    if (!parse_input_from_console(g_ctx, right, FMT_ERROR_RIGHT, &right_n, false))
     {
         goto cleanup;
     }
@@ -109,7 +109,7 @@ void add_constant(char *name, char *right)
         goto cleanup;
     }
 
-    if (!parse_input_from_console(g_ctx, right, FMT_ERROR_RIGHT, &right_n, false, false))
+    if (!parse_input_from_console(g_ctx, right, FMT_ERROR_RIGHT, &right_n, false))
     {
         goto cleanup;
     }

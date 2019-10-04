@@ -45,6 +45,13 @@ bool is_delimiter(char *c)
     return strcmp(c, ",") == 0 || strcmp(c, ";") == 0;
 }
 
+bool try_parse_double(char *in, double *out)
+{
+    char *end_ptr;
+    *out = strtod(in, &end_ptr);
+    return *end_ptr == '\0';
+}
+
 void *malloc_wrapper(struct ParserState *state, size_t size)
 {
     void *res = malloc(size);
@@ -229,7 +236,6 @@ ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, 
     for (size_t i = 0; i < num_tokens; i++)
     {
         char *token = tokens[i];
-        size_t tok_len = strlen(token);
         
         // I. Does glue-op need to be inserted?
         if (!await_subexpression && state.ctx->glue_op != NULL)
@@ -376,25 +382,23 @@ ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, 
         
         // V. Token must be variable or constant (leaf)
         Node *node = malloc_wrapper(&state, sizeof(Node));
-        void *constant = malloc_wrapper(&state, state.ctx->value_size);
 
         // Out of memory - free partial results
         if (state.result == PERR_OUT_OF_MEMORY)
         {
             free(node);
-            free(constant);
             goto exit;
         }
 
         // Is token constant?
-        if (state.ctx->try_parse(token, constant))
+        double const_val;
+        if (try_parse_double(token, &const_val))
         {
-            *node = get_constant_node(constant);
+            *node = get_constant_node(const_val);
         }
         else // Token must be variable
         {
-            free(constant);
-            char *name = malloc_wrapper(&state, (tok_len + 1) * sizeof(char));
+            char *name = malloc_wrapper(&state, (strlen(token) + 1) * sizeof(char));
             if (state.result == PERR_OUT_OF_MEMORY) goto exit;
             strcpy(name, token);
             *node = get_variable_node(name);

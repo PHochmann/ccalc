@@ -4,21 +4,6 @@
 #include "context.h"
 
 /*
-Summary: Fallback in node_equals that is used when no EqualsHandler is defined in context
-*/
-bool bytewise_equals(ParsingContext *ctx, void *a, void *b)
-{
-    if (a == NULL || b == NULL) return false;
-
-    for (size_t i = 0; i < ctx->value_size; i++)
-    {
-        if (((char*)a)[i] != ((char*)b)[i]) return false;
-    }
-    
-    return true;
-}
-
-/*
 Summary: This method is used to create a new ParsingContext without glue-op and operators
     Use ctx_add_op and ctx_add_glue_op to add them to new context
 Parameters:
@@ -35,19 +20,13 @@ Parameters:
 ParsingContext get_context(
     size_t value_size,
     size_t recommended_str_len,
-    size_t max_ops,
-    TryParseHandler try_parse,
-    ToStringHandler to_string,
-    EqualsHandler equals)
+    size_t max_ops)
 {
     ParsingContext res = (ParsingContext){
         .value_size = value_size,
         .recommended_str_len = recommended_str_len,
         .max_ops = max_ops,
         .num_ops = 0,
-        .try_parse = try_parse,
-        .to_string = to_string,
-        .equals = equals != NULL ? equals : bytewise_equals,
         .operators = malloc(sizeof(Operator) * max_ops),
         .glue_op = NULL,
     };

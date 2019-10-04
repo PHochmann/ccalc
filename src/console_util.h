@@ -13,4 +13,4 @@ bool set_interactive(bool value);
 void print_tree_inlined(ParsingContext *ctx, Node *node, bool color);
 void whisper(const char *format, ...);
 bool ask_input(char *prompt, FILE *file, char **out_input);
-bool parse_input_from_console(ParsingContext *ctx, char *input, char *error_fmt, Node **out_res, bool constant, bool update_ans);
+bool parse_input_from_console(ParsingContext *ctx, char *input, char *error_fmt, Node **out_res, bool constant);

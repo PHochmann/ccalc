@@ -61,7 +61,7 @@ double arith_eval(Node *tree)
     switch (tree->type)
     {
         case NTYPE_CONSTANT:
-            return *(double*)(tree->const_value);
+            return tree->const_value;
             
         case NTYPE_OPERATOR:
             switch ((size_t)(tree->op - __g_ctx.operators))
@@ -219,18 +219,6 @@ double arith_eval(Node *tree)
     }
 }
 
-bool arith_try_parse(char *in, void *out)
-{
-    char *end_ptr;
-    *((double*)out) = strtod(in, &end_ptr);
-    return *end_ptr == '\0';
-}
-
-size_t arith_to_string(void *in, size_t buffer_size, char *str)
-{
-    return snprintf(str, buffer_size, "%-.30g", *((double*)in));
-}
-
 /*
 Summary: Used to delete user-defined function operators
 */
@@ -262,10 +250,7 @@ void arith_init_ctx()
     __g_ctx = get_context(
         sizeof(double),
         ARITH_STRING_LENGTH,
-        ARITH_MAX_OPS,
-        arith_try_parse,
-        arith_to_string,
-        NULL); // Uses bytewise equals
+        ARITH_MAX_OPS);
     
     ctx_add_ops(g_ctx, ARITH_NUM_OPS,
         op_get_prefix("$", 0),

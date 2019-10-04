@@ -5,6 +5,8 @@
 
 #include "string_util.h"
 
+#define DOUBLE_FMT "%-.30g"
+
 #define OP_COLOR    "\x1B[47m\x1B[22;30m" // White background, black foreground
 #define CONST_COLOR "\x1B[1;33m"          // Yellow
 #define VAR_COLOR   "\x1B[1;36m"          // Cyan
@@ -37,7 +39,6 @@ void print_tree_visual_rec(ParsingContext *ctx, Node *node, unsigned char layer,
     switch (node->type)
     {
         case NTYPE_OPERATOR:
-        {
             printf(OP_COLOR "%s" COL_RESET "\n", node->op->name);
             for (size_t i = 0; i < node->num_children; i++)
             {
@@ -45,21 +46,14 @@ void print_tree_visual_rec(ParsingContext *ctx, Node *node, unsigned char layer,
                     (i == node->num_children - 1) ? vert_lines : (vert_lines | ((unsigned int)1 << layer)));
             }
             break;
-        }
             
         case NTYPE_CONSTANT:
-        {
-            char value[ctx->recommended_str_len];
-            ctx->to_string(node->const_value, ctx->recommended_str_len, value);
-            printf(CONST_COLOR "%s" COL_RESET "\n", value);
+            printf(CONST_COLOR DOUBLE_FMT COL_RESET "\n", node->const_value);
             break;
-        }
             
         case NTYPE_VARIABLE:
-        {
             printf(VAR_COLOR "%s" COL_RESET "\n", node->var_name);
             break;
-        }
     }
 }
 
@@ -245,9 +239,7 @@ void tree_inline_rec(struct PrintingState *state, Node *node, bool l, bool r)
     switch (node->type)
     {
         case NTYPE_CONSTANT:
-            if (state->col) to_buf(state, CONST_COLOR);
-            update_state(state, state->ctx->to_string(node->const_value, state->buf_size, state->buf));
-            if (state->col) to_buf(state, COL_RESET);
+            to_buf(state, state->col ? CONST_COLOR DOUBLE_FMT COL_RESET : DOUBLE_FMT, node->const_value);
             break;
             
         case NTYPE_VARIABLE:

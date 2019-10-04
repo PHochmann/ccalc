@@ -11,4 +11,5 @@ RewriteRule g_rules[ARITH_MAX_RULES];
 void arith_reset_rules();
 void arith_unload_rules();
 void arith_init_rules();
-void transform_input(Node *tree, bool update_ans);
+void update_ans(double value);
+void transform_input(Node *tree);

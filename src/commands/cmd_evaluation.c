@@ -19,13 +19,12 @@ Summary: The evaluation command is executed when input is no other command (henc
 */
 void cmd_evaluation_exec(char *input)
 {
-    Node *tree;
-    
-    if (parse_input_from_console(g_ctx, input, "Error: %s\n", &tree, true, true))
+    Node *res;
+    if (parse_input_from_console(g_ctx, input, "Error: %s\n", &res, true))
     {        
-        double result = arith_eval(tree);
-        char result_str[g_ctx->recommended_str_len];
-        g_ctx->to_string((void*)(&result), g_ctx->recommended_str_len, result_str);
-        printf(g_interactive ? "= %s\n" : "%s\n", result_str);
+        double result = arith_eval(res);
+        printf(g_interactive ? "= %-.30g\n" : "%-.30g\n", result);
+        update_ans(result);
+        free_tree(res);
     }
 }

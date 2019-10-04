@@ -19,14 +19,14 @@ When starting the calculator normally, you can enter expressions and commands in
 * You can use ```$``` to parse the following expression with maximal precedence, like in Haskell.
 
 ### Available commands
-| Command                       | Description                                                  |
-| ---                           | ---                                                          |
-| ```help```                    | Lists all available operators.                               |
-| ```clear```                   | Clears all user-defined functions.                           |
+| Command                        | Description                                                  |
+| ---                            | ---                                                          |
+| ```help```                     | Lists all available operators.                               |
+| ```clear```                    | Clears all user-defined functions.                           |
 | ```<func\|const> := <after>``` | Adds new function or constant.                               |
-| ```load <path>```             | Loads file as if its content had been typed in line by line. |
-| ```debug <expr>```            | Visually prints abstract syntax tree of expression.          |
-| ```quit```                    | Closes calculator.                                           |
+| ```load <path>```              | Loads file as if its content had been typed in line by line. |
+| ```debug <expr>```             | Visually prints abstract syntax tree of expression.          |
+| ```quit```                     | Closes calculator.                                           |
 
 ### Infix operators
 | Name      | Associativity | Precedence | Description          |

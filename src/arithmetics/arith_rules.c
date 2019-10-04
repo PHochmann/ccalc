@@ -8,7 +8,7 @@
 #define PARSE(n) parse_conveniently(n)
 #define ANS_VAR "ans"
 
-Node *ans = NULL; // Constant node that contains result of last evaluation
+double ans; // Result of last evaluation
 
 void arith_reset_rules()
 {
@@ -66,7 +66,6 @@ void apply_ruleset(Node *tree, size_t num_rules, RewriteRule *rules)
 
 void arith_unload_rules()
 {
-    if (ans != NULL) free_tree(ans);
     for (size_t i = 0; i < g_num_rules; i++)
     {
         free_rule(g_rules[i]);
@@ -84,24 +83,20 @@ void arith_init_rules()
             "--x", "x",
         },
         g_rules);
+    ans = 42;
+}
+
+void update_ans(double value)
+{
+    ans = value;
 }
 
 /*
-Summary: Does post-processing of correctly parsed input (i.e. replacing ans and applying RewriteRules)
-Returns: Error message or NULL when no error occurred
+Summary: Does post-processing of correctly parsed input (i.e. replacing ans and applying rewrite rules)
 */
-void transform_input(Node *tree, bool update_ans)
+void transform_input(Node *tree)
 {
-    // Replace ans
-    if (ans != NULL) tree_substitute_var(g_ctx, tree, ans, ANS_VAR);
-
-    // Apply rules
+    Node ans_node = get_constant_node(ans);
+    tree_substitute_var(g_ctx, tree, &ans_node, ANS_VAR);
     apply_ruleset(tree, g_num_rules, g_rules);
-
-    // Update ans
-    if (update_ans)
-    {
-        if (ans != NULL) free_tree(ans);
-        ans = tree; // Would be safer to copy tree, but it is not needed for now
-    }
 }
