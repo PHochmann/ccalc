@@ -25,7 +25,7 @@ Node get_variable_node(char *var_name)
 }
 
 // Returns a new node of type NTYPE_CONSTANT and prepares its attributes
-Node get_constant_node(double value)
+Node get_constant_node(ConstantType value)
 {
     Node res = get_node(NTYPE_CONSTANT);
     res.const_value = value;
@@ -342,6 +342,8 @@ bool node_equals(ParsingContext *ctx, Node *a, Node *b)
         case NTYPE_VARIABLE:
             return strcmp(a->var_name, b->var_name) == 0;
     }
+
+    return false; // To make gcc happy
 }
 
 /*

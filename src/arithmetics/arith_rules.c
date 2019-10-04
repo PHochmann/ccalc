@@ -8,7 +8,7 @@
 #define PARSE(n) parse_conveniently(n)
 #define ANS_VAR "ans"
 
-double ans; // Result of last evaluation
+ConstantType ans; // Result of last evaluation
 
 void arith_reset_rules()
 {
@@ -86,7 +86,7 @@ void arith_init_rules()
     ans = 42;
 }
 
-void update_ans(double value)
+void update_ans(ConstantType value)
 {
     ans = value;
 }

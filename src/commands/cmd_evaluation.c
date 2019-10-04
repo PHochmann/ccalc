@@ -22,7 +22,7 @@ void cmd_evaluation_exec(char *input)
     Node *res;
     if (parse_input_from_console(g_ctx, input, "Error: %s\n", &res, true))
     {        
-        double result = arith_eval(res);
+        ConstantType result = arith_eval(res);
         printf(g_interactive ? "= %-.30g\n" : "%-.30g\n", result);
         update_ans(result);
         free_tree(res);

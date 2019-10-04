@@ -247,10 +247,7 @@ Summary: Sets arithmetic context stored in global variable
 */
 void arith_init_ctx()
 {
-    __g_ctx = get_context(
-        sizeof(double),
-        ARITH_STRING_LENGTH,
-        ARITH_MAX_OPS);
+    __g_ctx = get_context(ARITH_STRING_LENGTH, ARITH_MAX_OPS);
     
     ctx_add_ops(g_ctx, ARITH_NUM_OPS,
         op_get_prefix("$", 0),

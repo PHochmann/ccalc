@@ -13,6 +13,8 @@ typedef enum
     NTYPE_VARIABLE
 } NodeType;
 
+typedef double ConstantType;
+
 /*
 Summary: Tree consists of nodes that are either operators, constants or variables
     Operators are usually inner nodes (exceptions: operator-constants or zero-arity functions)
@@ -21,16 +23,16 @@ Summary: Tree consists of nodes that are either operators, constants or variable
 */
 typedef struct Node
 {
-    NodeType type;          // Operator, constant or variable
-    char *var_name;         // For variables
-    double const_value;     // For constant
-    Operator *op;           // For operator, points to operator in ctx
-    size_t num_children;    // Size of children buffer
-    struct Node **children; // On heap, can not be flexible array member due to tree_replace 
+    NodeType type;            // Operator, constant or variable
+    char *var_name;           // For variables
+    ConstantType const_value; // For constant
+    Operator *op;             // For operator, points to operator in ctx
+    size_t num_children;      // Size of children buffer
+    struct Node **children;   // On heap, can not be flexible array member due to tree_replace 
 } Node;
 
 Node get_variable_node(char *var_name);
-Node get_constant_node(double value);
+Node get_constant_node(ConstantType value);
 Node get_operator_node(Operator *op, size_t num_children);
 Node *malloc_node(Node node);
 void free_tree(Node *node);

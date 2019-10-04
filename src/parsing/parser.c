@@ -45,7 +45,7 @@ bool is_delimiter(char *c)
     return strcmp(c, ",") == 0 || strcmp(c, ";") == 0;
 }
 
-bool try_parse_double(char *in, double *out)
+bool try_parse_constant(char *in, ConstantType *out)
 {
     char *end_ptr;
     *out = strtod(in, &end_ptr);
@@ -391,8 +391,8 @@ ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, 
         }
 
         // Is token constant?
-        double const_val;
-        if (try_parse_double(token, &const_val))
+        ConstantType const_val;
+        if (try_parse_constant(token, &const_val))
         {
             *node = get_constant_node(const_val);
         }

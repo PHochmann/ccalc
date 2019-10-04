@@ -5,7 +5,7 @@
 
 #include "string_util.h"
 
-#define DOUBLE_FMT "%-.30g"
+#define CONSTANT_TYPE_FMT "%-.30g"
 
 #define OP_COLOR    "\x1B[47m\x1B[22;30m" // White background, black foreground
 #define CONST_COLOR "\x1B[1;33m"          // Yellow
@@ -48,7 +48,7 @@ void print_tree_visual_rec(ParsingContext *ctx, Node *node, unsigned char layer,
             break;
             
         case NTYPE_CONSTANT:
-            printf(CONST_COLOR DOUBLE_FMT COL_RESET "\n", node->const_value);
+            printf(CONST_COLOR CONSTANT_TYPE_FMT COL_RESET "\n", node->const_value);
             break;
             
         case NTYPE_VARIABLE:
@@ -239,7 +239,7 @@ void tree_inline_rec(struct PrintingState *state, Node *node, bool l, bool r)
     switch (node->type)
     {
         case NTYPE_CONSTANT:
-            to_buf(state, state->col ? CONST_COLOR DOUBLE_FMT COL_RESET : DOUBLE_FMT, node->const_value);
+            to_buf(state, state->col ? CONST_COLOR CONSTANT_TYPE_FMT COL_RESET : CONSTANT_TYPE_FMT, node->const_value);
             break;
             
         case NTYPE_VARIABLE:

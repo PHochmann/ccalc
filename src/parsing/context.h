@@ -7,18 +7,14 @@ struct ParsingContext;
 
 typedef struct ParsingContext
 {
-    size_t value_size;         // e.g. sizeof(bool) for propositional logic, sizeof(double) for arithmetic
-    size_t recommended_str_len;     // Needed to let parsing know how much data to allocate for stringed value
-    size_t num_ops;            // Current count of operators 
-    size_t max_ops;            // Maximum count of operators (limited by buffer size)
-    Operator *glue_op;         // Points to op in operators
-    Operator *operators;       // On heap!
+    size_t recommended_str_len; // Needed to let parsing know how much data to allocate for stringed value
+    size_t num_ops;             // Current count of operators 
+    size_t max_ops;             // Maximum count of operators (limited by buffer size)
+    Operator *glue_op;          // Points to op in operators
+    Operator *operators;        // On heap!
 } ParsingContext;
 
-ParsingContext get_context(
-    size_t value_size,
-    size_t recommended_str_len,
-    size_t max_ops);
+ParsingContext get_context(size_t recommended_str_len, size_t max_ops);
 void free_context(ParsingContext *ctx);
 bool ctx_add_ops(ParsingContext *ctx, size_t count, ...);
 int ctx_add_op(ParsingContext *ctx, Operator op);

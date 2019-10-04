@@ -7,23 +7,13 @@
 Summary: This method is used to create a new ParsingContext without glue-op and operators
     Use ctx_add_op and ctx_add_glue_op to add them to new context
 Parameters:
-    value_size: Size of a constant in bytes
-        (e.g. sizeof(double) for arithmetics, sizeof(bool) for propositional logic)
-    min_str_len: Minimum amount of chars (without \0) a buffer supplied to to_string should hold
+    recommended_str_len: Minimum amount of chars (without \0) a buffer supplied to to_string should hold
         (not relevant for parsing, only for own account)
     max_ops: Number of operators that should fit into reserved buffer
-    try_parse: Function that is called when trying to parse a constant
-    to_string: Function that makes a constant readable
-    equals: Function that compares two constants. When NULL is given, bytewise_equals is used as a fallback.
-        (Only relevant for node_equals and tree_equals used in rule.c)
 */
-ParsingContext get_context(
-    size_t value_size,
-    size_t recommended_str_len,
-    size_t max_ops)
+ParsingContext get_context(size_t recommended_str_len, size_t max_ops)
 {
     ParsingContext res = (ParsingContext){
-        .value_size = value_size,
         .recommended_str_len = recommended_str_len,
         .max_ops = max_ops,
         .num_ops = 0,
