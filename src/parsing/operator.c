@@ -1,15 +1,5 @@
 #include "operator.h"
 
-// Used to indicate arbitrary number of operands (0 up to MAX_ARITY)
-// Arities are encoded as size_t, so it could be much higher
-const size_t DYNAMIC_ARITY = 101;
-
-// One less than DYNAMIC_ARITY
-const size_t MAX_ARITY = 100;
-
-// Since precendece is a char
-const Precedence MAX_PRECEDENCE = 255;
-
 Operator op_get_function(char *name, size_t arity)
 {
     return (Operator){
@@ -56,11 +46,5 @@ Operator op_get_postfix(char *name, Precedence precedence)
 
 Operator op_get_constant(char *name)
 {
-    return (Operator){
-        .name = name,
-        .arity = 0,
-        .precedence = MAX_PRECEDENCE,
-        .placement = OP_PLACE_PREFIX, // Needed for await_subexpression = false
-        .assoc = OP_ASSOC_RIGHT
-    };
+    return op_get_function(name, 0);
 }

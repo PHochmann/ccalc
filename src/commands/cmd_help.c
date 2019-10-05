@@ -55,15 +55,17 @@ void print_op(Operator *op)
             break;
             
         case OP_PLACE_FUNCTION:
-            if (op->arity == DYNAMIC_ARITY)
+            switch (op->arity)
             {
-                printf("%s(*)", op->name);
+                case 0:
+                    printf("%s", op->name);
+                    break;
+                case DYNAMIC_ARITY:
+                    printf("%s(*)", op->name);
+                    break;
+                default:
+                    printf("%s(%lu)", op->name, op->arity);
             }
-            else
-            {
-                printf("%s(%zu)", op->name, op->arity);
-            }
-            break;
     }
     
     printf(COL_RESET " ");

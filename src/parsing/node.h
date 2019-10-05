@@ -1,10 +1,20 @@
 #pragma once
 #include <stdbool.h>
-#include "context.h"
 #include "operator.h"
 
-extern const size_t MAX_TREE_SEARCH_STACK_SIZE;
-extern const size_t MAX_VAR_COUNT; // Count of distinct variables
+// Maximal amount of variables nodes allowed in tree
+#define MAX_VAR_COUNT 20
+
+typedef double ConstantType;
+
+/*
+    Trees consist of nodes that are either operators, constants or variables
+    Operators are usually inner nodes
+        Exceptions: constant-operators (like pi or e) that are modeled as infix-operators with arity 0
+            or zero-arity functions)
+    Constants are leaf nodes operators work upon
+    Everything else is a variable that needs to be substituted before evaluating
+*/
 
 typedef enum
 {
@@ -13,38 +23,57 @@ typedef enum
     NTYPE_VARIABLE
 } NodeType;
 
-typedef double ConstantType;
+typedef NodeType* Node;
 
-/*
-Summary: Tree consists of nodes that are either operators, constants or variables
-    Operators are usually inner nodes (exceptions: operator-constants or zero-arity functions)
-    Constants are leaf nodes operators work upon
-    Everything else is a variable that needs to be substituted before evaluating
-*/
-typedef struct Node
+struct VariableNode_
 {
-    NodeType type;            // Operator, constant or variable
-    char *var_name;           // For variables
-    ConstantType const_value; // For constant
-    Operator *op;             // For operator, points to operator in ctx
-    size_t num_children;      // Size of children buffer
-    struct Node **children;   // On heap, can not be flexible array member due to tree_replace 
-} Node;
+    NodeType type;
+    char var_name[];
+};
 
-Node get_variable_node(char *var_name);
-Node get_constant_node(ConstantType value);
-Node get_operator_node(Operator *op, size_t num_children);
-Node *malloc_node(Node node);
-void free_tree(Node *node);
-void free_tree_preserved(Node *tree);
-Node *tree_search(ParsingContext *ctx, Node *tree, bool (*predicate)(ParsingContext*, Node*));
-size_t tree_count_vars(Node *node);
-bool tree_count_vars_distinct(Node *tree, size_t *out_num_variables);
-bool tree_get_var_instances(Node *tree, char *var_name, size_t *out_num_instances, Node **out_instances);
-bool tree_count_var_instances(Node *tree, char *var_name, size_t *out_num_instances);
-bool tree_list_vars(Node *tree, size_t *out_num_variables, char **out_variables);
-bool tree_substitute_var(ParsingContext *ctx, Node *tree, Node *tree_to_copy, char *var_name);
-void tree_replace(Node *destination, Node new_node);
-Node tree_copy(ParsingContext *ctx, Node *node);
-bool node_equals(ParsingContext *ctx, Node *a, Node *b);
-bool tree_equals(ParsingContext *ctx, Node *a, Node *b);
+struct ConstantNode_
+{
+    NodeType type;
+    ConstantType const_value;
+};
+
+struct OperatorNode_
+{
+    NodeType type;
+    Operator *op;        // Points to operator in context
+    size_t num_children; // Size of children buffer
+    Node children[];
+};
+
+typedef struct VariableNode_* VariableNode;
+typedef struct ConstantNode_* ConstantNode;
+typedef struct OperatorNode_* OperatorNode;
+
+// Memory
+Node malloc_variable_node(char *var_name);
+Node malloc_constant_node(ConstantType value);
+Node malloc_operator_node(Operator *op, size_t num_children);
+void free_tree(Node tree);
+
+// Accessors
+Operator *get_op(Node node);
+NodeType get_type(Node node);
+size_t get_num_children(Node node);
+Node get_child(Node node, size_t index);
+Node *get_child_addr(Node node, size_t index);
+void set_child(Node node, size_t index, Node child);
+char *get_var_name(Node node);
+ConstantType get_const_value(Node node);
+
+// Data handling
+bool tree_equals(Node a, Node b);
+Node tree_copy(Node node);
+void tree_replace(Node *tree_to_replace, Node tree_to_insert);
+
+// Helper and convenience functions
+size_t count_variables(Node tree);
+size_t count_variables_distinct(Node tree);
+size_t get_variable_nodes(Node *tree, char *var_name, Node **out_instances);
+size_t count_variable_nodes(Node tree, char *var_name);
+size_t list_variables(Node tree, char **out_variables);
+void replace_variable_nodes(Node *tree, Node tree_to_copy, char *var_name);

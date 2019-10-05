@@ -5,11 +5,12 @@
 #include <math.h>
 #include "arith_context.h"
 
-#define EVAL(n) arith_eval(tree->children[n])
+#define EVAL(n) arith_eval(get_child(tree, n))
 
 static const size_t ARITH_STRING_LENGTH = 30; // Including \0
 
 ParsingContext __g_ctx;
+Operator operators[ARITH_MAX_OPS];
 
 double binomial(double n, double k)
 {
@@ -56,15 +57,15 @@ double random_between(double min, double max)
 Summary: Evaluates operator tree
 Returns: Result after recursive application of all operators
 */
-double arith_eval(Node *tree)
+double arith_eval(Node tree)
 {
-    switch (tree->type)
+    switch (*tree)
     {
         case NTYPE_CONSTANT:
-            return tree->const_value;
+            return get_const_value(tree);
             
         case NTYPE_OPERATOR:
-            switch ((size_t)(tree->op - __g_ctx.operators))
+            switch ((size_t)(get_op(tree) - __g_ctx.operators))
             {
                 case 0: // $x
                     return EVAL(0);
@@ -140,7 +141,7 @@ double arith_eval(Node *tree)
                 case 31: // max(x, y, ...)
                 {
                     double res = -INFINITY;
-                    for (size_t i = 0; i < tree->num_children; i++)
+                    for (size_t i = 0; i < get_num_children(tree); i++)
                     {
                         double child_val = EVAL(i);
                         if (child_val > res) res = child_val;
@@ -150,7 +151,7 @@ double arith_eval(Node *tree)
                 case 32: // min(x, y, ...)
                 {
                     double res = INFINITY;
-                    for (size_t i = 0; i < tree->num_children; i++)
+                    for (size_t i = 0; i < get_num_children(tree); i++)
                     {
                         double child_val = EVAL(i);
                         if (child_val < res) res = child_val;
@@ -172,21 +173,21 @@ double arith_eval(Node *tree)
                 case 39: // sum(x, y, ...)
                 {
                     double res = 0;
-                    for (size_t i = 0; i < tree->num_children; i++) res += EVAL(i);
+                    for (size_t i = 0; i < get_num_children(tree); i++) res += EVAL(i);
                     return res;
                 }
                 case 40: // prod(x, y, ...)
                 {
                     double res = 1;
-                    for (size_t i = 0; i < tree->num_children; i++) res *= EVAL(i);
+                    for (size_t i = 0; i < get_num_children(tree); i++) res *= EVAL(i);
                     return res;
                 }
                 case 41: // avg(x, y, ...)
                 {
-                    if (tree->num_children == 0) return 0;
+                    if (get_num_children(tree) == 0) return 0;
                     double res = 0;
-                    for (size_t i = 0; i < tree->num_children; i++) res += EVAL(i);
-                    return res / tree->num_children;
+                    for (size_t i = 0; i < get_num_children(tree); i++) res += EVAL(i);
+                    return res / get_num_children(tree);
                 }
                 case 42: // rand(x, y)
                     return random_between(EVAL(0), EVAL(1));
@@ -239,7 +240,6 @@ void arith_unload_ctx()
     {
         free(g_ctx->operators[i].name);
     }
-    free_context(g_ctx);
 }
 
 /*
@@ -247,7 +247,7 @@ Summary: Sets arithmetic context stored in global variable
 */
 void arith_init_ctx()
 {
-    __g_ctx = get_context(ARITH_STRING_LENGTH, ARITH_MAX_OPS);
+    __g_ctx = get_context(ARITH_STRING_LENGTH, ARITH_MAX_OPS, operators);
     
     ctx_add_ops(g_ctx, ARITH_NUM_OPS,
         op_get_prefix("$", 0),

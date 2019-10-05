@@ -24,7 +24,7 @@ struct ParserState
 {
     ParsingContext *ctx;
     size_t num_nodes;
-    Node *node_stack[MAX_STACK_SIZE];
+    Node node_stack[MAX_STACK_SIZE];
     size_t num_ops;
     struct OpData op_stack[MAX_STACK_SIZE];
     ParserError result;
@@ -52,20 +52,13 @@ bool try_parse_constant(char *in, ConstantType *out)
     return *end_ptr == '\0';
 }
 
-void *malloc_wrapper(struct ParserState *state, size_t size)
-{
-    void *res = malloc(size);
-    if (res == NULL) state->result = PERR_OUT_OF_MEMORY;
-    return res;
-}
-
 // Returns op_data on top of stack
 struct OpData *op_peek(struct ParserState *state)
 {
     return &state->op_stack[state->num_ops - 1];
 }
 
-bool node_push(struct ParserState *state, Node *value)
+bool node_push(struct ParserState *state, Node value)
 {
     // Check if there is still space on stack
     if (state->num_nodes == MAX_STACK_SIZE)
@@ -79,7 +72,7 @@ bool node_push(struct ParserState *state, Node *value)
     return true;
 }
 
-bool node_pop(struct ParserState *state, Node **out)
+bool node_pop(struct ParserState *state, Node *out)
 {
     if (state->num_nodes == 0)
     {
@@ -129,30 +122,22 @@ bool op_pop_and_insert(struct ParserState *state)
         }
 
         // We try to allocate a new node and pop its children from node stack
-        Node *op_node = malloc_wrapper(state, sizeof(Node));
-        if (op_node == NULL) return false;
-        *op_node = get_operator_node(op, is_function ? op_peek(state)->arity : op->arity);
+        Node op_node = malloc_operator_node(op, is_function ? op_peek(state)->arity : op->arity);
 
         // Check if malloc of children buffer in get_operator_node failed
-        if (op_node->children == NULL)
+        if (op_node == NULL)
         {
-            free(op_node);
+            state->result = PERR_OUT_OF_MEMORY;
             return false;
         }
         
-        for (size_t i = 0; i < op_node->num_children; i++)
+        for (size_t i = 0; i < get_num_children(op_node); i++)
         {
             // Pop nodes from stack and append them in subtree
-            if (!node_pop(state, &op_node->children[op_node->num_children - i - 1]))
+            if (!node_pop(state, get_child_addr(op_node, get_num_children(op_node) - i - 1)))
             {
                 // Free already appended children and new node on error
-                for (size_t j = op_node->num_children - 1; j > op_node->num_children - i - 1; j--)
-                {
-                    free_tree(op_node->children[j]);
-                }
-
-                free(op_node->children);
-                free(op_node);
+                free_tree(op_node);
                 return false;
             }
         }
@@ -218,7 +203,7 @@ bool push_opening_parenthesis(struct ParserState *state)
     return op_push(state, (struct OpData){ NULL, DYNAMIC_ARITY });
 }
 
-ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, Node **out_res)
+ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, Node *out_res)
 {
     // 1. Early outs
     if (ctx == NULL || tokens == NULL || out_res == NULL) return PERR_ARGS_MALFORMED;
@@ -338,14 +323,27 @@ ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, 
             if (op != NULL) // Function operator found
             {
                 if (!push_operator(&state, op)) goto exit;
+                await_subexpression = true;
 
-                // Handle unary functions without parenthesis (e.g. "sin2")
-                // If function is last token its arity will be set to 0
+                // Handle functions without parentheses
                 if (i < num_tokens - 1 && !is_opening_parenthesis(tokens[i + 1]))
                 {
-                    op_peek(&state)->arity = 1;
+                    // Since constants can be modeled as zero-arity functions and functions can be overloaded,
+                    // it can happen that a zero-arity and a unary function of the same name exist.
+                    // In this case, ctx_lookup_op deterministically picks the zero-arity function.
+                    
+                    // The function is a constant - pop it directly
+                    if (op->arity == 0)
+                    {
+                        op_pop_and_insert(&state);
+                        await_subexpression = false; // Constants don't await a subexpression
+                    }
+                    else // We can only hope it's a unary function (otherwise syntax error anyway)
+                    {
+                        op_peek(&state)->arity = 1;
+                    }
                 }
-                await_subexpression = true;
+
                 continue;
             }
             
@@ -353,8 +351,7 @@ ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, 
             if (op != NULL) // Prefix operator found
             {
                 if (!push_operator(&state, op)) goto exit;
-                // Constants are modeled as prefix operators with arity of 0 and don't await a subexpression
-                await_subexpression = (op->arity != 0);
+                await_subexpression = true;
                 continue;
             }
         }
@@ -381,27 +378,19 @@ ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, 
         }
         
         // V. Token must be variable or constant (leaf)
-        Node *node = malloc_wrapper(&state, sizeof(Node));
-
-        // Out of memory - free partial results
-        if (state.result == PERR_OUT_OF_MEMORY)
-        {
-            free(node);
-            goto exit;
-        }
+        Node node;
 
         // Is token constant?
         ConstantType const_val;
         if (try_parse_constant(token, &const_val))
         {
-            *node = get_constant_node(const_val);
+            node = malloc_constant_node(const_val);
+            if (node == NULL) ERROR(PERR_OUT_OF_MEMORY);
         }
         else // Token must be variable
         {
-            char *name = malloc_wrapper(&state, (strlen(token) + 1) * sizeof(char));
-            if (state.result == PERR_OUT_OF_MEMORY) goto exit;
-            strcpy(name, token);
-            *node = get_variable_node(name);
+            node = malloc_variable_node(token);
+            if (node == NULL) ERROR(PERR_OUT_OF_MEMORY);
         }
 
         await_subexpression = false;
@@ -457,7 +446,7 @@ static const size_t MAX_TOKENS = 100;
 Summary: Parses string, tokenized with default tokenizer, to abstract syntax tree
 Returns: Result code to indicate whether string was parsed successfully or which error occurred
 */
-ParserError parse_input(ParsingContext *ctx, char *input, Node **out_res)
+ParserError parse_input(ParsingContext *ctx, char *input, Node *out_res)
 {
     size_t num_tokens;
     char *tokens[MAX_TOKENS];
@@ -475,9 +464,9 @@ ParserError parse_input(ParsingContext *ctx, char *input, Node **out_res)
 Summary: Calls parse_input, omits ParserError
 Returns: AST or NULL when error occurred
 */
-Node *parse_conveniently(ParsingContext *ctx, char *input)
+Node parse_conveniently(ParsingContext *ctx, char *input)
 {
-    Node *result = NULL;
+    Node result = NULL;
     parse_input(ctx, input, &result);
     return result;
 }

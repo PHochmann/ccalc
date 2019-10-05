@@ -5,96 +5,115 @@
 #include "../parsing/node.h"
 #include "../string_util.h" // For begins_with
 
+#define MAX_STACK_SIZE 20
+
 /*
 Summary: Tries to match "tree" against "pattern" (only in root)
 Returns: True, if matching is found, false if NULL-pointers given in arguments or no matching found
 */
-bool get_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_matching)
+bool get_matching(Node *tree, Node pattern, Matching *out_matching)
 {
-    if (ctx == NULL || tree == NULL || pattern == NULL || out_matching == NULL) return false;
+    if (tree == NULL || *tree == NULL || pattern == NULL || out_matching == NULL) return false;
     
     char *mapped_vars[MAX_VAR_COUNT];
-    Node *mapped_nodes[MAX_VAR_COUNT];
+    Node mapped_nodes[MAX_VAR_COUNT];
     size_t num_mapped_vars = 0;
     
-    Node *tree_stack[MAX_TREE_SEARCH_STACK_SIZE];
-    Node *pattern_stack[MAX_TREE_SEARCH_STACK_SIZE];
+    Node tree_stack[MAX_STACK_SIZE];
+    Node pattern_stack[MAX_STACK_SIZE];
     size_t num_stack = 0;
     
-    tree_stack[0] = tree;
+    tree_stack[0] = *tree;
     pattern_stack[0] = pattern;
     num_stack = 1;
     
     while (num_stack != 0)
     {
-        Node *curr_pattern_n = pattern_stack[num_stack - 1];
-        Node *curr_tree_n = tree_stack[num_stack - 1];
+        Node curr_pattern = pattern_stack[num_stack - 1];
+        Node curr_tree = tree_stack[num_stack - 1];
         num_stack--;
         
-        bool found = false;
-        switch (curr_pattern_n->type)
+        switch (get_type(curr_pattern))
         {
             // 1. Check if variable is bound, if it is, check occurrence. Otherwise, bind.
             case NTYPE_VARIABLE:
+            {
+                bool already_bound = false;
                 for (size_t i = 0; i < num_mapped_vars; i++)
                 {
-                    if (strcmp(mapped_vars[i], curr_pattern_n->var_name) == 0) // Already bound
+                    if (strcmp(mapped_vars[i], get_var_name(curr_pattern)) == 0) // Already bound
                     {
                         // Is already bound variable equal to this occurrence?
                         // If not, fail here
-                        if (!tree_equals(ctx, mapped_nodes[i], curr_tree_n)) return false;
-                        found = true;
+                        if (!tree_equals(mapped_nodes[i], curr_tree))
+                        {
+                            return false;
+                        }
+
+                        already_bound = true;
                         break;
                     }
                 }
                 
-                if (!found)
+                if (!already_bound)
                 {
                     // Check special rules
-                    if (begins_with(CONST_PREFIX, curr_pattern_n->var_name) && curr_tree_n->type != NTYPE_CONSTANT) return false;
-                    if (begins_with(VAR_PREFIX, curr_pattern_n->var_name) && curr_tree_n->type != NTYPE_VARIABLE) return false;
-                    if (begins_with(NAME_PREFIX, curr_pattern_n->var_name))
+                    if (begins_with(CONST_PREFIX, get_var_name(curr_pattern)) && *curr_tree != NTYPE_CONSTANT) return false;
+                    if (begins_with(VAR_PREFIX, get_var_name(curr_pattern)) && *curr_tree != NTYPE_VARIABLE) return false;
+                    if (begins_with(NAME_PREFIX, get_var_name(curr_pattern)))
                     {
-                        if (curr_tree_n->type != NTYPE_VARIABLE) return false;
-                        if (strcmp(curr_pattern_n->var_name + strlen(NAME_PREFIX), curr_tree_n->var_name) != 0) return false;
+                        if (*curr_tree != NTYPE_VARIABLE) return false;
+                        if (strcmp(get_var_name(curr_pattern) + strlen(NAME_PREFIX), get_var_name(curr_tree)) != 0)
+                        {
+                            return false;
+                        }
                     }
                     
                     // Bind variable
-                    mapped_vars[num_mapped_vars] = curr_pattern_n->var_name;
-                    mapped_nodes[num_mapped_vars] = curr_tree_n;
+                    mapped_vars[num_mapped_vars] = get_var_name(curr_pattern);
+                    mapped_nodes[num_mapped_vars] = curr_tree;
                     num_mapped_vars++;
                 }
-                
                 break;
+            }
                 
             // 2. Check constants for equality
             case NTYPE_CONSTANT:
-                if (!node_equals(ctx, curr_pattern_n, curr_tree_n)) return false;
+                if (!tree_equals(curr_pattern, curr_tree))
+                {
+                    return false;
+                }
                 break;
                 
-            // 3. Check operands for equality and add children on stack
+            // 3. Check operator and arity for equality
             case NTYPE_OPERATOR:
-                if (!node_equals(ctx, curr_pattern_n, curr_tree_n)) return false;
-                for (size_t i = 0; i < curr_pattern_n->num_children; i++)
+                if (get_type(curr_tree) != NTYPE_OPERATOR
+                    || get_op(curr_pattern) != get_op(curr_tree)
+                    || get_num_children(curr_pattern) != get_num_children(curr_tree))
                 {
-                    tree_stack[num_stack + i] = curr_tree_n->children[i];
-                    pattern_stack[num_stack + i] = curr_pattern_n->children[i];
+                    return false;
                 }
-                num_stack += curr_pattern_n->num_children;
+
+                for (size_t i = 0; i < get_num_children(curr_pattern); i++)
+                {
+                    tree_stack[num_stack + i] = get_child(curr_tree, i);
+                    pattern_stack[num_stack + i] = get_child(curr_pattern, i);
+                }
+
+                num_stack += get_num_children(curr_pattern);
                 break;
         }
     }
     
     // We successfully found matching! Construct it:
-    out_matching->matched_tree = tree; // Not copied, because afterwards usually used to replace subtree
+    out_matching->matched_tree = tree; // Used to replace subtree
     out_matching->num_mapped = num_mapped_vars;
     out_matching->mapped_vars = malloc(sizeof(char*) * num_mapped_vars);
-    out_matching->mapped_nodes = malloc(sizeof(Node*) * num_mapped_vars);
+    out_matching->mapped_nodes = malloc(sizeof(Node) * num_mapped_vars);
     
     for (size_t i = 0; i < num_mapped_vars; i++)
     {
-        out_matching->mapped_vars[i] = malloc(sizeof(char) * (strlen(mapped_vars[i]) + 1));
-        strcpy(out_matching->mapped_vars[i], mapped_vars[i]);
+        out_matching->mapped_vars[i] = mapped_vars[i];
         out_matching->mapped_nodes[i] = mapped_nodes[i];
     }
     
@@ -106,10 +125,6 @@ Summary: Frees everything except matched_tree
 */
 void free_matching(Matching matching)
 {
-    for (size_t i = 0; i < matching.num_mapped; i++)
-    {
-        free(matching.mapped_vars[i]);
-    }
     free(matching.mapped_vars);
     free(matching.mapped_nodes);
 }
@@ -117,17 +132,15 @@ void free_matching(Matching matching)
 /*
 Summary: Looks for matching in tree, i.e. tries to construct matching in each node until matching is found (Top-Down)
 */
-bool find_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out_matching)
+bool find_matching(Node *tree, Node pattern, Matching *out_matching)
 {
-    if (ctx == NULL || tree == NULL || pattern == NULL || out_matching == NULL) return false;
+    if (get_matching(tree, pattern, out_matching)) return true;
     
-    if (get_matching(ctx, tree, pattern, out_matching)) return true;
-    
-    if (tree->type == NTYPE_OPERATOR)
+    if (**tree == NTYPE_OPERATOR)
     {
-        for (size_t i = 0; i < tree->num_children; i++)
+        for (size_t i = 0; i < get_num_children(*tree); i++)
         {
-            if (find_matching(ctx, tree->children[i], pattern, out_matching)) return true;
+            if (find_matching(get_child_addr(*tree, i), pattern, out_matching)) return true;
         }
     }
     
@@ -137,12 +150,10 @@ bool find_matching(ParsingContext *ctx, Node *tree, Node *pattern, Matching *out
 /*
 Summary: Basically the same as find_matching, but discards matching
 */
-bool find_matching_discarded(ParsingContext *ctx, Node *tree, Node *pattern)
+bool find_matching_discarded(Node tree, Node pattern)
 {
-    // Out-discard pattern
-    
     Matching matching;
-    if (find_matching(ctx, tree, pattern, &matching))
+    if (find_matching(&tree, pattern, &matching))
     {
         free_matching(matching);
         return true;

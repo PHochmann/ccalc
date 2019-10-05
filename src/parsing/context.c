@@ -9,25 +9,20 @@ Summary: This method is used to create a new ParsingContext without glue-op and 
 Parameters:
     recommended_str_len: Minimum amount of chars (without \0) a buffer supplied to to_string should hold
         (not relevant for parsing, only for own account)
-    max_ops: Number of operators that should fit into reserved buffer
+    max_ops:             Number of operators that should fit into reserved buffer
+    operators:           Buffer to operators. Should hold max_ops operators.
 */
-ParsingContext get_context(size_t recommended_str_len, size_t max_ops)
+ParsingContext get_context(size_t recommended_str_len, size_t max_ops, Operator *op_buffer)
 {
     ParsingContext res = (ParsingContext){
         .recommended_str_len = recommended_str_len,
         .max_ops = max_ops,
         .num_ops = 0,
-        .operators = malloc(sizeof(Operator) * max_ops),
+        .operators = op_buffer,
         .glue_op = NULL,
     };
 
     return res;
-}
-
-void free_context(ParsingContext *ctx)
-{
-    if (ctx == NULL) return;
-    free(ctx->operators);
 }
 
 /*
@@ -115,6 +110,30 @@ void ctx_remove_glue_op(ParsingContext *ctx)
     ctx->glue_op = NULL;
 }
 
+// For function overloading: Returns function of given name. Favors zero-arity function when functions are overloaded.
+Operator *lookup_tentative_function(ParsingContext *ctx, char *name)
+{
+    Operator *non_zero_func = NULL;
+
+    for (size_t i = 0; i < ctx->num_ops; i++)
+    {
+        if (ctx->operators[i].placement == OP_PLACE_FUNCTION
+            && strcmp(ctx->operators[i].name, name) == 0)
+        {
+            if (ctx->operators[i].arity == 0)
+            {
+                return &ctx->operators[i];
+            }
+            else
+            {
+                non_zero_func = &ctx->operators[i];
+            }
+        }
+    }
+
+    return non_zero_func;
+}
+
 /*
 Summmary: Searches for operator of given name and placement
 Returns: NULL if no operator has been found or invalid arguments given, otherwise pointer to operator in ctx->operators
@@ -122,15 +141,14 @@ Returns: NULL if no operator has been found or invalid arguments given, otherwis
 Operator *ctx_lookup_op(ParsingContext *ctx, char *name, OpPlacement placement)
 {
     if (ctx == NULL || name == NULL) return NULL;
+    if (placement == OP_PLACE_FUNCTION) return lookup_tentative_function(ctx, name);
 
     for (size_t i = 0; i < ctx->num_ops; i++)
     {
-        Operator *curr_op = &(ctx->operators[i]);
-        
-        if (curr_op->placement == placement
-            && strcmp(curr_op->name, name) == 0)
+        if (ctx->operators[i].placement == placement
+            && strcmp(ctx->operators[i].name, name) == 0)
         {
-            return curr_op;
+            return &ctx->operators[i];
         }
     }
     
@@ -147,13 +165,11 @@ Operator *ctx_lookup_function(ParsingContext *ctx, char *name, size_t arity)
 
     for (size_t i = 0; i < ctx->num_ops; i++)
     {
-        Operator *curr_op = &ctx->operators[i];
-        
-        if (curr_op->placement == OP_PLACE_FUNCTION
-            && strcmp(curr_op->name, name) == 0
-            && curr_op->arity == arity)
+        if (ctx->operators[i].placement == OP_PLACE_FUNCTION
+            && strcmp(ctx->operators[i].name, name) == 0
+            && ctx->operators[i].arity == arity)
         {
-            return curr_op;
+            return &ctx->operators[i];
         }
     }
     

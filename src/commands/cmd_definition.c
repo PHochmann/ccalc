@@ -29,63 +29,65 @@ void add_function(char *name, char *left, char *right)
     // Must be DYNAMIC_ARITY because we do not know the actual arity yet
     ctx_add_op(g_ctx, op_get_function(name, DYNAMIC_ARITY));
 
-    Node *left_n = NULL;
-    Node *right_n = NULL;
-    size_t num_distinct_vars;
+    Node left_n = NULL;
+    Node right_n = NULL;
     
-    if (!parse_input_from_console(g_ctx, left, FMT_ERROR_LEFT, &left_n, false))
+    if (!parse_input_from_console(g_ctx, left, FMT_ERROR_LEFT, &left_n, false, false))
     {
         goto cleanup;
     }
 
-    if (left_n->type != NTYPE_OPERATOR || left_n->op->placement != OP_PLACE_FUNCTION)
+    if (get_type(left_n) != NTYPE_OPERATOR || get_op(left_n)->placement != OP_PLACE_FUNCTION)
     {
-        printf(FMT_ERROR_LEFT, "Not a function");
+        printf(FMT_ERROR_LEFT, "Not a function or constant");
         goto cleanup;
     }
+
+    size_t new_arity = get_num_children(left_n);
     
-    for (size_t i = 0; i < left_n->num_children; i++)
+    for (size_t i = 0; i < new_arity; i++)
     {
-        if (left_n->children[i]->type != NTYPE_VARIABLE)
+        if (get_type(get_child(left_n, i)) != NTYPE_VARIABLE)
         {
             printf(FMT_ERROR_LEFT, "Function arguments must be variables");
             goto cleanup;
         }
     }
 
-    if (!tree_count_vars_distinct(left_n, &num_distinct_vars))
-    {
-        printf(FMT_ERROR_LEFT, "Max. arity of function exceeded");
-        goto cleanup;
-    }
-
-    if (num_distinct_vars != left_n->num_children)
+    if (new_arity != count_variables_distinct(left_n))
     {
         printf(FMT_ERROR_LEFT, "Function arguments must be distinct variables");
         goto cleanup;
     }
 
-    if (ctx_lookup_function(g_ctx, name, left_n->num_children) != NULL)
+    if (ctx_lookup_function(g_ctx, name, new_arity) != NULL)
     {
-        printf("Function already exists\n");
+        printf("Function or constant already exists.\n");
         goto cleanup;
     }
 
     // Assign correct arity
-    g_ctx->operators[g_ctx->num_ops - 1].arity = left_n->num_children;
+    g_ctx->operators[g_ctx->num_ops - 1].arity = new_arity;
 
-    if (!parse_input_from_console(g_ctx, right, FMT_ERROR_RIGHT, &right_n, false))
+    if (!parse_input_from_console(g_ctx, right, FMT_ERROR_RIGHT, &right_n, false, true))
     {
         goto cleanup;
     }
 
-    if (find_matching_discarded(g_ctx, right_n, left_n))
+    if (find_matching_discarded(right_n, left_n))
     {
-        printf("Recursive function definition\n");
+        printf("Recursive definition.\n");
         goto cleanup;
     }
 
-    whisper("Added function.\n");
+    if (new_arity == 0)
+    {
+        whisper("Added constant.\n");
+    }
+    else
+    {
+        whisper("Added function.\n");
+    }
 
     // Add rule to eliminate operator before evaluation
     g_rules[g_num_rules++] = get_rule(left_n, right_n);
@@ -98,61 +100,6 @@ void add_function(char *name, char *left, char *right)
     free(name);
 }
 
-void add_constant(char *name, char *right)
-{
-    Node *right_n = NULL;
-    size_t var_count = 0;
-
-    if (ctx_lookup_op(g_ctx, name, OP_PLACE_PREFIX))
-    {
-        printf("Constant already exists\n");
-        goto cleanup;
-    }
-
-    if (!parse_input_from_console(g_ctx, right, FMT_ERROR_RIGHT, &right_n, false))
-    {
-        goto cleanup;
-    }
-
-    if (!tree_count_var_instances(right_n, name, &var_count))
-    {
-        printf(FMT_ERROR_RIGHT, "Max. stack size exceeded or too many variables used\n");
-        goto cleanup;
-    }
-
-    if (var_count > 0)
-    {
-        printf(FMT_ERROR_RIGHT, "Recursive constant definition\n");
-        goto cleanup;
-    }
-
-    whisper("Added constant.\n");
-
-    // Add new constant to parsing context and get a node containing it
-    ctx_add_op(g_ctx, op_get_constant(name));
-    Node *op_node = malloc_node(
-        get_operator_node(&g_ctx->operators[g_ctx->num_ops - 1], 0));
-
-    /*
-    User-defined constants are parser-level operators with corresponding elimination rule.
-    Previously defined constants and functions do not refer to them, because the string was parsed
-    to a variable node, not an operator. For users, this is confusing, because the difference
-    between variables and constant operators is not clear. Thus, replace variables of the same name
-    with this new constant.
-    */
-    for (size_t i = ARITH_NUM_RULES; i < g_num_rules; i++)
-    {
-        tree_substitute_var(g_ctx, g_rules[i].after, op_node, name);
-    }
-
-    // Add elimination rule for constant
-    g_rules[g_num_rules++] = get_rule(op_node, right_n);
-    return;
-
-    cleanup:
-    free(name);
-}
-
 /*
 Summary: Adds a new function symbol to context and adds a new rule to substitute function with its right hand side
 */
@@ -160,7 +107,7 @@ void cmd_definition_exec(char *input)
 {
     if (g_ctx->num_ops == g_ctx->max_ops || g_num_rules == ARITH_MAX_RULES)
     {
-        printf("Can't add any more functions or constants\n");
+        printf("Can't add any more functions or constants.\n");
         return;
     }
     
@@ -195,14 +142,7 @@ void cmd_definition_exec(char *input)
             return;
         }
 
-        if (num_tokens == 1)
-        {
-            add_constant(name, right_input);
-        }
-        else
-        {
-            add_function(name, input, right_input);
-        }
+        add_function(name, input, right_input);
     }
     else
     {

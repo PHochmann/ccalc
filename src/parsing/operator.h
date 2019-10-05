@@ -1,6 +1,14 @@
 #pragma once
 #include <stdlib.h>
 
+// Used to indicate arbitrary number of operands (0 up to MAX_ARITY)
+// Arities are encoded as size_t, so it could be much higher
+#define DYNAMIC_ARITY 101
+// One less than DYNAMIC_ARITY
+#define MAX_ARITY 100
+// Since precendece is a char
+#define MAX_PRECEDENCE 255
+
 typedef enum
 {
     OP_ASSOC_RIGHT,
@@ -17,14 +25,9 @@ typedef enum
 
 typedef unsigned char Precedence;
 
-extern const size_t DYNAMIC_ARITY;
-extern const size_t MAX_ARITY;
-extern const Precedence MAX_PRECEDENCE;
-extern const OpAssociativity STANDARD_ASSOC;
-
 typedef struct
 {
-    char *name; // On heap
+    char *name;
     size_t arity;
     Precedence precedence;
     OpAssociativity assoc;

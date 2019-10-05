@@ -72,9 +72,9 @@ static struct ValueTest valueTests[] = {
     { "1+2*3+4", 11 },
     { " ( 9.0 *  0)", 0 },
     { "sin(0)", 0 },
-    { "sqrt2", 1.4142135623 },
+    { "sqrt(2)", 1.4142135623 },
     { "sin0+2", 2 },
-    { "(cos sin.123pi.123)", 0.38351121094 },
+    { "(cos sin(.123pi).123)", 0.38351121094 },
     { "avg()", 0 },
     { "1+sum()*2", 1 },
     { "sum(1; 2, 3)*2", 12 },
@@ -113,7 +113,7 @@ bool almost_equals(double a, double b)
 // Returns: Index of error occurrence, -1 denotes no error
 int perform_value_tests()
 {
-    Node *node = NULL;
+    Node node = NULL;
     
     for (size_t i = 0; i < NUM_VALUE_TESTS; i++)
     {
@@ -130,7 +130,7 @@ int perform_value_tests()
 // Returns: Index of error occurrence, -1 denotes no error
 int perform_error_tests()
 {
-    Node *node = NULL;
+    Node node = NULL;
 
     for (size_t i = 0; i < NUM_ERROR_TESTS; i++)
     {

@@ -71,7 +71,7 @@ void process_input(FILE *file)
 {
     char *input = NULL;
 
-    while (ask_input(INTERACTIVE_ASK_PREFIX, file, &input))
+    while (ask_input(file, &input, INTERACTIVE_ASK_PREFIX))
     {
         if (!begins_with(COMMENT_PREFIX, input)) parse_command(input);
         free(input);

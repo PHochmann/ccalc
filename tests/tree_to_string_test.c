@@ -32,7 +32,7 @@ int tree_to_string_test()
 
     for (size_t i = 0; i < NUM_TESTS; i++)
     {
-        Node *node = NULL;
+        Node node = NULL;
         if (parse_input(g_ctx, tests[i].string_to_tree, &node) != PERR_SUCCESS)
         {
             printf("Error in tree inline test %zu: Parser Error\n", i);

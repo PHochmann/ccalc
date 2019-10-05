@@ -14,8 +14,7 @@ typedef struct ParsingContext
     Operator *operators;        // On heap!
 } ParsingContext;
 
-ParsingContext get_context(size_t recommended_str_len, size_t max_ops);
-void free_context(ParsingContext *ctx);
+ParsingContext get_context(size_t recommended_str_len, size_t max_ops, Operator *op_buffer);
 bool ctx_add_ops(ParsingContext *ctx, size_t count, ...);
 int ctx_add_op(ParsingContext *ctx, Operator op);
 bool ctx_set_glue_op(ParsingContext *ctx, Operator *op);

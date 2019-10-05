@@ -47,7 +47,7 @@ bool set_interactive(bool value)
 }
 
 // Summary: Prints result of tree inline, including correct color even after truncation, and indicated abbreviation
-void print_tree_inlined(ParsingContext *ctx, Node *node, bool color)
+void print_tree_inlined(ParsingContext *ctx, Node node, bool color)
 {
     char buffer[MAX_INLINED_LENGTH + 1];
     size_t result = tree_inline(ctx, node, buffer, MAX_INLINED_LENGTH + 1, color);
@@ -71,10 +71,23 @@ void whisper(const char *format, ...)
 }
 
 #ifdef USE_READLINE
-// File is stdin
-bool ask_input_readline(char *prompt, char **out_input)
+static const size_t MAX_PROMPT_LENGTH = 10;
+// File is stdin, g_interactive is true
+bool ask_input_readline(char **out_input, char *prompt_fmt, va_list args)
 {
-    *out_input = readline(prompt);
+    if (strcmp(prompt_fmt, "%s") == 0)
+    {
+        // Save stack space in the most common case
+        *out_input = readline(va_arg(args, char*));
+    }
+    else
+    {
+        // Printing prompt beforehand causes overwrite when using arrow keys
+        char prompt[MAX_PROMPT_LENGTH + 1];
+        vsnprintf(prompt, MAX_PROMPT_LENGTH, prompt_fmt, args);
+        *out_input = readline(prompt);
+    }
+
     if (*out_input == NULL)
     {
         return false;
@@ -84,13 +97,14 @@ bool ask_input_readline(char *prompt, char **out_input)
 }
 #endif
 
-bool ask_input_getline(char *prompt, FILE *file, char **out_input)
+bool ask_input_getline(FILE *file, char **out_input, char *prompt_fmt, va_list args)
 {
     if (g_interactive)
     {
-        printf("%s", prompt);
+        vprintf(prompt_fmt, args);
     }
     
+    // Would be no problem to put input in stack, but we want to have the same interface as readline, which puts input on heap
     size_t size = MAX_INPUT_LENGTH;
     *out_input = malloc(MAX_INPUT_LENGTH);
     if (getline(out_input, &size, file) == -1)
@@ -111,17 +125,28 @@ Params
     file: Used when not interactive - should be stdin when arguments are piped in or file when load command is used
     out_input: Pointer to string that will be read. String must be free'd after use.
 */
-bool ask_input(char *prompt, FILE *file, char **out_input)
+bool ask_input(FILE *file, char **out_input, char *prompt_fmt, ...)
 {
+    va_list args;
+    va_start(args, prompt_fmt);
+    bool res;
+
 #ifdef USE_READLINE
     // Use readline if it is installed and input comes from a shell
     if (g_interactive)
     {
-        return ask_input_readline(prompt, out_input);
+        res = ask_input_readline(out_input, prompt_fmt, args);
     }
+    else
+    {
+        res = ask_input_getline(file, out_input, prompt_fmt, args);
+    }
+#else
+    res = ask_input_getline(file, out_input, prompt_fmt, args);
 #endif
 
-    return ask_input_getline(prompt, file, out_input);
+    va_end(args);
+    return res;
 }
 
 /*
@@ -154,7 +179,7 @@ char *perr_to_string(ParserError perr)
         case PERR_FUNCTION_WRONG_ARITY:
             return "Wrong number of operands of function";
         case PERR_CHILDREN_EXCEEDED:
-            return "Exceeded maximum number of operands of function"; 
+            return "Exceeded maximum number of operands of function";
         case PERR_EMPTY:
             return "Empty Expression";
         default:
@@ -168,7 +193,12 @@ Summary:
 Returns:
     True when input was successfully parsed, false when syntax error in input or aborted when asked for constant
 */
-bool parse_input_from_console(ParsingContext *ctx, char *input, char *error_fmt, Node **out_res, bool constant)
+bool parse_input_from_console(ParsingContext *ctx,
+    char *input,
+    char *error_fmt,
+    Node *out_res,
+    bool constant,
+    bool transform)
 {
     ParserError perr = parse_input(ctx, input, out_res);
     if (perr != PERR_SUCCESS)
@@ -177,34 +207,28 @@ bool parse_input_from_console(ParsingContext *ctx, char *input, char *error_fmt,
         return false;
     }
 
-    transform_input(*out_res);
+    if (transform) transform_input(out_res);
 
     // Make expression constant by asking for values and binding them to variables
     if (constant)
     {
         char *vars[MAX_VAR_COUNT];
-        size_t num_vars;
-        
-        if (!tree_list_vars(*out_res, &num_vars, vars))
-        {
-            printf("Error: %s\n", perr_to_string(PERR_STACK_EXCEEDED));
-            return false;
-        }
+        size_t num_vars = list_variables(*out_res, vars);
+
+        /*
+         * Ask for variables interactively when we are connected to a terminal
+         * When connected to a pipe, it binds variables silently
+         * When expression was loaded from a file at a terminal, it asks interactively
+         */
+        bool temp = set_interactive(isatty(STDIN_FILENO));
 
         for (size_t i = 0; i < num_vars; i++)
         {
-            // Make interactive even when loading a file
-            bool temp = set_interactive(isatty(STDIN_FILENO));
-            
-            // printf'ing prompt beforehand causes overwrite when using arrow keys
-            char prompt[strlen(vars[i]) + strlen(TTY_ASK_VARIABLE_PROMPT) + 1];
-            sprintf(prompt, "%s" TTY_ASK_VARIABLE_PROMPT, vars[i]);
-
             char *input;
-            if (ask_input(prompt, stdin, &input))
+            if (ask_input(stdin, &input, "%s" TTY_ASK_VARIABLE_PROMPT, vars[i]))
             {
-                Node *res_var;
-                if (!parse_input_from_console(ctx, input, error_fmt, &res_var, false))
+                Node res_var;
+                if (!parse_input_from_console(ctx, input, error_fmt, &res_var, false, transform))
                 {
                     // Error while parsing - ask again
                     free(input);
@@ -213,7 +237,7 @@ bool parse_input_from_console(ParsingContext *ctx, char *input, char *error_fmt,
                 }
                 free(input);
                 
-                if (tree_count_vars(res_var) > 0)
+                if (count_variables(res_var) > 0)
                 {
                     // Not a constant given - ask again
                     printf("Not a constant expression\n");
@@ -222,8 +246,7 @@ bool parse_input_from_console(ParsingContext *ctx, char *input, char *error_fmt,
                     continue;
                 }
                 
-                tree_substitute_var(ctx, *out_res, res_var, vars[i]);
-                free(vars[i]);
+                replace_variable_nodes(out_res, res_var, vars[i]);
                 free_tree(res_var);
             }
             else
@@ -231,11 +254,12 @@ bool parse_input_from_console(ParsingContext *ctx, char *input, char *error_fmt,
                 // EOF when asked for constant
                 printf("\n");
                 set_interactive(temp);
+                free_tree(*out_res);
                 return false;
             }
-
-            set_interactive(temp);
         }
+        // Restore previous value of g_interactive
+        set_interactive(temp);
     }
     
     return true;
