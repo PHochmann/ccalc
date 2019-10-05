@@ -1,4 +1,4 @@
-use_readline=false
+use_readline=true
 LFLAGS="-lm"
 DEFINES=""
 DIR=$(dirname $0)
