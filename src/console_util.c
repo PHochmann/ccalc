@@ -71,7 +71,7 @@ void whisper(const char *format, ...)
 }
 
 #ifdef USE_READLINE
-static const size_t MAX_PROMPT_LENGTH = 10;
+static const size_t PROMPT_BUFFER = 8;
 // File is stdin, g_interactive is true
 bool ask_input_readline(char **out_input, char *prompt_fmt, va_list args)
 {
@@ -83,8 +83,8 @@ bool ask_input_readline(char **out_input, char *prompt_fmt, va_list args)
     else
     {
         // Printing prompt beforehand causes overwrite when using arrow keys
-        char prompt[MAX_PROMPT_LENGTH + 1];
-        vsnprintf(prompt, MAX_PROMPT_LENGTH, prompt_fmt, args);
+        char prompt[PROMPT_BUFFER];
+        vsnprintf(prompt, PROMPT_BUFFER, prompt_fmt, args);
         *out_input = readline(prompt);
     }
 
@@ -132,7 +132,7 @@ bool ask_input(FILE *file, char **out_input, char *prompt_fmt, ...)
     bool res;
 
 #ifdef USE_READLINE
-    // Use readline if it is installed and input comes from a shell
+    // Use readline if it is installed and we are in interactive mode
     if (g_interactive)
     {
         res = ask_input_readline(out_input, prompt_fmt, args);

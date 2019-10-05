@@ -107,27 +107,26 @@ Node tree_copy(Node tree)
 {
     if (tree == NULL) return NULL;
 
-    Node res;
     switch (*tree)
     {
         case NTYPE_OPERATOR:
-            res = malloc_operator_node(get_op(tree), get_num_children(tree));
+        {
+            Node res = malloc_operator_node(get_op(tree), get_num_children(tree));
             for (size_t i = 0; i < get_num_children(tree); i++)
             {
                 set_child(res, i, tree_copy(get_child(tree, i)));
             }
-            break;
+            return res;
+        }
         
         case NTYPE_CONSTANT:
-            res = malloc_constant_node(get_const_value(tree));
-            break;
+            return malloc_constant_node(get_const_value(tree));
             
         case NTYPE_VARIABLE:
-            res = malloc_variable_node(get_var_name(tree));
-            break;
+            return malloc_variable_node(get_var_name(tree));
     }
     
-    return res;
+    return NULL;
 }
 
 /*
@@ -259,34 +258,31 @@ size_t count_variable_nodes(Node tree, char *var_name)
     return get_variable_nodes(&tree, var_name, instances);
 }
 
-size_t list_variables_rec(Node tree, size_t partial_res, char **out_variables)
+size_t list_variables_rec(Node tree, size_t num_previously_found, char **out_variables)
 {
     switch (get_type(tree))
     {
         case NTYPE_CONSTANT:
-            return 0;
+            return num_previously_found;
         
         case NTYPE_VARIABLE:
             // Check if we already found variable
-            for (size_t i = 0; i < partial_res; i++)
+            for (size_t i = 0; i < num_previously_found; i++)
             {
                 if (strcmp(get_var_name(tree), out_variables[i]) == 0)
                 {
-                    return 0;
+                    return num_previously_found;
                 }
             }
-            out_variables[partial_res] = get_var_name(tree);
-            return 1;
+            out_variables[num_previously_found] = get_var_name(tree);
+            return num_previously_found + 1;
 
         case NTYPE_OPERATOR:
-        {
-            size_t res = 0;
             for (size_t i = 0; i < get_num_children(tree); i++)
             {
-                res += list_variables_rec(get_child(tree, i), res, out_variables);
+                num_previously_found = list_variables_rec(get_child(tree, i), num_previously_found, out_variables);
             }
-            return res;
-        }
+            return num_previously_found;
     }
 
     return 0;
