@@ -8,12 +8,19 @@
 typedef double ConstantType;
 
 /*
-    Trees consist of nodes that are either operators, constants or variables
-    Operators are usually inner nodes
-        Exceptions: constant-operators (like pi or e) that are modeled as infix-operators with arity 0
-            or zero-arity functions)
-    Constants are leaf nodes operators work upon
-    Everything else is a variable that needs to be substituted before evaluating
+Trees consist of nodes that are either operators, constants or variables.
+Operators are usually inner nodes (exception: zero-arity functions).
+Constants and variables are leaf nodes.
+    
+Nodes are implemented to support faux-polymorphism.
+'NodeType type' is like a header which tells the type a node can be safely casted to.
+The different sizes of node types make it difficult to change existing trees, because a VariableNode can not be changed value-wise to become an OperatorNode (for example).
+To work around this problem, we always use double indirection to replace subtrees.
+This justifies hiding a pointer type behind 'typedef NodeType* Node'.
+Now, the underlying struct is opaque and 'Node' is only a handle to a node, its address.
+Nodes are always created by malloc and are never put on the stack.
+Whenever we safe a Node somewhere else, we reference with '*Node'.
+This double indirection (pointer to a pointer) makes it possible to replace a node by putting a new Node's handle at this location.
 */
 
 typedef enum
