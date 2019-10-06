@@ -17,8 +17,7 @@ struct OpData
     size_t arity;
 };
 
-/* Encapsulates current state to be communicated to auxiliary functions
-   (singleton) */
+/* Encapsulates current state to be communicated to auxiliary functions (singleton) */
 struct ParserState
 {
     ParsingContext *ctx;
@@ -179,12 +178,6 @@ bool op_push(struct ParserState *state, struct OpData op_d)
     }
 
     state->op_stack[state->num_ops++] = op_d;
-
-    // Postfix operators are never on the op_stack, because their operands are directly available
-    if (op != NULL && op->placement == OP_PLACE_POSTFIX)
-    {
-        if (!op_pop_and_insert(state)) return false;
-    }
 
     return true;
 }
@@ -394,6 +387,8 @@ ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, 
             if (op != NULL) // Postfix operator found
             {
                 if (!push_operator(&state, op)) goto exit;
+                // Postfix operators are never on the op_stack, because their operands are directly available
+                op_pop_and_insert(&state);
                 await_infix = true;
                 continue;
             }
