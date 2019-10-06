@@ -3,6 +3,7 @@
 #include <time.h>
 #include <float.h>
 #include <math.h>
+
 #include "arith_context.h"
 
 #define EVAL(n) arith_eval(get_child(tree, n))
@@ -65,7 +66,7 @@ double arith_eval(Node tree)
             return get_const_value(tree);
             
         case NTYPE_OPERATOR:
-            switch ((size_t)(get_op(tree) - __g_ctx.operators))
+            switch ((size_t)(get_op(tree) - operators))
             {
                 case 0: // $x
                     return EVAL(0);
@@ -281,17 +282,17 @@ void arith_init_ctx()
         op_get_function("asinh", 1),
         op_get_function("acosh", 1),
         op_get_function("atanh", 1),
-        op_get_function("max", DYNAMIC_ARITY),
-        op_get_function("min", DYNAMIC_ARITY),
+        op_get_function("max", OP_DYNAMIC_ARITY),
+        op_get_function("min", OP_DYNAMIC_ARITY),
         op_get_function("abs", 1),
         op_get_function("ceil", 1),
         op_get_function("floor", 1),
         op_get_function("round", 1),
         op_get_function("trunc", 1),
         op_get_function("frac", 1),
-        op_get_function("sum", DYNAMIC_ARITY),
-        op_get_function("prod", DYNAMIC_ARITY),
-        op_get_function("avg", DYNAMIC_ARITY),
+        op_get_function("sum", OP_DYNAMIC_ARITY),
+        op_get_function("prod", OP_DYNAMIC_ARITY),
+        op_get_function("avg", OP_DYNAMIC_ARITY),
         op_get_function("rand", 2),
         op_get_function("gamma", 1),
         op_get_function("fib", 1),

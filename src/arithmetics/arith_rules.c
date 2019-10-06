@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include "arith_rules.h"
 #include "arith_context.h"
 #include "../parsing/node.h"

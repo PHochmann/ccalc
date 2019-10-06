@@ -1,6 +1,5 @@
-#include <stdlib.h>
-#include <string.h>
 #include <stdbool.h>
+#include <string.h>
 #include "tokenizer.h"
 #include "parser.h"
 
@@ -96,7 +95,7 @@ bool op_pop_and_insert(struct ParserState *state)
     if (op != NULL) // Construct operator-node and append children
     {
         // Functions with recorded arity of DYNAMIC_ARITY are glue-ops and shouldn't be computed as functions
-        bool is_function = (op_peek(state)->arity != DYNAMIC_ARITY);
+        bool is_function = (op_peek(state)->arity != OP_DYNAMIC_ARITY);
     
         // Function overloading: Find function with suitable arity
         // Actual function on op stack is only tentative with random arity (but same name)
@@ -110,7 +109,7 @@ bool op_pop_and_insert(struct ParserState *state)
                 // Fallback: Find function of dynamic arity
                 if (op == NULL)
                 {
-                    op = ctx_lookup_function(state->ctx, name, DYNAMIC_ARITY);
+                    op = ctx_lookup_function(state->ctx, name, OP_DYNAMIC_ARITY);
                 }
                 
                 if (op == NULL)
@@ -194,13 +193,13 @@ bool op_push(struct ParserState *state, struct OpData op_d)
 bool push_operator(struct ParserState *state, Operator *op)
 {
     // Set arity of functions to 0, everything else's arity to DYNAMIC_ARITY, since DYNAMIC_ARITY is only Arity that will never occur
-    return op_push(state, (struct OpData){ op, op->placement == OP_PLACE_FUNCTION ? 0 : DYNAMIC_ARITY });
+    return op_push(state, (struct OpData){ op, op->placement == OP_PLACE_FUNCTION ? 0 : OP_DYNAMIC_ARITY });
 }
 
 // Pushes opening parenthesis on op_stack
 bool push_opening_parenthesis(struct ParserState *state)
 {
-    return op_push(state, (struct OpData){ NULL, DYNAMIC_ARITY });
+    return op_push(state, (struct OpData){ NULL, OP_DYNAMIC_ARITY });
 }
 
 ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, Node *out_res)
@@ -217,13 +216,13 @@ ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, 
     };
 
     // 3. Process each token
-    bool await_subexpression = true;
+    bool await_infix = false;
     for (size_t i = 0; i < num_tokens; i++)
     {
         char *token = tokens[i];
         
         // I. Does glue-op need to be inserted?
-        if (!await_subexpression && state.ctx->glue_op != NULL)
+        if (await_infix && state.ctx->glue_op != NULL)
         {
             if (!is_closing_parenthesis(token)
                 && !is_delimiter(token)
@@ -234,8 +233,8 @@ ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, 
 
                 // If glue-op was function, we can't count operands like we normally do
                 // Disable function overloading mechanism
-                op_peek(&state)->arity = DYNAMIC_ARITY;
-                await_subexpression = true;
+                op_peek(&state)->arity = OP_DYNAMIC_ARITY;
+                await_infix = false;
             }
         }
         
@@ -249,8 +248,9 @@ ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, 
         // III. Is token closing parenthesis or argument delimiter?
         if (is_closing_parenthesis(token))
         {
-            await_subexpression = false;
+            await_infix = true;
 
+            // Pop ops until opening parenthesis on op-stack
             while (state.num_ops > 0 && op_peek(&state)->op != NULL)
             {
                 if (!op_pop_and_insert(&state))
@@ -261,17 +261,25 @@ ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, 
             
             if (state.num_ops > 0)
             {
+                // Remove opening parenthesis on top of op-stack
                 op_pop_and_insert(&state);
             }
             else
             {
+                // We did not stop because an opening parenthesis was found, but because op-stack was empty
                 ERROR(PERR_EXCESS_CLOSING_PARENTHESIS);
             }
             
+            /*
+             * Now, when the recorded arity of the operator on top the stack is not OP_DYNAMIC_ARITY,
+             * it is a function we count operands for, and the closing parenthesis was actually the end of
+             * its parameter list. Increment operand count one last time when it was not the empty
+             * parameter list.
+             */
             bool empty_params = (i > 0 && is_opening_parenthesis(tokens[i - 1]));
-            if (state.num_ops > 0 && op_peek(&state)->arity != DYNAMIC_ARITY && !empty_params)
+            if (state.num_ops > 0 && op_peek(&state)->arity != OP_DYNAMIC_ARITY && !empty_params)
             {
-                if (op_peek(&state)->arity == MAX_ARITY)
+                if (op_peek(&state)->arity == OP_MAX_ARITY)
                 {
                     ERROR(PERR_CHILDREN_EXCEEDED);
                 }
@@ -286,6 +294,7 @@ ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, 
         
         if (is_delimiter(token))
         {
+            // Pop ops until opening parenthesis on op-stack
             while (state.num_ops > 0 && op_peek(&state)->op != NULL)
             {
                 if (!op_pop_and_insert(&state))
@@ -293,21 +302,29 @@ ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, 
                     ERROR(PERR_UNEXPECTED_DELIMITER);
                 }
             }
-            
-            // Increase operand counter
-            if (state.num_ops > 1 && state.op_stack[state.num_ops - 2].arity != DYNAMIC_ARITY)
+
+            if (state.num_ops > 1 && state.op_stack[state.num_ops - 2].op->placement == OP_PLACE_FUNCTION)
             {
-                if (state.op_stack[state.num_ops - 2].arity == MAX_ARITY)
+                // Increment operand counter
+                if (state.op_stack[state.num_ops - 2].arity != OP_DYNAMIC_ARITY)
                 {
-                    ERROR(PERR_CHILDREN_EXCEEDED);
-                }
-                else
-                {
-                    state.op_stack[state.num_ops - 2].arity++;
+                    if (state.op_stack[state.num_ops - 2].arity == OP_MAX_ARITY)
+                    {
+                        ERROR(PERR_CHILDREN_EXCEEDED);
+                    }
+                    else
+                    {
+                        state.op_stack[state.num_ops - 2].arity++;
+                    }
                 }
             }
-            
-            await_subexpression = true;
+            else
+            {
+                // Not in "func("-construct
+                ERROR(PERR_UNEXPECTED_DELIMITER);
+            }
+              
+            await_infix = false;
             continue;
         }
         // - - -
@@ -317,33 +334,41 @@ ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, 
         
         // Infix, Prefix (await=true) -> Function (false), Leaf (false), Prefix (true)
         // Function, Leaf, Postfix (await=false) -> Infix (true), Postfix (false)
-        if (await_subexpression)
+        if (!await_infix)
         {
             op = ctx_lookup_op(state.ctx, token, OP_PLACE_FUNCTION);
             if (op != NULL) // Function operator found
             {
                 if (!push_operator(&state, op)) goto exit;
-                await_subexpression = true;
 
-                // Handle functions without parentheses
-                if (i < num_tokens - 1 && !is_opening_parenthesis(tokens[i + 1]))
+                if (op->arity == 0 || op->arity == OP_DYNAMIC_ARITY)
                 {
-                    // Since constants can be modeled as zero-arity functions and functions can be overloaded,
-                    // it can happen that a zero-arity and a unary function of the same name exist.
-                    // In this case, ctx_lookup_op deterministically picks the zero-arity function.
-                    
-                    // The function is a constant - pop it directly
-                    if (op->arity == 0)
+                    // Directly pop constants that are not overloaded or not followed by an opening parenthesis
+                    // Since OP_DYNAMIC_ARITY functions are overloaded by definition, also pop them when no opening parenthesis follows
+                    if (!ctx_is_function_overloaded(state.ctx, op->name)
+                        || i == num_tokens - 1
+                        || !is_opening_parenthesis(tokens[i + 1]))
                     {
+                        // Skip parsing of empty parameter list
+                        // Relevant when first if was true because of not overloaded constant function
+                        if (i < num_tokens - 2 && is_opening_parenthesis(tokens[i + 1]) && is_closing_parenthesis(tokens[i + 2]))
+                        {
+                            i += 2;
+                        }
+
                         op_pop_and_insert(&state);
-                        await_subexpression = false; // Constants don't await a subexpression
-                    }
-                    else // We can only hope it's a unary function (otherwise syntax error anyway)
-                    {
-                        op_peek(&state)->arity = 1;
+                        await_infix = true;
+                        continue;
                     }
                 }
+                
+                // Handle omitted parenthesis after unary function (e.g. sin2)
+                if (i < num_tokens - 1 && !is_opening_parenthesis(tokens[i + 1]))
+                {
+                    op_peek(&state)->arity = 1;
+                }
 
+                await_infix = false;
                 continue;
             }
             
@@ -351,7 +376,7 @@ ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, 
             if (op != NULL) // Prefix operator found
             {
                 if (!push_operator(&state, op)) goto exit;
-                await_subexpression = true;
+                await_infix = false;
                 continue;
             }
         }
@@ -361,7 +386,7 @@ ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, 
             if (op != NULL) // Infix operator found
             {
                 if (!push_operator(&state, op)) goto exit;
-                await_subexpression = true;
+                await_infix = false;
                 continue;
             }
             
@@ -369,7 +394,7 @@ ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, 
             if (op != NULL) // Postfix operator found
             {
                 if (!push_operator(&state, op)) goto exit;
-                await_subexpression = false;
+                await_infix = true;
                 continue;
             }
             
@@ -393,7 +418,7 @@ ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, 
             if (node == NULL) ERROR(PERR_OUT_OF_MEMORY);
         }
 
-        await_subexpression = false;
+        await_infix = true;
         if (!node_push(&state, node)) goto exit;
     }
     

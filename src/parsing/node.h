@@ -2,8 +2,7 @@
 #include <stdbool.h>
 #include "operator.h"
 
-// Maximal amount of variables nodes allowed in tree
-#define MAX_VAR_COUNT 20
+extern size_t node_bytes;
 
 typedef double ConstantType;
 
@@ -12,14 +11,13 @@ Trees consist of nodes that are either operators, constants or variables.
 Operators are usually inner nodes (exception: zero-arity functions).
 Constants and variables are leaf nodes.
     
-Nodes are implemented to support faux-polymorphism.
-'NodeType type' is like a header which tells the type a node can be safely casted to.
+Nodes are implemented polymorphic with enum-based type tracking (NodeType type).
 The different sizes of node types make it difficult to change existing trees, because a VariableNode can not be changed value-wise to become an OperatorNode (for example).
 To work around this problem, we always use double indirection to replace subtrees.
 This justifies hiding a pointer type behind 'typedef NodeType* Node'.
 Now, the underlying struct is opaque and 'Node' is only a handle to a node, its address.
 Nodes are always created by malloc and are never put on the stack.
-Whenever we safe a Node somewhere else, we reference with '*Node'.
+Whenever we safe a Node somewhere else, we reference it with '*Node'.
 This double indirection (pointer to a pointer) makes it possible to replace a node by putting a new Node's handle at this location.
 */
 
@@ -34,19 +32,19 @@ typedef NodeType* Node;
 
 struct VariableNode_
 {
-    NodeType type;
+    NodeType type; // Always NTYPE_VARIABLE
     char var_name[];
 };
 
 struct ConstantNode_
 {
-    NodeType type;
+    NodeType type; // Always NTYPE_CONSTANT
     ConstantType const_value;
 };
 
 struct OperatorNode_
 {
-    NodeType type;
+    NodeType type;       // Always NTYPE_OPERATOR
     Operator *op;        // Points to operator in context
     size_t num_children; // Size of children buffer
     Node children[];

@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include <stdbool.h>
+#include <stdarg.h>
 #include <string.h>
 #include "context.h"
 
@@ -7,15 +7,14 @@
 Summary: This method is used to create a new ParsingContext without glue-op and operators
     Use ctx_add_op and ctx_add_glue_op to add them to new context
 Parameters:
-    recommended_str_len: Minimum amount of chars (without \0) a buffer supplied to to_string should hold
-        (not relevant for parsing, only for own account)
-    max_ops:             Number of operators that should fit into reserved buffer
-    operators:           Buffer to operators. Should hold max_ops operators.
+    str_len:   Minimum amount of chars (without \0) a buffer supplied to to_string should hold
+    max_ops:   Number of operators that should fit into reserved buffer
+    operators: Buffer to operators. Should hold max_ops operators.
 */
-ParsingContext get_context(size_t recommended_str_len, size_t max_ops, Operator *op_buffer)
+ParsingContext get_context(size_t str_len, size_t max_ops, Operator *op_buffer)
 {
     ParsingContext res = (ParsingContext){
-        .recommended_str_len = recommended_str_len,
+        .str_len = str_len,
         .max_ops = max_ops,
         .num_ops = 0,
         .operators = op_buffer,
@@ -174,4 +173,26 @@ Operator *ctx_lookup_function(ParsingContext *ctx, char *name, size_t arity)
     }
     
     return NULL;
+}
+
+/*
+Returns: True if functions with same name but different arities exist, or function with this name and OP_DYNAMIC_ARITY exists
+*/
+bool ctx_is_function_overloaded(ParsingContext *ctx, char *name)
+{
+    if (ctx == NULL || name == NULL) return false;
+
+    bool found_first = false;
+    for (size_t i = 0; i < ctx->num_ops; i++)
+    {
+        if (ctx->operators[i].placement == OP_PLACE_FUNCTION
+            && strcmp(ctx->operators[i].name, name) == 0)
+        {
+            if (ctx->operators[i].arity == OP_DYNAMIC_ARITY) return true;
+            if (found_first) return true;
+            found_first = true;
+        }
+    }
+
+    return false;
 }

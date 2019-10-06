@@ -15,8 +15,9 @@ bool get_matching(Node *tree, Node pattern, Matching *out_matching)
 {
     if (tree == NULL || *tree == NULL || pattern == NULL || out_matching == NULL) return false;
     
-    char *mapped_vars[MAX_VAR_COUNT];
-    Node mapped_nodes[MAX_VAR_COUNT];
+    size_t total_mapped_vars = count_variables_distinct(pattern);
+    char *mapped_vars[total_mapped_vars];
+    Node mapped_nodes[total_mapped_vars];
     size_t num_mapped_vars = 0;
     
     Node tree_stack[MAX_STACK_SIZE];
@@ -58,15 +59,24 @@ bool get_matching(Node *tree, Node pattern, Matching *out_matching)
                 if (!already_bound)
                 {
                     // Check special rules
-                    if (begins_with(CONST_PREFIX, get_var_name(curr_pattern)) && *curr_tree != NTYPE_CONSTANT) return false;
-                    if (begins_with(VAR_PREFIX, get_var_name(curr_pattern)) && *curr_tree != NTYPE_VARIABLE) return false;
-                    if (begins_with(NAME_PREFIX, get_var_name(curr_pattern)))
+                    if (begins_with(CONST_PREFIX, get_var_name(curr_pattern))
+                        && get_type(curr_tree) != NTYPE_CONSTANT)
                     {
-                        if (*curr_tree != NTYPE_VARIABLE) return false;
-                        if (strcmp(get_var_name(curr_pattern) + strlen(NAME_PREFIX), get_var_name(curr_tree)) != 0)
-                        {
-                            return false;
-                        }
+                        return false;
+                    }
+
+                    if (begins_with(VAR_PREFIX, get_var_name(curr_pattern))
+                        && get_type(curr_tree) != NTYPE_VARIABLE)
+                    {
+                        return false;
+                    }
+
+                    if (begins_with(NAME_PREFIX, get_var_name(curr_pattern))
+                        && (get_type(curr_tree) != NTYPE_VARIABLE
+                            || strcmp(get_var_name(curr_pattern) + strlen(NAME_PREFIX),
+                                get_var_name(curr_tree)) != 0))
+                    {
+                        return false;
                     }
                     
                     // Bind variable
@@ -106,9 +116,9 @@ bool get_matching(Node *tree, Node pattern, Matching *out_matching)
     }
     
     // We successfully found matching! Construct it:
-    out_matching->matched_tree = tree; // Used to replace subtree
-    out_matching->num_mapped = num_mapped_vars;
-    out_matching->mapped_vars = malloc(sizeof(char*) * num_mapped_vars);
+    out_matching->matched_tree = tree;            // Used to replace later
+    out_matching->num_mapped   = num_mapped_vars; // Should be the same as total_mapped_vars
+    out_matching->mapped_vars  = malloc(sizeof(char*) * num_mapped_vars);
     out_matching->mapped_nodes = malloc(sizeof(Node) * num_mapped_vars);
     
     for (size_t i = 0; i < num_mapped_vars; i++)
@@ -136,7 +146,7 @@ bool find_matching(Node *tree, Node pattern, Matching *out_matching)
 {
     if (get_matching(tree, pattern, out_matching)) return true;
     
-    if (**tree == NTYPE_OPERATOR)
+    if (get_type(*tree) == NTYPE_OPERATOR)
     {
         for (size_t i = 0; i < get_num_children(*tree); i++)
         {

@@ -60,7 +60,7 @@ void print_op(Operator *op)
                 case 0:
                     printf("%s", op->name);
                     break;
-                case DYNAMIC_ARITY:
+                case OP_DYNAMIC_ARITY:
                     printf("%s(*)", op->name);
                     break;
                 default:

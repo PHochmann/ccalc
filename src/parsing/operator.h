@@ -3,11 +3,13 @@
 
 // Used to indicate arbitrary number of operands (0 up to MAX_ARITY)
 // Arities are encoded as size_t, so it could be much higher
-#define DYNAMIC_ARITY 101
+#define OP_DYNAMIC_ARITY 101
 // One less than DYNAMIC_ARITY
-#define MAX_ARITY 100
+#define OP_MAX_ARITY 100
 // Since precendece is a char
-#define MAX_PRECEDENCE 255
+#define OP_MAX_PRECEDENCE 255
+
+typedef unsigned char Precedence;
 
 typedef enum
 {
@@ -22,8 +24,6 @@ typedef enum
     OP_PLACE_POSTFIX,
     OP_PLACE_FUNCTION,
 } OpPlacement;
-
-typedef unsigned char Precedence;
 
 typedef struct
 {

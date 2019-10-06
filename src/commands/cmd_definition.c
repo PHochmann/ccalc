@@ -26,8 +26,8 @@ bool cmd_definition_check(char *input)
 void add_function(char *name, char *left, char *right)
 {
     // Add function operator to parse left input
-    // Must be DYNAMIC_ARITY because we do not know the actual arity yet
-    ctx_add_op(g_ctx, op_get_function(name, DYNAMIC_ARITY));
+    // Must be OP_DYNAMIC_ARITY because we do not know the actual arity yet
+    ctx_add_op(g_ctx, op_get_function(name, OP_DYNAMIC_ARITY));
 
     Node left_n = NULL;
     Node right_n = NULL;
@@ -82,6 +82,21 @@ void add_function(char *name, char *left, char *right)
 
     if (new_arity == 0)
     {
+        /*
+         * User-defined constants are zero-arity functions with corresponding elimination rule.
+         * Previously defined rules do not refer to them, because the string was parsed to 
+         * variable node, not an operator. For users, this is confusing, because the technical
+         * difference between variables and constant operators is not clear.
+         * => Replace unbounded variables of the same name with this new constant.
+         */
+        for (size_t i = ARITH_NUM_RULES; i < g_num_rules; i++)
+        {
+            if (count_variable_nodes(g_rules[i].before, name) == 0)
+            {
+                replace_variable_nodes(&g_rules[i].after, left_n, name);
+            }
+        }
+
         whisper("Added constant.\n");
     }
     else

@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <unistd.h>
 #include "console_util.h"
 #include "commands/core.h"

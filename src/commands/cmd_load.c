@@ -7,7 +7,6 @@
 #include "cmd_load.h"
 #include "core.h"
 #include "../console_util.h"
-
 #include "../string_util.h"
 
 #define COMMAND "load "

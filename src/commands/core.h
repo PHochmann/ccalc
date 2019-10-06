@@ -1,8 +1,5 @@
 #pragma once
-#include <stdbool.h>
-#include <stdarg.h>
-#include "../parsing/context.h"
-#include "../parsing/node.h"
+#include <stdio.h>
 
 #define VERSION "1.3.8"
 

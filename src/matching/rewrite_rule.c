@@ -30,7 +30,7 @@ void transform_matched_by_rule(Node rule_after, Matching *matching)
      * because variable names are not sanitized
      */
     Node transformed = tree_copy(rule_after);
-    Node *var_instances[matching->num_mapped][MAX_VAR_COUNT];
+    Node *var_instances[matching->num_mapped][count_variables(rule_after)];
     size_t num_instances[matching->num_mapped];
 
     for (size_t i = 0; i < matching->num_mapped; i++)

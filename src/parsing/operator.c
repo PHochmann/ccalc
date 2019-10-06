@@ -5,7 +5,7 @@ Operator op_get_function(char *name, size_t arity)
     return (Operator){
         .name = name,
         .arity = arity,
-        .precedence = MAX_PRECEDENCE,
+        .precedence = OP_MAX_PRECEDENCE,
         .placement = OP_PLACE_FUNCTION,
         .assoc = OP_ASSOC_LEFT
     };

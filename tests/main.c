@@ -1,4 +1,7 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
 #include "test.h"
 #include "parser_test.h"
 #include "tree_to_string_test.h"
@@ -31,7 +34,7 @@ int main()
         }
         else
         {
-            printf("%s: passed all %d cases\n", test.name, test.num_cases);
+            printf("%s: " F_GREEN "Passed all %d cases" COL_RESET "\n", test.name, test.num_cases);
             total_cases += test.num_cases;
         }
     }

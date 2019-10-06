@@ -1,8 +1,6 @@
 #define _GNU_SOURCE
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
-#include <string.h>
 
 #ifdef USE_READLINE
 #include <readline/readline.h>
@@ -212,7 +210,7 @@ bool parse_input_from_console(ParsingContext *ctx,
     // Make expression constant by asking for values and binding them to variables
     if (constant)
     {
-        char *vars[MAX_VAR_COUNT];
+        char *vars[count_variables(*out_res)];
         size_t num_vars = list_variables(*out_res, vars);
 
         /*

@@ -129,7 +129,7 @@ void inline_prefix(struct PrintingState *state, Node node, bool l, bool r)
     if (l) p_open(state);
     to_buffer(state, get_op(node)->name);
     
-    if (*get_child(node, 0) == NTYPE_OPERATOR
+    if (get_type(get_child(node, 0)) == NTYPE_OPERATOR
         && get_op(get_child(node, 0))->precedence <= get_op(node)->precedence)
     {
         p_open(state);
@@ -151,7 +151,7 @@ void inline_postfix(struct PrintingState *state, Node node, bool l, bool r)
     if (r) p_open(state);
 
     // It should be safe to dereference first child
-    if (*get_child(node, 0) == NTYPE_OPERATOR
+    if (get_type(get_child(node, 0)) == NTYPE_OPERATOR
         && get_op(get_child(node, 0))->precedence < get_op(node)->precedence)
     {
         p_open(state);
@@ -196,7 +196,7 @@ void inline_infix(struct PrintingState *state, Node node, bool l, bool r)
     //    - It has a lower precedence
     //    - It has the same precedence but associates to the right
     //      (Same precedence -> same associativity, see consistency rules for operator set in context.c)
-    if (*childA == NTYPE_OPERATOR
+    if (get_type(childA) == NTYPE_OPERATOR
         && (get_op(childA)->precedence < get_op(node)->precedence
             || (get_op(childA)->precedence == get_op(node)->precedence
                 && get_op(node)->assoc == OP_ASSOC_RIGHT)))
@@ -213,7 +213,7 @@ void inline_infix(struct PrintingState *state, Node node, bool l, bool r)
     to_buffer(state, strlen(get_op(node)->name) == 1 ? "%s" : " %s ", get_op(node)->name);
     
     // Checks if right operand of infix operator needs to be wrapped in parentheses (see analog case for left operand)
-    if (*childB == NTYPE_OPERATOR
+    if (get_type(childB) == NTYPE_OPERATOR
         && (get_op(childB)->precedence < get_op(node)->precedence
             || (get_op(childB)->precedence == get_op(node)->precedence
                 && get_op(node)->assoc == OP_ASSOC_LEFT)))

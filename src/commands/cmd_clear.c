@@ -1,13 +1,9 @@
-#include <stdio.h>
 #include <string.h>
 
 #include "cmd_clear.h"
 #include "../console_util.h"
-
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
-#include "../parsing/operator.h"
-#include "../string_util.h"
 
 bool cmd_clear_check(char *input)
 {

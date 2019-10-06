@@ -1,10 +1,8 @@
 #include <string.h>
-#include <stdio.h>
-#include <sys/types.h>
 #include "node.h"
 
 /*
-The following functions are used to emulate polymorphism of different Node types
+The following functions are used for polymorphism of different Node types
 */
 
 Node malloc_variable_node(char *var_name)
@@ -27,9 +25,8 @@ Node malloc_constant_node(ConstantType value)
 
 Node malloc_operator_node(Operator *op, size_t num_children)
 {
-    if (num_children > MAX_ARITY)
+    if (num_children > OP_MAX_ARITY)
     {
-        // Max. arity exceeded
         return NULL;
     }
 
@@ -173,7 +170,8 @@ void tree_replace(Node *tree_to_replace, Node tree_to_insert)
 // What follows are helper functions commonly used to search trees
 
 /*
-Returns: Total number of variable nodes in tree
+Returns: Total number of variable nodes in tree.
+    Can be used as an upper bound for the needed size of a buffer to supply to get_variable_nodes etc.
 */
 size_t count_variables(Node tree)
 {
@@ -204,14 +202,14 @@ Returns: Number of different variables present in tree
 */
 size_t count_variables_distinct(Node tree)
 {
-    char *vars[MAX_VAR_COUNT];
+    char *vars[count_variables(tree)];
     return list_variables(tree, vars);
 }
 
 /*
 Summary: Lists all pointers to variable nodes of given name
 Params
-    out_instances: Contains result. Must hold at least MAX_VAR_COUNT Node-pointers. Function unsafe otherwise!
+    out_instances: Contains result. Function unsafe when too small.
 Returns: Number of variable nodes found, i.e. count of out_instances
 */
 size_t get_variable_nodes(Node *tree, char *var_name, Node **out_instances)
@@ -254,7 +252,7 @@ Summary: Variant of get_variable_nodes that discards 'out_instances'
 size_t count_variable_nodes(Node tree, char *var_name)
 {
     // out-discard pattern
-    Node *instances[MAX_VAR_COUNT];
+    Node *instances[count_variables(tree)];
     return get_variable_nodes(&tree, var_name, instances);
 }
 
@@ -291,8 +289,8 @@ size_t list_variables_rec(Node tree, size_t num_previously_found, char **out_var
 /*
 Summary: Lists all variable names occurring in tree. Strings are not copied!
 Params
-    tree:              Tree to search for variables
-    out_variables:     Must hold at least MAX_VAR_COUNT char-pointers. Function unsafe otherwise!
+    tree:          Tree to search for variables
+    out_variables: Contains result. Function unsafe when too small.
 Returns: Length of out_variables (i.e. count of variables in tree without duplicates)
 */
 size_t list_variables(Node tree, char **out_variables)
@@ -312,7 +310,7 @@ void replace_variable_nodes(Node *tree, Node tree_to_copy, char *var_name)
 {
     if (tree == NULL || *tree == NULL || tree_to_copy == NULL || var_name == NULL) return;
 
-    Node *instances[MAX_VAR_COUNT];
+    Node *instances[count_variables(*tree)];
     size_t num_instances = get_variable_nodes(tree, var_name, instances);
     for (size_t i = 0; i < num_instances; i++)
     {
