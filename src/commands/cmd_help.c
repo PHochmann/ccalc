@@ -108,9 +108,9 @@ void cmd_help_exec(__attribute__((unused)) char *input)
         for (size_t i = ARITH_NUM_RULES; i < g_num_rules; i++)
         {
             printf("\n");
-            print_tree_inlined(g_ctx, g_rules[i].before, true);
+            print_tree_inlined(g_rules[i].before, true);
             printf(" := ");
-            print_tree_inlined(g_ctx, g_rules[i].after, true);
+            print_tree_inlined(g_rules[i].after, true);
         }
     }
 

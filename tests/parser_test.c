@@ -2,10 +2,10 @@
 #include <math.h>
 
 #include "parser_test.h"
-#include "../src/arithmetics/arith_context.h"
 #include "../src/parsing/context.h"
 #include "../src/parsing/node.h"
 #include "../src/parsing/parser.h"
+#include "../src/arithmetics/arith_context.h"
 
 // To check if parsed tree evaluates to expected value
 struct ValueTest {
@@ -19,7 +19,7 @@ struct ErrorTest {
     ParserError result;
 };
 
-static const size_t NUM_VALUE_TESTS = 48;
+static const size_t NUM_VALUE_TESTS = 49;
 static struct ValueTest valueTests[] = {
     // 1. Basic prefix, infix, postfix
     { "2+3",  5 },
@@ -52,6 +52,7 @@ static struct ValueTest valueTests[] = {
     { "3+pi()",    6.141592653 },
     { "pi()2" ,    6.283185307 },
     { "pi()(2)",   6.283185307 },
+    { "pi()e",     8.539734222 },
     { "sum",       0 },
     { "sum + 2",   2 },
     { "3+sum",     3 },
@@ -98,59 +99,37 @@ bool almost_equals(double a, double b)
     return (fabs(a - b) < EPSILON);
 }
 
-// Returns: Index of error occurrence, -1 denotes no error
-int perform_value_tests()
+bool parser_test()
 {
     Node node = NULL;
-    
+
+    // Perform value tests
     for (size_t i = 0; i < NUM_VALUE_TESTS; i++)
     {
-        if (parse_input(g_ctx, valueTests[i].input, &node) != PERR_SUCCESS
-            || !almost_equals(arith_eval(node), valueTests[i].result))
+        if (parse_input(g_ctx, valueTests[i].input, &node) != PERR_SUCCESS)
         {
-            return i;
+            printf("Parser Error in '%s'\n", valueTests[i].input);
+            return false;
+        }
+
+        if (!almost_equals(arith_eval(node), valueTests[i].result))
+        {
+            printf("Unexpected result in '%s'\n", valueTests[i].input);
+            return false;
         }
     }
-    
-    return -1;
-}
 
-// Returns: Index of error occurrence, -1 denotes no error
-int perform_error_tests()
-{
-    Node node = NULL;
-
+    // Perform error tests
     for (size_t i = 0; i < NUM_ERROR_TESTS; i++)
     {
         if (parse_input(g_ctx, errorTests[i].input, &node) != errorTests[i].result)
         {
-            return i;
+            printf("Unexpected error type in '%s'\n", errorTests[i].input);
+            return false;
         }
     }
 
-    return -1;
-}
-
-int parser_test()
-{
-    arith_init_ctx();
-    int error_index = perform_value_tests();
-    
-    if (error_index != -1)
-    {
-        printf("Error in value test %d: '%s'\n", error_index, valueTests[error_index].input);
-        return -1;
-    }
-
-    error_index = perform_error_tests();
-
-    if (error_index != -1)
-    {
-        printf("Error in error test %d: '%s'\n", error_index, errorTests[error_index].input);
-        return -1;
-    }
-
-    return 0;
+    return true;
 }
 
 Test get_parser_test()

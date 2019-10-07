@@ -12,7 +12,7 @@
 #include "console_util.h"
 
 #define COL_RESET "\033[0m"
-#define TTY_ASK_VARIABLE_PROMPT "? > "
+#define ASK_VARIABLE_FMT "%s? > "
 
 static const size_t MAX_INPUT_LENGTH   = 100;
 static const size_t MAX_INLINED_LENGTH = 200;
@@ -45,13 +45,14 @@ bool set_interactive(bool value)
 }
 
 // Summary: Prints result of tree inline, including correct color even after truncation, and indicated abbreviation
-void print_tree_inlined(ParsingContext *ctx, Node node, bool color)
+void print_tree_inlined(Node node, bool color)
 {
-    char buffer[MAX_INLINED_LENGTH + 1];
-    size_t result = tree_inline(ctx, node, buffer, MAX_INLINED_LENGTH + 1, color);
+    char buffer[MAX_INLINED_LENGTH];
+    size_t result = tree_inline(node, buffer, MAX_INLINED_LENGTH, color);
     printf("%s", buffer);
     if (color) printf(COL_RESET);
-    if (result > MAX_INLINED_LENGTH) printf("...");
+    // Result is number of characters, excluding \0
+    if (result >= MAX_INLINED_LENGTH) printf("...");
 }
 
 /*
@@ -69,7 +70,7 @@ void whisper(const char *format, ...)
 }
 
 #ifdef USE_READLINE
-static const size_t PROMPT_BUFFER = 8;
+static const size_t PROMPT_BUFFER = 15;
 // File is stdin, g_interactive is true
 bool ask_input_readline(char **out_input, char *prompt_fmt, va_list args)
 {
@@ -223,7 +224,7 @@ bool parse_input_from_console(ParsingContext *ctx,
         for (size_t i = 0; i < num_vars; i++)
         {
             char *input;
-            if (ask_input(stdin, &input, "%s" TTY_ASK_VARIABLE_PROMPT, vars[i]))
+            if (ask_input(stdin, &input, ASK_VARIABLE_FMT, vars[i]))
             {
                 Node res_var;
                 if (!parse_input_from_console(ctx, input, error_fmt, &res_var, false, transform))

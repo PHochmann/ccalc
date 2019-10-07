@@ -2,59 +2,61 @@
 #include <string.h>
 
 #include "tree_to_string_test.h"
-
-#include "../src/arithmetics/arith_context.h"
 #include "../src/string_util.h"
-
 #include "../src/parsing/context.h"
 #include "../src/parsing/node.h"
 #include "../src/parsing/parser.h"
+#include "../src/arithmetics/arith_context.h"
 
 struct TreeToStringTest {
-    char *string_to_tree;
-    char *tree_to_string;
+    char *input;
+    char *expected_result;
 };
 
-static const size_t NUM_TESTS = 7;
+static const size_t NUM_TESTS = 9;
 static struct TreeToStringTest tests[] = {
-    { "--a", "-(-a)"},
-    { "--b!!", "(-(-b)!)!"},
+    { "--a",     "-(-a)"},
+    { "--b!!",   "(-(-b)!)!"},
     { "(1+2)+3", "1+2+3" },
     { "1+(2+3)", "1+(2+3)" },
-    { "1+2-3", "1+2-3" },
+    { "1+2-3",   "1+2-3" },
     { "1+(2-3)", "1+(2-3)" },
-    { "-sqrt(abs(--a!!*--sum(-b+c-d+e, f^g^h-i, -sum(j, k), l+m)*--n!!))", "-sqrt(abs(((-(-a)!)!)*(-(-sum(-b+c-d+e, f^g^h-i, -sum(j, k), l+m)))*(-(-n)!)!))" }
+    { "pi",      "pi" },
+    { "sum",     "sum()" },
+    { "-sqrt(abs(--a!!*--sum(-b+c-d+e, f^g^h-i, -sum(j, k), l+m)*--n!!))",
+        "-sqrt(abs(((-(-a)!)!)*(-(-sum(-b+c-d+e, f^g^h-i, -sum(j, k), l+m)))*(-(-n)!)!))" },
 };
 
-int tree_to_string_test()
+bool tree_to_string_test()
 {
-    arith_init_ctx();
-
     for (size_t i = 0; i < NUM_TESTS; i++)
     {
         Node node = NULL;
-        if (parse_input(g_ctx, tests[i].string_to_tree, &node) != PERR_SUCCESS)
+        size_t expected_length = strlen(tests[i].expected_result);
+        char result[expected_length + 1];
+
+        if (parse_input(g_ctx, tests[i].input, &node) != PERR_SUCCESS)
         {
-            printf("Error in tree inline test %zu: Parser Error\n", i);
-            return -1;
+            printf("Parser Error in '%s'\n", tests[i].input);
+            return false;
         }
 
-        size_t expected_length = strlen(tests[i].tree_to_string);
-        char expected_string[expected_length + 1];
-        if (tree_inline(g_ctx, node, expected_string, expected_length + 1, false) != expected_length)
+        // Check if tree_inline returns correct length with and without buffer
+        if (tree_inline(node, NULL, 0, false) != expected_length
+            || tree_inline(node, result, expected_length + 1, false) != expected_length)
         {
-            printf("Error in tree inline test %zu: Unexpected length\n", i);
-            return -1;
+            printf("Unexpected length in '%s'\n", tests[i].input);
+            return false;
         }
 
-        if (strcmp(tests[i].tree_to_string, expected_string) != 0)
+        if (strcmp(tests[i].expected_result, result) != 0)
         {
-            printf("Error in tree inline test %zu: Unexpected result\n", i);
-            return -1;
+            printf("Unexpected result in '%s'\n", tests[i].input);
+            return false;
         }
     }
 
-    return 0;
+    return true;
 }
 
 Test get_tree_to_string_test()

@@ -195,7 +195,7 @@ bool push_opening_parenthesis(struct ParserState *state)
     return op_push(state, (struct OpData){ NULL, OP_DYNAMIC_ARITY });
 }
 
-ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, Node *out_res)
+ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Node *out_res)
 {
     // 1. Early outs
     if (ctx == NULL || tokens == NULL || out_res == NULL) return PERR_ARGS_MALFORMED;
@@ -210,7 +210,7 @@ ParserError parse_tokens(ParsingContext *ctx, size_t num_tokens, char **tokens, 
 
     // 3. Process each token
     bool await_infix = false;
-    for (size_t i = 0; i < num_tokens; i++)
+    for (int i = 0; i < num_tokens; i++)
     {
         char *token = tokens[i];
         

@@ -6,10 +6,7 @@
 #include "parser_test.h"
 #include "tree_to_string_test.h"
 #include "../src/commands/core.h"
-
-#define COL_RESET "\033[0m"
-#define F_RED     "\x1B[1;31m"
-#define F_GREEN   "\x1B[1;32m"
+#include "../src/arithmetics/arith_context.h"
 
 static const size_t NUM_TESTS = 2;
 static Test (*test_getters[])() = {
@@ -19,30 +16,26 @@ static Test (*test_getters[])() = {
 
 int main()
 {
-    bool error = false;
-    int total_cases = 0;
+    arith_init_ctx();
 
     for (size_t i = 0; i < NUM_TESTS; i++)
     {
         Test test = test_getters[i]();
-        int error_code = test.suite();
-
-        if (error_code != 0)
+        printf("%s: ", test.name);
+        if (test.suite())
         {
-            printf("%s: " F_RED "Test returned %d" COL_RESET "\n", test.name, error_code);
-            error = true;
+            printf("Passed %d cases\n", test.num_cases);
         }
         else
         {
-            printf("%s: " F_GREEN "Passed all %d cases" COL_RESET "\n", test.name, test.num_cases);
-            total_cases += test.num_cases;
+            goto error;
         }
     }
 
-    if (!error)
-    {
-        printf(F_GREEN "All tests passed (Version: %s, Cases: %d)" COL_RESET "\n", VERSION, total_cases);
-    }
+    printf(F_GREEN "All tests passed (Version: %s)" COL_RESET "\n", VERSION);
+    return EXIT_SUCCESS;
 
-    return error ? EXIT_FAILURE : EXIT_SUCCESS;
+    error:
+    printf(F_RED "Build contains errors (Version: %s)" COL_RESET "\n", VERSION);
+    return EXIT_FAILURE;
 }

@@ -25,7 +25,7 @@ bool begins_with(char *prefix, char *string)
     return strncmp(prefix, string, prefix_length) == 0;
 }
 
-void print_tree_visual_rec(ParsingContext *ctx, Node node, unsigned char layer, unsigned int vert_lines)
+void print_tree_visual_rec(Node node, unsigned char layer, unsigned int vert_lines)
 {
     if (layer != 0)
     {
@@ -42,7 +42,7 @@ void print_tree_visual_rec(ParsingContext *ctx, Node node, unsigned char layer, 
             printf(OP_COLOR "%s" COL_RESET "\n", get_op(node)->name);
             for (size_t i = 0; i < get_num_children(node); i++)
             {
-                print_tree_visual_rec(ctx, get_child(node, i), layer + 1,
+                print_tree_visual_rec(get_child(node, i), layer + 1,
                     (i == get_num_children(node) - 1) ? vert_lines : (vert_lines | ((unsigned int)1 << layer)));
             }
             break;
@@ -60,10 +60,10 @@ void print_tree_visual_rec(ParsingContext *ctx, Node node, unsigned char layer, 
 /*
 Summary: Draws coloured tree to stdout
 */
-void print_tree_visual(ParsingContext *ctx, Node node)
+void print_tree_visual(Node node)
 {
-    if (ctx == NULL || node == NULL) return;
-    print_tree_visual_rec(ctx, node, 0, 0);
+    if (node == NULL) return;
+    print_tree_visual_rec(node, 0, 0);
 }
 
 // Algorithm to print tree visually ends here. What follows is an algorithm to stringify a tree into a single line.
@@ -71,7 +71,6 @@ void print_tree_visual(ParsingContext *ctx, Node node)
 // Singleton to encapsulate current state
 struct PrintingState
 {
-    ParsingContext *ctx;
     char *buf;
     size_t buf_size;
     bool col;
@@ -267,13 +266,12 @@ void tree_inline_rec(struct PrintingState *state, Node node, bool l, bool r)
 
 // Summary: Fills buffer with representation of tree
 // Returns: Length of output, even if buffer was not sufficient (without \0)
-size_t tree_inline(ParsingContext *context, Node node, char *buffer, size_t buffer_size, bool color)
+size_t tree_inline(Node node, char *buffer, size_t buffer_size, bool color)
 {
     // In case nothing is printed, we still want to have a proper string
     if (buffer_size != 0) *buffer = '\0';
 
     struct PrintingState state = {
-        .ctx = context,
         .buf = buffer,
         .buf_size = buffer_size,
         .col = color,
