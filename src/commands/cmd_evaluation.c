@@ -20,10 +20,10 @@ Summary: The evaluation command is executed when input is no other command (henc
 void cmd_evaluation_exec(char *input)
 {
     Node *res;
-    if (parse_input_from_console(g_ctx, input, "Error: %s\n", &res, true, true))
+    if (parse_input_from_console(input, "Error: %s\n", &res, true))
     {
         ConstantType result = arith_eval(res);
-        printf(g_interactive ? "= %-.30g\n" : "%-.30g\n", result);
+        printf(g_interactive ? "= " CONSTANT_TYPE_FMT "\n" : CONSTANT_TYPE_FMT "\n", result);
         update_ans(result);
         free_tree(res);
     }

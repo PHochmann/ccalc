@@ -40,7 +40,7 @@ bool is_closing_parenthesis(char *c)
 
 bool is_delimiter(char *c)
 {
-    return strcmp(c, ",") == 0 || strcmp(c, ";") == 0;
+    return strcmp(c, ",") == 0;
 }
 
 bool try_parse_constant(char *in, ConstantType *out)

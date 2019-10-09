@@ -23,9 +23,10 @@ When starting the calculator normally, you can enter expressions and commands in
 | ---                            | ---                                                          |
 | ```help```                     | Lists all available operators.                               |
 | ```clear```                    | Clears all user-defined functions.                           |
-| ```<func\|const> = <after>``` | Adds new function or constant.                               |
+| ```<func\|const> = <after>```  | Adds new function or constant.                               |
 | ```load <path>```              | Loads file as if its content had been typed in line by line. |
 | ```debug <expr>```             | Visually prints abstract syntax tree of expression.          |
+| ```table <expr> ; <from> ; <to> ; <step>``` | Prints table of values                          |
 | ```quit```                     | Closes calculator.                                           |
 
 ### Infix operators

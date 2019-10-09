@@ -8,6 +8,7 @@
 #include "cmd_load.h"
 #include "cmd_debug.h"
 #include "cmd_definition.h"
+#include "cmd_table.h"
 #include "../console_util.h"
 
 #include "../arithmetics/arith_context.h"
@@ -28,10 +29,11 @@ void cmd_debug_exec(char *input);
 bool cmd_quit_check(char *input);
 void cmd_quit_exec(char *input);
 
-static const size_t NUM_COMMANDS = 7;
+static const size_t NUM_COMMANDS = 8;
 static const struct Command commands[] = {
     { cmd_quit_check,       cmd_quit_exec },
     { cmd_help_check,       cmd_help_exec},
+    { cmd_table_check,      cmd_table_exec },
     { cmd_definition_check, cmd_definition_exec},
     { cmd_clear_check,      cmd_clear_exec},
     { cmd_debug_check,      cmd_debug_exec },

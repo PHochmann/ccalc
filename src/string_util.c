@@ -5,8 +5,6 @@
 
 #include "string_util.h"
 
-#define CONSTANT_TYPE_FMT "%-.30g"
-
 #define OP_COLOR    "\x1B[47m\x1B[22;30m" // White background, black foreground
 #define CONST_COLOR "\x1B[1;33m"          // Yellow
 #define VAR_COLOR   "\x1B[1;36m"          // Cyan

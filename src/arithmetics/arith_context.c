@@ -8,7 +8,7 @@
 
 #define EVAL(n) arith_eval(get_child(tree, n))
 
-static const size_t ARITH_STRING_LENGTH = 30; // Including \0
+static const size_t ARITH_STRING_LENGTH = 10; // Including \0
 
 ParsingContext __g_ctx;
 Operator operators[ARITH_MAX_OPS];

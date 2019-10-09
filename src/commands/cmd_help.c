@@ -74,7 +74,11 @@ void print_op(Operator *op)
 void cmd_help_exec(__attribute__((unused)) char *input)
 {
     printf("Calculator %s (c) 2019, Philipp Hochmann\n"
-           "Commands: help, clear, <func|const> = <after>, load <path>, debug <expr>, quit\n",
+           "Commands:\n"
+           "\t<func|const> = <after>\n"
+           "\tload <path>\n"
+           "\tdebug <expr>\n"
+           "\ttable <expr> ; <from> ; <to> ; <step>\n",
         VERSION);
 
     printf("\nBasic operators:\n");

@@ -1,6 +1,7 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 
 #ifdef USE_READLINE
 #include <readline/readline.h>
@@ -8,6 +9,7 @@
 #endif
 
 #include "string_util.h"
+#include "arithmetics/arith_context.h"
 #include "arithmetics/arith_rules.h"
 #include "console_util.h"
 
@@ -192,21 +194,17 @@ Summary:
 Returns:
     True when input was successfully parsed, false when syntax error in input or aborted when asked for constant
 */
-bool parse_input_from_console(ParsingContext *ctx,
-    char *input,
+bool parse_input_from_console(char *input,
     char *error_fmt,
     Node **out_res,
-    bool constant,
-    bool transform)
+    bool constant)
 {
-    ParserError perr = parse_input(ctx, input, out_res);
+    ParserError perr = parse_input(g_ctx, input, out_res);
     if (perr != PERR_SUCCESS)
     {
         printf(error_fmt, perr_to_string(perr));
         return false;
     }
-
-    if (transform) transform_input(out_res);
 
     // Make expression constant by asking for values and binding them to variables
     if (constant)
@@ -227,7 +225,7 @@ bool parse_input_from_console(ParsingContext *ctx,
             if (ask_input(stdin, &input, ASK_VARIABLE_FMT, vars[i]))
             {
                 Node *res_var;
-                if (!parse_input_from_console(ctx, input, error_fmt, &res_var, false, transform))
+                if (!parse_input_from_console(input, error_fmt, &res_var, false))
                 {
                     // Error while parsing - ask again
                     free(input);
@@ -262,4 +260,31 @@ bool parse_input_from_console(ParsingContext *ctx,
     }
     
     return true;
+}
+
+size_t split(char *str, char **out_strs, size_t num_delimiters, ...)
+{
+    va_list args;
+    va_start(args, num_delimiters);
+    size_t res = 1;
+    for (size_t i = 0; i < num_delimiters; i++)
+    {
+        char *delimiter = va_arg(args, char*);
+        char *end_pos = strstr(str, delimiter);
+
+        if (end_pos != NULL)
+        {
+            *end_pos = '\0';
+            out_strs[res - 1] = str;
+            res++;
+            str = end_pos + strlen(delimiter);
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    out_strs[res - 1] = str;
+    return res;
 }
