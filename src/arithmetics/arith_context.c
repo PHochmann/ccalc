@@ -58,14 +58,16 @@ double random_between(double min, double max)
 Summary: Evaluates operator tree
 Returns: Result after recursive application of all operators
 */
-double arith_eval(Node tree)
+double arith_eval(Node *tree)
 {
-    switch (*tree)
+    switch (get_type(tree))
     {
         case NTYPE_CONSTANT:
             return get_const_value(tree);
             
         case NTYPE_OPERATOR:
+        {
+            size_t num_children = get_num_children(tree);
             switch ((size_t)(get_op(tree) - operators))
             {
                 case 0: // $x
@@ -142,7 +144,7 @@ double arith_eval(Node tree)
                 case 31: // max(x, y, ...)
                 {
                     double res = -INFINITY;
-                    for (size_t i = 0; i < get_num_children(tree); i++)
+                    for (size_t i = 0; i < num_children; i++)
                     {
                         double child_val = EVAL(i);
                         if (child_val > res) res = child_val;
@@ -152,7 +154,7 @@ double arith_eval(Node tree)
                 case 32: // min(x, y, ...)
                 {
                     double res = INFINITY;
-                    for (size_t i = 0; i < get_num_children(tree); i++)
+                    for (size_t i = 0; i < num_children; i++)
                     {
                         double child_val = EVAL(i);
                         if (child_val < res) res = child_val;
@@ -174,21 +176,21 @@ double arith_eval(Node tree)
                 case 39: // sum(x, y, ...)
                 {
                     double res = 0;
-                    for (size_t i = 0; i < get_num_children(tree); i++) res += EVAL(i);
+                    for (size_t i = 0; i < num_children; i++) res += EVAL(i);
                     return res;
                 }
                 case 40: // prod(x, y, ...)
                 {
                     double res = 1;
-                    for (size_t i = 0; i < get_num_children(tree); i++) res *= EVAL(i);
+                    for (size_t i = 0; i < num_children; i++) res *= EVAL(i);
                     return res;
                 }
                 case 41: // avg(x, y, ...)
                 {
-                    if (get_num_children(tree) == 0) return 0;
+                    if (num_children == 0) return 0;
                     double res = 0;
-                    for (size_t i = 0; i < get_num_children(tree); i++) res += EVAL(i);
-                    return res / get_num_children(tree);
+                    for (size_t i = 0; i < num_children; i++) res += EVAL(i);
+                    return res / num_children;
                 }
                 case 42: // rand(x, y)
                     return random_between(EVAL(0), EVAL(1));
@@ -211,6 +213,7 @@ double arith_eval(Node tree)
                     printf("Encountered operator without evaluation rule\n");
                     return -1;
             }
+        }
 
         case NTYPE_VARIABLE:
             printf("Encountered variable\n");

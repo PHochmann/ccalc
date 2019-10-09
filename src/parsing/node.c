@@ -5,32 +5,32 @@
 The following functions are used for polymorphism of different Node types
 */
 
-Node malloc_variable_node(char *var_name)
+Node *malloc_variable_node(char *var_name)
 {
-    VariableNode res = malloc(sizeof(struct VariableNode_) + (strlen(var_name) + 1) * sizeof(char));
+    VariableNode *res = malloc(sizeof(VariableNode) + (strlen(var_name) + 1) * sizeof(char));
     if (res == NULL) return NULL;
-    res->type = NTYPE_VARIABLE;
+    res->base.type = NTYPE_VARIABLE;
     strcpy(res->var_name, var_name);
-    return (Node)res;
+    return (Node*)res;
 }
 
-Node malloc_constant_node(ConstantType value)
+Node *malloc_constant_node(ConstantType value)
 {
-    ConstantNode res = malloc(sizeof(struct ConstantNode_));
+    ConstantNode *res = malloc(sizeof(ConstantNode));
     if (res == NULL) return NULL;
-    res->type = NTYPE_CONSTANT;
+    res->base.type = NTYPE_CONSTANT;
     res->const_value = value;
-    return (Node)res;
+    return (Node*)res;
 }
 
-Node malloc_operator_node(Operator *op, size_t num_children)
+Node *malloc_operator_node(Operator *op, size_t num_children)
 {
     if (num_children > OP_MAX_ARITY)
     {
         return NULL;
     }
 
-    OperatorNode res = malloc(sizeof(struct OperatorNode_) + num_children * sizeof(Node));
+    OperatorNode *res = malloc(sizeof(OperatorNode) + num_children * sizeof(Node*));
     if (res == NULL) return NULL;
     
     for (size_t i = 0; i < num_children; i++)
@@ -38,13 +38,13 @@ Node malloc_operator_node(Operator *op, size_t num_children)
         res->children[i] = NULL;
     }
 
-    res->type = NTYPE_OPERATOR;
+    res->base.type = NTYPE_OPERATOR;
     res->op = op;
     res->num_children = num_children;
-    return (Node)res;
+    return (Node*)res;
 }
 
-void free_tree(Node tree)
+void free_tree(Node *tree)
 {
     if (tree == NULL) return;
     if (get_type(tree) == NTYPE_OPERATOR)
@@ -57,58 +57,58 @@ void free_tree(Node tree)
     free(tree);
 }
 
-NodeType get_type(Node node)
+NodeType get_type(Node *node)
 {
-    return *node;
+    return node->type;
 }
 
-Operator *get_op(Node node)
+Operator *get_op(Node *node)
 {
-    return ((OperatorNode)node)->op;
+    return ((OperatorNode*)node)->op;
 }
 
-size_t get_num_children(Node node)
+size_t get_num_children(Node *node)
 {
-    return ((OperatorNode)node)->num_children;
+    return ((OperatorNode*)node)->num_children;
 }
 
-Node get_child(Node node, size_t index)
+Node *get_child(Node *node, size_t index)
 {
-    return ((OperatorNode)node)->children[index];
+    return ((OperatorNode*)node)->children[index];
 }
 
-Node *get_child_addr(Node node, size_t index)
+Node **get_child_addr(Node *node, size_t index)
 {
-    return &((OperatorNode)node)->children[index];
+    return &((OperatorNode*)node)->children[index];
 }
 
-void set_child(Node node, size_t index, Node child)
+void set_child(Node *node, size_t index, Node *child)
 {
-    ((OperatorNode)node)->children[index] = child;
+    ((OperatorNode*)node)->children[index] = child;
 }
 
-char *get_var_name(Node node)
+char *get_var_name(Node *node)
 {
-    return ((VariableNode)node)->var_name;
+    return ((VariableNode*)node)->var_name;
 }
 
-ConstantType get_const_value(Node node)
+ConstantType get_const_value(Node *node)
 {
-    return ((ConstantNode)node)->const_value;
+    return ((ConstantNode*)node)->const_value;
 }
 
 /*
 Summary: Copies tree, tree_equals will be true of copy. Source tree can be safely free'd afterwards.
 */
-Node tree_copy(Node tree)
+Node *tree_copy(Node *tree)
 {
     if (tree == NULL) return NULL;
 
-    switch (*tree)
+    switch (get_type(tree))
     {
         case NTYPE_OPERATOR:
         {
-            Node res = malloc_operator_node(get_op(tree), get_num_children(tree));
+            Node *res = malloc_operator_node(get_op(tree), get_num_children(tree));
             for (size_t i = 0; i < get_num_children(tree); i++)
             {
                 set_child(res, i, tree_copy(get_child(tree, i)));
@@ -129,7 +129,7 @@ Node tree_copy(Node tree)
 /*
 Summary: Checks if two trees represent exactly the same expression
 */
-bool tree_equals(Node a, Node b)
+bool tree_equals(Node *a, Node *b)
 {
     if (a == NULL || b == NULL) return false;
     
@@ -161,7 +161,7 @@ bool tree_equals(Node a, Node b)
 /*
 Summary: Frees *tree_to_replace and assigns tree_to_insert to tree_to_replace
 */
-void tree_replace(Node *tree_to_replace, Node tree_to_insert)
+void tree_replace(Node **tree_to_replace, Node *tree_to_insert)
 {
     free_tree(*tree_to_replace);
     *tree_to_replace = tree_to_insert;
@@ -173,11 +173,11 @@ void tree_replace(Node *tree_to_replace, Node tree_to_insert)
 Returns: Total number of variable nodes in tree.
     Can be used as an upper bound for the needed size of a buffer to supply to get_variable_nodes etc.
 */
-size_t count_variables(Node tree)
+size_t count_variables(Node *tree)
 {
     if (tree == NULL) return 0;
 
-    switch (*tree)
+    switch (get_type(tree))
     {
         case NTYPE_CONSTANT:
             return 0;
@@ -200,7 +200,7 @@ size_t count_variables(Node tree)
 Summary: Variant of list_variables that discards 'out_variables'
 Returns: Number of different variables present in tree
 */
-size_t count_variables_distinct(Node tree)
+size_t count_variables_distinct(Node *tree)
 {
     char *vars[count_variables(tree)];
     return list_variables(tree, vars);
@@ -212,7 +212,7 @@ Params
     out_instances: Contains result. Function unsafe when too small.
 Returns: Number of variable nodes found, i.e. count of out_instances
 */
-size_t get_variable_nodes(Node *tree, char *var_name, Node **out_instances)
+size_t get_variable_nodes(Node **tree, char *var_name, Node ***out_instances)
 {
     if (tree == NULL || var_name == NULL || out_instances == NULL) return 0;
 
@@ -249,14 +249,14 @@ size_t get_variable_nodes(Node *tree, char *var_name, Node **out_instances)
 /*
 Summary: Variant of get_variable_nodes that discards 'out_instances'
 */
-size_t count_variable_nodes(Node tree, char *var_name)
+size_t count_variable_nodes(Node *tree, char *var_name)
 {
     // out-discard pattern
-    Node *instances[count_variables(tree)];
+    Node **instances[count_variables(tree)];
     return get_variable_nodes(&tree, var_name, instances);
 }
 
-size_t list_variables_rec(Node tree, size_t num_previously_found, char **out_variables)
+size_t list_variables_rec(Node *tree, size_t num_previously_found, char **out_variables)
 {
     switch (get_type(tree))
     {
@@ -293,7 +293,7 @@ Params
     out_variables: Contains result. Function unsafe when too small.
 Returns: Length of out_variables (i.e. count of variables in tree without duplicates)
 */
-size_t list_variables(Node tree, char **out_variables)
+size_t list_variables(Node *tree, char **out_variables)
 {
     if (tree == NULL || out_variables == NULL) return 0;
     return list_variables_rec(tree, 0, out_variables);
@@ -306,11 +306,11 @@ Params
     tree_to_copy: Tree, the variables are replaced by
     var_name:     name of variable to search for
 */
-void replace_variable_nodes(Node *tree, Node tree_to_copy, char *var_name)
+void replace_variable_nodes(Node **tree, Node *tree_to_copy, char *var_name)
 {
     if (tree == NULL || *tree == NULL || tree_to_copy == NULL || var_name == NULL) return;
 
-    Node *instances[count_variables(*tree)];
+    Node **instances[count_variables(*tree)];
     size_t num_instances = get_variable_nodes(tree, var_name, instances);
     for (size_t i = 0; i < num_instances; i++)
     {

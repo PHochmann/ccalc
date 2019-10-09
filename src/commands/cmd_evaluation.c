@@ -19,7 +19,7 @@ Summary: The evaluation command is executed when input is no other command (henc
 */
 void cmd_evaluation_exec(char *input)
 {
-    Node res;
+    Node *res;
     if (parse_input_from_console(g_ctx, input, "Error: %s\n", &res, true, true))
     {
         ConstantType result = arith_eval(res);

@@ -12,7 +12,7 @@
 #include "cmd_evaluation.h"
 #include "../console_util.h"
 
-#define DEFINITION_OP   ":="
+#define DEFINITION_OP   "="
 #define FMT_ERROR_LEFT  "Error in left expression: %s.\n"
 #define FMT_ERROR_RIGHT "Error in right expression: %s.\n"
 
@@ -29,8 +29,8 @@ void add_function(char *name, char *left, char *right)
     // Must be OP_DYNAMIC_ARITY because we do not know the actual arity yet
     ctx_add_op(g_ctx, op_get_function(name, OP_DYNAMIC_ARITY));
 
-    Node left_n = NULL;
-    Node right_n = NULL;
+    Node *left_n = NULL;
+    Node *right_n = NULL;
     
     if (!parse_input_from_console(g_ctx, left, FMT_ERROR_LEFT, &left_n, false, false))
     {

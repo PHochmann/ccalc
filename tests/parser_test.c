@@ -101,7 +101,7 @@ bool almost_equals(double a, double b)
 
 bool parser_test()
 {
-    Node node = NULL;
+    Node *node = NULL;
 
     // Perform value tests
     for (size_t i = 0; i < NUM_VALUE_TESTS; i++)

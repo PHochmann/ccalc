@@ -12,4 +12,4 @@ void arith_reset_rules();
 void arith_unload_rules();
 void arith_init_rules();
 void update_ans(ConstantType value);
-void transform_input(Node *tree);
+void transform_input(Node **tree);

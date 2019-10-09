@@ -8,7 +8,7 @@
 #define ANS_VAR "ans"
 #define DEFAULT_ANS 42
 
-Node ans; // Result of last evaluation
+Node *ans; // Result of last evaluation
 
 void arith_reset_rules()
 {
@@ -22,9 +22,9 @@ void arith_reset_rules()
 
 bool parse_rule(char *before, char *after, RewriteRule *out_rule)
 {
-    Node before_n = parse_conveniently(g_ctx, before);
+    Node *before_n = parse_conveniently(g_ctx, before);
     if (before_n == NULL) return false;
-    Node after_n = parse_conveniently(g_ctx, after);
+    Node *after_n = parse_conveniently(g_ctx, after);
     if (after_n == NULL) return false;
     *out_rule = get_rule(before_n, after_n);
     return true;
@@ -46,7 +46,7 @@ bool parse_rules(size_t num_rules, char **input, RewriteRule *out_rules)
 /*
 Summary: Tries to apply rules (priorized by order) until no rule can be applied any more
 */
-void apply_ruleset(Node *tree, size_t num_rules, RewriteRule *rules)
+void apply_ruleset(Node **tree, size_t num_rules, RewriteRule *rules)
 {
     while (true)
     {
@@ -93,7 +93,7 @@ void update_ans(ConstantType value)
 /*
 Summary: Does post-processing of correctly parsed input (i.e. replacing ans and applying rewrite rules)
 */
-void transform_input(Node *tree)
+void transform_input(Node **tree)
 {
     replace_variable_nodes(tree, ans, ANS_VAR);
     apply_ruleset(tree, g_num_rules, g_rules);

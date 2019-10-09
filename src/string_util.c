@@ -25,7 +25,7 @@ bool begins_with(char *prefix, char *string)
     return strncmp(prefix, string, prefix_length) == 0;
 }
 
-void print_tree_visual_rec(Node node, unsigned char layer, unsigned int vert_lines)
+void print_tree_visual_rec(Node *node, unsigned char layer, unsigned int vert_lines)
 {
     if (layer != 0)
     {
@@ -36,7 +36,7 @@ void print_tree_visual_rec(Node node, unsigned char layer, unsigned int vert_lin
         printf(vert_lines & ((unsigned int)1 << (layer - 1)) ? BRANCH_TAB : END_TAB);
     }
 
-    switch (*node)
+    switch (get_type(node))
     {
         case NTYPE_OPERATOR:
             printf(OP_COLOR "%s" COL_RESET "\n", get_op(node)->name);
@@ -60,7 +60,7 @@ void print_tree_visual_rec(Node node, unsigned char layer, unsigned int vert_lin
 /*
 Summary: Draws coloured tree to stdout
 */
-void print_tree_visual(Node node)
+void print_tree_visual(Node *node)
 {
     if (node == NULL) return;
     print_tree_visual_rec(node, 0, 0);
@@ -121,9 +121,9 @@ void p_close(struct PrintingState *state)
     to_buffer(state, ")");
 }
 
-void tree_inline_rec(struct PrintingState *state, Node node, bool l, bool r);
+void tree_inline_rec(struct PrintingState *state, Node *node, bool l, bool r);
 
-void inline_prefix(struct PrintingState *state, Node node, bool l, bool r)
+void inline_prefix(struct PrintingState *state, Node *node, bool l, bool r)
 {
     if (l) p_open(state);
     to_buffer(state, get_op(node)->name);
@@ -145,7 +145,7 @@ void inline_prefix(struct PrintingState *state, Node node, bool l, bool r)
     if (l) p_close(state);
 }
 
-void inline_postfix(struct PrintingState *state, Node node, bool l, bool r)
+void inline_postfix(struct PrintingState *state, Node *node, bool l, bool r)
 {
     if (r) p_open(state);
 
@@ -167,7 +167,7 @@ void inline_postfix(struct PrintingState *state, Node node, bool l, bool r)
     if (r) p_close(state);
 }
 
-void inline_function(struct PrintingState *state, Node node)
+void inline_function(struct PrintingState *state, Node *node)
 {
     if (get_op(node)->arity != 0)
     {
@@ -185,10 +185,10 @@ void inline_function(struct PrintingState *state, Node node)
     }
 }
 
-void inline_infix(struct PrintingState *state, Node node, bool l, bool r)
+void inline_infix(struct PrintingState *state, Node *node, bool l, bool r)
 {
-    Node childA = get_child(node, 0);
-    Node childB = get_child(node, 1);
+    Node *childA = get_child(node, 0);
+    Node *childB = get_child(node, 1);
 
     // Checks if left operand of infix operator which itself is an operator needs to be wrapped in parentheses
     // This is the case when:
@@ -233,9 +233,9 @@ Params
         It needs to be protected when it is adjacent to an operator on this side.
         When the subexpression starts (ends) with an operator and needs to be protected to the left (right), a parenthesis is printed in between.
 */
-void tree_inline_rec(struct PrintingState *state, Node node, bool l, bool r)
+void tree_inline_rec(struct PrintingState *state, Node *node, bool l, bool r)
 {
-    switch (*node)
+    switch (get_type(node))
     {
         case NTYPE_CONSTANT:
             to_buffer(state, state->col ? CONST_COLOR CONSTANT_TYPE_FMT COL_RESET : CONSTANT_TYPE_FMT, get_const_value(node));
@@ -266,7 +266,7 @@ void tree_inline_rec(struct PrintingState *state, Node node, bool l, bool r)
 
 // Summary: Fills buffer with representation of tree
 // Returns: Length of output, even if buffer was not sufficient (without \0)
-size_t tree_inline(Node node, char *buffer, size_t buffer_size, bool color)
+size_t tree_inline(Node *node, char *buffer, size_t buffer_size, bool color)
 {
     // In case nothing is printed, we still want to have a proper string
     if (buffer_size != 0) *buffer = '\0';

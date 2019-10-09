@@ -45,7 +45,7 @@ bool set_interactive(bool value)
 }
 
 // Summary: Prints result of tree inline, including correct color even after truncation, and indicated abbreviation
-void print_tree_inlined(Node node, bool color)
+void print_tree_inlined(Node *node, bool color)
 {
     char buffer[MAX_INLINED_LENGTH];
     size_t result = tree_inline(node, buffer, MAX_INLINED_LENGTH, color);
@@ -195,7 +195,7 @@ Returns:
 bool parse_input_from_console(ParsingContext *ctx,
     char *input,
     char *error_fmt,
-    Node *out_res,
+    Node **out_res,
     bool constant,
     bool transform)
 {
@@ -226,7 +226,7 @@ bool parse_input_from_console(ParsingContext *ctx,
             char *input;
             if (ask_input(stdin, &input, ASK_VARIABLE_FMT, vars[i]))
             {
-                Node res_var;
+                Node *res_var;
                 if (!parse_input_from_console(ctx, input, error_fmt, &res_var, false, transform))
                 {
                     // Error while parsing - ask again

@@ -74,7 +74,7 @@ void print_op(Operator *op)
 void cmd_help_exec(__attribute__((unused)) char *input)
 {
     printf("Calculator %s (c) 2019, Philipp Hochmann\n"
-           "Commands: help, clear, <func|const> := <after>, load <path>, debug <expr>, quit\n",
+           "Commands: help, clear, <func|const> = <after>, load <path>, debug <expr>, quit\n",
         VERSION);
 
     printf("\nBasic operators:\n");
@@ -109,7 +109,7 @@ void cmd_help_exec(__attribute__((unused)) char *input)
         {
             printf("\n");
             print_tree_inlined(g_rules[i].before, true);
-            printf(" := ");
+            printf(" = ");
             print_tree_inlined(g_rules[i].after, true);
         }
     }

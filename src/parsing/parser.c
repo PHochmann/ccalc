@@ -22,7 +22,7 @@ struct ParserState
 {
     ParsingContext *ctx;
     size_t num_nodes;
-    Node node_stack[MAX_STACK_SIZE];
+    Node *node_stack[MAX_STACK_SIZE];
     size_t num_ops;
     struct OpData op_stack[MAX_STACK_SIZE];
     ParserError result;
@@ -56,7 +56,7 @@ struct OpData *op_peek(struct ParserState *state)
     return &state->op_stack[state->num_ops - 1];
 }
 
-bool node_push(struct ParserState *state, Node value)
+bool node_push(struct ParserState *state, Node *value)
 {
     // Check if there is still space on stack
     if (state->num_nodes == MAX_STACK_SIZE)
@@ -70,7 +70,7 @@ bool node_push(struct ParserState *state, Node value)
     return true;
 }
 
-bool node_pop(struct ParserState *state, Node *out)
+bool node_pop(struct ParserState *state, Node **out)
 {
     if (state->num_nodes == 0)
     {
@@ -120,7 +120,7 @@ bool op_pop_and_insert(struct ParserState *state)
         }
 
         // We try to allocate a new node and pop its children from node stack
-        Node op_node = malloc_operator_node(op, is_function ? op_peek(state)->arity : op->arity);
+        Node *op_node = malloc_operator_node(op, is_function ? op_peek(state)->arity : op->arity);
 
         // Check if malloc of children buffer in get_operator_node failed
         if (op_node == NULL)
@@ -195,7 +195,7 @@ bool push_opening_parenthesis(struct ParserState *state)
     return op_push(state, (struct OpData){ NULL, OP_DYNAMIC_ARITY });
 }
 
-ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Node *out_res)
+ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Node **out_res)
 {
     // 1. Early outs
     if (ctx == NULL || tokens == NULL || out_res == NULL) return PERR_ARGS_MALFORMED;
@@ -398,7 +398,7 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
         }
         
         // V. Token must be variable or constant (leaf)
-        Node node;
+        Node *node;
 
         // Is token constant?
         ConstantType const_val;
@@ -466,7 +466,7 @@ static const size_t MAX_TOKENS = 100;
 Summary: Parses string, tokenized with default tokenizer, to abstract syntax tree
 Returns: Result code to indicate whether string was parsed successfully or which error occurred
 */
-ParserError parse_input(ParsingContext *ctx, char *input, Node *out_res)
+ParserError parse_input(ParsingContext *ctx, char *input, Node **out_res)
 {
     size_t num_tokens;
     char *tokens[MAX_TOKENS];
@@ -484,9 +484,9 @@ ParserError parse_input(ParsingContext *ctx, char *input, Node *out_res)
 Summary: Calls parse_input, omits ParserError
 Returns: AST or NULL when error occurred
 */
-Node parse_conveniently(ParsingContext *ctx, char *input)
+Node *parse_conveniently(ParsingContext *ctx, char *input)
 {
-    Node result = NULL;
+    Node *result = NULL;
     parse_input(ctx, input, &result);
     return result;
 }

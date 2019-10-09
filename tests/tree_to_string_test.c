@@ -31,7 +31,7 @@ bool tree_to_string_test()
 {
     for (size_t i = 0; i < NUM_TESTS; i++)
     {
-        Node node = NULL;
+        Node *node = NULL;
         size_t expected_length = strlen(tests[i].expected_result);
         char result[expected_length + 1];
 

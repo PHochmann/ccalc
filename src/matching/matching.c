@@ -11,17 +11,17 @@
 Summary: Tries to match "tree" against "pattern" (only in root)
 Returns: True, if matching is found, false if NULL-pointers given in arguments or no matching found
 */
-bool get_matching(Node *tree, Node pattern, Matching *out_matching)
+bool get_matching(Node **tree, Node *pattern, Matching *out_matching)
 {
     if (tree == NULL || *tree == NULL || pattern == NULL || out_matching == NULL) return false;
     
     size_t total_mapped_vars = count_variables_distinct(pattern);
     char *mapped_vars[total_mapped_vars];
-    Node mapped_nodes[total_mapped_vars];
+    Node *mapped_nodes[total_mapped_vars];
     size_t num_mapped_vars = 0;
     
-    Node tree_stack[MAX_STACK_SIZE];
-    Node pattern_stack[MAX_STACK_SIZE];
+    Node *tree_stack[MAX_STACK_SIZE];
+    Node *pattern_stack[MAX_STACK_SIZE];
     size_t num_stack = 0;
     
     tree_stack[0] = *tree;
@@ -30,8 +30,8 @@ bool get_matching(Node *tree, Node pattern, Matching *out_matching)
     
     while (num_stack != 0)
     {
-        Node curr_pattern = pattern_stack[num_stack - 1];
-        Node curr_tree = tree_stack[num_stack - 1];
+        Node *curr_pattern = pattern_stack[num_stack - 1];
+        Node *curr_tree = tree_stack[num_stack - 1];
         num_stack--;
         
         switch (get_type(curr_pattern))
@@ -142,7 +142,7 @@ void free_matching(Matching matching)
 /*
 Summary: Looks for matching in tree, i.e. tries to construct matching in each node until matching is found (Top-Down)
 */
-bool find_matching(Node *tree, Node pattern, Matching *out_matching)
+bool find_matching(Node **tree, Node *pattern, Matching *out_matching)
 {
     if (get_matching(tree, pattern, out_matching)) return true;
     
@@ -160,7 +160,7 @@ bool find_matching(Node *tree, Node pattern, Matching *out_matching)
 /*
 Summary: Basically the same as find_matching, but discards matching
 */
-bool find_matching_discarded(Node tree, Node pattern)
+bool find_matching_discarded(Node *tree, Node *pattern)
 {
     Matching matching;
     if (find_matching(&tree, pattern, &matching))
