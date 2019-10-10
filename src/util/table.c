@@ -83,12 +83,24 @@ void add_cell(char *fmt, ...)
     update(length);
 }
 
-void add_cell_buffer(char *buffer)
+void add_cell_from_buffer(char *buffer)
 {
     size_t length = strlen(buffer);
     state.cells[state.curr_col][state.curr_row] = malloc((length + 1) * sizeof(char));
     strcpy(state.cells[state.curr_col][state.curr_row], buffer);
     update(length);
+}
+
+void add_cells_from_array(size_t x, size_t y, size_t width, size_t height, char *array[height][width])
+{
+    for (size_t i = 0; i < height; i++)
+    {
+        set_position(x, y + i);
+        for (size_t j = 0; j < width; j++)
+        {
+            add_cell("%s", array[i][j]);
+        }
+    }
 }
 
 void next_row()

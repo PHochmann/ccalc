@@ -19,15 +19,15 @@ When starting the calculator normally, you can enter expressions and commands in
 * You can use ```$``` to parse the following expression with maximal precedence, like in Haskell.
 
 ### Available commands
-| Command                        | Description                                                  |
-| ---                            | ---                                                          |
-| ```help```                     | Lists all available operators.                               |
-| ```clear```                    | Clears all user-defined functions.                           |
-| ```<func\|const> = <after>```  | Adds new function or constant.                               |
-| ```load <path>```              | Loads file as if its content had been typed in line by line. |
-| ```debug <expr>```             | Visually prints abstract syntax tree of expression.          |
-| ```table <expr> ; <from> ; <to> ; <step>``` | Prints table of values.                         |
-| ```quit```                     | Closes calculator.                                           |
+| Command                                     | Description                                         |
+| ---                                         | ---                                                 |
+| ```<func\|const> = <after>```               | Adds new function or constant.                      |
+| ```table <expr> ; <from> ; <to> ; <step>``` | Prints table of values.                             |
+| ```load <path>```                           | Loads file as if its content had been typed in.     |
+| ```debug <expr>```                          | Visually prints abstract syntax tree of expression. |
+| ```help```                                  | Lists all available commands and operators.         |
+| ```clear```                                 | Clears all user-defined functions.                  |
+| ```quit```                                  | Closes calculator.                                  |
 
 ### Infix operators
 | Name      | Associativity | Precedence | Description          |
@@ -82,6 +82,7 @@ When starting the calculator normally, you can enter expressions and commands in
 | ```round(x)```       | Round to nearest integer                       |
 | ```trunc(x)```       | Round towards 0 to nearest integer             |
 | ```frac(x)```        | Fractional part of x                           |
+| ```sgn(x)```         | Sign of x (-1, 0, 1)                           |
 | ```sum(*)```         | Sum of all operands                            |
 | ```prod(*)```        | Product of all operands                        |
 | ```avg(*)```         | Arithmetic mean of all operands                |

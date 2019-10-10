@@ -86,7 +86,7 @@ void cmd_table_exec(char *input)
 
     char inlined_expr[MAX_INLINED_LENGTH];
     tree_inline(expr, inlined_expr, 100, false);
-    add_cell_buffer(inlined_expr);
+    add_cell_from_buffer(inlined_expr);
 
     next_row();
 

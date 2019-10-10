@@ -1,7 +1,7 @@
 #pragma once
 #include <stdio.h>
 
-#define VERSION "1.3.9"
+#define VERSION "1.4.0"
 
 void init_commands();
 void process_input(FILE *file);

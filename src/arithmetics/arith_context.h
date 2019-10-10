@@ -4,8 +4,8 @@
 
 #define g_ctx (&__g_ctx)
 
-#define ARITH_MAX_OPS 60
-#define ARITH_NUM_OPS 50
+#define ARITH_NUM_OPS 51
+#define ARITH_MAX_OPS (ARITH_NUM_OPS + 10)
 
 extern ParsingContext __g_ctx;
 

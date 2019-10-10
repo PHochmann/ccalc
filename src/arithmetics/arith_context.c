@@ -173,40 +173,42 @@ double arith_eval(Node *tree)
                     return trunc(EVAL(0));
                 case 38: // frac(x)
                     return EVAL(0) - floor(EVAL(0));
-                case 39: // sum(x, y, ...)
+                case 39: // sgn(x)
+                    return EVAL(0) < 0 ? -1 : (EVAL(0) > 0) ? 1 : 0;
+                case 40: // sum(x, y, ...)
                 {
                     double res = 0;
                     for (size_t i = 0; i < num_children; i++) res += EVAL(i);
                     return res;
                 }
-                case 40: // prod(x, y, ...)
+                case 41: // prod(x, y, ...)
                 {
                     double res = 1;
                     for (size_t i = 0; i < num_children; i++) res *= EVAL(i);
                     return res;
                 }
-                case 41: // avg(x, y, ...)
+                case 42: // avg(x, y, ...)
                 {
                     if (num_children == 0) return 0;
                     double res = 0;
                     for (size_t i = 0; i < num_children; i++) res += EVAL(i);
                     return res / num_children;
                 }
-                case 42: // rand(x, y)
+                case 43: // rand(x, y)
                     return random_between(EVAL(0), EVAL(1));
-                case 43: // gamma(x)
+                case 44: // gamma(x)
                     return tgamma(EVAL(0));
-                case 44: // fib(x)
+                case 45: // fib(x)
                     return fibonacci(trunc(EVAL(0)));
-                case 45: // pi
+                case 46: // pi
                     return 3.14159265359;
-                case 46: // e
+                case 47: // e
                     return 2.71828182846;
-                case 47: // phi
+                case 48: // phi
                     return 1.61803398874;
-                case 48: // clight (m/s)
+                case 49: // clight (m/s)
                     return 299792458;
-                case 49: // csound (m/s)
+                case 50: // csound (m/s)
                     return 343.2;
 
                 default:
@@ -293,6 +295,7 @@ void arith_init_ctx()
         op_get_function("round", 1),
         op_get_function("trunc", 1),
         op_get_function("frac", 1),
+        op_get_function("sgn", 1),
         op_get_function("sum", OP_DYNAMIC_ARITY),
         op_get_function("prod", OP_DYNAMIC_ARITY),
         op_get_function("avg", OP_DYNAMIC_ARITY),
