@@ -1,12 +1,14 @@
 #include <string.h>
 
 #include "cmd_clear.h"
-#include "../string_util.h"
-#include "../console_util.h"
+#include "../util/string_util.h"
+#include "../util/console_util.h"
+#include "../util/table.h"
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
 
 #define COMMAND "table "
+#define MAX_INLINED_LENGTH 100
 
 bool cmd_table_check(char *input)
 {
@@ -18,7 +20,9 @@ void print_current(Node *expr, char *var, double value)
     Node *current_expr = tree_copy(expr);
     Node *current_val = malloc_constant_node(value);
     replace_variable_nodes(&current_expr, current_val, var);
-    printf(CONSTANT_TYPE_FMT " | " CONSTANT_TYPE_FMT "\n", value, arith_eval(current_expr));
+    add_cell(CONSTANT_TYPE_FMT, value);
+    add_cell(CONSTANT_TYPE_FMT, arith_eval(current_expr));
+    next_row();
     free_tree(current_expr);
     free_tree(current_val);
 }
@@ -76,9 +80,15 @@ void cmd_table_exec(char *input)
         goto exit;
     }
 
-    printf("%s | ", variables[0]);
-    print_tree_inlined(expr, true);
-    printf("\n");
+    // Print table
+
+    add_cell("%s", variables[0]);
+
+    char inlined_expr[MAX_INLINED_LENGTH];
+    tree_inline(expr, inlined_expr, 100, false);
+    add_cell_buffer(inlined_expr);
+
+    next_row();
 
     if (start_val < end_val)
     {
@@ -94,6 +104,9 @@ void cmd_table_exec(char *input)
             print_current(expr, variables[0], start_val);
         }
     }
+
+    print_table(true);
+    reset_table();
 
     exit:
     free_tree(expr);

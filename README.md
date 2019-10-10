@@ -26,7 +26,7 @@ When starting the calculator normally, you can enter expressions and commands in
 | ```<func\|const> = <after>```  | Adds new function or constant.                               |
 | ```load <path>```              | Loads file as if its content had been typed in line by line. |
 | ```debug <expr>```             | Visually prints abstract syntax tree of expression.          |
-| ```table <expr> ; <from> ; <to> ; <step>``` | Prints table of values                          |
+| ```table <expr> ; <from> ; <to> ; <step>``` | Prints table of values.                         |
 | ```quit```                     | Closes calculator.                                           |
 
 ### Infix operators

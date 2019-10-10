@@ -2,7 +2,7 @@
 #include "arith_context.h"
 #include "../parsing/node.h"
 #include "../parsing/parser.h"
-#include "../console_util.h"
+#include "../util/console_util.h"
 
 #define PARSE(n) parse_conveniently(n)
 #define ANS_VAR "ans"

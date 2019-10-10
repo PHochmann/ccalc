@@ -1,6 +1,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "../util/console_util.h"
+#include "../util/string_util.h"
+#include "../util/table.h"
+#include "../arithmetics/arith_context.h"
+#include "../arithmetics/arith_rules.h"
 #include "core.h"
 #include "cmd_evaluation.h"
 #include "cmd_help.h"
@@ -9,11 +14,6 @@
 #include "cmd_debug.h"
 #include "cmd_definition.h"
 #include "cmd_table.h"
-#include "../console_util.h"
-
-#include "../arithmetics/arith_context.h"
-#include "../arithmetics/arith_rules.h"
-#include "../string_util.h"
 
 #define INTERACTIVE_ASK_PREFIX "> "
 #define COMMENT_PREFIX         "'"
@@ -59,6 +59,7 @@ void init_commands()
 {
     atexit(unload_commands);
     init_console_util();
+    reset_table();
     arith_init_ctx();
     arith_init_rules();
 }

@@ -3,7 +3,7 @@
 
 #include "matching.h"
 #include "../parsing/node.h"
-#include "../string_util.h" // For begins_with
+#include "../util/string_util.h" // For begins_with
 
 #define MAX_STACK_SIZE 20
 

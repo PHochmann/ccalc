@@ -3,7 +3,7 @@
 
 #include "cmd_help.h"
 #include "core.h"
-#include "../console_util.h"
+#include "../util/console_util.h"
 
 #include "../parsing/operator.h"
 #include "../arithmetics/arith_context.h"

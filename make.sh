@@ -17,7 +17,7 @@ mkdir -p ${DIR}/bin
 if [ "$1" = "-debug" ] || [ "$1" = "-d" ]; then
     gcc ${DEFINES} -g ${CFLAGS} ${FILES} -o ${BIN} ${LFLAGS}
     if [ "$?" = 0 ]; then
-        gcc ${CFLAGS} ${DIR}/src/parsing/*.c ${DIR}/src/arithmetics/arith_context.c ${DIR}/src/string_util.c ${DIR}/tests/*.c -o ${DIR}/bin/tests.out -lm
+        gcc ${CFLAGS} ${DIR}/src/parsing/*.c ${DIR}/src/arithmetics/arith_context.c ${DIR}/src/util/string_util.c ${DIR}/tests/*.c -o ${DIR}/bin/tests.out -lm
         if [ "$?" = 0 ]; then
             ${DIR}/bin/tests.out
         fi

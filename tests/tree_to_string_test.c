@@ -2,7 +2,7 @@
 #include <string.h>
 
 #include "tree_to_string_test.h"
-#include "../src/string_util.h"
+#include "../src/util/string_util.h"
 #include "../src/parsing/context.h"
 #include "../src/parsing/node.h"
 #include "../src/parsing/parser.h"

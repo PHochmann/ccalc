@@ -8,9 +8,9 @@
 #include "../matching/rewrite_rule.h"
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
+#include "../util/console_util.h"
 #include "cmd_definition.h"
 #include "cmd_evaluation.h"
-#include "../console_util.h"
 
 #define DEFINITION_OP   "="
 #define FMT_ERROR_LEFT  "Error in left expression: %s.\n"

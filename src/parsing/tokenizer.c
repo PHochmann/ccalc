@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
+#include "../util/string_util.h"
 #include "tokenizer.h"
-#include "../string_util.h"
 
 bool is_space(char c)
 {

@@ -9,11 +9,10 @@
 #endif
 
 #include "string_util.h"
-#include "arithmetics/arith_context.h"
-#include "arithmetics/arith_rules.h"
 #include "console_util.h"
+#include "../arithmetics/arith_context.h"
+#include "../arithmetics/arith_rules.h"
 
-#define COL_RESET "\033[0m"
 #define ASK_VARIABLE_FMT "%s? > "
 
 static const size_t MAX_INPUT_LENGTH   = 100;
@@ -288,3 +287,4 @@ size_t split(char *str, char **out_strs, size_t num_delimiters, ...)
     out_strs[res - 1] = str;
     return res;
 }
+
