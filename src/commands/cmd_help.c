@@ -73,22 +73,20 @@ void print_op(Operator *op)
 }
 
 char *commands[8][2] = {
-    { "Command", "Description" },
-    { "<func|const> = <after>", "Adds new function or constant." },
-    { "table <expr> ; <from> ; <to> ; <step>", "Prints table of values." },
-    { "load <path>", "Loads file as if its content had been typed in." },
-    { "debug <expr>", "Visually prints abstract syntax tree of expression." },
-    { "help", "Lists all available commands and operators." },
-    { "clear", "Clears all user-defined functions." },
-    { "quit", "Closes calculator." }
+    { "<func|const> = <after>  ",                "Adds new function or constant." },
+    { "table <expr> ; <from> ; <to> ; <step>  ", "Prints table of values." },
+    { "load <path>  ",                           "Loads file as if its content had been typed in." },
+    { "debug <expr>  ",                          "Visually prints abstract syntax tree of expression." },
+    { "help  ",                                  "Lists all available commands and operators." },
+    { "clear  ",                                 "Clears all user-defined functions." },
+    { "quit  ",                                  "Closes calculator." }
 };
 
 void cmd_help_exec(__attribute__((unused)) char *input)
 {
     printf("Calculator %s (c) 2019, Philipp Hochmann\n", VERSION);
-    
-    add_cells_from_array(0, 0, 2, 8, commands);
-    print_table(true);
+    add_cells_from_array(0, 1, 2, 7, commands, TEXTPOS_LEFT_ALIGNED, TEXTPOS_LEFT_ALIGNED);
+    print_table(false);
     reset_table();
 
     printf("\nBasic operators:\n");

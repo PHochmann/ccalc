@@ -205,6 +205,8 @@ bool parse_input_from_console(char *input,
         return false;
     }
 
+    transform_input(out_res);
+
     // Make expression constant by asking for values and binding them to variables
     if (constant)
     {

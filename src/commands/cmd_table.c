@@ -20,8 +20,8 @@ void print_current(Node *expr, char *var, double value)
     Node *current_expr = tree_copy(expr);
     Node *current_val = malloc_constant_node(value);
     replace_variable_nodes(&current_expr, current_val, var);
-    add_cell(CONSTANT_TYPE_FMT, value);
-    add_cell(CONSTANT_TYPE_FMT, arith_eval(current_expr));
+    add_cell(TEXTPOS_LEFT_ALIGNED, " " CONSTANT_TYPE_FMT " ", value);
+    add_cell(TEXTPOS_LEFT_ALIGNED, " " CONSTANT_TYPE_FMT " ", arith_eval(current_expr));
     next_row();
     free_tree(current_expr);
     free_tree(current_val);
@@ -81,15 +81,14 @@ void cmd_table_exec(char *input)
     }
 
     // Print table
-
-    add_cell("%s", variables[0]);
-
+    // Header
+    add_cell(TEXTPOS_CENTERED, " %s ", variables[0]);
     char inlined_expr[MAX_INLINED_LENGTH];
     tree_inline(expr, inlined_expr, 100, false);
-    add_cell_from_buffer(inlined_expr);
-
+    add_cell(TEXTPOS_CENTERED, " %s ", inlined_expr);
     next_row();
-
+    hline();
+    // Values
     if (start_val < end_val)
     {
         for (; start_val <= end_val; start_val += step_val)
