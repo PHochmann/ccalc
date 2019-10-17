@@ -168,7 +168,7 @@ void inline_function(struct PrintingState *state, Node *node)
         for (size_t i = 0; i < get_num_children(node); i++)
         {
             tree_inline_rec(state, get_child(node, i), false, false);
-            if (i < get_num_children(node) - 1) to_buffer(state, ", ");
+            if (i < get_num_children(node) - 1) to_buffer(state, ",");
         }
         p_close(state);
     }

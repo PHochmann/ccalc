@@ -19,9 +19,19 @@ void print_current(Node *expr, char *var, double value)
 {
     Node *current_expr = tree_copy(expr);
     Node *current_val = malloc_constant_node(value);
-    replace_variable_nodes(&current_expr, current_val, var);
-    add_cell(TEXTPOS_LEFT_ALIGNED, " " CONSTANT_TYPE_FMT " ", value);
-    add_cell(TEXTPOS_LEFT_ALIGNED, " " CONSTANT_TYPE_FMT " ", arith_eval(current_expr));
+
+    if (current_expr == NULL || current_val == NULL)
+    {
+        add_cell(TEXTPOS_RIGHT_ALIGNED, "");
+        add_cell(TEXTPOS_LEFT_ALIGNED, "Out of mem.");
+    }
+    else
+    {
+        replace_variable_nodes(&current_expr, current_val, var);
+        add_cell(TEXTPOS_RIGHT_ALIGNED, " " CONSTANT_TYPE_FMT " ", value);
+        add_cell(TEXTPOS_LEFT_ALIGNED, " " CONSTANT_TYPE_FMT " ", arith_eval(current_expr));
+    }
+
     next_row();
     free_tree(current_expr);
     free_tree(current_val);
@@ -47,9 +57,10 @@ void cmd_table_exec(char *input)
     if (!parse_input_from_console(args[0], "Error in expression: %s\n", &expr, false)) return;
 
     char *variables[count_variables(expr)];
-    if (list_variables(expr, variables) != 1)
+    size_t num_vars = list_variables(expr, variables);
+    if (num_vars > 1)
     {
-        printf("Expression contains none or more than one variable\n");
+        printf("Expression contains more than one variable\n");
         goto exit;
     }
 
@@ -72,22 +83,31 @@ void cmd_table_exec(char *input)
     double end_val = arith_eval(end);
     double step_val = arith_eval(step);
 
-    if (step_val == 0
-        || (start_val < end_val && step_val < 0)
+    if (step_val == 0)
+    {
+        printf("Step must not be zero\n");
+        goto exit;
+    }
+
+    // Adjust step direction not to have an endless loop
+    if ((start_val < end_val && step_val < 0)
         || (start_val > end_val && step_val > 0))
     {
-        printf("Endless loop\n");
-        goto exit;
+        step_val = -step_val;
     }
 
     // Print table
     // Header
-    add_cell(TEXTPOS_CENTERED, " %s ", variables[0]);
-    char inlined_expr[MAX_INLINED_LENGTH];
-    tree_inline(expr, inlined_expr, 100, false);
-    add_cell(TEXTPOS_CENTERED, " %s ", inlined_expr);
-    next_row();
-    hline();
+    if (g_interactive)
+    {
+        add_cell(TEXTPOS_CENTERED, " %s ", num_vars == 0 ? "" : variables[0]);
+        char inlined_expr[MAX_INLINED_LENGTH];
+        tree_inline(expr, inlined_expr, 100, false);
+        add_cell(TEXTPOS_CENTERED, " %s ", inlined_expr);
+        next_row();
+        hline();
+    }
+
     // Values
     if (start_val < end_val)
     {
@@ -104,7 +124,7 @@ void cmd_table_exec(char *input)
         }
     }
 
-    print_table(true);
+    print_table(g_interactive);
     reset_table();
 
     exit:

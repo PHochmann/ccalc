@@ -3,16 +3,12 @@
 
 #include "cmd_help.h"
 #include "core.h"
-#include "../util/console_util.h"
-#include "../util/table.h"
-
 #include "../parsing/operator.h"
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
-
-#define COL_RESET "\033[0m"
-// White background, black foreground
-#define OP_COLOR "\x1B[47m" "\x1B[22;30m"
+#include "../util/string_util.h"
+#include "../util/console_util.h"
+#include "../util/table.h"
 
 static const size_t BASIC_IND     =  2; // Index of first basic operator ($x before, should no be shown)
 static const size_t TRIG_IND      = 19; // Index of first trigonometric function
@@ -68,7 +64,6 @@ void print_op(Operator *op)
                     printf("%s(%lu)", op->name, op->arity);
             }
     }
-    
     printf(COL_RESET " ");
 }
 
@@ -120,10 +115,16 @@ void cmd_help_exec(__attribute__((unused)) char *input)
         for (size_t i = ARITH_NUM_RULES; i < g_num_rules; i++)
         {
             printf("\n");
-            print_tree_inlined(g_rules[i].before, true);
-            printf(" = ");
-            print_tree_inlined(g_rules[i].after, true);
+            char inlined[100];
+            tree_inline(g_rules[i].before, inlined, 100, false);
+            add_cell(TEXTPOS_LEFT_ALIGNED, "%s", inlined);
+            add_cell(TEXTPOS_LEFT_ALIGNED, " = ");
+            tree_inline(g_rules[i].after, inlined, 100, false);
+            add_cell(TEXTPOS_LEFT_ALIGNED, "%s", inlined);
+            next_row();
         }
+        print_table(false);
+        reset_table();
     }
 
     printf("\n\n");

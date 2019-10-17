@@ -20,8 +20,8 @@ struct TableState
     size_t num_cols;
     size_t num_rows;
     // Marker which cell is inserted next
-    size_t curr_col;
-    size_t curr_row;
+    size_t x;
+    size_t y;
     // Max. ocurring widths and heights in columns and rows
     size_t col_widths[MAX_COLS];
     size_t row_heights[MAX_ROWS];
@@ -147,17 +147,17 @@ void reset_table()
     }
 
     state.num_hlines = 0;
-    state.curr_col = 0;
-    state.curr_row = 0;
+    state.x = 0;
+    state.y = 0;
     state.num_cols = 0;
     state.num_rows = 0;
 }
 
 void add_cell(TextPosition textpos, char *fmt, ...)
 {
-    if (state.curr_col >= MAX_COLS || state.curr_row >= MAX_ROWS) return;
+    if (state.x >= MAX_COLS || state.y >= MAX_ROWS) return;
 
-    struct Cell *cell = &state.cells[state.curr_col][state.curr_row];
+    struct Cell *cell = &state.cells[state.x][state.y];
 
     va_list args;
     va_start(args, fmt);
@@ -174,11 +174,11 @@ void add_cell(TextPosition textpos, char *fmt, ...)
     size_t length = 0;
     size_t height = 0;
     get_dimensions(cell->text, &length, &height);
-    if (length > state.col_widths[state.curr_col]) state.col_widths[state.curr_col] = length;
-    if (height > state.row_heights[state.curr_row]) state.row_heights[state.curr_row] = height;
-    if (state.num_cols <= state.curr_col) state.num_cols = state.curr_col + 1;
-    if (state.num_rows <= state.curr_row) state.num_rows = state.curr_row + 1;
-    state.curr_col++;
+    if (length > state.col_widths[state.x]) state.col_widths[state.x] = length;
+    if (height > state.row_heights[state.y]) state.row_heights[state.y] = height;
+    if (state.num_cols <= state.x) state.num_cols = state.x + 1;
+    if (state.num_rows <= state.y) state.num_rows = state.y + 1;
+    state.x++;
 }
 
 void add_cells_from_array(size_t x, size_t y, size_t width, size_t height, char *array[height][width], ...)
@@ -199,8 +199,8 @@ void add_cells_from_array(size_t x, size_t y, size_t width, size_t height, char 
 
 void next_row()
 {
-    state.curr_row++;
-    state.curr_col = 0;
+    state.y++;
+    state.x = 0;
 }
 
 // Inserts horizontal line above current row
@@ -208,15 +208,15 @@ void hline()
 {
     if (state.num_hlines + 1 < MAX_ROWS)
     {
-        state.hlines[state.num_hlines++] = state.curr_row;
+        state.hlines[state.num_hlines++] = state.y;
     }
 }
 
 void set_position(size_t col, size_t row)
 {
     if (col >= MAX_COLS || row >= MAX_ROWS) return;
-    state.curr_col = col;
-    state.curr_row = row;
+    state.x = col;
+    state.y = row;
 }
 
 void print_table(bool borders)
