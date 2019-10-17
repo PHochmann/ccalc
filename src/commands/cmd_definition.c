@@ -32,7 +32,7 @@ void add_function(char *name, char *left, char *right)
     Node *left_n = NULL;
     Node *right_n = NULL;
     
-    if (!parse_input_from_console(left, FMT_ERROR_LEFT, &left_n, false))
+    if (!parse_input_from_console(left, FMT_ERROR_LEFT, &left_n))
     {
         goto cleanup;
     }
@@ -69,7 +69,7 @@ void add_function(char *name, char *left, char *right)
     // Assign correct arity
     g_ctx->operators[g_ctx->num_ops - 1].arity = new_arity;
 
-    if (!parse_input_from_console(right, FMT_ERROR_RIGHT, &right_n, false))
+    if (!parse_input_from_console(right, FMT_ERROR_RIGHT, &right_n))
     {
         goto cleanup;
     }

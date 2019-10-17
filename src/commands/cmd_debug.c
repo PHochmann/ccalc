@@ -16,7 +16,7 @@ bool cmd_debug_check(char *input)
 void cmd_debug_exec(char *input)
 {
     Node *res;
-    if (parse_input_from_console(input + strlen(COMMAND), "Error: %s\n", &res, false))
+    if (parse_input_from_console(input + strlen(COMMAND), "Error: %s\n", &res))
     {
         print_tree_visual(res);
         printf("= ");

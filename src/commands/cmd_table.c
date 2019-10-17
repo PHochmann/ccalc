@@ -54,7 +54,7 @@ void cmd_table_exec(char *input)
     Node *end = NULL;
     Node *step = NULL;
 
-    if (!parse_input_from_console(args[0], "Error in expression: %s\n", &expr, false)) return;
+    if (!parse_input_from_console(args[0], "Error in expression: %s\n", &expr)) return;
 
     char *variables[count_variables(expr)];
     size_t num_vars = list_variables(expr, variables);
@@ -64,9 +64,9 @@ void cmd_table_exec(char *input)
         goto exit;
     }
 
-    if (!parse_input_from_console(args[1], "Error in start: %s\n", &start, false)
-        || !parse_input_from_console(args[2], "Error in end: %s\n", &end, false)
-        || !parse_input_from_console(args[3], "Error in step: %s\n", &step, false))
+    if (!parse_input_from_console(args[1], "Error in start: %s\n", &start)
+        || !parse_input_from_console(args[2], "Error in end: %s\n", &end)
+        || !parse_input_from_console(args[3], "Error in step: %s\n", &step))
     {
         goto exit;
     }

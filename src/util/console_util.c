@@ -1,6 +1,5 @@
 #define _GNU_SOURCE
 #include <stdio.h>
-#include <unistd.h>
 #include <string.h>
 
 #ifdef USE_READLINE
@@ -12,8 +11,6 @@
 #include "console_util.h"
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
-
-#define ASK_VARIABLE_FMT "%s? > "
 
 static const size_t MAX_INPUT_LENGTH   = 100;
 static const size_t MAX_INLINED_LENGTH = 200;
@@ -193,10 +190,7 @@ Summary:
 Returns:
     True when input was successfully parsed, false when syntax error in input or aborted when asked for constant
 */
-bool parse_input_from_console(char *input,
-    char *error_fmt,
-    Node **out_res,
-    bool constant)
+bool parse_input_from_console(char *input, char *error_fmt, Node **out_res)
 {
     ParserError perr = parse_input(g_ctx, input, out_res);
     if (perr != PERR_SUCCESS)
@@ -204,63 +198,11 @@ bool parse_input_from_console(char *input,
         printf(error_fmt, perr_to_string(perr));
         return false;
     }
-
-    transform_input(out_res);
-
-    // Make expression constant by asking for values and binding them to variables
-    if (constant)
+    else
     {
-        char *vars[count_variables(*out_res)];
-        size_t num_vars = list_variables(*out_res, vars);
-
-        /*
-         * Ask for variables interactively when we are connected to a terminal
-         * When connected to a pipe, it binds variables silently
-         * When expression was loaded from a file at a terminal, it asks interactively
-         */
-        bool temp = set_interactive(isatty(STDIN_FILENO));
-
-        for (size_t i = 0; i < num_vars; i++)
-        {
-            char *input;
-            if (ask_input(stdin, &input, ASK_VARIABLE_FMT, vars[i]))
-            {
-                Node *res_var;
-                if (!parse_input_from_console(input, error_fmt, &res_var, false))
-                {
-                    // Error while parsing - ask again
-                    free(input);
-                    i--;
-                    continue;
-                }
-                free(input);
-                
-                if (count_variables(res_var) > 0)
-                {
-                    // Not a constant given - ask again
-                    printf("Not a constant expression\n");
-                    free_tree(res_var);
-                    i--;
-                    continue;
-                }
-                
-                replace_variable_nodes(out_res, res_var, vars[i]);
-                free_tree(res_var);
-            }
-            else
-            {
-                // EOF when asked for constant
-                printf("\n");
-                set_interactive(temp);
-                free_tree(*out_res);
-                return false;
-            }
-        }
-        // Restore previous value of g_interactive
-        set_interactive(temp);
+        transform_input(out_res);
+        return true;
     }
-    
-    return true;
 }
 
 size_t split(char *str, char **out_strs, size_t num_delimiters, ...)

@@ -13,18 +13,21 @@ struct TreeToStringTest {
     char *expected_result;
 };
 
-static const size_t NUM_TESTS = 9;
+static const size_t NUM_TESTS = 12;
 static struct TreeToStringTest tests[] = {
-    { "--a",     "-(-a)"},
-    { "--b!!",   "(-(-b)!)!"},
-    { "(1+2)+3", "1+2+3" },
+    { "--a",      "-(-a)"},
+    { "--b!!",    "(-(-b)!)!"},
+    { "(1+2)+3",  "1+2+3" },
     { "1+(2+3)", "1+(2+3)" },
-    { "1+2-3",   "1+2-3" },
-    { "1+(2-3)", "1+(2-3)" },
-    { "pi",      "pi" },
-    { "sum",     "sum()" },
+    { "1+2-3",    "1+2-3" },
+    { "1+(2-3)",  "1+(2-3)" },
+    { "pi",       "pi" },
+    { "log(1,2)", "log(1,2)"},
+    { "sum",      "sum()" },
+    { "sin--1" ,  "sin(-(-1))" },
+    { "sum--1",   "sum()-(-1)" },
     { "-sqrt(abs(--a!!*--sum(-b+c-d+e, f^g^h-i, -sum(j, k), l+m)*--n!!))",
-        "-sqrt(abs(((-(-a)!)!)*(-(-sum(-b+c-d+e, f^g^h-i, -sum(j, k), l+m)))*(-(-n)!)!))" },
+        "-sqrt(abs(((-(-a)!)!)*(-(-sum(-b+c-d+e,f^g^h-i,-sum(j,k),l+m)))*(-(-n)!)!))" },
 };
 
 bool tree_to_string_test()
