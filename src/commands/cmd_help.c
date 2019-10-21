@@ -2,7 +2,7 @@
 #include <string.h>
 
 #include "cmd_help.h"
-#include "core.h"
+
 #include "../parsing/operator.h"
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
@@ -10,10 +10,22 @@
 #include "../util/console_util.h"
 #include "../util/table.h"
 
+#define VERSION "1.4.1"
+
 static const size_t BASIC_IND     =  2; // Index of first basic operator ($x before, should no be shown)
 static const size_t TRIG_IND      = 19; // Index of first trigonometric function
 static const size_t MISC_FUNC_IND = 31; // Index of first misc. function
 static const size_t CONSTANTS_IND = 46; // Index of first constant
+
+static char *commands[8][2] = {
+    { "<func|const> = <after>",                  "Adds new function or constant." },
+    { "table <expr> ; <from> ; <to> ; <step>  ", "Prints table of values." },
+    { "load <path>",                             "Loads file as if its content had been typed in." },
+    { "debug <expr>",                            "Visually prints abstract syntax tree of expression." },
+    { "help",                                    "Lists all available commands and operators." },
+    { "clear",                                   "Clears all user-defined functions." },
+    { "quit",                                    "Closes calculator." }
+};
 
 bool cmd_help_check(char *input)
 {
@@ -61,21 +73,11 @@ void print_op(Operator *op)
                     printf("%s(*)", op->name);
                     break;
                 default:
-                    printf("%s(%lu)", op->name, op->arity);
+                    printf("%s(%zu)", op->name, op->arity);
             }
     }
     printf(COL_RESET " ");
 }
-
-char *commands[8][2] = {
-    { "<func|const> = <after>  ",                "Adds new function or constant." },
-    { "table <expr> ; <from> ; <to> ; <step>  ", "Prints table of values." },
-    { "load <path>  ",                           "Loads file as if its content had been typed in." },
-    { "debug <expr>  ",                          "Visually prints abstract syntax tree of expression." },
-    { "help  ",                                  "Lists all available commands and operators." },
-    { "clear  ",                                 "Clears all user-defined functions." },
-    { "quit  ",                                  "Closes calculator." }
-};
 
 void cmd_help_exec(__attribute__((unused)) char *input)
 {

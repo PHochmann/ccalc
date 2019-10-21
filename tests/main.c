@@ -24,7 +24,7 @@ int main()
         printf("%s: ", test.name);
         if (test.suite())
         {
-            printf("Passed %d cases\n", test.num_cases);
+            printf("Passed %d cases.\n", test.num_cases);
         }
         else
         {
@@ -32,10 +32,10 @@ int main()
         }
     }
 
-    printf(F_GREEN "All tests passed (Version: %s)" COL_RESET "\n", VERSION);
+    printf(F_GREEN "All tests passed." COL_RESET "\n");
     return EXIT_SUCCESS;
 
     error:
-    printf(F_RED "Build contains errors (Version: %s)" COL_RESET "\n", VERSION);
+    printf(F_RED "Build contains errors." COL_RESET "\n");
     return EXIT_FAILURE;
 }

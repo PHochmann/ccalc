@@ -181,8 +181,10 @@ size_t count_variables(Node *tree)
     {
         case NTYPE_CONSTANT:
             return 0;
+
         case NTYPE_VARIABLE:
             return 1;
+
         case NTYPE_OPERATOR:
         {
             size_t sum = 0;
@@ -256,31 +258,31 @@ size_t count_variable_nodes(Node *tree, char *var_name)
     return get_variable_nodes(&tree, var_name, instances);
 }
 
-size_t list_variables_rec(Node *tree, size_t num_previously_found, char **out_variables)
+size_t list_variables_rec(Node *tree, size_t num_found, char **out_variables)
 {
     switch (get_type(tree))
     {
         case NTYPE_CONSTANT:
-            return num_previously_found;
+            return num_found;
         
         case NTYPE_VARIABLE:
             // Check if we already found variable
-            for (size_t i = 0; i < num_previously_found; i++)
+            for (size_t i = 0; i < num_found; i++)
             {
                 if (strcmp(get_var_name(tree), out_variables[i]) == 0)
                 {
-                    return num_previously_found;
+                    return num_found;
                 }
             }
-            out_variables[num_previously_found] = get_var_name(tree);
-            return num_previously_found + 1;
+            out_variables[num_found] = get_var_name(tree);
+            return num_found + 1;
 
         case NTYPE_OPERATOR:
             for (size_t i = 0; i < get_num_children(tree); i++)
             {
-                num_previously_found = list_variables_rec(get_child(tree, i), num_previously_found, out_variables);
+                num_found = list_variables_rec(get_child(tree, i), num_found, out_variables);
             }
-            return num_previously_found;
+            return num_found;
     }
 
     return 0;

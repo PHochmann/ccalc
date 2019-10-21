@@ -1,16 +1,15 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "cmd_definition.h"
+
 #include "../parsing/node.h"
 #include "../parsing/tokenizer.h"
-#include "../parsing/parser.h"
 #include "../matching/matching.h"
 #include "../matching/rewrite_rule.h"
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
 #include "../util/console_util.h"
-#include "cmd_definition.h"
-#include "cmd_evaluation.h"
 
 #define DEFINITION_OP   "="
 #define FMT_ERROR_LEFT  "Error in left expression: %s.\n"
@@ -39,7 +38,7 @@ void add_function(char *name, char *left, char *right)
 
     if (get_type(left_n) != NTYPE_OPERATOR || get_op(left_n)->placement != OP_PLACE_FUNCTION)
     {
-        printf(FMT_ERROR_LEFT, "Not a function or constant");
+        printf(FMT_ERROR_LEFT, "Not a function or constant.");
         goto cleanup;
     }
 
@@ -49,14 +48,14 @@ void add_function(char *name, char *left, char *right)
     {
         if (get_type(get_child(left_n, i)) != NTYPE_VARIABLE)
         {
-            printf(FMT_ERROR_LEFT, "Function arguments must be variables");
+            printf(FMT_ERROR_LEFT, "Function arguments must be variables.");
             goto cleanup;
         }
     }
 
     if (new_arity != count_variables_distinct(left_n))
     {
-        printf(FMT_ERROR_LEFT, "Function arguments must be distinct variables");
+        printf(FMT_ERROR_LEFT, "Function arguments must be distinct variables.");
         goto cleanup;
     }
 
@@ -147,13 +146,12 @@ void cmd_definition_exec(char *input)
     if (num_tokens > 0)
     {
         name = tokens[0];
-        // Free tokens and pointers to them
         for (size_t i = 1; i < num_tokens; i++) free(tokens[i]);
 
         if (!is_letter(name[0]))
         {
             free(name);
-            printf(FMT_ERROR_LEFT, "Functions and constants must only consist of letters");
+            printf(FMT_ERROR_LEFT, "Functions and constants must only consist of letters.");
             return;
         }
 

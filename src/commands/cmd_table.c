@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "cmd_clear.h"
+
 #include "../util/string_util.h"
 #include "../util/console_util.h"
 #include "../util/table.h"
@@ -54,19 +55,19 @@ void cmd_table_exec(char *input)
     Node *end = NULL;
     Node *step = NULL;
 
-    if (!parse_input_from_console(args[0], "Error in expression: %s\n", &expr)) return;
+    if (!parse_input_from_console(args[0], "Error in expression: %s.\n", &expr)) return;
 
     char *variables[count_variables(expr)];
     size_t num_vars = list_variables(expr, variables);
     if (num_vars > 1)
     {
-        printf("Expression contains more than one variable\n");
+        printf("Expression contains more than one variable.\n");
         goto exit;
     }
 
-    if (!parse_input_from_console(args[1], "Error in start: %s\n", &start)
-        || !parse_input_from_console(args[2], "Error in end: %s\n", &end)
-        || !parse_input_from_console(args[3], "Error in step: %s\n", &step))
+    if (!parse_input_from_console(args[1], "Error in start: %s.\n", &start)
+        || !parse_input_from_console(args[2], "Error in end: %s.\n", &end)
+        || !parse_input_from_console(args[3], "Error in step: %s.\n", &step))
     {
         goto exit;
     }
@@ -75,7 +76,7 @@ void cmd_table_exec(char *input)
         || count_variables(end) > 0
         || count_variables(step) > 0)
     {
-        printf("Start, end and step must be constant\n");
+        printf("Start, end and step must be constant.\n");
         goto exit;
     }
 
@@ -85,7 +86,7 @@ void cmd_table_exec(char *input)
 
     if (step_val == 0)
     {
-        printf("Step must not be zero\n");
+        printf("Step must not be zero.\n");
         goto exit;
     }
 

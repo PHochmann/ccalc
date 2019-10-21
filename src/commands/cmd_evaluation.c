@@ -3,14 +3,14 @@
 #include <string.h>
 
 #include "cmd_evaluation.h"
-#include "core.h"
+
 #include "../util/console_util.h"
 #include "../util/string_util.h"
 #include "../parsing/node.h"
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
 
-#define ERROR_FMT        "Error: %s\n"
+#define ERROR_FMT        "Error: %s.\n"
 #define ASK_VARIABLE_FMT "%s? > "
 
 bool cmd_evaluation_check(__attribute__((unused)) char *input)
@@ -55,7 +55,7 @@ void cmd_evaluation_exec(char *input)
                 if (count_variables(res_var) > 0)
                 {
                     // Not a constant given - ask again
-                    printf("Not a constant expression\n");
+                    printf("Not a constant expression.\n");
                     free_tree(res_var);
                     i--;
                     continue;

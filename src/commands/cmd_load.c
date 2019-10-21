@@ -6,6 +6,7 @@
 
 #include "cmd_load.h"
 #include "core.h"
+
 #include "../util/console_util.h"
 #include "../util/string_util.h"
 
@@ -25,11 +26,11 @@ void cmd_load_exec(char *input)
 
     if (file == NULL)
     {
-        printf("Error loading file: %s\n", strerror(errno));
+        printf("Error loading file: %s.\n", strerror(errno));
         return;
     }
     
-    whisper("File successfully loaded\n");
+    whisper("File successfully loaded.\n");
 
     // Set g_interactive to false to read with getline from file
     bool interactive = set_interactive(false);
