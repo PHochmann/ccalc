@@ -12,8 +12,8 @@
 #include "../util/console_util.h"
 
 #define DEFINITION_OP   "="
-#define FMT_ERROR_LEFT  "Error in left expression: %s.\n"
-#define FMT_ERROR_RIGHT "Error in right expression: %s.\n"
+#define FMT_ERROR_LEFT  "Error in left expression: %s\n"
+#define FMT_ERROR_RIGHT "Error in right expression: %s\n"
 
 static const size_t MAX_TOKENS = 100;
 
