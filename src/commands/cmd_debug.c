@@ -19,9 +19,9 @@ void cmd_debug_exec(char *input)
     Node *res;
     if (parse_input_from_console(input + strlen(COMMAND), "Error: %s.\n", &res))
     {
-        print_tree_visual(res);
+        print_tree_visually(res);
         printf("= ");
-        print_tree_inlined(res, true);
+        print_tree(res, true);
         printf("\n");
         free_tree(res);
     }

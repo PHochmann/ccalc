@@ -19,7 +19,7 @@ struct ErrorTest {
     ParserError result;
 };
 
-static const size_t NUM_VALUE_TESTS = 49;
+static const size_t NUM_VALUE_CASES = 49;
 static struct ValueTest valueTests[] = {
     // 1. Basic prefix, infix, postfix
     { "2+3",  5 },
@@ -80,7 +80,7 @@ static struct ValueTest valueTests[] = {
     { "-sqrt(abs(--2!!*--sum(-1+.2-.2+2, 2^2^3-255, -sum(.1, .9), 1+2)*--2!!))", -4 },
 };
 
-static const size_t NUM_ERROR_TESTS = 9;
+static const size_t NUM_ERROR_CASES = 9;
 static struct ErrorTest errorTests[] = {
     { "",          PERR_EMPTY },
     { "()",        PERR_EMPTY },
@@ -104,27 +104,27 @@ bool parser_test()
     Node *node = NULL;
 
     // Perform value tests
-    for (size_t i = 0; i < NUM_VALUE_TESTS; i++)
+    for (size_t i = 0; i < NUM_VALUE_CASES; i++)
     {
         if (parse_input(g_ctx, valueTests[i].input, &node) != PERR_SUCCESS)
         {
-            printf("Parser Error in '%s'\n", valueTests[i].input);
+            printf("[0] Parser Error in '%s'\n", valueTests[i].input);
             return false;
         }
 
         if (!almost_equals(arith_eval(node), valueTests[i].result))
         {
-            printf("Unexpected result in '%s'\n", valueTests[i].input);
+            printf("[0] Unexpected result in '%s'\n", valueTests[i].input);
             return false;
         }
     }
 
     // Perform error tests
-    for (size_t i = 0; i < NUM_ERROR_TESTS; i++)
+    for (size_t i = 0; i < NUM_ERROR_CASES; i++)
     {
         if (parse_input(g_ctx, errorTests[i].input, &node) != errorTests[i].result)
         {
-            printf("Unexpected error type in '%s'\n", errorTests[i].input);
+            printf("[0] Unexpected error type in '%s'\n", errorTests[i].input);
             return false;
         }
     }
@@ -136,7 +136,7 @@ Test get_parser_test()
 {
     return (Test){
         parser_test,
-        NUM_ERROR_TESTS + NUM_VALUE_TESTS,
+        NUM_ERROR_CASES + NUM_VALUE_CASES,
         "Parser"
     };
 }

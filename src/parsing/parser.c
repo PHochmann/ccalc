@@ -460,7 +460,7 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
 
 /* Parsing algorithm ends here. What follows are functions to invoke the parser conveniently. */
 
-static const size_t MAX_TOKENS = 100;
+static const size_t MAX_TOKENS = 200;
 
 /*
 Summary: Parses string, tokenized with default tokenizer, to abstract syntax tree

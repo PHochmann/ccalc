@@ -7,8 +7,8 @@
 #include <readline/history.h>
 #endif
 
-#include "string_util.h"
 #include "console_util.h"
+#include "string_util.h"
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
 
@@ -43,10 +43,10 @@ bool set_interactive(bool value)
 }
 
 // Summary: Prints result of tree inline, including correct color even after truncation, and indicated abbreviation
-void print_tree_inlined(Node *node, bool color)
+void print_tree(Node *node, bool color)
 {
     char buffer[MAX_INLINED_LENGTH];
-    size_t result = tree_inline(node, buffer, MAX_INLINED_LENGTH, color);
+    size_t result = tree_to_string(node, buffer, MAX_INLINED_LENGTH, color);
     printf("%s", buffer);
     if (color) printf(COL_RESET);
     // Result is number of characters, excluding \0
@@ -144,44 +144,6 @@ bool ask_input(FILE *file, char **out_input, char *prompt_fmt, ...)
 
     va_end(args);
     return res;
-}
-
-/*
-Returns: String representation of ParserError
-*/
-char *perr_to_string(ParserError perr)
-{
-    switch (perr)
-    {
-        case PERR_SUCCESS:
-            return "Success";
-        case PERR_MAX_TOKENS_EXCEEDED:
-            return "Max. Tokens exceeded";
-        case PERR_STACK_EXCEEDED:
-            return "Stack exceeded";
-        case PERR_UNEXPECTED_SUBEXPRESSION:
-            return "Unexpected Subexpression";
-        case PERR_EXCESS_OPENING_PARENTHESIS:
-            return "Missing closing parenthesis";
-        case PERR_EXCESS_CLOSING_PARENTHESIS:
-            return "Unexpected closing parenthesis";
-        case PERR_UNEXPECTED_DELIMITER:
-            return "Unexpected delimiter";
-        case PERR_MISSING_OPERATOR:
-            return "Unexpected operand";
-        case PERR_MISSING_OPERAND:
-            return "Missing operand";
-        case PERR_OUT_OF_MEMORY:
-            return "Out of memory";
-        case PERR_FUNCTION_WRONG_ARITY:
-            return "Wrong number of operands of function";
-        case PERR_CHILDREN_EXCEEDED:
-            return "Exceeded maximum number of operands of function";
-        case PERR_EMPTY:
-            return "Empty Expression";
-        default:
-            return "Unknown Error";
-    }
 }
 
 /*

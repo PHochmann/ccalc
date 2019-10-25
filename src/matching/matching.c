@@ -46,7 +46,7 @@ bool get_matching(Node **tree, Node *pattern, Matching *out_matching)
                     {
                         // Is already bound variable equal to this occurrence?
                         // If not, fail here
-                        if (!tree_equals(mapped_nodes[i], curr_tree))
+                        if (tree_equals(mapped_nodes[i], curr_tree) != NULL)
                         {
                             return false;
                         }
@@ -89,7 +89,7 @@ bool get_matching(Node **tree, Node *pattern, Matching *out_matching)
                 
             // 2. Check constants for equality
             case NTYPE_CONSTANT:
-                if (!tree_equals(curr_pattern, curr_tree))
+                if (tree_equals(curr_pattern, curr_tree) != NULL)
                 {
                     return false;
                 }

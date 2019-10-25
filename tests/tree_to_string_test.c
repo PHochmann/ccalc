@@ -13,7 +13,7 @@ struct TreeToStringTest {
     char *expected_result;
 };
 
-static const size_t NUM_TESTS = 12;
+static const size_t NUM_CASES = 12;
 static struct TreeToStringTest tests[] = {
     { "--a",      "-(-a)"},
     { "--b!!",    "(-(-b)!)!"},
@@ -32,7 +32,7 @@ static struct TreeToStringTest tests[] = {
 
 bool tree_to_string_test()
 {
-    for (size_t i = 0; i < NUM_TESTS; i++)
+    for (size_t i = 0; i < NUM_CASES; i++)
     {
         Node *node = NULL;
         size_t expected_length = strlen(tests[i].expected_result);
@@ -40,21 +40,21 @@ bool tree_to_string_test()
 
         if (parse_input(g_ctx, tests[i].input, &node) != PERR_SUCCESS)
         {
-            printf("Parser Error in '%s'\n", tests[i].input);
+            printf("[1] Parser Error in '%s'\n", tests[i].input);
             return false;
         }
 
-        // Check if tree_inline returns correct length with and without buffer
-        if (tree_inline(node, NULL, 0, false) != expected_length
-            || tree_inline(node, result, expected_length + 1, false) != expected_length)
+        // Check if tree_to_string returns correct length with and without buffer
+        if (tree_to_string(node, NULL, 0, false) != expected_length
+            || tree_to_string(node, result, expected_length + 1, false) != expected_length)
         {
-            printf("Unexpected length in '%s'\n", tests[i].input);
+            printf("[1] Unexpected length in '%s'\n", tests[i].input);
             return false;
         }
 
         if (strcmp(tests[i].expected_result, result) != 0)
         {
-            printf("Unexpected result in '%s'\n", tests[i].input);
+            printf("[1] Unexpected result in '%s'\n", tests[i].input);
             return false;
         }
     }
@@ -66,7 +66,7 @@ Test get_tree_to_string_test()
 {
     return (Test){
         tree_to_string_test,
-        NUM_TESTS,
+        NUM_CASES,
         "Tree to String"
     };
 }

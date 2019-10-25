@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "string_util.h"
+#include "../parsing/tokenizer.h"
 
 #define EMPTY_TAB  "    "
 #define LINE_TAB   "│   "
@@ -16,6 +17,44 @@ bool begins_with(char *prefix, char *string)
     size_t string_length = strlen(string);
     if (prefix_length > string_length) return false;
     return strncmp(prefix, string, prefix_length) == 0;
+}
+
+/*
+Returns: String representation of ParserError
+*/
+char *perr_to_string(ParserError perr)
+{
+    switch (perr)
+    {
+        case PERR_SUCCESS:
+            return "Success";
+        case PERR_MAX_TOKENS_EXCEEDED:
+            return "Max. Tokens exceeded";
+        case PERR_STACK_EXCEEDED:
+            return "Stack exceeded";
+        case PERR_UNEXPECTED_SUBEXPRESSION:
+            return "Unexpected Subexpression";
+        case PERR_EXCESS_OPENING_PARENTHESIS:
+            return "Missing closing parenthesis";
+        case PERR_EXCESS_CLOSING_PARENTHESIS:
+            return "Unexpected closing parenthesis";
+        case PERR_UNEXPECTED_DELIMITER:
+            return "Unexpected delimiter";
+        case PERR_MISSING_OPERATOR:
+            return "Unexpected operand";
+        case PERR_MISSING_OPERAND:
+            return "Missing operand";
+        case PERR_OUT_OF_MEMORY:
+            return "Out of memory";
+        case PERR_FUNCTION_WRONG_ARITY:
+            return "Wrong number of operands of function";
+        case PERR_CHILDREN_EXCEEDED:
+            return "Exceeded maximum number of operands of function";
+        case PERR_EMPTY:
+            return "Empty Expression";
+        default:
+            return "Unknown Error";
+    }
 }
 
 void print_tree_visual_rec(Node *node, unsigned char layer, unsigned int vert_lines)
@@ -53,7 +92,7 @@ void print_tree_visual_rec(Node *node, unsigned char layer, unsigned int vert_li
 /*
 Summary: Draws coloured tree to stdout
 */
-void print_tree_visual(Node *node)
+void print_tree_visually(Node *node)
 {
     if (node == NULL) return;
     print_tree_visual_rec(node, 0, 0);
@@ -202,7 +241,7 @@ void inline_infix(struct PrintingState *state, Node *node, bool l, bool r)
         tree_inline_rec(state, childA, l, true);
     }
 
-    to_buffer(state, strlen(get_op(node)->name) == 1 ? "%s" : " %s ", get_op(node)->name);
+    to_buffer(state, is_letter(get_op(node)->name[0]) ? " %s " : "%s", get_op(node)->name);
     
     // Checks if right operand of infix operator needs to be wrapped in parentheses (see analog case for left operand)
     if (get_type(childB) == NTYPE_OPERATOR
@@ -259,7 +298,7 @@ void tree_inline_rec(struct PrintingState *state, Node *node, bool l, bool r)
 
 // Summary: Fills buffer with representation of tree
 // Returns: Length of output, even if buffer was not sufficient (without \0)
-size_t tree_inline(Node *node, char *buffer, size_t buffer_size, bool color)
+size_t tree_to_string(Node *node, char *buffer, size_t buffer_size, bool color)
 {
     // In case nothing is printed, we still want to have a proper string
     if (buffer_size != 0) *buffer = '\0';

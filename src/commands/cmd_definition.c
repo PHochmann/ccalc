@@ -10,6 +10,7 @@
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
 #include "../util/console_util.h"
+#include "../util/string_util.h"
 
 #define DEFINITION_OP   "="
 #define FMT_ERROR_LEFT  "Error in left expression: %s\n"

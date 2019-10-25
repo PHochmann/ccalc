@@ -128,34 +128,38 @@ Node *tree_copy(Node *tree)
 
 /*
 Summary: Checks if two trees represent exactly the same expression
+Returns: First node (in-order traversal) in 'a' that is not equal to respective node in 'b', NULL otherwise
 */
-bool tree_equals(Node *a, Node *b)
+Node *tree_equals(Node *a, Node *b)
 {
-    if (a == NULL || b == NULL) return false;
+    if (a == NULL || b == NULL) return NULL;
     
-    if (get_type(a) != get_type(b)) return false;
+    if (get_type(a) != get_type(b)) return a;
     
     switch (get_type(a))
     {
         case NTYPE_CONSTANT:
-            return get_const_value(a) == get_const_value(b);
+            if (get_const_value(a) != get_const_value(b)) return a;
+            break;
 
         case NTYPE_VARIABLE:
-            return strcmp(get_var_name(a), get_var_name(b)) == 0;
+            if (strcmp(get_var_name(a), get_var_name(b)) != 0) return a;
+            break;
 
         case NTYPE_OPERATOR:
             if (get_op(a) != get_op(b) || get_num_children(a) != get_num_children(b))
             {
-                return false;
+                return a;
             }
 
             for (size_t i = 0; i < get_num_children(a); i++)
             {
-                if (!tree_equals(get_child(a, i), get_child(b, i))) return false;
+                Node *recursive_res = tree_equals(get_child(a, i), get_child(b, i));
+                if (recursive_res != NULL) return recursive_res;
             }
     }
 
-    return false;
+    return NULL;
 }
 
 /*

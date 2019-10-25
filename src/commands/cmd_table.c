@@ -103,7 +103,7 @@ void cmd_table_exec(char *input)
     {
         add_cell(TEXTPOS_CENTERED, " %s ", num_vars == 0 ? "" : variables[0]);
         char inlined_expr[MAX_INLINED_LENGTH];
-        tree_inline(expr, inlined_expr, 100, false);
+        tree_to_string(expr, inlined_expr, 100, false);
         add_cell(TEXTPOS_CENTERED, " %s ", inlined_expr);
         next_row();
         hline();

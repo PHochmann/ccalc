@@ -58,7 +58,7 @@ char *get_var_name(Node *node);
 ConstantType get_const_value(Node *node);
 
 // Data handling
-bool tree_equals(Node *a, Node *b);
+Node *tree_equals(Node *a, Node *b);
 Node *tree_copy(Node *node);
 void tree_replace(Node **tree_to_replace, Node *tree_to_insert);
 

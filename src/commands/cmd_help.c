@@ -10,7 +10,7 @@
 #include "../util/console_util.h"
 #include "../util/table.h"
 
-#define VERSION "1.4.1"
+#define VERSION "1.4.2"
 
 static const size_t BASIC_IND     =  2; // Index of first basic operator ($x before, should no be shown)
 static const size_t TRIG_IND      = 19; // Index of first trigonometric function
@@ -118,10 +118,10 @@ void cmd_help_exec(__attribute__((unused)) char *input)
         {
             printf("\n");
             char inlined[100];
-            tree_inline(g_rules[i].before, inlined, 100, false);
+            tree_to_string(g_rules[i].before, inlined, 100, false);
             add_cell(TEXTPOS_LEFT_ALIGNED, "%s", inlined);
             add_cell(TEXTPOS_LEFT_ALIGNED, " = ");
-            tree_inline(g_rules[i].after, inlined, 100, false);
+            tree_to_string(g_rules[i].after, inlined, 100, false);
             add_cell(TEXTPOS_LEFT_ALIGNED, "%s", inlined);
             next_row();
         }
