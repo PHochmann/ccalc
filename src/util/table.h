@@ -5,9 +5,9 @@
 
 typedef enum
 {
-    TEXTPOS_LEFT_ALIGNED,
-    TEXTPOS_RIGHT_ALIGNED,
-    TEXTPOS_CENTERED
+    TEXTPOS_LEFT,
+    TEXTPOS_RIGHT,
+    TEXTPOS_CENTER
 } TextPosition;
 
 void reset_table();

@@ -23,14 +23,14 @@ void print_current(Node *expr, char *var, double value)
 
     if (current_expr == NULL || current_val == NULL)
     {
-        add_cell(TEXTPOS_RIGHT_ALIGNED, "");
-        add_cell(TEXTPOS_LEFT_ALIGNED, "Out of mem.");
+        add_cell(TEXTPOS_RIGHT, "");
+        add_cell(TEXTPOS_LEFT, "Out of mem.");
     }
     else
     {
         replace_variable_nodes(&current_expr, current_val, var);
-        add_cell(TEXTPOS_RIGHT_ALIGNED, " " CONSTANT_TYPE_FMT " ", value);
-        add_cell(TEXTPOS_LEFT_ALIGNED, " " CONSTANT_TYPE_FMT " ", arith_eval(current_expr));
+        add_cell(TEXTPOS_RIGHT, " " CONSTANT_TYPE_FMT " ", value);
+        add_cell(TEXTPOS_LEFT, " " CONSTANT_TYPE_FMT " ", arith_eval(current_expr));
     }
 
     next_row();
@@ -101,10 +101,10 @@ void cmd_table_exec(char *input)
     // Header
     if (g_interactive)
     {
-        add_cell(TEXTPOS_CENTERED, " %s ", num_vars == 0 ? "" : variables[0]);
+        add_cell(TEXTPOS_CENTER, " %s ", num_vars == 0 ? "" : variables[0]);
         char inlined_expr[MAX_INLINED_LENGTH];
-        tree_to_string(expr, inlined_expr, 100, false);
-        add_cell(TEXTPOS_CENTERED, " %s ", inlined_expr);
+        tree_to_string(expr, inlined_expr, MAX_INLINED_LENGTH, true);
+        add_cell(TEXTPOS_CENTER, " %s ", inlined_expr);
         next_row();
         hline();
     }

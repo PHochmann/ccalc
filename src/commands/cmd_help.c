@@ -10,6 +10,7 @@
 #include "../util/console_util.h"
 #include "../util/table.h"
 
+#define MAX_INLINED_LENGTH 100
 #define VERSION "1.4.2"
 
 static const size_t BASIC_IND     =  2; // Index of first basic operator ($x before, should no be shown)
@@ -17,7 +18,7 @@ static const size_t TRIG_IND      = 19; // Index of first trigonometric function
 static const size_t MISC_FUNC_IND = 31; // Index of first misc. function
 static const size_t CONSTANTS_IND = 46; // Index of first constant
 
-static char *commands[8][2] = {
+static char *command_descriptions[8][2] = {
     { "<func|const> = <after>",                  "Adds new function or constant." },
     { "table <expr> ; <from> ; <to> ; <step>  ", "Prints table of values." },
     { "load <path>",                             "Loads file as if its content had been typed in." },
@@ -82,7 +83,7 @@ void print_op(Operator *op)
 void cmd_help_exec(__attribute__((unused)) char *input)
 {
     printf("Calculator %s (c) 2019, Philipp Hochmann\n", VERSION);
-    add_cells_from_array(0, 1, 2, 7, commands, TEXTPOS_LEFT_ALIGNED, TEXTPOS_LEFT_ALIGNED);
+    add_cells_from_array(0, 1, 2, 7, command_descriptions, TEXTPOS_LEFT, TEXTPOS_LEFT);
     print_table(false);
     reset_table();
 
@@ -117,17 +118,17 @@ void cmd_help_exec(__attribute__((unused)) char *input)
         for (size_t i = ARITH_NUM_RULES; i < g_num_rules; i++)
         {
             printf("\n");
-            char inlined[100];
-            tree_to_string(g_rules[i].before, inlined, 100, false);
-            add_cell(TEXTPOS_LEFT_ALIGNED, "%s", inlined);
-            add_cell(TEXTPOS_LEFT_ALIGNED, " = ");
-            tree_to_string(g_rules[i].after, inlined, 100, false);
-            add_cell(TEXTPOS_LEFT_ALIGNED, "%s", inlined);
+            char inlined[MAX_INLINED_LENGTH];
+            tree_to_string(g_rules[i].before, inlined, MAX_INLINED_LENGTH, true);
+            add_cell(TEXTPOS_LEFT, "%s", inlined);
+            add_cell(TEXTPOS_LEFT, " = ");
+            tree_to_string(g_rules[i].after, inlined, MAX_INLINED_LENGTH, true);
+            add_cell(TEXTPOS_LEFT, "%s", inlined);
             next_row();
         }
         print_table(false);
         reset_table();
     }
 
-    printf("\n\n");
+    printf("\n");
 }

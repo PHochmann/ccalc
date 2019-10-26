@@ -153,7 +153,7 @@ void p_close(struct PrintingState *state)
     to_buffer(state, ")");
 }
 
-void tree_inline_rec(struct PrintingState *state, Node *node, bool l, bool r);
+void tree_to_string_rec(struct PrintingState *state, Node *node, bool l, bool r);
 
 void inline_prefix(struct PrintingState *state, Node *node, bool l, bool r)
 {
@@ -164,14 +164,14 @@ void inline_prefix(struct PrintingState *state, Node *node, bool l, bool r)
         && get_op(get_child(node, 0))->precedence <= get_op(node)->precedence)
     {
         p_open(state);
-        tree_inline_rec(state, get_child(node, 0), false, false);
+        tree_to_string_rec(state, get_child(node, 0), false, false);
         p_close(state);
     }
     else
     {
         // Subexpression needs to be right-protected when expression of 'node' is not encapsulated in parentheses
         // (!l, Otherwise redundant parentheses would be printed) and itself needs to be right-protected
-        tree_inline_rec(state, get_child(node, 0), true, !l && r);
+        tree_to_string_rec(state, get_child(node, 0), true, !l && r);
     }
     
     if (l) p_close(state);
@@ -186,13 +186,13 @@ void inline_postfix(struct PrintingState *state, Node *node, bool l, bool r)
         && get_op(get_child(node, 0))->precedence < get_op(node)->precedence)
     {
         p_open(state);
-        tree_inline_rec(state, get_child(node, 0), false, false);
+        tree_to_string_rec(state, get_child(node, 0), false, false);
         p_close(state);
     }
     else
     {
         // See analog case of infix operator for conditions for left-protection
-        tree_inline_rec(state, get_child(node, 0), l && !r, true);
+        tree_to_string_rec(state, get_child(node, 0), l && !r, true);
     }
     
     to_buffer(state, "%s", get_op(node)->name);
@@ -206,7 +206,7 @@ void inline_function(struct PrintingState *state, Node *node)
         to_buffer(state, "%s(", get_op(node)->name);
         for (size_t i = 0; i < get_num_children(node); i++)
         {
-            tree_inline_rec(state, get_child(node, i), false, false);
+            tree_to_string_rec(state, get_child(node, i), false, false);
             if (i < get_num_children(node) - 1) to_buffer(state, ",");
         }
         p_close(state);
@@ -219,43 +219,43 @@ void inline_function(struct PrintingState *state, Node *node)
 
 void inline_infix(struct PrintingState *state, Node *node, bool l, bool r)
 {
-    Node *childA = get_child(node, 0);
-    Node *childB = get_child(node, 1);
+    Node *childL = get_child(node, 0);
+    Node *childR = get_child(node, 1);
 
     // Checks if left operand of infix operator which itself is an operator needs to be wrapped in parentheses
     // This is the case when:
     //    - It has a lower precedence
     //    - It has the same precedence but associates to the right
     //      (Same precedence -> same associativity, see consistency rules for operator set in context.c)
-    if (get_type(childA) == NTYPE_OPERATOR
-        && (get_op(childA)->precedence < get_op(node)->precedence
-            || (get_op(childA)->precedence == get_op(node)->precedence
+    if (get_type(childL) == NTYPE_OPERATOR
+        && (get_op(childL)->precedence < get_op(node)->precedence
+            || (get_op(childL)->precedence == get_op(node)->precedence
                 && get_op(node)->assoc == OP_ASSOC_RIGHT)))
     {
         p_open(state);
-        tree_inline_rec(state, childA, false, false);
+        tree_to_string_rec(state, childL, false, false);
         p_close(state);
     }
     else
     {
-        tree_inline_rec(state, childA, l, true);
+        tree_to_string_rec(state, childL, l, true);
     }
 
     to_buffer(state, is_letter(get_op(node)->name[0]) ? " %s " : "%s", get_op(node)->name);
     
     // Checks if right operand of infix operator needs to be wrapped in parentheses (see analog case for left operand)
-    if (get_type(childB) == NTYPE_OPERATOR
-        && (get_op(childB)->precedence < get_op(node)->precedence
-            || (get_op(childB)->precedence == get_op(node)->precedence
+    if (get_type(childR) == NTYPE_OPERATOR
+        && (get_op(childR)->precedence < get_op(node)->precedence
+            || (get_op(childR)->precedence == get_op(node)->precedence
                 && get_op(node)->assoc == OP_ASSOC_LEFT)))
     {
         p_open(state);
-        tree_inline_rec(state, childB, false, false);
+        tree_to_string_rec(state, childR, false, false);
         p_close(state);
     }
     else
     {
-        tree_inline_rec(state, childB, true, r);
+        tree_to_string_rec(state, childR, true, r);
     }
 }
 
@@ -265,7 +265,7 @@ Params
         It needs to be protected when it is adjacent to an operator on this side.
         When the subexpression starts (ends) with an operator and needs to be protected to the left (right), a parenthesis is printed in between.
 */
-void tree_inline_rec(struct PrintingState *state, Node *node, bool l, bool r)
+void tree_to_string_rec(struct PrintingState *state, Node *node, bool l, bool r)
 {
     switch (get_type(node))
     {
@@ -310,6 +310,6 @@ size_t tree_to_string(Node *node, char *buffer, size_t buffer_size, bool color)
         .num_written = 0
     };
 
-    tree_inline_rec(&state, node, false, false);
+    tree_to_string_rec(&state, node, false, false);
     return state.num_written;
 }

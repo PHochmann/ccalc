@@ -5,16 +5,21 @@
 #include "../src/util/string_util.h"
 #include "../src/arithmetics/arith_context.h"
 
-#include "massive_test.h"
+#include "randomized_test.h"
 
-#define SEED                 24
-#define NUM_CASES            500
+#define SEED                 21
+#define NUM_CASES            1000
 #define MAX_INNER_NODES      250
 #define MAX_CONST            1000
-#define MAX_DYNAMIC_CHILDREN 4
+#define MAX_DYNAMIC_CHILDREN 5
 
-#define NUM_VARIABLE_NAMES   5
+#define NUM_VARIABLE_NAMES 5
 static char *variable_names[] = { "x", "y", "z", "joy", "division" };
+
+// Operator indices to choose from
+#define NUM_OP_INDICES 23
+static size_t op_indices[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+    13, 14, 15, 16, 17, 31, 32, 40, 41, 42, 46 };
 
 void generate_tree(size_t max_inner_nodes, Node **out)
 {
@@ -40,8 +45,7 @@ void generate_tree(size_t max_inner_nodes, Node **out)
     else
     {
         // Choose random operator
-        // Don't pick operators[0] because it's $
-        Operator *op = &g_ctx->operators[1 + rand() % (ARITH_NUM_OPS - 1)];
+        Operator *op = &g_ctx->operators[op_indices[rand() % NUM_OP_INDICES]];
         size_t num_children;
 
         if (op->arity == OP_DYNAMIC_ARITY)
@@ -91,26 +95,31 @@ bool massive_test()
         // Check results
         if (result != PERR_SUCCESS)
         {
-            printf("[2] Could not parse tree %zu successfully: %s.\n", i, perr_to_string(result));
+            printf("[2] Parser error: %s.\n", perr_to_string(result));
             error = true;
         }
         else
         {
             if (tree_equals(random_tree, parsed_tree) != NULL)
             {
-                printf("[2] Parsed tree %zu not equal to generated tree.\n", i);
+                printf("[2] Parsed tree not equal to generated tree.\n");
                 error = true;
             }
         }
 
         if (error)
         {
-            printf("~ ~ DUMP ~ ~\n"
-                   "%s\n", stringed_tree);
+            printf("Random:\n");
             print_tree_visually(random_tree);
+            printf("Parsed:\n");
             print_tree_visually(parsed_tree);
+            printf("String:\n%s\n", stringed_tree);
             printf("~ ~ ~ ~ ~ ~ ~\n");
         }
+        /*else
+        {
+            printf("%s\n", stringed_tree);
+        }*/
 
         free_tree(random_tree);
         free_tree(parsed_tree);
@@ -124,7 +133,7 @@ bool massive_test()
     return true;
 }
 
-Test get_massive_test()
+Test get_randomized_test()
 {
     return (Test){
         massive_test,

@@ -33,6 +33,28 @@ struct TableState
 
 struct TableState state;
 
+size_t strlen_ansi(char *string)
+{
+    size_t res = 0;
+    size_t pos = 0;
+    while (string[pos] != '\0' && string[pos] != '\n')
+    {
+        if (string[pos] == '\x1B')
+        {
+            while (string[pos] != 'm')
+            {
+                pos++;
+            }
+        }
+        else
+        {
+            res++;
+        }
+        pos++;
+    }
+    return res;
+}
+
 void print_repeated(char *string, size_t amount)
 {
     for (size_t i = 0; i < amount; i++) printf("%s", string);
@@ -46,44 +68,38 @@ void print_padded(char *string, size_t total_length, TextPosition textpos)
         return;
     }
 
-    size_t str_length = strlen(string);
+    size_t str_length = strlen_ansi(string);
 
     switch (textpos)
     {
-        case TEXTPOS_LEFT_ALIGNED:
+        case TEXTPOS_LEFT:
             printf("%s", string);
             print_repeated(" ", total_length - str_length);
             break;
-        case TEXTPOS_RIGHT_ALIGNED:
+        case TEXTPOS_RIGHT:
             print_repeated(" ", total_length - str_length);
             printf("%s", string);
             break;
-        case TEXTPOS_CENTERED:
+        case TEXTPOS_CENTER:
             print_repeated(" ", (total_length - str_length) / 2);
             printf("%s", string);
             print_repeated(" ", ceil((double)(total_length - str_length) / 2));
     }
 }
 
-void get_dimensions(char *string, size_t *out_length, size_t *out_height)
+size_t get_num_lines(char *string)
 {
-    size_t curr_line_length = 0;
-    *out_height = 0;
-    *out_length = 0;
-
-    for (size_t pos = 0; pos <= strlen(string); pos++)
+    size_t res = 1;
+    size_t pos = 0;
+    while (string[pos] != '\0')
     {
-        if (string[pos] == '\n' || string[pos] == '\0')
+        if (string[pos] == '\n')
         {
-            (*out_height)++;
-            if (*out_length < curr_line_length) *out_length = curr_line_length;
-            curr_line_length = 0;
+            res++;
         }
-        else
-        {
-            curr_line_length++;
-        }
+        pos++;
     }
+    return res;
 }
 
 size_t get_line(char *string, size_t line_index, char *out_buffer)
@@ -127,6 +143,19 @@ size_t get_line(char *string, size_t line_index, char *out_buffer)
     }
     out_buffer[count] = '\0';
     return count;
+}
+
+void get_dimensions(char *string, size_t *out_length, size_t *out_height)
+{
+    *out_length = 0;
+    *out_height = get_num_lines(string);
+    for (size_t i = 0; i < *out_height; i++)
+    {
+        char buffer[strlen(string) + 1];
+        get_line(string, i, buffer);
+        size_t line_length = strlen_ansi(buffer);
+        if (*out_length < line_length) *out_length = line_length;
+    }
 }
 
 void reset_table()
