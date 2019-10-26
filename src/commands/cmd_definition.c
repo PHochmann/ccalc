@@ -32,8 +32,11 @@ void add_function(char *name, char *left, char *right)
     Node *left_n = NULL;
     Node *right_n = NULL;
     
-    if (!parse_input_from_console(left, FMT_ERROR_LEFT, &left_n))
+    // Parse without applying rules to correctly determine if function already exists
+    ParserError perr = parse_input(g_ctx, left, &left_n);
+    if (perr != PERR_SUCCESS)
     {
+        printf(FMT_ERROR_LEFT, perr_to_string(perr));
         goto cleanup;
     }
 

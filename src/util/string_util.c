@@ -11,6 +11,32 @@
 #define BRANCH_TAB "├── "
 #define END_TAB    "└── "
 
+/*
+Summary: Calculates length of string displayed in console,
+    i.e. reads until \0 or \n and omits ANSI escape sequences
+*/
+size_t ansi_strlen(char *string)
+{
+    size_t res = 0;
+    size_t pos = 0;
+    while (string[pos] != '\0' && string[pos] != '\n')
+    {
+        if (string[pos] == '\x1B')
+        {
+            while (string[pos] != 'm')
+            {
+                pos++;
+            }
+        }
+        else
+        {
+            res++;
+        }
+        pos++;
+    }
+    return res;
+}
+
 bool begins_with(char *prefix, char *string)
 {
     size_t prefix_length = strlen(prefix);

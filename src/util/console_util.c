@@ -193,4 +193,3 @@ size_t split(char *str, char **out_strs, size_t num_delimiters, ...)
     out_strs[res - 1] = str;
     return res;
 }
-

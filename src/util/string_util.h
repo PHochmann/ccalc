@@ -10,6 +10,7 @@
 
 #define CONSTANT_TYPE_FMT "%-.10g"
 
+size_t ansi_strlen(char *string);
 bool begins_with(char *prefix, char *string);
 char *perr_to_string(ParserError perr);
 void print_tree_visually(Node *node);

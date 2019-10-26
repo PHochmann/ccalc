@@ -4,7 +4,9 @@
 #include <string.h>
 #include <stdarg.h>
 #include <math.h>
+
 #include "table.h"
+#include "string_util.h"
 
 #define MAX_CELL_LINE 100
 
@@ -33,28 +35,6 @@ struct TableState
 
 struct TableState state;
 
-size_t strlen_ansi(char *string)
-{
-    size_t res = 0;
-    size_t pos = 0;
-    while (string[pos] != '\0' && string[pos] != '\n')
-    {
-        if (string[pos] == '\x1B')
-        {
-            while (string[pos] != 'm')
-            {
-                pos++;
-            }
-        }
-        else
-        {
-            res++;
-        }
-        pos++;
-    }
-    return res;
-}
-
 void print_repeated(char *string, size_t amount)
 {
     for (size_t i = 0; i < amount; i++) printf("%s", string);
@@ -68,7 +48,7 @@ void print_padded(char *string, size_t total_length, TextPosition textpos)
         return;
     }
 
-    size_t str_length = strlen_ansi(string);
+    size_t str_length = ansi_strlen(string);
 
     switch (textpos)
     {
@@ -153,7 +133,7 @@ void get_dimensions(char *string, size_t *out_length, size_t *out_height)
     {
         char buffer[strlen(string) + 1];
         get_line(string, i, buffer);
-        size_t line_length = strlen_ansi(buffer);
+        size_t line_length = ansi_strlen(buffer);
         if (*out_length < line_length) *out_length = line_length;
     }
 }

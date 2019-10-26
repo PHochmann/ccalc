@@ -13,7 +13,7 @@
 #define MAX_INLINED_LENGTH 100
 #define VERSION "1.4.2"
 
-static const size_t BASIC_IND     =  2; // Index of first basic operator ($x before, should no be shown)
+static const size_t BASIC_IND     =  1; // Index of first basic operator ($x before, should no be shown)
 static const size_t TRIG_IND      = 19; // Index of first trigonometric function
 static const size_t MISC_FUNC_IND = 31; // Index of first misc. function
 static const size_t CONSTANTS_IND = 46; // Index of first constant
@@ -114,10 +114,9 @@ void cmd_help_exec(__attribute__((unused)) char *input)
     // Print user-defined functions if there are any
     if (g_num_rules > ARITH_NUM_RULES)
     {
-        printf("\nUser-defined functions and constants:");
+        printf("\nUser-defined functions and constants:\n");
         for (size_t i = ARITH_NUM_RULES; i < g_num_rules; i++)
         {
-            printf("\n");
             char inlined[MAX_INLINED_LENGTH];
             tree_to_string(g_rules[i].before, inlined, MAX_INLINED_LENGTH, true);
             add_cell(TEXTPOS_LEFT, "%s", inlined);
@@ -129,6 +128,8 @@ void cmd_help_exec(__attribute__((unused)) char *input)
         print_table(false);
         reset_table();
     }
-
-    printf("\n");
+    else
+    {
+        printf("\n");
+    }
 }
