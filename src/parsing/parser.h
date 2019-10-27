@@ -33,6 +33,7 @@ typedef enum {
     PERR_EMPTY,
 } ParserError;
 
+bool try_parse_constant(char *in, ConstantType *out);
 ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Node **out_res);
 ParserError parse_input(ParsingContext *ctx, char *input, Node **out_res);
 Node *parse_conveniently(ParsingContext *ctx, char *input);

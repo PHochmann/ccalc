@@ -14,12 +14,17 @@
 #define MAX_DYNAMIC_CHILDREN 5
 
 #define NUM_VARIABLE_NAMES 5
-static char *variable_names[] = { "x", "y", "z", "joy", "division" };
+static char *variable_names[] = { "x", "y", "z", "joe", "mama" };
 
-// Operator indices to choose from
+// Restrict operators to choose from to have more interesting expressions
 #define NUM_OP_INDICES 23
 static size_t op_indices[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
     13, 14, 15, 16, 17, 31, 32, 40, 41, 42, 46 };
+
+// Restrict constants to choose from to only use exactly representable numbers by CONSTANT_TYPE_FMT
+#define NUM_CONSTANTS 12
+static double constants[] = { 0, 1, 123, 123456, 0.5, 1.5, 123.5, 123456.5,
+    0.1234567, 1.1234567, 123.2134567, 123456.1235 };
 
 void generate_tree(size_t max_inner_nodes, Node **out)
 {
@@ -28,13 +33,7 @@ void generate_tree(size_t max_inner_nodes, Node **out)
         // Choose constant or variable 50/50
         if (rand() % 2 == 0)
         {
-            // Constant with random value
-            // Don't include negative constants because parse-tree wouldn't be unique due to prefix '-' operator
-            double val = (int)(((float)rand() / (float)RAND_MAX) * MAX_CONST);
-            // Don't include wild fractions due to truncation
-            if (rand() % 2 == 0) val += 0.5;
-
-            *out = malloc_constant_node(val);
+            *out = malloc_constant_node(constants[rand() % NUM_CONSTANTS]);
         }
         else
         {
@@ -61,7 +60,7 @@ void generate_tree(size_t max_inner_nodes, Node **out)
 
         for (size_t i = 0; i < num_children; i++)
         {
-            generate_tree(rand() % (max_inner_nodes / num_children + 1), get_child_addr(*out, i));
+            generate_tree(rand() % (1 + max_inner_nodes / num_children), get_child_addr(*out, i));
         }
     }
 }
@@ -114,12 +113,7 @@ bool massive_test()
             printf("Parsed:\n");
             print_tree_visually(parsed_tree);
             printf("String:\n%s\n", stringed_tree);
-            printf("~ ~ ~ ~ ~ ~ ~\n");
         }
-        /*else
-        {
-            printf("%s\n", stringed_tree);
-        }*/
 
         free_tree(random_tree);
         free_tree(parsed_tree);

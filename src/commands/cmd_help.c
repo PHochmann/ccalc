@@ -4,6 +4,7 @@
 #include "cmd_help.h"
 
 #include "../parsing/operator.h"
+#include "../parsing/tokenizer.h"
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
 #include "../util/string_util.h"
@@ -13,10 +14,10 @@
 #define MAX_INLINED_LENGTH 100
 #define VERSION "1.4.2"
 
-static const size_t BASIC_IND     =  1; // Index of first basic operator ($x before, should no be shown)
-static const size_t TRIG_IND      = 19; // Index of first trigonometric function
-static const size_t MISC_FUNC_IND = 31; // Index of first misc. function
-static const size_t CONSTANTS_IND = 46; // Index of first constant
+static const size_t BASIC_IND =  1; // Index of first basic operator ($x before, should no be shown)
+static const size_t TRIG_IND  = 19; // Index of first trigonometric function
+static const size_t MISC_IND  = 31; // Index of first misc. function
+static const size_t CONST_IND = 46; // Index of first constant
 
 static char *command_descriptions[8][2] = {
     { "<func|const> = <after>",                  "Adds new function or constant." },
@@ -50,13 +51,13 @@ void print_op(Operator *op)
             break;
             
         case OP_PLACE_INFIX:
-            if (strlen(op->name) == 1)
+            if (is_letter(op->name[0]))
             {
-                printf("x%sy", op->name);
+                printf("x %s y", op->name);
             }
             else
             {
-                printf("x %s y", op->name);
+                printf("x%sy", op->name);
             }
             break;
             
@@ -94,19 +95,19 @@ void cmd_help_exec(__attribute__((unused)) char *input)
     }
 
     printf("\nTrigonometric functions:\n");
-    for (size_t i = TRIG_IND; i < MISC_FUNC_IND; i++)
+    for (size_t i = TRIG_IND; i < MISC_IND; i++)
     {
         print_op(&g_ctx->operators[i]);
     }
 
     printf("\nMiscellaneous functions:\n");
-    for (size_t i = MISC_FUNC_IND; i < CONSTANTS_IND; i++)
+    for (size_t i = MISC_IND; i < CONST_IND; i++)
     {
         print_op(&g_ctx->operators[i]);
     }
 
     printf("\nConstants:\n");
-    for (size_t i = CONSTANTS_IND; i < ARITH_NUM_OPS; i++)
+    for (size_t i = CONST_IND; i < ARITH_NUM_OPS; i++)
     {
         print_op(&g_ctx->operators[i]);
     }
@@ -127,9 +128,10 @@ void cmd_help_exec(__attribute__((unused)) char *input)
         }
         print_table(false);
         reset_table();
+        printf("\n");
     }
     else
     {
-        printf("\n");
+        printf("\n\n");
     }
 }
