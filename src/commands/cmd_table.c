@@ -16,24 +16,24 @@ bool cmd_table_check(char *input)
     return begins_with(COMMAND, input);
 }
 
-void print_current(Node *expr, char *var, double value)
+void print_value(Table *table, Node *expr, char *var, double value)
 {
     Node *current_expr = tree_copy(expr);
     Node *current_val = malloc_constant_node(value);
 
     if (current_expr == NULL || current_val == NULL)
     {
-        add_cell(TEXTPOS_RIGHT, "");
-        add_cell(TEXTPOS_LEFT, "Out of mem.");
+        add_cell(table, TEXTPOS_RIGHT, "");
+        add_cell(table, TEXTPOS_LEFT, "Out of mem.");
     }
     else
     {
         replace_variable_nodes(&current_expr, current_val, var);
-        add_cell(TEXTPOS_RIGHT, " " CONSTANT_TYPE_FMT " ", value);
-        add_cell(TEXTPOS_LEFT, " " CONSTANT_TYPE_FMT " ", arith_eval(current_expr));
+        add_cell_fmt(table, TEXTPOS_RIGHT, " " CONSTANT_TYPE_FMT " ", value);
+        add_cell_fmt(table, TEXTPOS_LEFT, " " CONSTANT_TYPE_FMT " ", arith_eval(current_expr));
     }
 
-    next_row();
+    next_row(table);
     free_tree(current_expr);
     free_tree(current_val);
 }
@@ -98,15 +98,16 @@ void cmd_table_exec(char *input)
     }
 
     // Print table
+    Table table;
     // Header
     if (g_interactive)
     {
-        add_cell(TEXTPOS_CENTER, " %s ", num_vars == 0 ? "" : variables[0]);
+        add_cell(&table, TEXTPOS_CENTER, num_vars == 0 ? "" : variables[0]);
         char inlined_expr[MAX_INLINED_LENGTH];
         tree_to_string(expr, inlined_expr, MAX_INLINED_LENGTH, true);
-        add_cell(TEXTPOS_CENTER, " %s ", inlined_expr);
-        next_row();
-        hline();
+        add_cell_fmt(&table, TEXTPOS_CENTER, " %s ", inlined_expr);
+        next_row(&table);
+        hline(&table);
     }
 
     // Values
@@ -114,19 +115,19 @@ void cmd_table_exec(char *input)
     {
         for (; start_val <= end_val; start_val += step_val)
         {
-            print_current(expr, variables[0], start_val);
+            print_value(&table, expr, variables[0], start_val);
         }
     }
     else
     {
         for (; start_val >= end_val; start_val += step_val)
         {
-            print_current(expr, variables[0], start_val);
+            print_value(&table, expr, variables[0], start_val);
         }
     }
 
-    print_table(g_interactive);
-    reset_table();
+    print_table(&table, g_interactive);
+    reset_table(&table);
 
     exit:
     free_tree(expr);

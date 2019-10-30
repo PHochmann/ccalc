@@ -10,10 +10,35 @@ typedef enum
     TEXTPOS_CENTER
 } TextPosition;
 
-void reset_table();
-void add_cell(TextPosition textpos, char *fmt, ...);
-void add_cells_from_array(size_t x, size_t y, size_t width, size_t height, char *array[height][width], ...);
-void next_row();
-void hline();
-void set_position(size_t col, size_t row);
-void print_table(bool borders);
+struct Cell
+{
+    TextPosition textpos;
+    bool free_on_reset;
+    char *text;
+};
+
+typedef struct
+{
+    // Table dimensions
+    size_t num_cols;
+    size_t num_rows;
+    // Marker which cell is inserted next
+    size_t x;
+    size_t y;
+    // Max. ocurring widths and heights in columns and rows
+    int col_widths[MAX_COLS];
+    int row_heights[MAX_ROWS];
+
+    size_t num_hlines;
+    size_t hlines[MAX_ROWS];
+    struct Cell cells[MAX_COLS][MAX_ROWS];
+} Table;
+
+void reset_table(Table *table);
+void add_cell(Table *table, TextPosition textpos, char *buffer);
+void add_cell_fmt(Table *table, TextPosition textpos, char *fmt, ...);
+void add_cells_from_array(Table *table, size_t x, size_t y, size_t width, size_t height, char *array[height][width], ...);
+void next_row(Table *table);
+void hline(Table *table);
+void set_position(Table *table, size_t col, size_t row);
+void print_table(Table *table, bool borders);

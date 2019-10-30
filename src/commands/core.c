@@ -60,7 +60,6 @@ void init_commands()
 {
     atexit(unload_commands);
     init_console_util();
-    reset_table();
     arith_init_ctx();
     arith_init_rules();
 }

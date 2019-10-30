@@ -84,9 +84,10 @@ void print_op(Operator *op)
 void cmd_help_exec(__attribute__((unused)) char *input)
 {
     printf("Calculator %s (c) 2019, Philipp Hochmann\n", VERSION);
-    add_cells_from_array(0, 1, 2, 7, command_descriptions, TEXTPOS_LEFT, TEXTPOS_LEFT);
-    print_table(false);
-    reset_table();
+    Table table;
+    add_cells_from_array(&table, 0, 1, 2, 7, command_descriptions, TEXTPOS_LEFT, TEXTPOS_LEFT);
+    print_table(&table, false);
+    reset_table(&table);
 
     printf("\nBasic operators:\n");
     for (size_t i = BASIC_IND; i < TRIG_IND; i++)
@@ -120,14 +121,16 @@ void cmd_help_exec(__attribute__((unused)) char *input)
         {
             char inlined[MAX_INLINED_LENGTH];
             tree_to_string(g_rules[i].before, inlined, MAX_INLINED_LENGTH, true);
-            add_cell(TEXTPOS_LEFT, "%s", inlined);
-            add_cell(TEXTPOS_LEFT, " = ");
+            add_cell_fmt(&table, TEXTPOS_LEFT, inlined);
+            add_cell(&table, TEXTPOS_LEFT, " = ");
             tree_to_string(g_rules[i].after, inlined, MAX_INLINED_LENGTH, true);
-            add_cell(TEXTPOS_LEFT, "%s", inlined);
-            next_row();
+            add_cell_fmt(&table, TEXTPOS_LEFT, "%s", inlined);
+            next_row(&table);
         }
-        print_table(false);
-        reset_table();
+        print_table(&table, false);
+        reset_table(&table);
+        // Reset colors because a string in the table might have been truncated
+        printf(COL_RESET);
         printf("\n");
     }
     else
