@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#include <math.h>
 
 #include "table.h"
 #include "string_util.h"

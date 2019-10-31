@@ -13,7 +13,7 @@
 #include "../arithmetics/arith_rules.h"
 
 static const size_t MAX_INPUT_LENGTH   = 100;
-static const size_t MAX_INLINED_LENGTH = 200;
+static const size_t MAX_INLINED_LENGTH = 400;
 
 void unload_console_util()
 {

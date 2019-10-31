@@ -13,7 +13,7 @@
 
 /*
 Summary: Calculates length of string displayed in console,
-    i.e. reads until \0 or \n and omits ANSI escape sequences
+    i.e. reads until \0 or \n and omits ANSI-escaped color sequences
 */
 size_t ansi_strlen(char *string)
 {
@@ -21,9 +21,9 @@ size_t ansi_strlen(char *string)
     size_t pos = 0;
     while (string[pos] != '\0' && string[pos] != '\n')
     {
-        if (string[pos] == '\x1B')
+        if (string[pos] == '\x1B') // Escape byte
         {
-            while (string[pos] != 'm')
+            while (string[pos] != 'm') // Terminating byte
             {
                 pos++;
             }
@@ -159,7 +159,7 @@ void update_state(struct PrintingState *state, int res)
     }
 }
 
-// Helper function to print and advance buffer
+// Helper function to write to buffer and advance it
 void to_buffer(struct PrintingState *state, const char *format, ...)
 {
     va_list args;
@@ -196,7 +196,7 @@ void inline_prefix(struct PrintingState *state, Node *node, bool l, bool r)
     else
     {
         // Subexpression needs to be right-protected when expression of 'node' is not encapsulated in parentheses
-        // (!l, Otherwise redundant parentheses would be printed) and itself needs to be right-protected
+        // (!l, otherwise redundant parentheses would be printed) and itself needs to be right-protected
         tree_to_string_rec(state, get_child(node, 0), true, !l && r);
     }
     

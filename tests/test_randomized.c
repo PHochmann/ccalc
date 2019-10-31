@@ -1,11 +1,10 @@
 #include <stdio.h>
 
+#include "test_randomized.h"
 #include "../src/parsing/node.h"
 #include "../src/parsing/parser.h"
 #include "../src/util/string_util.h"
 #include "../src/arithmetics/arith_context.h"
-
-#include "randomized_test.h"
 
 #define SEED                 21
 #define NUM_CASES            1000

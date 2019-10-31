@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "table_test.h"
+#include "test_table.h"
 #include "../src/util/string_util.h"
 #include "../src/util/table.h"
 
@@ -59,7 +59,6 @@ bool table_test()
     printf("Does this look right to you [Y/n]? ");
     char input = getchar();
     printf("\n");
-
     return input == '\n' || input == 'y' || input == 'Y';
 }
 

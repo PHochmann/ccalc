@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "parser_test.h"
+#include "test_parser.h"
 #include "../src/parsing/context.h"
 #include "../src/parsing/node.h"
 #include "../src/parsing/parser.h"

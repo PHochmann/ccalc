@@ -130,8 +130,6 @@ void cmd_help_exec(__attribute__((unused)) char *input)
         }
         print_table(&table, false);
         reset_table(&table);
-        // Reset colors because a string in the table might have been truncated
-        printf(COL_RESET);
         printf("\n");
     }
     else

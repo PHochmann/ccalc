@@ -7,15 +7,15 @@
 #include "../src/util/table.h"
 
 #include "test.h"
-#include "parser_test.h"
-#include "tree_to_string_test.h"
-#include "randomized_test.h"
-#include "table_test.h"
+#include "test_parser.h"
+#include "test_tree_to_string.h"
+#include "test_randomized.h"
+#include "test_table.h"
 
 #if TEST_TABLES
 static const size_t NUM_TESTS = 4;
 #else
-static const size_t NUM_TESTS = 4;
+static const size_t NUM_TESTS = 3;
 #endif
 
 static Test (*test_getters[])() = {

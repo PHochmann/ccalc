@@ -1,5 +1,5 @@
 # - - - - - - - Build configuration - - - - - - -
-use_readline=false
+use_readline=true
 test_tables=false
 # - - - - - - - - - - - - - - - - - - - - - - - -
 
