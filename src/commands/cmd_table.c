@@ -97,8 +97,8 @@ void cmd_table_exec(char *input)
         step_val = -step_val;
     }
 
-    // Print table
-    Table table;
+    Table table = get_table();
+    
     // Header
     if (g_interactive)
     {

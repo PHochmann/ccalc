@@ -12,14 +12,14 @@
 #include "../util/table.h"
 
 #define MAX_INLINED_LENGTH 100
-#define VERSION "1.4.2"
+#define VERSION "1.4.3"
 
 static const size_t BASIC_IND =  1; // Index of first basic operator ($x before, should no be shown)
 static const size_t TRIG_IND  = 19; // Index of first trigonometric function
 static const size_t MISC_IND  = 31; // Index of first misc. function
 static const size_t CONST_IND = 46; // Index of first constant
 
-static char *command_descriptions[8][2] = {
+static char *command_descriptions[7][2] = {
     { "<func|const> = <after>",                  "Adds new function or constant." },
     { "table <expr> ; <from> ; <to> ; <step>  ", "Prints table of values." },
     { "load <path>",                             "Loads file as if its content had been typed in." },
@@ -84,8 +84,9 @@ void print_op(Operator *op)
 void cmd_help_exec(__attribute__((unused)) char *input)
 {
     printf("Calculator %s (c) 2019, Philipp Hochmann\n", VERSION);
-    Table table;
-    add_cells_from_array(&table, 0, 1, 2, 7, command_descriptions, TEXTPOS_LEFT, TEXTPOS_LEFT);
+
+    Table table = get_table();
+    add_cells_from_array(&table, 0, 0, 2, 7, command_descriptions, TEXTPOS_LEFT, TEXTPOS_LEFT);
     print_table(&table, false);
     reset_table(&table);
 

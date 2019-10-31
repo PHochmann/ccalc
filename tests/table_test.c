@@ -7,30 +7,6 @@
 
 #define NUM_CASES 3
 
-/*
-┌───────────────────────────────────────────────┬─────────────────────┬─────────┬────────────────────────────────────────────────┐
-│                                          lorem│ipsum                │dolor sit│amet                                            │
-│                    consectetur adipisici elit,│                     │         │                                                │
-│sed eiusmod tempor incidunt ut labore et dolore│                     │         │                                                │
-│                                  magna aliqua.│                     │         │                                                │
-│                                             Ut│enim ad minim veniam,│         │quis nostrud exercitation ullamco               │
-│                                               │                     │         │laboris nisi ut aliquid ex ea commodi consequat.│
-├───────────────────────────────────────────────┼─────────────────────┼─────────┼────────────────────────────────────────────────┤
-│                                               │        Quis         │  aute   │                                                │
-└───────────────────────────────────────────────┴─────────────────────┴─────────┴────────────────────────────────────────────────┘
-┌┬┬┬────┐
-├┼┼┼────┤
-├┼┼┼────┤
-├┼┼┼────┤
-││││Test│
-└┴┴┴────┘
-┌──────────────────┐
-│        !         │
-│       test       │
-│verycolorfulstring│
-└──────────────────┘
-*/
-
 char *arrayA[3][4] = {
     { "lorem", "ipsum", "dolor sit", "amet" },
     { "consectetur adipisici elit,\n"
@@ -46,17 +22,19 @@ char *arrayB[1][2] = {
 
 bool table_test()
 {
-    printf("%zu\n", ansi_strlen(F_RED " error " COL_RESET));
-    Table table;
+    Table table = get_table();
 
     // Case 1
     add_cells_from_array(&table, 0, 0, 4, 3, arrayA, TEXTPOS_RIGHT, TEXTPOS_LEFT, TEXTPOS_LEFT, TEXTPOS_LEFT);
     add_cells_from_array(&table, 1, 3, 2, 1, arrayB, TEXTPOS_CENTER, TEXTPOS_CENTER);
     hline(&table);
     print_table(&table, true);
+    print_table(&table, false);
     reset_table(&table);
 
     // Case 2
+    add_cell(&table, TEXTPOS_CENTER, "Test");
+    next_row(&table);
     hline(&table);
     hline(&table);
     hline(&table);
@@ -74,18 +52,15 @@ bool table_test()
     print_table(&table, true);
     reset_table(&table);
 
-    // Test is not automatic - ask user if tables look right
-    printf("\nDoes this look right to you [Y/n]? ");
+    // Case 4
+    print_table(&table, true);
 
+    // Test is not automatic - ask user if tables look right
+    printf("Does this look right to you [Y/n]? ");
     char input = getchar();
-    if (input == '\n' || input == 'y' || input == 'Y')
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    printf("\n");
+
+    return input == '\n' || input == 'y' || input == 'Y';
 }
 
 Test get_table_test()

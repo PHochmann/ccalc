@@ -12,7 +12,12 @@
 #include "randomized_test.h"
 #include "table_test.h"
 
+#if TEST_TABLES
 static const size_t NUM_TESTS = 4;
+#else
+static const size_t NUM_TESTS = 4;
+#endif
+
 static Test (*test_getters[])() = {
     get_parser_test,
     get_tree_to_string_test,
@@ -23,7 +28,7 @@ static Test (*test_getters[])() = {
 int main()
 {
     arith_init_ctx();
-    Table table;
+    Table table = get_table();
     add_cell(&table, TEXTPOS_LEFT, "");
     add_cell(&table, TEXTPOS_CENTER, " Test suite ");
     add_cell(&table, TEXTPOS_CENTER, " #Cases ");
@@ -44,7 +49,7 @@ int main()
         }
         else
         {
-            add_cell(&table, TEXTPOS_LEFT, F_RED " error " COL_RESET);
+            add_cell(&table, TEXTPOS_LEFT, F_RED " failed " COL_RESET);
             error = true;
         }
         next_row(&table);

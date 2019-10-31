@@ -105,7 +105,8 @@ bool cmd_quit_check(char *input)
     return strcmp(input, "quit") == 0;
 }
 
-void cmd_quit_exec(__attribute__((unused)) char *input)
+void cmd_quit_exec(char *input)
 {
+    free(input);
     exit(EXIT_SUCCESS);
 }

@@ -34,6 +34,7 @@ typedef struct
     struct Cell cells[MAX_COLS][MAX_ROWS];
 } Table;
 
+Table get_table();
 void reset_table(Table *table);
 void add_cell(Table *table, TextPosition textpos, char *buffer);
 void add_cell_fmt(Table *table, TextPosition textpos, char *fmt, ...);

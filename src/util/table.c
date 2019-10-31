@@ -116,6 +116,31 @@ void get_dimensions(char *string, int *out_length, int *out_height)
     }
 }
 
+Table get_table()
+{
+    Table res;
+
+    for (size_t i = 0; i < MAX_COLS; i++)
+    {
+        for (size_t j = 0; j < MAX_ROWS; j++)
+        {
+            res.cells[i][j].free_on_reset = false;
+            res.cells[i][j].text = NULL;
+        }
+    }
+
+    for (size_t i = 0; i < MAX_COLS; i++) res.col_widths[i] = 0;
+    for (size_t i = 0; i < MAX_ROWS; i++) res.row_heights[i] = 0;
+
+    res.num_cols = 0;
+    res.num_rows = 0;
+    res.x = 0;
+    res.y = 0;
+    res.num_hlines = 0;
+
+    return res;
+}
+
 void reset_table(Table *table)
 {
     for (size_t i = 0; i < table->num_cols; i++)
@@ -123,7 +148,6 @@ void reset_table(Table *table)
         table->col_widths[i] = 0;
         for (size_t j = 0; j < table->num_rows; j++)
         {
-            table->row_heights[j] = 0;
             if (table->cells[i][j].free_on_reset)
             {
                 free(table->cells[i][j].text);
@@ -131,6 +155,8 @@ void reset_table(Table *table)
             table->cells[i][j].text = NULL;
         }
     }
+
+    for (size_t i = 0; i < MAX_ROWS; i++) table->row_heights[i] = 0;
     
     table->num_cols = 0;
     table->num_rows = 0;

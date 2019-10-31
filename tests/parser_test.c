@@ -111,12 +111,12 @@ bool parser_test()
             printf("[0] Parser Error in '%s'\n", valueTests[i].input);
             return false;
         }
-
         if (!almost_equals(arith_eval(node), valueTests[i].result))
         {
             printf("[0] Unexpected result in '%s'\n", valueTests[i].input);
-            return false;
+            goto error;
         }
+        free_tree(node);
     }
 
     // Perform error tests
@@ -125,11 +125,15 @@ bool parser_test()
         if (parse_input(g_ctx, errorTests[i].input, &node) != errorTests[i].result)
         {
             printf("[0] Unexpected error type in '%s'\n", errorTests[i].input);
-            return false;
+            goto error;
         }
     }
 
     return true;
+
+    error:
+    free_tree(node);
+    return false;
 }
 
 Test get_parser_test()

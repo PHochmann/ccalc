@@ -1,4 +1,8 @@
-use_readline=true
+# - - - - - - - Build configuration - - - - - - -
+use_readline=false
+test_tables=false
+# - - - - - - - - - - - - - - - - - - - - - - - -
+
 LFLAGS="-lm"
 DEFINES=""
 DIR=$(dirname $0)
@@ -11,13 +15,19 @@ if [ "$use_readline" = true ]; then
     DEFINES="${DEFINES} -DUSE_READLINE"
 fi
 
+if [ "$test_tables" = true ]; then
+    DEFINES="${DEFINES} -DTEST_TABLES"
+fi
+
 echo "Compiling Calculator (use_readline = ${use_readline})"
 mkdir -p ${DIR}/bin
 
 if [ "$1" = "-debug" ] || [ "$1" = "-d" ]; then
-    gcc ${DEFINES} -Og -g ${CFLAGS} ${FILES} -o ${BIN} ${LFLAGS}
+
+    gcc ${DEFINES} -Og -g2 ${CFLAGS} ${FILES} -o ${BIN} ${LFLAGS}
+
     if [ "$?" = 0 ]; then
-        gcc ${CFLAGS} ${DIR}/src/parsing/*.c ${DIR}/src/arithmetics/arith_context.c ${DIR}/src/util/string_util.c ${DIR}/src/util/table.c ${DIR}/tests/*.c -o ${DIR}/bin/tests.out -lm
+        gcc ${DEFINES} -Og -g2 ${CFLAGS} ${DIR}/src/parsing/*.c ${DIR}/src/arithmetics/arith_context.c ${DIR}/src/util/string_util.c ${DIR}/src/util/table.c ${DIR}/tests/*.c -o ${DIR}/bin/tests.out -lm
         if [ "$?" = 0 ]; then
             ${DIR}/bin/tests.out
         fi

@@ -32,9 +32,10 @@ static struct TreeToStringTest tests[] = {
 
 bool tree_to_string_test()
 {
+    Node *node = NULL;
+
     for (size_t i = 0; i < NUM_CASES; i++)
     {
-        Node *node = NULL;
         size_t expected_length = strlen(tests[i].expected_result);
         char result[expected_length + 1];
 
@@ -49,17 +50,23 @@ bool tree_to_string_test()
             || tree_to_string(node, result, expected_length + 1, false) != expected_length)
         {
             printf("[1] Unexpected length in '%s'\n", tests[i].input);
-            return false;
+            goto error;
         }
 
         if (strcmp(tests[i].expected_result, result) != 0)
         {
             printf("[1] Unexpected result in '%s'\n", tests[i].input);
-            return false;
+            goto error;
         }
+
+        free_tree(node);
     }
 
     return true;
+
+    error:
+    free_tree(node);
+    return false;
 }
 
 Test get_tree_to_string_test()
