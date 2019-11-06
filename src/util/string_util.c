@@ -15,15 +15,15 @@
 Summary: Calculates length of string displayed in console,
     i.e. reads until \0 or \n and omits ANSI-escaped color sequences
 */
-size_t ansi_strlen(char *string)
+size_t ansi_strlen(char *str)
 {
     size_t res = 0;
     size_t pos = 0;
-    while (string[pos] != '\0' && string[pos] != '\n')
+    while (str[pos] != '\0' && str[pos] != '\n')
     {
-        if (string[pos] == '\x1B') // Escape byte
+        if (str[pos] == '\x1B') // Escape byte
         {
-            while (string[pos] != 'm') // Terminating byte
+            while (str[pos] != 'm') // Terminating byte
             {
                 pos++;
             }
@@ -37,12 +37,20 @@ size_t ansi_strlen(char *string)
     return res;
 }
 
-bool begins_with(char *prefix, char *string)
+bool begins_with(char *prefix, char *str)
 {
     size_t prefix_length = strlen(prefix);
-    size_t string_length = strlen(string);
+    size_t string_length = strlen(str);
     if (prefix_length > string_length) return false;
-    return strncmp(prefix, string, prefix_length) == 0;
+    return strncmp(prefix, str, prefix_length) == 0;
+}
+
+void trim(char *str)
+{
+    while (*str == ' ') str++;
+    char *end = str + strlen(str) - 1;
+    while (end > str && *end == ' ') end--;
+    end[1] = '\0';
 }
 
 /*

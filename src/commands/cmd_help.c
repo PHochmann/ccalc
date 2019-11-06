@@ -12,16 +12,17 @@
 #include "../util/table.h"
 
 #define MAX_INLINED_LENGTH 100
-#define VERSION "1.4.3"
+#define VERSION "1.4.4"
 
 static const size_t BASIC_IND =  1; // Index of first basic operator ($x before, should no be shown)
 static const size_t TRIG_IND  = 19; // Index of first trigonometric function
 static const size_t MISC_IND  = 31; // Index of first misc. function
-static const size_t CONST_IND = 46; // Index of first constant
+static const size_t CONST_IND = 47; // Index of first constant
 
 static char *command_descriptions[7][2] = {
     { "<func|const> = <after>",                  "Adds new function or constant." },
-    { "table <expr> ; <from> ; <to> ; <step>  ", "Prints table of values." },
+    { "table <expr> ; <from> ; <to> ; <step>  \n"
+      "   [fold <expr> ; <init>]",               "Prints table of values and optionally folds them.\n   In fold expression, x is replaced with the previous value (init in first step),\n   and y is replaced with the current value.\n   Result of fold is stored in 'ans'." },
     { "load <path>",                             "Loads file as if its content had been typed in." },
     { "debug <expr>",                            "Visually prints abstract syntax tree of expression." },
     { "help",                                    "Lists all available commands and operators." },
@@ -85,7 +86,7 @@ void cmd_help_exec(__attribute__((unused)) char *input)
 {
     printf("Calculator %s (c) 2019, Philipp Hochmann\n", VERSION);
 
-    Table table = get_table();
+    Table table = get_empty_table();
     add_cells_from_array(&table, 0, 0, 2, 7, command_descriptions, TEXTPOS_LEFT, TEXTPOS_LEFT);
     print_table(&table, false);
     reset_table(&table);

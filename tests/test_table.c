@@ -7,27 +7,29 @@
 
 #define NUM_CASES 3
 
-char *arrayA[3][4] = {
-    { "lorem", "ipsum", "dolor sit", "amet" },
-    { "consectetur adipisici elit,\n"
-      "sed eiusmod tempor incidunt ut labore et dolore\n"
-      "magna aliqua.", "", "", "" },
-    { "Ut" , "enim ad minim veniam,", "", "quis nostrud exercitation ullamco\n"
-        "laboris nisi ut aliquid ex ea commodi consequat."}
+char *arrayA[4][3] = {
+    { "alpha", "beta", "gamma" },
+    { "1", "1110.1", "a" },
+    { "2", "10.1", "b" },
+    { "3", "23.1132310", "c" },
 };
 
 char *arrayB[1][2] = {
-    { "Quis", "aute" }
+    { "centered", F_GREEN "centered" COL_RESET }
 };
 
 bool table_test()
 {
-    Table table = get_table();
+    Table table = get_empty_table();
 
     // Case 1
-    add_cells_from_array(&table, 0, 0, 4, 3, arrayA, TEXTPOS_RIGHT, TEXTPOS_LEFT, TEXTPOS_LEFT, TEXTPOS_LEFT);
-    add_cells_from_array(&table, 1, 3, 2, 1, arrayB, TEXTPOS_CENTER, TEXTPOS_CENTER);
+    add_cells_from_array(&table, 0, 0, 3, 4, arrayA, TEXTPOS_LEFT, TEXTPOS_CENTER, TEXTPOS_RIGHT);
+    set_position(&table, 1, 1);
     hline(&table);
+    add_cells_from_array(&table, 0, 4, 2, 1, arrayB, TEXTPOS_CENTER, TEXTPOS_CENTER);
+    next_row(&table);
+    hline(&table);
+    add_cell(&table, TEXTPOS_CENTER, "");
     print_table(&table, true);
     print_table(&table, false);
     reset_table(&table);

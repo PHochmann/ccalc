@@ -6,8 +6,6 @@
 
 #include "arith_context.h"
 
-#define EVAL(n) arith_eval(get_child(tree, n))
-
 static const size_t ARITH_STRING_LENGTH = 10; // Including \0
 
 ParsingContext __g_ctx;
@@ -63,167 +61,186 @@ double arith_eval(Node *tree)
     switch (get_type(tree))
     {
         case NTYPE_CONSTANT:
+        {
             return get_const_value(tree);
-            
+        }
+
         case NTYPE_OPERATOR:
         {
             size_t num_children = get_num_children(tree);
-            switch ((size_t)(get_op(tree) - operators))
+            double child_values[num_children];
+            for (size_t i = 0; i < num_children; i++)
             {
-                case 0: // $x
-                    return EVAL(0);
-                case 1: // x+y
-                    return EVAL(0) + EVAL(1);
-                case 2: // x-y
-                    return EVAL(0) - EVAL(1);
-                case 3: // x*y
-                    return EVAL(0) * EVAL(1);
-                case 4: // x/y
-                    return EVAL(0) / EVAL(1);
-                case 5: // x^y
-                    return pow(EVAL(0), EVAL(1));
-                case 6: // x C y
-                    return (double)binomial(
-                        labs((long)trunc(EVAL(0))),
-                        labs((long)trunc(EVAL(1))));
-                case 7: // x mod y
-                    return fmod(EVAL(0), EVAL(1));
-                case 8: // -x
-                    return -EVAL(0);
-                case 9: // +x
-                    return EVAL(0);
-                case 10: // x!
-                {
-                    double res = 1;
-                    for (double i = trunc(EVAL(0)); i > 1; i--)
-                    {
-                        res *= i;
-                    }
-                    return res;
-                }
-                case 11: // x%
-                    return EVAL(0) / 100;
-                case 12: // exp(x)
-                    return exp(EVAL(0));
-                case 13: // root(x, n)
-                    return pow(EVAL(0), 1 / EVAL(1));
-                case 14: // sqrt(x)
-                    return sqrt(EVAL(0));
-                case 15: // log(x, n)
-                    return log(EVAL(0)) / log(EVAL(1));
-                case 16: // ln(x)
-                    return log(EVAL(0));
-                case 17: // ld(x)
-                    return log2(EVAL(0));
-                case 18: // log(x)
-                    return log10(EVAL(0));
-                case 19: // sin(x)
-                    return sin(EVAL(0));
-                case 20: // cos(x)
-                    return cos(EVAL(0));
-                case 21: // tan(x)
-                    return tan(EVAL(0));
-                case 22: // asin(x)
-                    return asin(EVAL(0));
-                case 23: // acos(x)
-                    return acos(EVAL(0));
-                case 24: // atan(x)
-                    return atan(EVAL(0));
-                case 25: // sinh(x)
-                    return sinh(EVAL(0));
-                case 26: // cosh(x)
-                    return cosh(EVAL(0));
-                case 27: // tanh(x)
-                    return tanh(EVAL(0));
-                case 28: // asinh(x)
-                    return asinh(EVAL(0));
-                case 29: // acosh(x)
-                    return acosh(EVAL(0));
-                case 30: // atanh(x)
-                    return atanh(EVAL(0));
-                case 31: // max(x, y, ...)
-                {
-                    double res = -INFINITY;
-                    for (size_t i = 0; i < num_children; i++)
-                    {
-                        double child_val = EVAL(i);
-                        if (child_val > res) res = child_val;
-                    }
-                    return res;
-                }
-                case 32: // min(x, y, ...)
-                {
-                    double res = INFINITY;
-                    for (size_t i = 0; i < num_children; i++)
-                    {
-                        double child_val = EVAL(i);
-                        if (child_val < res) res = child_val;
-                    }
-                    return res;
-                }
-                case 33: // abs(x)
-                    return fabs(EVAL(0));
-                case 34: // ceil(x)
-                    return ceil(EVAL(0));
-                case 35: // floor(x)
-                    return floor(EVAL(0));
-                case 36: // round(x)
-                    return round(EVAL(0));
-                case 37: // trunc(x)
-                    return trunc(EVAL(0));
-                case 38: // frac(x)
-                    return EVAL(0) - floor(EVAL(0));
-                case 39: // sgn(x)
-                    return EVAL(0) < 0 ? -1 : (EVAL(0) > 0) ? 1 : 0;
-                case 40: // sum(x, y, ...)
-                {
-                    double res = 0;
-                    for (size_t i = 0; i < num_children; i++) res += EVAL(i);
-                    return res;
-                }
-                case 41: // prod(x, y, ...)
-                {
-                    double res = 1;
-                    for (size_t i = 0; i < num_children; i++) res *= EVAL(i);
-                    return res;
-                }
-                case 42: // avg(x, y, ...)
-                {
-                    if (num_children == 0) return 0;
-                    double res = 0;
-                    for (size_t i = 0; i < num_children; i++) res += EVAL(i);
-                    return res / num_children;
-                }
-                case 43: // rand(x, y)
-                    return random_between(EVAL(0), EVAL(1));
-                case 44: // gamma(x)
-                    return tgamma(EVAL(0));
-                case 45: // fib(x)
-                    return fibonacci(trunc(EVAL(0)));
-                case 46: // pi
-                    return 3.14159265359;
-                case 47: // e
-                    return 2.71828182846;
-                case 48: // phi
-                    return 1.61803398874;
-                case 49: // clight (m/s)
-                    return 299792458;
-                case 50: // csound (m/s)
-                    return 343.2;
-
-                default:
-                    printf("Encountered operator without evaluation rule\n");
-                    return -1;
+                child_values[i] = arith_eval(get_child(tree, i));
             }
+            return op_eval(get_op(tree), num_children, child_values);
         }
 
         case NTYPE_VARIABLE:
-            printf("Encountered variable\n");
+        {
+            printf("Error: Encountered variable in arith_eval\n");
             return -1;
-            
-        default:
-            return 0;
+        }
     }
+
+    return 0;
+}
+
+double op_eval(Operator *op, size_t num_children, double *children)
+{
+    switch ((size_t)(op - operators))
+    {
+        case 0: // $x
+            return children[0];
+        case 1: // x+y
+            return children[0] + children[1];
+        case 2: // x-y
+            return children[0] - children[1];
+        case 3: // x*y
+            return children[0] * children[1];
+        case 4: // x/y
+            return children[0] / children[1];
+        case 5: // x^y
+            return pow(children[0], children[1]);
+        case 6: // x C y
+            return (double)binomial(
+                labs((long)trunc(children[0])),
+                labs((long)trunc(children[1])));
+        case 7: // x mod y
+            return fmod(children[0], children[1]);
+        case 8: // -x
+            return -children[0];
+        case 9: // +x
+            return children[0];
+        case 10: // x!
+        {
+            double res = 1;
+            for (double i = trunc(children[0]); i > 1; i--)
+            {
+                res *= i;
+            }
+            return res;
+        }
+        case 11: // x%
+            return children[0] / 100;
+        case 12: // exp(x)
+            return exp(children[0]);
+        case 13: // root(x, n)
+            return pow(children[0], 1 / children[1]);
+        case 14: // sqrt(x)
+            return sqrt(children[0]);
+        case 15: // log(x, n)
+            return log(children[0]) / log(children[1]);
+        case 16: // ln(x)
+            return log(children[0]);
+        case 17: // ld(x)
+            return log2(children[0]);
+        case 18: // log(x)
+            return log10(children[0]);
+        case 19: // sin(x)
+            return sin(children[0]);
+        case 20: // cos(x)
+            return cos(children[0]);
+        case 21: // tan(x)
+            return tan(children[0]);
+        case 22: // asin(x)
+            return asin(children[0]);
+        case 23: // acos(x)
+            return acos(children[0]);
+        case 24: // atan(x)
+            return atan(children[0]);
+        case 25: // sinh(x)
+            return sinh(children[0]);
+        case 26: // cosh(x)
+            return cosh(children[0]);
+        case 27: // tanh(x)
+            return tanh(children[0]);
+        case 28: // asinh(x)
+            return asinh(children[0]);
+        case 29: // acosh(x)
+            return acosh(children[0]);
+        case 30: // atanh(x)
+            return atanh(children[0]);
+        case 31: // max(x, y, ...)
+        {
+            double res = -INFINITY;
+            for (size_t i = 0; i < num_children; i++)
+            {
+                double child_val = children[i];
+                if (child_val > res) res = child_val;
+            }
+            return res;
+        }
+        case 32: // min(x, y, ...)
+        {
+            double res = INFINITY;
+            for (size_t i = 0; i < num_children; i++)
+            {
+                double child_val = children[i];
+                if (child_val < res) res = child_val;
+            }
+            return res;
+        }
+        case 33: // abs(x)
+            return fabs(children[0]);
+        case 34: // ceil(x)
+            return ceil(children[0]);
+        case 35: // floor(x)
+            return floor(children[0]);
+        case 36: // round(x)
+            return round(children[0]);
+        case 37: // trunc(x)
+            return trunc(children[0]);
+        case 38: // frac(x)
+            return children[0] - floor(children[0]);
+        case 39: // sgn(x)
+            return children[0] < 0 ? -1 : (children[0] > 0) ? 1 : 0;
+        case 40: // sum(x, y, ...)
+        {
+            double res = 0;
+            for (size_t i = 0; i < num_children; i++) res += children[i];
+            return res;
+        }
+        case 41: // prod(x, y, ...)
+        {
+            double res = 1;
+            for (size_t i = 0; i < num_children; i++) res *= children[i];
+            return res;
+        }
+        case 42: // avg(x, y, ...)
+        {
+            if (num_children == 0) return 0;
+            double res = 0;
+            for (size_t i = 0; i < num_children; i++) res += children[i];
+            return res / num_children;
+        }
+        case 43: // sel(n, x, ...)
+        {
+            if (num_children == 0) return NAN;
+            size_t index = children[0];
+            if (index + 2 > num_children) return NAN;
+            return children[index + 1];
+        }
+        case 44: // rand(x, y)
+            return random_between(children[0], children[1]);
+        case 45: // gamma(x)
+            return tgamma(children[0]);
+        case 46: // fib(x)
+            return fibonacci(trunc(children[0]));
+        case 47: // pi
+            return 3.14159265359;
+        case 48: // e
+            return 2.71828182846;
+        case 49: // phi
+            return 1.61803398874;
+        case 50: // clight (m/s)
+            return 299792458;
+        case 51: // csound (m/s)
+            return 343.2;
+    }
+
+    printf("Error: No evaluation case in eval_op\n");
+    return -1;
 }
 
 /*
@@ -299,6 +316,7 @@ void arith_init_ctx()
         op_get_function("sum", OP_DYNAMIC_ARITY),
         op_get_function("prod", OP_DYNAMIC_ARITY),
         op_get_function("avg", OP_DYNAMIC_ARITY),
+        op_get_function("sel", OP_DYNAMIC_ARITY),
         op_get_function("rand", 2),
         op_get_function("gamma", 1),
         op_get_function("fib", 1),

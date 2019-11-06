@@ -22,7 +22,7 @@ When starting the calculator normally, you can enter expressions and commands in
 | Command                                     | Description                                         |
 | ---                                         | ---                                                 |
 | ```<func\|const> = <after>```               | Adds new function or constant.                      |
-| ```table <expr> ; <from> ; <to> ; <step>``` | Prints table of values.                             |
+| ```table <expr> ; <from> ; <to> ; <step> [fold <expr> ; <init>]``` | Prints table of values and optionally folds them. In fold expression, ```x``` is replaced with the previous value (init in first step), ```y``` is replaced with the current value. Result of fold is stored in ```ans```.                             |
 | ```load <path>```                           | Loads file as if its content had been typed in.     |
 | ```debug <expr>```                          | Visually prints abstract syntax tree of expression. |
 | ```help```                                  | Lists all available commands and operators.         |
@@ -86,6 +86,7 @@ When starting the calculator normally, you can enter expressions and commands in
 | ```sum(*)```         | Sum of all operands                            |
 | ```prod(*)```        | Product of all operands                        |
 | ```avg(*)```         | Arithmetic mean of all operands                |
+| ```sel(n, *)```      | Selects nth argument (zero-indexed)            |
 | ```rand(min, max)``` | Random integer between min and max (exclusive) |
 | ```gamma(x)```       | Gamma function                                 |
 | ```fib(n)```         | Fibonacci sequence                             |
@@ -93,6 +94,7 @@ When starting the calculator normally, you can enter expressions and commands in
 Note:
 * ```*``` is used to denote arbitrary number of operands
 * Where operands are expected to be integer-valued, they will be truncated
+* A function will return ```NaN``` on malformed arguments
 
 ### Constants
 | Name         | Value         | Description                          |

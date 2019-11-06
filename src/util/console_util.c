@@ -13,7 +13,6 @@
 #include "../arithmetics/arith_rules.h"
 
 static const size_t MAX_INPUT_LENGTH   = 100;
-static const size_t MAX_INLINED_LENGTH = 400;
 
 void unload_console_util()
 {
@@ -42,15 +41,13 @@ bool set_interactive(bool value)
     return res;
 }
 
-// Summary: Prints result of tree inline, including correct color even after truncation, and indicated abbreviation
+// Summary: Prints result of tree inline
 void print_tree(Node *node, bool color)
 {
-    char buffer[MAX_INLINED_LENGTH];
-    size_t result = tree_to_string(node, buffer, MAX_INLINED_LENGTH, color);
+    size_t buffer_size = tree_to_string(node, NULL, 0, color);
+    char buffer[buffer_size + 1];
+    tree_to_string(node, buffer, buffer_size + 1, color);
     printf("%s", buffer);
-    if (color) printf(COL_RESET);
-    // Result is number of characters, excluding \0
-    if (result >= MAX_INLINED_LENGTH) printf("...");
 }
 
 /*
@@ -101,7 +98,7 @@ bool ask_input_getline(FILE *file, char **out_input, char *prompt_fmt, va_list a
         vprintf(prompt_fmt, args);
     }
     
-    // Would be no problem to put input in stack, but we want to have the same interface as readline, which puts input on heap
+    // Would be no problem to put input on stack, but we want to have the same interface as readline, which puts input on heap
     size_t size = MAX_INPUT_LENGTH;
     *out_input = malloc(MAX_INPUT_LENGTH);
     if (getline(out_input, &size, file) == -1)
@@ -167,6 +164,12 @@ bool parse_input_from_console(char *input, char *error_fmt, Node **out_res)
     }
 }
 
+/*
+Summary: Helper function to parse commands to extract strings between delimiters
+    Currently only used in cmd_table_exec
+Example: split("abc x def ghi", out, 2, " x ", " g") = 3
+    out = { "abc", "def", "hi" }
+*/
 size_t split(char *str, char **out_strs, size_t num_delimiters, ...)
 {
     va_list args;

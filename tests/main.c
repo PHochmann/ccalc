@@ -28,7 +28,7 @@ static Test (*test_getters[])() = {
 int main()
 {
     arith_init_ctx();
-    Table table = get_table();
+    Table table = get_empty_table();
     add_cell(&table, TEXTPOS_LEFT, "");
     add_cell(&table, TEXTPOS_CENTER, " Test suite ");
     add_cell(&table, TEXTPOS_CENTER, " #Cases ");

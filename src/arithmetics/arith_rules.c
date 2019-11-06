@@ -4,9 +4,14 @@
 #include "../parsing/parser.h"
 #include "../util/console_util.h"
 
-#define PARSE(n) parse_conveniently(n)
 #define ANS_VAR "ans"
-#define DEFAULT_ANS 42
+
+char *rule_strings[] = {
+    "$x", "x",
+    "x+(y+z)", "x+y+z",
+    "x*(y*z)", "x*y*z",
+    "--x", "x",
+};
 
 Node *ans; // Result of last evaluation
 
@@ -74,19 +79,13 @@ void arith_init_rules()
 {
     g_num_rules = ARITH_NUM_RULES;
     parse_rules(ARITH_NUM_RULES,
-        (char*[]){
-            "$x", "x",
-            "x+(y+z)", "x+y+z",
-            "x*(y*z)", "x*y*z",
-            "--x", "x",
-        },
+        rule_strings,
         g_rules);
-    ans = malloc_constant_node(DEFAULT_ANS);
 }
 
 void update_ans(ConstantType value)
 {
-    free_tree(ans);
+    if (ans != NULL) free_tree(ans);
     ans = malloc_constant_node(value);
 }
 
@@ -95,6 +94,6 @@ Summary: Does post-processing of correctly parsed input (i.e. replacing ans and 
 */
 void transform_input(Node **tree)
 {
-    replace_variable_nodes(tree, ans, ANS_VAR);
+    if (ans != NULL) replace_variable_nodes(tree, ans, ANS_VAR);
     apply_ruleset(tree, g_num_rules, g_rules);
 }

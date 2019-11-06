@@ -7,8 +7,6 @@
 #include "table.h"
 #include "string_util.h"
 
-#define CELL_LINE_BUFFER 120
-
 void print_repeated(char *string, int times)
 {
     for (int i = 0; i < times; i++) printf("%s", string);
@@ -22,24 +20,28 @@ void print_padded_substr(char *string, int length, int total_length, TextPositio
         return;
     }
 
-    // Widths passed to printf are including color codes
+    // Lengths passed to printf are including color codes
     // We need to adjust the total length to include them
-    int ansi_len = ansi_strlen(string);
-    int adjusted_total_len = total_length + (length - ansi_len);
+    int ansi_length = ansi_strlen(string);
+    int adjusted_total_len = total_length + length - ansi_length;
 
     switch (textpos)
     {
         case TEXTPOS_LEFT:
+        {
             printf("%-*.*s", adjusted_total_len, length, string);
             break;
+        }
         case TEXTPOS_RIGHT:
+        {
             printf("%*.*s", adjusted_total_len, length, string);
             break;
+        }
         case TEXTPOS_CENTER:
         {
-            int padding = (total_length - ansi_len) / 2;
+            int padding = (total_length - ansi_length) / 2;
             printf("%*s%.*s%*s", padding, "", length, string,
-                (total_length - ansi_len) % 2 == 0 ? padding : padding + 1, "");
+                (total_length - ansi_length) % 2 == 0 ? padding : padding + 1, "");
         }
     }
 }
@@ -115,7 +117,10 @@ void get_dimensions(char *string, int *out_length, int *out_height)
     }
 }
 
-Table get_table()
+/*
+Returns: A new table
+*/
+Table get_empty_table()
 {
     Table res;
 
@@ -140,6 +145,9 @@ Table get_table()
     return res;
 }
 
+/*
+Summary: Resets all internal values, frees all content strings created by add_cell_fmt
+*/
 void reset_table(Table *table)
 {
     for (size_t i = 0; i < table->num_cols; i++)
@@ -185,7 +193,8 @@ void add_cell_internal(Table *table, TextPosition textpos, char *buffer, bool fr
 }
 
 /*
-Summary: Creates new cell. Buffer is not copied! print_table will access it.
+Summary: Adds next cell. Buffer is not copied. print_table will access it.
+    Ensure that lifetime of buffer outlasts last call of print_table!
 */
 void add_cell(Table *table, TextPosition textpos, char *buffer)
 {
@@ -193,7 +202,7 @@ void add_cell(Table *table, TextPosition textpos, char *buffer)
 }
 
 /*
-Summary: Adds new cell and maintains buffer of text.
+Summary: Adds next cell and maintains buffer of text.
     Use add_cell to save memory if you maintain a content string yourself.
 */
 void add_cell_fmt(Table *table, TextPosition textpos, char *fmt, ...)
@@ -209,6 +218,11 @@ void add_cell_fmt(Table *table, TextPosition textpos, char *fmt, ...)
     add_cell_internal(table, textpos, buffer, true);
 }
 
+/*
+Summary: Puts contents of array into table cell by cell. Strings are not copied!
+    Ensure that lifetime of array outlasts last call of print_table!
+    Position of next insertion is next cell in last row
+*/
 void add_cells_from_array(Table *table, size_t x, size_t y, size_t width, size_t height, char *array[height][width], ...)
 {
     va_list alignments;
@@ -231,7 +245,10 @@ void next_row(Table *table)
     table->x = 0;
 }
 
-// Inserts horizontal line above current row
+/*
+Summary: Inserts horizontal line above current row
+    Must be set in a sorted order, i.e. don't use it after using set_pos to go to a previous row.
+*/
 void hline(Table *table)
 {
     if (table->num_hlines + 1 < MAX_ROWS)
@@ -240,6 +257,9 @@ void hline(Table *table)
     }
 }
 
+/*
+Summary: Changes position of next cell to be added
+*/
 void set_position(Table *table, size_t col, size_t row)
 {
     if (col >= MAX_COLS || row >= MAX_ROWS) return;
@@ -247,6 +267,9 @@ void set_position(Table *table, size_t col, size_t row)
     table->y = row;
 }
 
+/*
+Summary: Prints table to stdout
+*/
 void print_table(Table *table, bool borders)
 {
     size_t hlines = 0;

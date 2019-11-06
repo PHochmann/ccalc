@@ -1,7 +1,7 @@
 #include <stdbool.h>
 
 #define MAX_COLS 10
-#define MAX_ROWS 100
+#define MAX_ROWS 50
 
 typedef enum
 {
@@ -28,13 +28,13 @@ typedef struct
     // Max. ocurring widths and heights in columns and rows
     int col_widths[MAX_COLS];
     int row_heights[MAX_ROWS];
-
+    // Todo: fix missing hline when hline() was called after set_pos() was used to reset current cell
     size_t num_hlines;
     size_t hlines[MAX_ROWS];
     struct Cell cells[MAX_COLS][MAX_ROWS];
 } Table;
 
-Table get_table();
+Table get_empty_table();
 void reset_table(Table *table);
 void add_cell(Table *table, TextPosition textpos, char *buffer);
 void add_cell_fmt(Table *table, TextPosition textpos, char *fmt, ...);

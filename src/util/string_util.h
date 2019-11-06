@@ -12,8 +12,9 @@
 #define CONST_BUFFER_SIZE 24
 #define CONSTANT_TYPE_FMT "%-.10g"
 
-size_t ansi_strlen(char *string);
-bool begins_with(char *prefix, char *string);
+size_t ansi_strlen(char *str);
+bool begins_with(char *prefix, char *str);
+void trim(char *str);
 char *perr_to_string(ParserError perr);
 void print_tree_visually(Node *node);
 size_t tree_to_string(Node *node, char *buffer, size_t buffer_size, bool color);
