@@ -36,6 +36,8 @@ void cmd_table_exec(char *input)
     Node *start = NULL;
     Node *end = NULL;
     Node *step = NULL;
+    Node *fold_expr = NULL;
+    Node *fold_init = NULL;
 
     if (!parse_input_from_console(args[0], "Error in expression: %s.\n", &expr)) return;
 
@@ -73,8 +75,6 @@ void cmd_table_exec(char *input)
     }
 
     // Optionally: Parse part of command after "fold"
-    Node *fold_expr = NULL;
-    Node *fold_init = NULL;
     double fold_val = 0;
 
     if (num_args == 6)
