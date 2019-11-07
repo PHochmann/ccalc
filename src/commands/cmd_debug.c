@@ -6,6 +6,7 @@
 #include "../arithmetics/arith_context.h"
 #include "../util/string_util.h"
 #include "../util/console_util.h"
+#include "../util/tree_to_string.h"
 
 #define COMMAND "debug "
 

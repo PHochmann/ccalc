@@ -41,15 +41,6 @@ bool set_interactive(bool value)
     return res;
 }
 
-// Summary: Prints result of tree inline
-void print_tree(Node *node, bool color)
-{
-    size_t buffer_size = tree_to_string(node, NULL, 0, color);
-    char buffer[buffer_size + 1];
-    tree_to_string(node, buffer, buffer_size + 1, color);
-    printf("%s", buffer);
-}
-
 /*
 Summary: printf-wrapper to filter unimportant prints in non-interactive mode
 */

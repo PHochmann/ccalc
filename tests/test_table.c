@@ -6,6 +6,9 @@
 #include "../src/util/table.h"
 
 #define NUM_CASES 3
+#define GREEN     "\x1B[92m"
+#define CYAN      "\x1B[1;36m"
+#define COL_RESET "\x1B[0m"
 
 char *arrayA[4][3] = {
     { "alpha", "beta", "gamma" },
@@ -50,7 +53,7 @@ bool table_test()
     next_row(&table);
     add_cell(&table, TEXTPOS_CENTER, "test");
     next_row(&table);
-    add_cell(&table, TEXTPOS_CENTER, OP_COLOR "very" COL_RESET VAR_COLOR "colorful" COL_RESET CONST_COLOR "string" COL_RESET);
+    add_cell(&table, TEXTPOS_CENTER, GREEN "very" COL_RESET CYAN "colorful" COL_RESET GREEN "string" COL_RESET);
     print_table(&table, true);
     reset_table(&table);
 

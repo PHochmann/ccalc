@@ -6,7 +6,7 @@
 // Do not use this macro in auxiliary functions!
 #define ERROR(type) { state.result = type; goto exit; }
 // Maximum number of operator/node instances the parser can handle at once
-#define MAX_STACK_SIZE 128
+#define MAX_STACK_SIZE 150
 
 // Represents an operator (with metadata) while being parsed
 struct OpData

@@ -26,7 +26,7 @@ bool add_token(char **tokens, char *position, size_t max_tokens, size_t *num_tok
 }
 
 // Sorts strings in descending length
-int str_cmp(const void *a, const void *b)
+int strcmp_by_length(const void *a, const void *b)
 {
     size_t len_a = strlen(*(char**)a);
     size_t len_b = strlen(*(char**)b);
@@ -54,7 +54,7 @@ bool tokenize(ParsingContext *ctx, char *input, size_t max_tokens, size_t *out_n
     }
 
     // Maximal munch
-    qsort(keywords, ctx->num_ops, sizeof(char*), &str_cmp);
+    qsort(keywords, ctx->num_ops, sizeof(char*), &strcmp_by_length);
     
     if (!add_token(token_markers, input, max_tokens, &num_markers)) return false;
     for (char *current = input; *current != '\0'; current++)

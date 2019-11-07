@@ -5,7 +5,7 @@
 #include "cmd_evaluation.h"
 
 #include "../util/console_util.h"
-#include "../util/string_util.h"
+#include "../util/tree_to_string.h"
 #include "../parsing/node.h"
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"

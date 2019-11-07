@@ -7,11 +7,10 @@
 #include "../parsing/tokenizer.h"
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
-#include "../util/string_util.h"
 #include "../util/console_util.h"
+#include "../util/tree_to_string.h"
 #include "../util/table.h"
 
-#define MAX_INLINED_LENGTH 100
 #define VERSION "1.4.4"
 
 static const size_t BASIC_IND =  1; // Index of first basic operator ($x before, should no be shown)
@@ -85,7 +84,7 @@ void print_op(Operator *op)
 void cmd_help_exec(__attribute__((unused)) char *input)
 {
     printf("Calculator %s (c) 2019, Philipp Hochmann\n"
-           "More info: https://github.com/PhilippHochmann/Calculator\n\n", VERSION);
+           "https://github.com/PhilippHochmann/Calculator\n\n", VERSION);
 
     Table table = get_empty_table();
     add_cells_from_array(&table, 0, 0, 2, 7, command_descriptions, TEXTPOS_LEFT, TEXTPOS_LEFT);
@@ -122,12 +121,16 @@ void cmd_help_exec(__attribute__((unused)) char *input)
         printf("\nUser-defined functions and constants:\n");
         for (size_t i = ARITH_NUM_RULES; i < g_num_rules; i++)
         {
-            char inlined[MAX_INLINED_LENGTH];
-            tree_to_string(g_rules[i].before, inlined, MAX_INLINED_LENGTH, true);
-            add_cell_fmt(&table, TEXTPOS_LEFT, inlined);
+            char inlined_before[sizeof_tree_to_string(g_rules[i].before, true)];
+            unsafe_tree_to_string(g_rules[i].before, inlined_before, true);
+            add_cell_fmt(&table, TEXTPOS_LEFT, "%s", inlined_before);
+
             add_cell(&table, TEXTPOS_LEFT, " = ");
-            tree_to_string(g_rules[i].after, inlined, MAX_INLINED_LENGTH, true);
-            add_cell_fmt(&table, TEXTPOS_LEFT, "%s", inlined);
+
+            char inlined_after[sizeof_tree_to_string(g_rules[i].after, true)];
+            unsafe_tree_to_string(g_rules[i].after, inlined_after, true);
+            add_cell_fmt(&table, TEXTPOS_LEFT, "%s", inlined_after);
+
             next_row(&table);
         }
         print_table(&table, false);

@@ -1,10 +1,11 @@
 #include <stdio.h>
 
 #include "test_randomized.h"
+#include "../src/arithmetics/arith_context.h"
 #include "../src/parsing/node.h"
 #include "../src/parsing/parser.h"
 #include "../src/util/string_util.h"
-#include "../src/arithmetics/arith_context.h"
+#include "../src/util/tree_to_string.h"
 
 #define SEED                 21
 #define NUM_CASES            1000
@@ -70,7 +71,7 @@ Summary:
     This test does not test them independently.
     Note that dynamic arity functions coexisting with fixed-arity function of same name cause false negatives
 */
-bool massive_test()
+bool randomized_test()
 {
     bool error = false;
     srand(SEED);
@@ -129,7 +130,7 @@ bool massive_test()
 Test get_randomized_test()
 {
     return (Test){
-        massive_test,
+        randomized_test,
         NUM_CASES,
         "Randomized"
     };

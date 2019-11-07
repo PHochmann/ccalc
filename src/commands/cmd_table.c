@@ -1,9 +1,8 @@
 #include <string.h>
 
-#include "cmd_clear.h"
-
 #include "../util/string_util.h"
 #include "../util/console_util.h"
+#include "../util/tree_to_string.h"
 #include "../util/table.h"
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
@@ -12,8 +11,6 @@
 #define FOLD_KEYWORD " fold "
 #define FOLD_VAR_1 "x"
 #define FOLD_VAR_2 "y"
-
-#define MAX_INLINED_LENGTH 100
 
 bool cmd_table_check(char *input)
 {
@@ -117,8 +114,8 @@ void cmd_table_exec(char *input)
     if (g_interactive)
     {
         add_cell(&table, TEXTPOS_CENTER, num_vars == 0 ? "" : variables[0]);
-        char inlined_expr[MAX_INLINED_LENGTH];
-        tree_to_string(expr, inlined_expr, MAX_INLINED_LENGTH, true);
+        char inlined_expr[sizeof_tree_to_string(expr, true)];
+        unsafe_tree_to_string(expr, inlined_expr, true);
         add_cell_fmt(&table, TEXTPOS_CENTER, " %s ", inlined_expr);
         next_row(&table);
         hline(&table);
