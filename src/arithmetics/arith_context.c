@@ -6,8 +6,6 @@
 
 #include "arith_context.h"
 
-static const size_t ARITH_STRING_LENGTH = 10; // Including \0
-
 ParsingContext __g_ctx;
 Operator operators[ARITH_MAX_OPS];
 
@@ -270,7 +268,7 @@ Summary: Sets arithmetic context stored in global variable
 */
 void arith_init_ctx()
 {
-    __g_ctx = get_context(ARITH_STRING_LENGTH, ARITH_MAX_OPS, operators);
+    __g_ctx = get_context(ARITH_MAX_OPS, operators);
     
     ctx_add_ops(g_ctx, ARITH_NUM_OPS,
         op_get_prefix("$", 0),
