@@ -1,6 +1,6 @@
 #pragma once
 #include "matching.h"
-#include "../parsing/node.h"
+#include "../tree/node.h"
 
 typedef struct
 {

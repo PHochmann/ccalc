@@ -1,5 +1,5 @@
 #include <unistd.h>
-#include "util/console_util.h"
+#include "commands/console_util.h"
 #include "commands/core.h"
 
 /*

@@ -2,9 +2,9 @@
 #include <math.h>
 
 #include "test_parser.h"
-#include "../src/parsing/context.h"
-#include "../src/parsing/node.h"
-#include "../src/parsing/parser.h"
+#include "../src/tree/context.h"
+#include "../src/tree/node.h"
+#include "../src/tree/parser.h"
 #include "../src/arithmetics/arith_context.h"
 
 // To check if parsed tree evaluates to expected value
@@ -34,7 +34,7 @@ static struct ValueTest valueTests[] = {
     // 2. Precedence and parentheses
     { "1+2*3+4",      11 },
     { "1+2*(3+4)",    15 },
-    { " ( 9.0 *  0)",  0 },
+    { " ( 9.0 *  2)", 18 },
     // 3. Associativity
     { "1-2-3",             -4 },
     { "1-2-3 - ((1-2)-3)", 0 },
@@ -80,13 +80,15 @@ static struct ValueTest valueTests[] = {
     { "-sqrt(abs(--2!!*--sum(-1+.2-.2+2, 2^2^3-255, -sum(.1, .9), 1+2)*--2!!))", -4 },
 };
 
-static const size_t NUM_ERROR_CASES = 9;
+static const size_t NUM_ERROR_CASES = 11;
 static struct ErrorTest errorTests[] = {
     { "",          PERR_EMPTY },
     { "()",        PERR_EMPTY },
     { "x+",        PERR_MISSING_OPERAND },
+    { "root(x,)",  PERR_MISSING_OPERAND },
     { "sin",       PERR_FUNCTION_WRONG_ARITY },
     { "sin(x, y)", PERR_FUNCTION_WRONG_ARITY },
+    { "root(x)",   PERR_FUNCTION_WRONG_ARITY },
     { "sin,",      PERR_UNEXPECTED_DELIMITER },
     { "-(1,2)",    PERR_UNEXPECTED_DELIMITER },
     { "(x",        PERR_EXCESS_OPENING_PARENTHESIS },

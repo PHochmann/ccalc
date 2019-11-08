@@ -9,10 +9,9 @@
 #include "cmd_debug.h"
 #include "cmd_definition.h"
 #include "cmd_table.h"
-
-#include "../util/console_util.h"
-#include "../util/string_util.h"
-#include "../util/table.h"
+#include "console_util.h"
+#include "table.h"
+#include "../string_util.h"
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
 

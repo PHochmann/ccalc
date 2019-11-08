@@ -2,15 +2,14 @@
 #include <string.h>
 
 #include "cmd_definition.h"
-
-#include "../parsing/node.h"
-#include "../parsing/tokenizer.h"
+#include "console_util.h"
+#include "../tree/node.h"
+#include "../tree/tokenizer.h"
 #include "../matching/matching.h"
 #include "../matching/rewrite_rule.h"
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
-#include "../util/console_util.h"
-#include "../util/string_util.h"
+#include "../string_util.h"
 
 #define DEFINITION_OP   "="
 #define FMT_ERROR_LEFT  "Error in left expression: %s\n"

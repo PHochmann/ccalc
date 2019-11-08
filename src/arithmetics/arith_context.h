@@ -1,6 +1,6 @@
 #pragma once
-#include "../parsing/context.h"
-#include "../parsing/node.h"
+#include "../tree/context.h"
+#include "../tree/node.h"
 
 #define ARITH_NUM_OPS 52
 #define ARITH_MAX_OPS (ARITH_NUM_OPS + 10)

@@ -3,10 +3,9 @@
 #include <string.h>
 
 #include "cmd_evaluation.h"
-
-#include "../util/console_util.h"
-#include "../util/tree_to_string.h"
-#include "../parsing/node.h"
+#include "console_util.h"
+#include "../tree/tree_to_string.h"
+#include "../tree/node.h"
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
 

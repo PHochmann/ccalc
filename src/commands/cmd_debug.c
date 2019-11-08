@@ -1,12 +1,11 @@
 #include <string.h>
 
 #include "cmd_debug.h"
-
-#include "../parsing/parser.h"
+#include "console_util.h"
+#include "../tree/parser.h"
+#include "../tree/tree_to_string.h"
 #include "../arithmetics/arith_context.h"
-#include "../util/string_util.h"
-#include "../util/console_util.h"
-#include "../util/tree_to_string.h"
+#include "../string_util.h"
 
 #define COMMAND "debug "
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "../parsing/context.h"
+#include "../tree/context.h"
 #include "../matching/rewrite_rule.h"
 
 #define ARITH_MAX_RULES 14

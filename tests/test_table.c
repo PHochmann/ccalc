@@ -2,8 +2,8 @@
 #include <stdio.h>
 
 #include "test_table.h"
-#include "../src/util/string_util.h"
-#include "../src/util/table.h"
+#include "../src/string_util.h"
+#include "../src/commands/table.h"
 
 #define NUM_CASES 3
 #define GREEN     "\x1B[92m"

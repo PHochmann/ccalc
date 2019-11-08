@@ -2,15 +2,14 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "../src/commands/core.h"
-#include "../src/arithmetics/arith_context.h"
-#include "../src/util/table.h"
-
 #include "test.h"
 #include "test_parser.h"
 #include "test_tree_to_string.h"
 #include "test_randomized.h"
 #include "test_table.h"
+#include "../src/commands/core.h"
+#include "../src/commands/table.h"
+#include "../src/arithmetics/arith_context.h"
 
 #if TEST_TABLES
 static const size_t NUM_TESTS = 4;

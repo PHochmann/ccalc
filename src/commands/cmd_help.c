@@ -2,14 +2,12 @@
 #include <string.h>
 
 #include "cmd_help.h"
-
-#include "../parsing/operator.h"
-#include "../parsing/tokenizer.h"
+#include "table.h"
+#include "../string_util.h"
+#include "../tree/operator.h"
+#include "../tree/tree_to_string.h"
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
-#include "../util/console_util.h"
-#include "../util/tree_to_string.h"
-#include "../util/table.h"
 
 #define VERSION "1.4.4"
 
@@ -21,7 +19,7 @@ static const size_t CONST_IND = 47; // Index of first constant
 static char *command_descriptions[7][2] = {
     { "<func|const> = <after>",                  "Adds new function or constant." },
     { "table <expr> ; <from> ; <to> ; <step>  \n"
-      "   [fold <expr> ; <init>]",               "Prints table of values and optionally folds them.\n   In fold expression, x is replaced with the previous value (init in first step),\n   y is replaced with the current value.\n   Result of fold is stored in 'ans'." },
+      "   [fold <expr> ; <init>]",               "Prints table of values and optionally folds them.\n   In fold expression, 'x' is replaced with the previous value (init in first step),\n   'y' is replaced with the current value.\n   Result of fold is stored in 'ans'." },
     { "load <path>",                             "Loads file as if its content had been typed in." },
     { "debug <expr>",                            "Visually prints abstract syntax tree of expression." },
     { "help",                                    "Lists all available commands and operators." },

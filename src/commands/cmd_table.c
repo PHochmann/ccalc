@@ -1,9 +1,10 @@
 #include <string.h>
 
-#include "../util/string_util.h"
-#include "../util/console_util.h"
-#include "../util/tree_to_string.h"
-#include "../util/table.h"
+#include "cmd_table.h"
+#include "console_util.h"
+#include "table.h"
+#include "../string_util.h"
+#include "../tree/tree_to_string.h"
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
 

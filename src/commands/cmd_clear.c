@@ -1,8 +1,7 @@
 #include <string.h>
 
 #include "cmd_clear.h"
-
-#include "../util/console_util.h"
+#include "console_util.h"
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
 

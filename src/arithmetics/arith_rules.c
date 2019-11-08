@@ -1,8 +1,7 @@
 #include "arith_rules.h"
 #include "arith_context.h"
-#include "../parsing/node.h"
-#include "../parsing/parser.h"
-#include "../util/console_util.h"
+#include "../tree/node.h"
+#include "../tree/parser.h"
 
 #define ANS_VAR "ans"
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "../parsing/node.h"
+#include "../tree/node.h"
 
 #define VAR_PREFIX   "v_"
 #define CONST_PREFIX "c_"

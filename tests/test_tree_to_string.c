@@ -2,10 +2,10 @@
 #include <string.h>
 
 #include "test_tree_to_string.h"
-#include "../src/util/tree_to_string.h"
-#include "../src/parsing/context.h"
-#include "../src/parsing/node.h"
-#include "../src/parsing/parser.h"
+#include "../src/tree/tree_to_string.h"
+#include "../src/tree/context.h"
+#include "../src/tree/node.h"
+#include "../src/tree/parser.h"
 #include "../src/arithmetics/arith_context.h"
 
 struct TreeToStringTest {

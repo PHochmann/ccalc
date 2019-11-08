@@ -2,10 +2,10 @@
 
 #include "test_randomized.h"
 #include "../src/arithmetics/arith_context.h"
-#include "../src/parsing/node.h"
-#include "../src/parsing/parser.h"
-#include "../src/util/string_util.h"
-#include "../src/util/tree_to_string.h"
+#include "../src/tree/node.h"
+#include "../src/tree/parser.h"
+#include "../src/tree/tree_to_string.h"
+#include "../src/string_util.h"
 
 #define SEED                 21
 #define NUM_CASES            1000

@@ -1,6 +1,6 @@
 # - - - - - - - Build configuration - - - - - - -
 use_readline=true
-test_tables=true
+test_tables=false
 # - - - - - - - - - - - - - - - - - - - - - - - -
 
 LFLAGS="-lm"
@@ -28,11 +28,10 @@ if [ "$1" = "-debug" ] || [ "$1" = "-d" ]; then
 
     if [ "$?" = 0 ]; then
         gcc ${DEFINES} -Og -g2 ${CFLAGS} \
-            ${DIR}/src/parsing/*.c \
+            ${DIR}/src/tree/*.c \
             ${DIR}/src/arithmetics/arith_context.c \
-            ${DIR}/src/util/string_util.c \
-            ${DIR}/src/util/tree_to_string.c \
-            ${DIR}/src/util/table.c \
+            ${DIR}/src/string_util.c \
+            ${DIR}/src/commands/table.c \
             ${DIR}/tests/*.c \
             -o ${DIR}/bin/tests.out -lm
         if [ "$?" = 0 ]; then
