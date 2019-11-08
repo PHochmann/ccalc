@@ -114,6 +114,7 @@ void cmd_table_exec(char *input)
     // Header
     if (g_interactive)
     {
+        add_cell(&table, TEXTPOS_CENTER, "");
         add_cell(&table, TEXTPOS_CENTER, num_vars == 0 ? "" : variables[0]);
         char inlined_expr[sizeof_tree_to_string(expr, true)];
         unsafe_tree_to_string(expr, inlined_expr, true);
@@ -123,13 +124,14 @@ void cmd_table_exec(char *input)
     }
 
     // Loop through all values and add them to table
-    for (; step_val > 0 ? start_val <= end_val : start_val >= end_val; start_val += step_val)
+    for (size_t i = 1; step_val > 0 ? start_val <= end_val : start_val >= end_val; start_val += step_val)
     {
         Node *current_expr = tree_copy(expr);
         Node *current_val = malloc_constant_node(start_val);
         replace_variable_nodes(&current_expr, current_val, variables[0]);
         double result = arith_eval(current_expr);
 
+        add_cell_fmt(&table, TEXTPOS_RIGHT, " %zu ", i);
         add_cell_fmt(&table, TEXTPOS_RIGHT, " " CONSTANT_TYPE_FMT " ", start_val);
         add_cell_fmt(&table, TEXTPOS_LEFT, " " CONSTANT_TYPE_FMT " ", result);
 
@@ -150,6 +152,7 @@ void cmd_table_exec(char *input)
         free_tree(current_val);
 
         next_row(&table);
+        i++;
     }
 
     print_table(&table, g_interactive);

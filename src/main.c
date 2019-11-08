@@ -11,6 +11,8 @@ int main(int argc, char *argv[])
 {
     // Build arithmetic context, initialise commands
     init_commands();
+    // Free all ressources at exit
+    atexit(unload_commands);
     
     // Parse any arguments non-interactively
     for (int i = 1; i < argc; i++)

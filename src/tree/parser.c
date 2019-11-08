@@ -2,6 +2,7 @@
 #include <string.h>
 #include "tokenizer.h"
 #include "parser.h"
+#include "../string_util.h"
 
 // Do not use this macro in auxiliary functions!
 #define ERROR(type) { state.result = type; goto exit; }
@@ -27,21 +28,6 @@ struct ParserState
     struct OpData op_stack[MAX_STACK_SIZE];
     ParserError result;
 };
-
-bool is_opening_parenthesis(char *c)
-{
-    return strcmp(c, "(") == 0 || strcmp(c, "{") == 0 || strcmp(c, "[") == 0;
-}
-
-bool is_closing_parenthesis(char *c)
-{
-    return strcmp(c, ")") == 0 || strcmp(c, "}") == 0 || strcmp(c, "]") == 0;
-}
-
-bool is_delimiter(char *c)
-{
-    return strcmp(c, ",") == 0;
-}
 
 bool try_parse_constant(char *in, ConstantType *out)
 {

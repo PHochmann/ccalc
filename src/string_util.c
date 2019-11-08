@@ -19,9 +19,25 @@ bool is_letter(char c)
     return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_';
 }
 
+bool is_opening_parenthesis(char *c)
+{
+    return strcmp(c, "(") == 0 || strcmp(c, "{") == 0 || strcmp(c, "[") == 0;
+}
+
+bool is_closing_parenthesis(char *c)
+{
+    return strcmp(c, ")") == 0 || strcmp(c, "}") == 0 || strcmp(c, "]") == 0;
+}
+
+bool is_delimiter(char *c)
+{
+    return strcmp(c, ",") == 0;
+}
+
 /*
 Summary: Calculates length of string displayed in console,
     i.e. reads until \0 or \n and omits ANSI-escaped color sequences
+    Todo: Consider \t and other special chars
 */
 size_t ansi_strlen(char *str)
 {
@@ -29,7 +45,7 @@ size_t ansi_strlen(char *str)
     size_t pos = 0;
     while (str[pos] != '\0' && str[pos] != '\n')
     {
-        if (str[pos] == '\x1B') // Escape byte
+        if (str[pos] == 27) // Escape byte (27)
         {
             // Search for terminating byte and abort on end of string
             // (should not happen on well-formed strings but could happen due to truncation)
@@ -53,14 +69,6 @@ bool begins_with(char *prefix, char *str)
     size_t string_length = strlen(str);
     if (prefix_length > string_length) return false;
     return strncmp(prefix, str, prefix_length) == 0;
-}
-
-void trim(char *str)
-{
-    while (*str == ' ') str++;
-    char *end = str + strlen(str) - 1;
-    while (end > str && *end == ' ') end--;
-    end[1] = '\0';
 }
 
 /*
@@ -100,3 +108,12 @@ char *perr_to_string(ParserError perr)
             return "Unknown Error";
     }
 }
+
+// Currently not in use
+/*void trim(char *str)
+{
+    while (*str == ' ') str++;
+    char *end = str + strlen(str) - 1;
+    while (end > str && *end == ' ') end--;
+    end[1] = '\0';
+}*/

@@ -254,9 +254,9 @@ void print_tree_visually_internal(Node *node, unsigned char layer, unsigned int 
     {
         for (unsigned char i = 0; i < layer - 1; i++)
         {
-            printf(vert_lines & ((unsigned int)1 << i) ? LINE_TAB : EMPTY_TAB);
+            printf((vert_lines & ((unsigned int)1 << i)) ? LINE_TAB : EMPTY_TAB);
         }
-        printf(vert_lines & ((unsigned int)1 << (layer - 1)) ? BRANCH_TAB : END_TAB);
+        printf((vert_lines & ((unsigned int)1 << (layer - 1))) ? BRANCH_TAB : END_TAB);
     }
 
     switch (get_type(node))

@@ -48,8 +48,8 @@ Node *malloc_operator_node(Operator *op, size_t num_children);
 void free_tree(Node *tree);
 
 // Accessors
-Operator *get_op(Node *node);
 NodeType get_type(Node *node);
+Operator *get_op(Node *node);
 size_t get_num_children(Node *node);
 Node *get_child(Node *node, size_t index);
 Node **get_child_addr(Node *node, size_t index);

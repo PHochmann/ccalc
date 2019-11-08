@@ -24,8 +24,6 @@ struct Command
     void (*execHandler)(char*);
 };
 
-bool cmd_debug_check(char *input);
-void cmd_debug_exec(char *input);
 bool cmd_quit_check(char *input);
 void cmd_quit_exec(char *input);
 
@@ -57,7 +55,6 @@ Summary: Sets parsing context and initializes commands
 */
 void init_commands()
 {
-    atexit(unload_commands);
     init_console_util();
     arith_init_ctx();
     arith_init_rules();

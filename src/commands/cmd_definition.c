@@ -144,11 +144,9 @@ void cmd_definition_exec(char *input)
         return;
     }
     
-    char *name = NULL;
-    
     if (num_tokens > 0)
     {
-        name = tokens[0];
+        char *name = tokens[0];
         for (size_t i = 1; i < num_tokens; i++) free(tokens[i]);
 
         if (!is_letter(name[0]))
