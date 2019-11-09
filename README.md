@@ -86,7 +86,8 @@ When starting the calculator normally, you can enter expressions and commands in
 | ```sum(*)```         | Sum of all operands                            |
 | ```prod(*)```        | Product of all operands                        |
 | ```avg(*)```         | Arithmetic mean of all operands                |
-| ```sel(n, *)```      | Selects nth argument (zero-indexed)            |
+| ```gcd(x, y)```      | Greatest common divisor                        |
+| ```lcm(x, y)```      | Least common multiple                          |
 | ```rand(min, max)``` | Random integer between min and max (exclusive) |
 | ```gamma(x)```       | Gamma function                                 |
 | ```fib(n)```         | Fibonacci sequence                             |
@@ -94,7 +95,7 @@ When starting the calculator normally, you can enter expressions and commands in
 Note:
 * ```*``` is used to denote arbitrary number of operands
 * Where operands are expected to be integer-valued, they will be truncated
-* A function will return ```NaN``` on malformed arguments
+* A function will return ```NaN``` on otherwise malformed arguments
 
 ### Constants
 | Name         | Value         | Description                          |

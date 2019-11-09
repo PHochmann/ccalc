@@ -8,33 +8,29 @@ Operators are usually inner nodes (exception: zero-arity functions).
 Constants and variables are leaf nodes.
 */
 
-typedef enum
-{
+typedef enum {
     NTYPE_OPERATOR,
     NTYPE_CONSTANT,
     NTYPE_VARIABLE
 } NodeType;
 
-typedef struct
-{
+typedef struct {
     NodeType type;
 } Node;
 
-typedef struct
-{
+typedef struct {
     Node base;
     char var_name[];
 } VariableNode;
 
 typedef double ConstantType;
-typedef struct
-{
+
+typedef struct {
     Node base;
     ConstantType const_value;
 } ConstantNode;
 
-typedef struct
-{
+typedef struct {
     Node base;
     Operator *op;        // Points to operator in context
     size_t num_children; // Size of children buffer

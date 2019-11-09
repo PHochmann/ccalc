@@ -14,7 +14,7 @@
 static const size_t BASIC_IND =  1; // Index of first basic operator ($x before, should no be shown)
 static const size_t TRIG_IND  = 19; // Index of first trigonometric function
 static const size_t MISC_IND  = 31; // Index of first misc. function
-static const size_t CONST_IND = 47; // Index of first constant
+static const size_t CONST_IND = 48; // Index of first constant
 
 static char *command_descriptions[7][2] = {
     { "<func|const> = <after>",                  "Adds new function or constant." },

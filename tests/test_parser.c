@@ -19,7 +19,7 @@ struct ErrorTest {
     ParserError result;
 };
 
-static const size_t NUM_VALUE_CASES = 49;
+static const size_t NUM_VALUE_CASES = 53;
 static struct ValueTest valueTests[] = {
     // 1. Basic prefix, infix, postfix
     { "2+3",  5 },
@@ -31,17 +31,22 @@ static struct ValueTest valueTests[] = {
     { "+99", 99 },
     { "4!",  24 },
     { "3%",   0.03 },
-    // 2. Precedence and parentheses
+    // 2. Correct implementation of evaluation (Todo: extend)
+    { "fib(7)",         13 },
+    { "fib(-8)",       -21 },
+    { "gcd(942, 492)",   6 },
+    { "lcm(14, 24)",   168 },
+    // 3. Precedence and parentheses
     { "1+2*3+4",      11 },
     { "1+2*(3+4)",    15 },
     { " ( 9.0 *  2)", 18 },
-    // 3. Associativity
-    { "1-2-3",             -4 },
-    { "1-2-3 - ((1-2)-3)", 0 },
-    { "2^2^3",             256 },
-    { "2^2^3 - 2^(2^3)",   0 },
-    // 4. Functions
-    // 4.1. Constants
+    // 4. Associativity
+    { "1-2-3",               -4 },
+    { "1-2-3 - ((1-2)-3)",    0 },
+    { "2^2^3",              256 },
+    { "2^2^3 - 2^(2^3)",      0 },
+    // 5. Functions
+    // 5.1. Constants
     { "pi",        3.141592653 },
     { "pi + 2",    5.141592653 },
     { "3+pi",      6.141592653 },
@@ -63,18 +68,18 @@ static struct ValueTest valueTests[] = {
     { "3+sum()",   3 },
     { "sum()2" ,   0 },
     { "sum()(2)",  0 },
-    // 4.2. Unary functions
+    // 5.2. Unary functions
     { "sin(2)",      0.909297426 },
     { "sin(2)*3",    2.727892280 },
     { "sin(-2)%*3", -0.027278922 },
     { "sin2",        0.909297426 },
     { "sin2*3",      2.727892280 },
     { "sin-2%*3",   -0.027278922 },
-    // 4.3. Binary functions and dynamic arity
+    // 5.3. Binary functions and dynamic arity
     { "log(2 64, 1+1)", 7 },
     { "sum(1,2,3)",     6 },
     { "prod(2,3,4)-4!", 0 },
-    // 5. Going wild
+    // 6. Going wild
     { "5 .5sin2+5pi5", 80.81305990681 },
     { "--(1+sum(ld--8, --1%+--1%, 2 .2))%+1", 1.0442 },
     { "-sqrt(abs(--2!!*--sum(-1+.2-.2+2, 2^2^3-255, -sum(.1, .9), 1+2)*--2!!))", -4 },
@@ -110,12 +115,12 @@ bool parser_test()
     {
         if (parse_input(g_ctx, valueTests[i].input, &node) != PERR_SUCCESS)
         {
-            printf("[0] Parser Error in '%s'\n", valueTests[i].input);
+            printf("[1] Parser Error in '%s'\n", valueTests[i].input);
             return false;
         }
         if (!almost_equals(arith_eval(node), valueTests[i].result))
         {
-            printf("[0] Unexpected result in '%s'\n", valueTests[i].input);
+            printf("[1] Unexpected result in '%s'\n", valueTests[i].input);
             goto error;
         }
         free_tree(node);
@@ -126,7 +131,7 @@ bool parser_test()
     {
         if (parse_input(g_ctx, errorTests[i].input, &node) != errorTests[i].result)
         {
-            printf("[0] Unexpected error type in '%s'\n", errorTests[i].input);
+            printf("[1] Unexpected error type in '%s'\n", errorTests[i].input);
             goto error;
         }
     }

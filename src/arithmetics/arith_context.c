@@ -9,8 +9,42 @@
 ParsingContext __g_ctx;
 Operator operators[ARITH_MAX_OPS];
 
+double abstrunc(double a)
+{
+    return fabs(trunc(a));
+}
+
+double euclid(double a, double b)
+{
+    a = abstrunc(a);
+    b = abstrunc(b);
+
+    if (a == 0)
+    {
+        return b;
+    }
+    else
+    {
+        while (b != 0)
+        {
+            if (a > b)
+            {
+                a = a - b;
+            }
+            else
+            {
+                b = b - a;
+            }
+        }
+        return a;
+    }
+}
+
 double binomial(double n, double k)
 {
+    n = abstrunc(n);
+    k = abstrunc(k);
+
     if (k == 0) return 1;
     if ((2 * k) > n) k = n - k;
     
@@ -23,21 +57,33 @@ double binomial(double n, double k)
     return res;
 }
 
-double fibonacci(double n)
+long fib(long n)
 {
     if (n == 0) return 0;
+    if (n == 1) return 1;
+    if (n == -1) return 1;
+    return fib(n - 1) + fib(n - 2); 
+}
 
-    double a = 0;
-    double b = 1;
+double fibonacci(double n)
+{
+    long l = (long)n;
 
-    while (n-- > 1)
+    if (l < 0) // Generalization to negative numbers
     {
-        double temp = a + b;
-        a = b;
-        b = temp;
+        if (l % 2 == 0)
+        {
+            return -fib(labs(l));
+        }
+        else
+        {
+            return fib(labs(l));
+        }
     }
-
-    return b;
+    else
+    {
+        return fib(l);
+    }
 }
 
 /*
@@ -45,6 +91,8 @@ Returns: Random natural number between min and max - 1 (i.e. max is exclusive)
 */
 double random_between(double min, double max)
 {
+    min = trunc(min);
+    max = trunc(max);
     long diff = (long)(max - min);
     if (diff < 1) return -1;
     return rand() % diff + min;
@@ -65,13 +113,13 @@ double arith_eval(Node *tree)
 
         case NTYPE_OPERATOR:
         {
-            size_t num_children = get_num_children(tree);
-            double child_values[num_children];
-            for (size_t i = 0; i < num_children; i++)
+            size_t num_args = get_num_children(tree);
+            double args[num_args];
+            for (size_t i = 0; i < num_args; i++)
             {
-                child_values[i] = arith_eval(get_child(tree, i));
+                args[i] = arith_eval(get_child(tree, i));
             }
-            return op_eval(get_op(tree), num_children, child_values);
+            return op_eval(get_op(tree), num_args, args);
         }
 
         case NTYPE_VARIABLE:
@@ -84,87 +132,85 @@ double arith_eval(Node *tree)
     return 0;
 }
 
-double op_eval(Operator *op, size_t num_children, double *children)
+double op_eval(Operator *op, size_t num_args, double *args)
 {
     switch ((size_t)(op - operators))
     {
         case 0: // $x
-            return children[0];
+            return args[0];
         case 1: // x+y
-            return children[0] + children[1];
+            return args[0] + args[1];
         case 2: // x-y
-            return children[0] - children[1];
+            return args[0] - args[1];
         case 3: // x*y
-            return children[0] * children[1];
+            return args[0] * args[1];
         case 4: // x/y
-            return children[0] / children[1];
+            return args[0] / args[1];
         case 5: // x^y
-            return pow(children[0], children[1]);
+            return pow(args[0], args[1]);
         case 6: // x C y
-            return (double)binomial(
-                labs((long)trunc(children[0])),
-                labs((long)trunc(children[1])));
+            return binomial(args[0], args[1]);
         case 7: // x mod y
-            return fmod(children[0], children[1]);
+            return fmod(args[0], args[1]);
         case 8: // -x
-            return -children[0];
+            return -args[0];
         case 9: // +x
-            return children[0];
+            return args[0];
         case 10: // x!
         {
             double res = 1;
-            for (double i = trunc(children[0]); i > 1; i--)
+            for (double i = trunc(args[0]); i > 1; i--)
             {
                 res *= i;
             }
             return res;
         }
         case 11: // x%
-            return children[0] / 100;
+            return args[0] / 100;
         case 12: // exp(x)
-            return exp(children[0]);
+            return exp(args[0]);
         case 13: // root(x, n)
-            return pow(children[0], 1 / children[1]);
+            return pow(args[0], 1 / args[1]);
         case 14: // sqrt(x)
-            return sqrt(children[0]);
+            return sqrt(args[0]);
         case 15: // log(x, n)
-            return log(children[0]) / log(children[1]);
+            return log(args[0]) / log(args[1]);
         case 16: // ln(x)
-            return log(children[0]);
+            return log(args[0]);
         case 17: // ld(x)
-            return log2(children[0]);
+            return log2(args[0]);
         case 18: // log(x)
-            return log10(children[0]);
+            return log10(args[0]);
         case 19: // sin(x)
-            return sin(children[0]);
+            return sin(args[0]);
         case 20: // cos(x)
-            return cos(children[0]);
+            return cos(args[0]);
         case 21: // tan(x)
-            return tan(children[0]);
+            return tan(args[0]);
         case 22: // asin(x)
-            return asin(children[0]);
+            return asin(args[0]);
         case 23: // acos(x)
-            return acos(children[0]);
+            return acos(args[0]);
         case 24: // atan(x)
-            return atan(children[0]);
+            return atan(args[0]);
         case 25: // sinh(x)
-            return sinh(children[0]);
+            return sinh(args[0]);
         case 26: // cosh(x)
-            return cosh(children[0]);
+            return cosh(args[0]);
         case 27: // tanh(x)
-            return tanh(children[0]);
+            return tanh(args[0]);
         case 28: // asinh(x)
-            return asinh(children[0]);
+            return asinh(args[0]);
         case 29: // acosh(x)
-            return acosh(children[0]);
+            return acosh(args[0]);
         case 30: // atanh(x)
-            return atanh(children[0]);
+            return atanh(args[0]);
         case 31: // max(x, y, ...)
         {
             double res = -INFINITY;
-            for (size_t i = 0; i < num_children; i++)
+            for (size_t i = 0; i < num_args; i++)
             {
-                double child_val = children[i];
+                double child_val = args[i];
                 if (child_val > res) res = child_val;
             }
             return res;
@@ -172,68 +218,65 @@ double op_eval(Operator *op, size_t num_children, double *children)
         case 32: // min(x, y, ...)
         {
             double res = INFINITY;
-            for (size_t i = 0; i < num_children; i++)
+            for (size_t i = 0; i < num_args; i++)
             {
-                double child_val = children[i];
+                double child_val = args[i];
                 if (child_val < res) res = child_val;
             }
             return res;
         }
         case 33: // abs(x)
-            return fabs(children[0]);
+            return fabs(args[0]);
         case 34: // ceil(x)
-            return ceil(children[0]);
+            return ceil(args[0]);
         case 35: // floor(x)
-            return floor(children[0]);
+            return floor(args[0]);
         case 36: // round(x)
-            return round(children[0]);
+            return round(args[0]);
         case 37: // trunc(x)
-            return trunc(children[0]);
+            return trunc(args[0]);
         case 38: // frac(x)
-            return children[0] - floor(children[0]);
+            return args[0] - floor(args[0]);
         case 39: // sgn(x)
-            return children[0] < 0 ? -1 : (children[0] > 0) ? 1 : 0;
+            return args[0] < 0 ? -1 : (args[0] > 0) ? 1 : 0;
         case 40: // sum(x, y, ...)
         {
             double res = 0;
-            for (size_t i = 0; i < num_children; i++) res += children[i];
+            for (size_t i = 0; i < num_args; i++) res += args[i];
             return res;
         }
         case 41: // prod(x, y, ...)
         {
             double res = 1;
-            for (size_t i = 0; i < num_children; i++) res *= children[i];
+            for (size_t i = 0; i < num_args; i++) res *= args[i];
             return res;
         }
         case 42: // avg(x, y, ...)
         {
-            if (num_children == 0) return 0;
+            if (num_args == 0) return 0;
             double res = 0;
-            for (size_t i = 0; i < num_children; i++) res += children[i];
-            return res / num_children;
+            for (size_t i = 0; i < num_args; i++) res += args[i];
+            return res / num_args;
         }
-        case 43: // sel(n, x, ...)
-        {
-            if (num_children == 0) return NAN;
-            size_t index = children[0];
-            if (index + 2 > num_children) return NAN;
-            return children[index + 1];
-        }
-        case 44: // rand(x, y)
-            return random_between(children[0], children[1]);
-        case 45: // gamma(x)
-            return tgamma(children[0]);
+        case 43: // gcd(x, y)
+            return euclid(args[0], args[1]);
+        case 44: // lcm(x, y)
+            return fabs(trunc(args[0]) * trunc(args[1])) / euclid(args[0], args[1]);
+        case 45: // rand(x, y)
+            return random_between(args[0], args[1]);
         case 46: // fib(x)
-            return fibonacci(trunc(children[0]));
-        case 47: // pi
+            return fibonacci(args[0]);
+        case 47: // gamma(x)
+            return tgamma(args[0]);
+        case 48: // pi
             return 3.14159265359;
-        case 48: // e
+        case 49: // e
             return 2.71828182846;
-        case 49: // phi
+        case 50: // phi
             return 1.61803398874;
-        case 50: // clight (m/s)
+        case 51: // clight (m/s)
             return 299792458;
-        case 51: // csound (m/s)
+        case 52: // csound (m/s)
             return 343.2;
     }
 
@@ -272,6 +315,7 @@ void arith_init_ctx()
     
     ctx_add_ops(g_ctx, ARITH_NUM_OPS,
         op_get_prefix("$", 0),
+
         op_get_infix("+", 2, OP_ASSOC_LEFT),
         op_get_infix("-", 2, OP_ASSOC_LEFT),
         op_get_infix("*", 3, OP_ASSOC_LEFT),
@@ -290,6 +334,7 @@ void arith_init_ctx()
         op_get_function("ln", 1),
         op_get_function("ld", 1),
         op_get_function("lg", 1),
+
         op_get_function("sin", 1),
         op_get_function("cos", 1),
         op_get_function("tan", 1),
@@ -302,6 +347,7 @@ void arith_init_ctx()
         op_get_function("asinh", 1),
         op_get_function("acosh", 1),
         op_get_function("atanh", 1),
+
         op_get_function("max", OP_DYNAMIC_ARITY),
         op_get_function("min", OP_DYNAMIC_ARITY),
         op_get_function("abs", 1),
@@ -311,13 +357,16 @@ void arith_init_ctx()
         op_get_function("trunc", 1),
         op_get_function("frac", 1),
         op_get_function("sgn", 1),
+
         op_get_function("sum", OP_DYNAMIC_ARITY),
         op_get_function("prod", OP_DYNAMIC_ARITY),
         op_get_function("avg", OP_DYNAMIC_ARITY),
-        op_get_function("sel", OP_DYNAMIC_ARITY),
+        op_get_function("gcd", 2),
+        op_get_function("lcm", 2),
         op_get_function("rand", 2),
-        op_get_function("gamma", 1),
         op_get_function("fib", 1),
+        op_get_function("gamma", 1),
+
         op_get_constant("pi"),
         op_get_constant("e"),
         op_get_constant("phi"),
@@ -325,7 +374,7 @@ void arith_init_ctx()
         op_get_constant("csound"));
     
     // Set multiplication as glue-op
-    ctx_set_glue_op(g_ctx, &__g_ctx.operators[3]);
+    ctx_set_glue_op(g_ctx, ctx_lookup_op(g_ctx, "*", OP_PLACE_INFIX));
 
     srand(time(NULL));
 }

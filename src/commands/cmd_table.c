@@ -74,10 +74,8 @@ void cmd_table_exec(char *input)
 
     // Optionally: Parse part of command after "fold"
     double fold_val = 0;
-
     if (num_args == 6)
     {
-
         // Parse initial fold-value
         if (!parse_input_from_console(args[4], "Error in fold expression: %s.\n", &fold_expr)
             || !parse_input_from_console(args[5], "Error in initial fold value: %s.\n", &fold_init))
@@ -85,7 +83,9 @@ void cmd_table_exec(char *input)
             goto exit;
         }
 
-        if (count_variables(fold_expr) - count_variable_nodes(fold_expr, FOLD_VAR_1) - count_variable_nodes(fold_expr, FOLD_VAR_2))
+        if (count_variables(fold_expr)
+            - count_variable_nodes(fold_expr, FOLD_VAR_1)
+            - count_variable_nodes(fold_expr, FOLD_VAR_2) != 0)
         {
             printf("Fold expression must not contain any variables except '"
                 FOLD_VAR_1 "' and '" FOLD_VAR_2 "'.\n");
@@ -102,7 +102,7 @@ void cmd_table_exec(char *input)
     }
     // - - - End of parsing of fold-construct
 
-    // Adjust step direction not to have an endless loop
+    // Adjust step direction to not have an endless loop
     if ((start_val < end_val && step_val < 0)
         || (start_val > end_val && step_val > 0))
     {
@@ -124,7 +124,7 @@ void cmd_table_exec(char *input)
     }
 
     // Loop through all values and add them to table
-    for (size_t i = 1; step_val > 0 ? start_val <= end_val : start_val >= end_val; start_val += step_val)
+    for (size_t i = 1; step_val > 0 ? start_val <= end_val : start_val >= end_val; i++)
     {
         Node *current_expr = tree_copy(expr);
         Node *current_val = malloc_constant_node(start_val);
@@ -150,9 +150,8 @@ void cmd_table_exec(char *input)
 
         free_tree(current_expr);
         free_tree(current_val);
-
         next_row(&table);
-        i++;
+        start_val += step_val;
     }
 
     print_table(&table, g_interactive);

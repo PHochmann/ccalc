@@ -11,22 +11,19 @@
 
 typedef unsigned char Precedence;
 
-typedef enum
-{
+typedef enum {
     OP_ASSOC_RIGHT,
     OP_ASSOC_LEFT,
 } OpAssociativity;
 
-typedef enum
-{
+typedef enum {
     OP_PLACE_PREFIX,
     OP_PLACE_INFIX,
     OP_PLACE_POSTFIX,
     OP_PLACE_FUNCTION,
 } OpPlacement;
 
-typedef struct
-{
+typedef struct {
     char *name;
     size_t arity;
     Precedence precedence;

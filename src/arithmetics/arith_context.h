@@ -2,7 +2,7 @@
 #include "../tree/context.h"
 #include "../tree/node.h"
 
-#define ARITH_NUM_OPS 52
+#define ARITH_NUM_OPS 53
 #define ARITH_MAX_OPS (ARITH_NUM_OPS + 10)
 #define g_ctx (&__g_ctx)
 

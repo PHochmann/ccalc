@@ -40,10 +40,11 @@ Operator op_get_postfix(char *name, Precedence precedence)
         .arity = 1,
         .precedence = precedence,
         .placement = OP_PLACE_POSTFIX,
-        .assoc = OP_ASSOC_LEFT // To pop prefix operators before postfix operators of same arity
+        .assoc = OP_ASSOC_LEFT
     };
 }
 
+// Constants are just zero-arity functions, pi and pi() are semantically equivalent
 Operator op_get_constant(char *name)
 {
     return op_get_function(name, 0);

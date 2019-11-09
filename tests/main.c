@@ -39,7 +39,7 @@ int main()
     for (size_t i = 0; i < NUM_TESTS; i++)
     {
         Test test = test_getters[i]();
-        add_cell_fmt(&table, TEXTPOS_LEFT, " %zu ", i);
+        add_cell_fmt(&table, TEXTPOS_LEFT, " %zu ", i + 1);
         add_cell_fmt(&table, TEXTPOS_LEFT, " %s ", test.name);
         add_cell_fmt(&table, TEXTPOS_RIGHT, " %d ", test.num_cases);
         if (test.suite())

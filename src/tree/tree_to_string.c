@@ -4,37 +4,37 @@
 #include "tree_to_string.h"
 #include "../string_util.h"
 
-#define EMPTY_TAB  "    "
-#define LINE_TAB   "│   "
-#define BRANCH_TAB "├── "
-#define END_TAB    "└── "
-
-// Singleton to encapsulate current state
+// Encapsulates printing settings and buffer state to be communicated to auxiliary functions (singleton)
 struct PrintingState
 {
     char *buf;
     size_t buf_size;
-    bool col;
+    bool color;
     size_t num_written;
 };
 
-// Updates state after snprintf
-void update_state(struct PrintingState *state, int res)
+// Helper function to write to buffer and update state
+void to_buffer(struct PrintingState *state, const char *format, ...)
 {
-    if (res >= 0)
+    va_list args;
+    va_start(args, format);
+    int chars_written = vsnprintf(state->buf, state->buf_size, format, args);
+    va_end(args);
+
+    if (chars_written >= 0)
     {
-        state->num_written += res;
+        state->num_written += chars_written;
     }
     else
     {
-        return;
+        return; // vsnprintf returned error
     }
     
-    state->buf += res; // Advance buffer
+    state->buf += chars_written; // Advance buffer
 
-    if ((size_t)res <= state->buf_size)
+    if ((size_t)chars_written <= state->buf_size)
     {
-        state->buf_size -= res;
+        state->buf_size -= chars_written;
     }
     else
     {
@@ -42,16 +42,6 @@ void update_state(struct PrintingState *state, int res)
     }
 }
 
-// Helper function to write to buffer and advance it
-void to_buffer(struct PrintingState *state, const char *format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    update_state(state, vsnprintf(state->buf, state->buf_size, format, args));
-    va_end(args);
-}
-
-// Helper functions
 void p_open(struct PrintingState *state)
 {
     to_buffer(state, "(");
@@ -179,11 +169,11 @@ void tree_to_string_internal(struct PrintingState *state, Node *node, bool l, bo
     switch (get_type(node))
     {
         case NTYPE_CONSTANT:
-            to_buffer(state, state->col ? CONST_COLOR CONSTANT_TYPE_FMT COL_RESET : CONSTANT_TYPE_FMT, get_const_value(node));
+            to_buffer(state, state->color ? CONST_COLOR CONSTANT_TYPE_FMT COL_RESET : CONSTANT_TYPE_FMT, get_const_value(node));
             break;
             
         case NTYPE_VARIABLE:
-            to_buffer(state, state->col ? VAR_COLOR "%s" COL_RESET : "%s", get_var_name(node));
+            to_buffer(state, state->color ? VAR_COLOR "%s" COL_RESET : "%s", get_var_name(node));
             break;
             
         case NTYPE_OPERATOR:
@@ -215,7 +205,7 @@ size_t tree_to_string(Node *node, char *buffer, size_t buffer_size, bool color)
     struct PrintingState state = {
         .buf = buffer,
         .buf_size = buffer_size,
-        .col = color,
+        .color = color,
         .num_written = 0
     };
 
@@ -223,6 +213,9 @@ size_t tree_to_string(Node *node, char *buffer, size_t buffer_size, bool color)
     return state.num_written;
 }
 
+/*
+Summary: Only use it when you're sure the buffer is large enough (to check: sizeof_tree_to_string)
+*/
 void unsafe_tree_to_string(Node *node, char *buffer, bool color)
 {
     tree_to_string(node, buffer, SIZE_MAX, color);
@@ -247,6 +240,11 @@ void print_tree(Node *node, bool color)
 }
 
 /* Algorithm to put tree into single string ends here. What follows is a method to visually print a tree-like representation for debugging purposes */
+
+#define EMPTY_TAB  "    "
+#define LINE_TAB   "│   "
+#define BRANCH_TAB "├── "
+#define END_TAB    "└── "
 
 void print_tree_visually_internal(Node *node, unsigned char layer, unsigned int vert_lines)
 {
