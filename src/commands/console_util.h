@@ -8,5 +8,4 @@ void init_console_util();
 bool set_interactive(bool value);
 void whisper(const char *format, ...);
 bool ask_input(FILE *file, char **out_input, char *prompt_fmt, ...);
-char *perr_to_string(ParserError perr);
 bool parse_input_from_console(char *input, char *error_fmt, Node **out_res);

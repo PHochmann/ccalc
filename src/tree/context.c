@@ -89,22 +89,16 @@ int ctx_add_op(ParsingContext *ctx, Operator op)
 
 /*
 Summary: Sets glue-op, which is inserted between two subexpressions (such as 2a -> 2*a)
-Returns: False, if null in arguments or operator with arity not equal to 2 given
+Returns: False, if ctx is NULL or operator with arity not equal to 2 or DYNAMIC_ARITY given
 */
 bool ctx_set_glue_op(ParsingContext *ctx, Operator *op)
 {
-    if (ctx == NULL || op == NULL || op->arity != 2) return false;
+    if (ctx == NULL || (op != NULL && op->arity != 2 && op->arity != OP_DYNAMIC_ARITY))
+    {
+        return false;
+    }
     ctx->glue_op = op;
     return true;
-}
-
-/*
-Summary: Sets glue-op to NULL, two subexpressions next to each other will result in PERR_UNEXPECTED_SUBEXPRESSION
-*/
-void ctx_remove_glue_op(ParsingContext *ctx)
-{
-    if (ctx == NULL) return;
-    ctx->glue_op = NULL;
 }
 
 // For function overloading: Returns function of given name. Favors zero-arity function when functions are overloaded.

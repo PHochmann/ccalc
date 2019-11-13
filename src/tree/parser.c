@@ -14,11 +14,13 @@ struct OpData
 {
     // Pointer to operator in context, NULL denotes opening parenthesis
     Operator *op;
-    // Records number of operands for functions, or DYNAMIC_ARITY for non-functions, glue-op and opening parentheses
+    // Indicates whether to count operands
+    bool count_operands;
+    // Records number of operands to pop
     size_t arity;
 };
 
-/* Encapsulates current state to be communicated to auxiliary functions (singleton) */
+// Encapsulates current state to be communicated to auxiliary functions (singleton)
 struct ParserState
 {
     ParsingContext *ctx;
@@ -42,17 +44,17 @@ struct OpData *op_peek(struct ParserState *state)
     return &state->op_stack[state->num_ops - 1];
 }
 
-bool node_push(struct ParserState *state, Node *value)
+bool node_push(struct ParserState *state, Node *node)
 {
     // Check if there is still space on stack
     if (state->num_nodes == MAX_STACK_SIZE)
     {
-        free(value);
+        free(node);
         state->result = PERR_STACK_EXCEEDED;
         return false;
     }
 
-    state->node_stack[state->num_nodes++] = value;
+    state->node_stack[state->num_nodes++] = node;
     return true;
 }
 
@@ -79,16 +81,14 @@ bool op_pop_and_insert(struct ParserState *state)
     Operator *op = op_peek(state)->op;
     if (op != NULL) // Construct operator-node and append children
     {
-        // Functions with recorded arity of DYNAMIC_ARITY are glue-ops and shouldn't be computed as functions
-        bool is_function = (op_peek(state)->arity != OP_DYNAMIC_ARITY);
-    
         // Function overloading: Find function with suitable arity
         // Actual function on op stack is only tentative with random arity (but same name)
-        if (is_function)
+        // Only do this for functions we count operands for
+        if (op_peek(state)->count_operands)
         {
             if (op->arity != op_peek(state)->arity)
             {
-                char *name = op->name;
+                char *name = op->name; // Save name in case of making op NULL
                 op = ctx_lookup_function(state->ctx, name, op_peek(state)->arity);
                 
                 // Fallback: Find function of dynamic arity
@@ -106,9 +106,10 @@ bool op_pop_and_insert(struct ParserState *state)
         }
 
         // We try to allocate a new node and pop its children from node stack
-        Node *op_node = malloc_operator_node(op, is_function ? op_peek(state)->arity : op->arity);
+        Node *op_node = malloc_operator_node(op, op_peek(state)->arity);
 
         // Check if malloc of children buffer in get_operator_node failed
+        // (Could also be NULL on malformed arguments, but this should not happen)
         if (op_node == NULL)
         {
             state->result = PERR_OUT_OF_MEMORY;
@@ -171,20 +172,32 @@ bool op_push(struct ParserState *state, struct OpData op_d)
 // Pushes actual operator on op_stack. op must not be NULL!
 bool push_operator(struct ParserState *state, Operator *op)
 {
-    // Set arity of functions to 0, everything else's arity to DYNAMIC_ARITY, since DYNAMIC_ARITY is only Arity that will never occur
-    return op_push(state, (struct OpData){ op, op->placement == OP_PLACE_FUNCTION ? 0 : OP_DYNAMIC_ARITY });
+    // Set arity of functions to 0 and enable operand counting
+    struct OpData opData;
+
+    if (op->placement == OP_PLACE_FUNCTION)
+    {
+        opData = (struct OpData){ op, true, 0 };
+    }
+    else
+    {
+        opData = (struct OpData){ op, false, op->arity };
+    }
+
+    return op_push(state, opData);
 }
 
 // Pushes opening parenthesis on op_stack
 bool push_opening_parenthesis(struct ParserState *state)
 {
-    return op_push(state, (struct OpData){ NULL, OP_DYNAMIC_ARITY });
+    return op_push(state, (struct OpData){ NULL, false, OP_DYNAMIC_ARITY });
 }
 
+// out_res can be NULL if you only want to check if an error occurred
 ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Node **out_res)
 {
     // 1. Early outs
-    if (ctx == NULL || tokens == NULL || out_res == NULL) return PERR_ARGS_MALFORMED;
+    if (ctx == NULL || tokens == NULL) return PERR_ARGS_MALFORMED;
 
     // 2. Initialize state
     struct ParserState state = {
@@ -195,7 +208,7 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
     };
 
     // 3. Process each token
-    bool await_infix = false;
+    bool await_infix = false; // Or postfix, or delimiter, or closing parenthesis
     for (int i = 0; i < num_tokens; i++)
     {
         char *token = tokens[i];
@@ -210,9 +223,10 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
             {
                 if (!push_operator(&state, state.ctx->glue_op)) goto exit;
 
-                // If glue-op was function, we can't count operands like we normally do
-                // Disable function overloading mechanism
-                op_peek(&state)->arity = OP_DYNAMIC_ARITY;
+                // If glue-op was function, disable function overloading mechanism
+                // Arity of 2 needed for DYNAMIC_ARITY functions set as glue-op
+                op_peek(&state)->count_operands = false;
+                op_peek(&state)->arity = 2;
                 await_infix = false;
             }
         }
@@ -250,21 +264,22 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
             }
             
             /*
-             * Now, when the recorded arity of the operator on top the stack is not OP_DYNAMIC_ARITY,
-             * it is a function we count operands for, and the closing parenthesis was actually the end of
-             * its parameter list. Increment operand count one last time when it was not the empty
-             * parameter list.
+             * Now, when count_operands is true for the operator on top of the stack,
+             * the closing parenthesis was actually the end of its parameter list.
+             * Increment operand count one last time when it was not the empty parameter list.
              */
-            bool empty_params = (i > 0 && is_opening_parenthesis(tokens[i - 1]));
-            if (state.num_ops > 0 && op_peek(&state)->arity != OP_DYNAMIC_ARITY && !empty_params)
+            if (op_peek(&state)->count_operands)
             {
-                if (op_peek(&state)->arity == OP_MAX_ARITY)
+                if (state.num_ops > 0 && i > 0 && !is_opening_parenthesis(tokens[i - 1]))
                 {
-                    ERROR(PERR_CHILDREN_EXCEEDED);
-                }
-                else
-                {
-                    op_peek(&state)->arity++;
+                    if (op_peek(&state)->arity == OP_MAX_ARITY)
+                    {
+                        ERROR(PERR_CHILDREN_EXCEEDED);
+                    }
+                    else
+                    {
+                        op_peek(&state)->arity++;
+                    }
                 }
             }
             
@@ -282,10 +297,10 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
                 }
             }
 
+            // Increment arity counter for function whose parameter list this delimiter is in
             if (state.num_ops > 1 && state.op_stack[state.num_ops - 2].op->placement == OP_PLACE_FUNCTION)
             {
-                // Increment operand counter
-                if (state.op_stack[state.num_ops - 2].arity != OP_DYNAMIC_ARITY)
+                if (state.op_stack[state.num_ops - 2].count_operands)
                 {
                     if (state.op_stack[state.num_ops - 2].arity == OP_MAX_ARITY)
                     {
@@ -311,8 +326,8 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
         // IV. Is token operator?
         Operator *op = NULL;
         
-        // Infix, Prefix (await=true) -> Function (false), Leaf (false), Prefix (true)
-        // Function, Leaf, Postfix (await=false) -> Infix (true), Postfix (false)
+        // Infix, Prefix, Delimiter (await=false) -> Function (true), Leaf (true), Prefix (false)
+        // Function, Leaf, Postfix (await=true) -> Infix (false), Postfix (true), Delimiter (false)
         if (!await_infix)
         {
             op = ctx_lookup_op(state.ctx, token, OP_PLACE_FUNCTION);
@@ -322,15 +337,18 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
 
                 if (op->arity == 0 || op->arity == OP_DYNAMIC_ARITY)
                 {
-                    // Directly pop constants that are not overloaded or not followed by an opening parenthesis
-                    // Since OP_DYNAMIC_ARITY functions are overloaded by definition, also pop them when no opening parenthesis follows
+                    /*
+                     * Directly pop constants that are not overloaded or not followed by an opening parenthesis
+                     * OP_DYNAMIC_ARITY functions are overloaded, treat them as a constant when no opening 
+                     * parenthesis follows.
+                     */
                     if (!ctx_is_function_overloaded(state.ctx, op->name)
                         || i == num_tokens - 1
                         || !is_opening_parenthesis(tokens[i + 1]))
                     {
                         // Skip parsing of empty parameter list
-                        // Relevant when first if was true because of not overloaded constant function
-                        if (i < num_tokens - 2 && is_opening_parenthesis(tokens[i + 1]) && is_closing_parenthesis(tokens[i + 2]))
+                        if (i < num_tokens - 2 && is_opening_parenthesis(tokens[i + 1])
+                            && is_closing_parenthesis(tokens[i + 2]))
                         {
                             i += 2;
                         }
@@ -419,14 +437,24 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
     // 5. Build result and return value
     switch (state.num_nodes)
     {
+        // We haven't constructed a single node
         case 0:
-            state.result = PERR_EMPTY; // We haven't constructed a single node
+            state.result = PERR_EMPTY;
             break;
+        // We successfully constructed a single AST
         case 1:
-            *out_res = state.node_stack[0]; // We successfully constructed a single AST
+            if (out_res != NULL)
+            {
+                *out_res = state.node_stack[0];
+            }
+            else
+            {
+                free_tree(state.node_stack[0]);
+            }
             break;
+        // We have multiple ASTs (need glue-op)
         default:
-            state.result = PERR_MISSING_OPERATOR; // We have multiple ASTs (need glue-op)
+            state.result = PERR_MISSING_OPERATOR;
     }
     
     exit:

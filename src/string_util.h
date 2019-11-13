@@ -10,4 +10,5 @@ bool is_delimiter(char *c);
 size_t ansi_strlen(char *str);
 bool begins_with(char *prefix, char *str);
 size_t split(char *str, char **out_strs, size_t num_delimiters, ...);
+char *perr_to_string(ParserError perr);
 //void trim(char *str);

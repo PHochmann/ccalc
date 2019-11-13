@@ -129,7 +129,7 @@ bool parser_test()
     // Perform error tests
     for (size_t i = 0; i < NUM_ERROR_CASES; i++)
     {
-        if (parse_input(g_ctx, errorTests[i].input, &node) != errorTests[i].result)
+        if (parse_input(g_ctx, errorTests[i].input, NULL) != errorTests[i].result)
         {
             printf("[1] Unexpected error type in '%s'\n", errorTests[i].input);
             goto error;
