@@ -114,8 +114,17 @@ void cmd_table_exec(char *input)
     // Header
     if (g_interactive)
     {
-        add_cell(&table, TEXTPOS_CENTER, "");
-        add_cell(&table, TEXTPOS_CENTER, num_vars == 0 ? "" : variables[0]);
+        add_cell(&table, TEXTPOS_CENTER, " # ");
+
+        if (num_vars != 0)
+        {
+            add_cell_fmt(&table, TEXTPOS_CENTER, VAR_COLOR " %s " COL_RESET, variables[0]);
+        }
+        else
+        {
+            add_cell(&table, TEXTPOS_RIGHT, "");
+        }
+        
         char inlined_expr[sizeof_tree_to_string(expr, true)];
         unsafe_tree_to_string(expr, inlined_expr, true);
         add_cell_fmt(&table, TEXTPOS_CENTER, " %s ", inlined_expr);

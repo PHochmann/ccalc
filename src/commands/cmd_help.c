@@ -19,11 +19,11 @@ static const size_t CONST_IND = 48; // Index of first constant
 static char *command_descriptions[7][2] = {
     { "<func|const> = <after>",                  "Adds new function or constant." },
     { "table <expr> ; <from> ; <to> ; <step>  \n"
-      "   [fold <expr> ; <init>]",               "Prints table of values and optionally folds them.\n   In fold expression, 'x' is replaced with the previous value (init in first step),\n   'y' is replaced with the current value.\n   Result of fold is stored in 'ans'." },
+      "   [fold <expr> ; <init>]",               "Prints table of values and optionally folds them.\n   In fold expression, 'x' is replaced with the intermediate result (init in first step),\n   'y' is replaced with the current value. Result is stored in 'ans'." },
     { "load <path>",                             "Loads file as if its content had been typed in." },
     { "debug <expr>",                            "Visually prints abstract syntax tree of expression." },
-    { "help",                                    "Lists all available commands and operators." },
-    { "clear",                                   "Clears all user-defined functions." },
+    { "help",                                    "Lists available commands and operators." },
+    { "clear",                                   "Clears user-defined functions." },
     { "quit",                                    "Closes calculator." }
 };
 
@@ -81,10 +81,15 @@ void print_op(Operator *op)
 
 void cmd_help_exec(__attribute__((unused)) char *input)
 {
-    printf("Calculator %s (c) 2019, Philipp Hochmann\n"
-           "https://github.com/PhilippHochmann/Calculator\n\n", VERSION);
-
     Table table = get_empty_table();
+    add_cell_fmt(&table, TEXTPOS_CENTER,
+        " Scientific calculator written in C in which you can define your own constants and functions \n"
+        "Version %s (c) 2019, Philipp Hochmann\n"
+        "https://github.com/PhilippHochmann/Calculator", VERSION);
+    print_table(&table, true);
+    reset_table(&table);
+    printf("\n");
+
     add_cells_from_array(&table, 0, 0, 2, 7, command_descriptions, TEXTPOS_LEFT, TEXTPOS_LEFT);
     print_table(&table, false);
     reset_table(&table);

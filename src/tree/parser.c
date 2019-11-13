@@ -33,9 +33,9 @@ struct ParserState
 
 bool try_parse_constant(char *in, ConstantType *out)
 {
-    char *end_ptr;
-    *out = strtod(in, &end_ptr);
-    return *end_ptr == '\0';
+    char *end;
+    *out = strtod(in, &end);
+    return *end == '\0';
 }
 
 // Returns op_data on top of stack
@@ -264,9 +264,9 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
             }
             
             /*
-             * Now, when count_operands is true for the operator on top of the stack,
+             * When count_operands is true for the operator on top of the stack,
              * the closing parenthesis was actually the end of its parameter list.
-             * Increment operand count one last time when it was not the empty parameter list.
+             * Increment operand count one last time if it was not the empty parameter list.
              */
             if (op_peek(&state)->count_operands)
             {
@@ -443,14 +443,7 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
             break;
         // We successfully constructed a single AST
         case 1:
-            if (out_res != NULL)
-            {
-                *out_res = state.node_stack[0];
-            }
-            else
-            {
-                free_tree(state.node_stack[0]);
-            }
+            if (out_res != NULL) *out_res = state.node_stack[0];
             break;
         // We have multiple ASTs (need glue-op)
         default:
@@ -458,9 +451,8 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
     }
     
     exit:
-    
     // If parsing wasn't successful, free partial results
-    if (state.result != PERR_SUCCESS)
+    if (state.result != PERR_SUCCESS || out_res == NULL)
     {
         while (state.num_nodes > 0)
         {
