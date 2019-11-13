@@ -1,6 +1,6 @@
-#include <stdarg.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdarg.h>
 
 #include "string_util.h"
 
@@ -72,41 +72,36 @@ bool begins_with(char *prefix, char *str)
 }
 
 /*
-Returns: String representation of ParserError
+Summary: Helper function to parse commands to extract strings between delimiters
+    Currently only used in cmd_table_exec
+Example: split("abc x def ghi", out, 2, " x ", " g") = 3
+    out = { "abc", "def", "hi" }
 */
-char *perr_to_string(ParserError perr)
+size_t split(char *str, char **out_strs, size_t num_delimiters, ...)
 {
-    switch (perr)
+    va_list args;
+    va_start(args, num_delimiters);
+    size_t res = 1;
+    for (size_t i = 0; i < num_delimiters; i++)
     {
-        case PERR_SUCCESS:
-            return "Success";
-        case PERR_MAX_TOKENS_EXCEEDED:
-            return "Max. Tokens exceeded";
-        case PERR_STACK_EXCEEDED:
-            return "Stack exceeded";
-        case PERR_UNEXPECTED_SUBEXPRESSION:
-            return "Unexpected Subexpression";
-        case PERR_EXCESS_OPENING_PARENTHESIS:
-            return "Missing closing parenthesis";
-        case PERR_EXCESS_CLOSING_PARENTHESIS:
-            return "Unexpected closing parenthesis";
-        case PERR_UNEXPECTED_DELIMITER:
-            return "Unexpected delimiter";
-        case PERR_MISSING_OPERATOR:
-            return "Unexpected operand";
-        case PERR_MISSING_OPERAND:
-            return "Missing operand";
-        case PERR_OUT_OF_MEMORY:
-            return "Out of memory";
-        case PERR_FUNCTION_WRONG_ARITY:
-            return "Wrong number of operands of function";
-        case PERR_CHILDREN_EXCEEDED:
-            return "Exceeded maximum number of operands of function";
-        case PERR_EMPTY:
-            return "Empty Expression";
-        default:
-            return "Unknown Error";
+        char *delimiter = va_arg(args, char*);
+        char *end_pos = strstr(str, delimiter);
+
+        if (end_pos != NULL)
+        {
+            *end_pos = '\0';
+            out_strs[res - 1] = str;
+            res++;
+            str = end_pos + strlen(delimiter);
+        }
+        else
+        {
+            break;
+        }
     }
+
+    out_strs[res - 1] = str;
+    return res;
 }
 
 // Currently not in use

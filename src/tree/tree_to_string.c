@@ -1,8 +1,10 @@
 #include <stdarg.h>
-#include <stdint.h>
 #include <stdio.h>
+
 #include "tree_to_string.h"
 #include "../string_util.h"
+
+#define SSIZE_MAX 2147483647
 
 // Encapsulates printing settings and buffer state to be communicated to auxiliary functions (singleton)
 struct PrintingState
@@ -218,7 +220,7 @@ Summary: Only use it when you're sure the buffer is large enough (to check: size
 */
 void unsafe_tree_to_string(Node *node, char *buffer, bool color)
 {
-    tree_to_string(node, buffer, SIZE_MAX, color);
+    tree_to_string(node, buffer, SSIZE_MAX, color);
 }
 
 /*

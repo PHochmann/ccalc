@@ -9,7 +9,7 @@
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
 
-#define VERSION "1.4.4"
+#define VERSION "1.4.5"
 
 static const size_t BASIC_IND =  1; // Index of first basic operator ($x before, should no be shown)
 static const size_t TRIG_IND  = 19; // Index of first trigonometric function

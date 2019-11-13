@@ -9,15 +9,10 @@
 ParsingContext __g_ctx;
 Operator operators[ARITH_MAX_OPS];
 
-double abstrunc(double a)
-{
-    return fabs(trunc(a));
-}
-
 double euclid(double a, double b)
 {
-    a = abstrunc(a);
-    b = abstrunc(b);
+    a = fabs(trunc(a));
+    b = fabs(trunc(b));
 
     if (a == 0)
     {
@@ -42,8 +37,8 @@ double euclid(double a, double b)
 
 double binomial(double n, double k)
 {
-    n = abstrunc(n);
-    k = abstrunc(k);
+    n = fabs(trunc(n));
+    k = fabs(trunc(k));
 
     if (k == 0) return 1;
     if ((2 * k) > n) k = n - k;

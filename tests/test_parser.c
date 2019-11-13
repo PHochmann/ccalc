@@ -31,7 +31,7 @@ static struct ValueTest valueTests[] = {
     { "+99", 99 },
     { "4!",  24 },
     { "3%",   0.03 },
-    // 2. Correct implementation of evaluation (Todo: extend)
+    // 2. Correct implementation of evaluation (ToDo: extend)
     { "fib(7)",         13 },
     { "fib(-8)",       -21 },
     { "gcd(942, 492)",   6 },

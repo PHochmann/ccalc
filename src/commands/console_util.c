@@ -1,18 +1,16 @@
 #define _GNU_SOURCE
 #include <stdio.h>
-#include <string.h>
-
+#include <stdarg.h>
 #ifdef USE_READLINE
 #include <readline/readline.h>
 #include <readline/history.h>
 #endif
 
 #include "console_util.h"
-#include "../string_util.h"
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
 
-static const size_t MAX_INPUT_LENGTH   = 100;
+static const size_t MAX_INPUT_LENGTH = 100;
 
 void unload_console_util()
 {
@@ -135,6 +133,44 @@ bool ask_input(FILE *file, char **out_input, char *prompt_fmt, ...)
 }
 
 /*
+Returns: String representation of ParserError
+*/
+char *perr_to_string(ParserError perr)
+{
+    switch (perr)
+    {
+        case PERR_SUCCESS:
+            return "Success";
+        case PERR_MAX_TOKENS_EXCEEDED:
+            return "Max. Tokens exceeded";
+        case PERR_STACK_EXCEEDED:
+            return "Stack exceeded";
+        case PERR_UNEXPECTED_SUBEXPRESSION:
+            return "Unexpected Subexpression";
+        case PERR_EXCESS_OPENING_PARENTHESIS:
+            return "Missing closing parenthesis";
+        case PERR_EXCESS_CLOSING_PARENTHESIS:
+            return "Unexpected closing parenthesis";
+        case PERR_UNEXPECTED_DELIMITER:
+            return "Unexpected delimiter";
+        case PERR_MISSING_OPERATOR:
+            return "Unexpected operand";
+        case PERR_MISSING_OPERAND:
+            return "Missing operand";
+        case PERR_OUT_OF_MEMORY:
+            return "Out of memory";
+        case PERR_FUNCTION_WRONG_ARITY:
+            return "Wrong number of operands of function";
+        case PERR_CHILDREN_EXCEEDED:
+            return "Exceeded maximum number of operands of function";
+        case PERR_EMPTY:
+            return "Empty Expression";
+        default:
+            return "Unknown Error";
+    }
+}
+
+/*
 Summary:
     Parses input, does post-processing of input, gives feedback on command line
 Returns:
@@ -153,37 +189,4 @@ bool parse_input_from_console(char *input, char *error_fmt, Node **out_res)
         transform_input(out_res);
         return true;
     }
-}
-
-/*
-Summary: Helper function to parse commands to extract strings between delimiters
-    Currently only used in cmd_table_exec
-Example: split("abc x def ghi", out, 2, " x ", " g") = 3
-    out = { "abc", "def", "hi" }
-*/
-size_t split(char *str, char **out_strs, size_t num_delimiters, ...)
-{
-    va_list args;
-    va_start(args, num_delimiters);
-    size_t res = 1;
-    for (size_t i = 0; i < num_delimiters; i++)
-    {
-        char *delimiter = va_arg(args, char*);
-        char *end_pos = strstr(str, delimiter);
-
-        if (end_pos != NULL)
-        {
-            *end_pos = '\0';
-            out_strs[res - 1] = str;
-            res++;
-            str = end_pos + strlen(delimiter);
-        }
-        else
-        {
-            break;
-        }
-    }
-
-    out_strs[res - 1] = str;
-    return res;
 }
