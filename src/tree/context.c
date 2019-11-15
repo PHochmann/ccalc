@@ -93,7 +93,10 @@ Returns: False, if ctx is NULL or operator with arity not equal to 2 or DYNAMIC_
 */
 bool ctx_set_glue_op(ParsingContext *ctx, Operator *op)
 {
-    if (ctx == NULL || (op != NULL && op->arity != 2 && op->arity != OP_DYNAMIC_ARITY))
+    if (ctx == NULL
+        || (op != NULL
+            && op->arity != 2
+            && op->arity != OP_DYNAMIC_ARITY))
     {
         return false;
     }
@@ -168,7 +171,7 @@ Operator *ctx_lookup_function(ParsingContext *ctx, char *name, size_t arity)
 }
 
 /*
-Returns: True if functions with same name but different arities exist, or function with this name and OP_DYNAMIC_ARITY exists
+Returns: True if functions with same name but different arities exist, or arity of function is DYNAMIC_ARITY
 */
 bool ctx_is_function_overloaded(ParsingContext *ctx, char *name)
 {

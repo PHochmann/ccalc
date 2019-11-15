@@ -32,10 +32,8 @@ void add_function(char *name, char *left, char *right)
     Node *right_n = NULL;
     
     // Parse without applying rules to correctly determine if function already exists
-    ParserError perr = parse_input(g_ctx, left, &left_n);
-    if (perr != PERR_SUCCESS)
+    if (!parse_input_from_console(left, FMT_ERROR_LEFT, false, &left_n))
     {
-        printf(FMT_ERROR_LEFT, perr_to_string(perr));
         goto cleanup;
     }
 
@@ -71,7 +69,7 @@ void add_function(char *name, char *left, char *right)
     // Assign correct arity
     g_ctx->operators[g_ctx->num_ops - 1].arity = new_arity;
 
-    if (!parse_input_from_console(right, FMT_ERROR_RIGHT, &right_n))
+    if (!parse_input_from_console(right, FMT_ERROR_RIGHT, false, &right_n))
     {
         goto cleanup;
     }

@@ -37,7 +37,7 @@ void cmd_table_exec(char *input)
     Node *fold_expr = NULL;
     Node *fold_init = NULL;
 
-    if (!parse_input_from_console(args[0], "Error in expression: %s.\n", &expr)) return;
+    if (!parse_input_from_console(args[0], "Error in expression: %s.\n", true, &expr)) return;
 
     char *variables[count_variables(expr)];
     size_t num_vars = list_variables(expr, variables);
@@ -47,9 +47,9 @@ void cmd_table_exec(char *input)
         goto exit;
     }
 
-    if (!parse_input_from_console(args[1], "Error in start: %s.\n", &start)
-        || !parse_input_from_console(args[2], "Error in end: %s.\n", &end)
-        || !parse_input_from_console(args[3], "Error in step: %s.\n", &step))
+    if (!parse_input_from_console(args[1], "Error in start: %s.\n", true, &start)
+        || !parse_input_from_console(args[2], "Error in end: %s.\n", true, &end)
+        || !parse_input_from_console(args[3], "Error in step: %s.\n", true, &step))
     {
         goto exit;
     }
@@ -77,8 +77,8 @@ void cmd_table_exec(char *input)
     if (num_args == 6)
     {
         // Parse initial fold-value
-        if (!parse_input_from_console(args[4], "Error in fold expression: %s.\n", &fold_expr)
-            || !parse_input_from_console(args[5], "Error in initial fold value: %s.\n", &fold_init))
+        if (!parse_input_from_console(args[4], "Error in fold expression: %s.\n", true, &fold_expr)
+            || !parse_input_from_console(args[5], "Error in initial fold value: %s.\n", true, &fold_init))
         {
             goto exit;
         }

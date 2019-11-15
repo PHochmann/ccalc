@@ -5,13 +5,6 @@
 
 #define ANS_VAR "ans"
 
-char *rule_strings[] = {
-    "$x", "x",
-    "x+(y+z)", "x+y+z",
-    "x*(y*z)", "x*y*z",
-    "--x", "x",
-};
-
 Node *ans; // Result of last evaluation
 
 void arith_reset_rules()
@@ -78,7 +71,10 @@ void arith_init_rules()
 {
     g_num_rules = ARITH_NUM_RULES;
     parse_rules(ARITH_NUM_RULES,
-        rule_strings,
+        (char*[]){ "$x", "x",
+            "x+(y+z)", "x+y+z",
+            "x*(y*z)", "x*y*z",
+            "--x", "x", },
         g_rules);
 }
 
@@ -91,8 +87,15 @@ void update_ans(ConstantType value)
 /*
 Summary: Does post-processing of correctly parsed input (i.e. replacing ans and applying rewrite rules)
 */
-void transform_input(Node **tree)
+void transform_input(bool all_rules, Node **tree)
 {
     if (ans != NULL) replace_variable_nodes(tree, ans, ANS_VAR);
-    apply_ruleset(tree, g_num_rules, g_rules);
+    if (all_rules)
+    {
+        apply_ruleset(tree, g_num_rules, g_rules);
+    }
+    else
+    {
+        apply_ruleset(tree, ARITH_NUM_RULES, g_rules);
+    }
 }

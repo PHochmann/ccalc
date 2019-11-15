@@ -1,5 +1,5 @@
 # Calculator
-Scientific calculator written in C in which you can define your own constants and functions
+Scientific calculator written in C in which you can define your own functions and constants
 
 ## Setup guide
 1. Clone repository.
@@ -19,15 +19,15 @@ When starting the calculator normally, you can enter expressions and commands in
 * You can use ```$``` to parse the following expression with maximal precedence, like in Haskell.
 
 ### Available commands
-| Command                                     | Description                                         |
-| ---                                         | ---                                                 |
-| ```<func\|const> = <after>```               | Adds new function or constant.                      |
+| Command                                     | Description                                              |
+| ---                                         | ---                                                      |
+| ```<func\|const> = <after>```               | Adds new function or constant.                           |
 | ```table <expr> ; <from> ; <to> ; <step> [fold <expr> ; <init>]``` | Prints table of values and optionally folds them. In fold expression, ```x``` is replaced with the intermediate result (init in first step), ```y``` is replaced with the current value. Result of fold is stored in ```ans```. |
-| ```load <path>```                           | Loads file as if its content had been typed in.     |
-| ```debug <expr>```                          | Visually prints abstract syntax tree of expression. |
-| ```help```                                  | Lists available commands and operators.             |
-| ```clear```                                 | Clears user-defined functions.                      |
-| ```quit```                                  | Closes calculator.                                  |
+| ```load <path>```                           | Loads file as if its content had been typed in.          |
+| ```debug <expr>```                          | Visually prints abstract syntax tree of expression.      |
+| ```help```                                  | Lists available commands and operators.                  |
+| ```clear [last]```                          | Clears all or last user-defined functions and constants. |
+| ```quit```                                  | Closes calculator.                                       |
 
 ### Infix operators
 | Name      | Associativity | Precedence | Description          |

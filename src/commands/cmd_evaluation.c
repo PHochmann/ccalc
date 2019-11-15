@@ -23,7 +23,7 @@ Summary: The evaluation command is executed when input is no other command (henc
 void cmd_evaluation_exec(char *input)
 {
     Node *res;
-    if (parse_input_from_console(input, ERROR_FMT, &res))
+    if (parse_input_from_console(input, ERROR_FMT, true, &res))
     {
         // Make expression constant by asking for values and binding them to variables
         char *vars[count_variables(res)];
@@ -42,7 +42,7 @@ void cmd_evaluation_exec(char *input)
             if (ask_input(stdin, &input, ASK_VARIABLE_FMT, vars[i]))
             {
                 Node *res_var;
-                if (!parse_input_from_console(input, ERROR_FMT, &res_var))
+                if (!parse_input_from_console(input, ERROR_FMT, true, &res_var))
                 {
                     // Error while parsing - ask again
                     free(input);
@@ -76,7 +76,8 @@ void cmd_evaluation_exec(char *input)
         set_interactive(temp);
 
         ConstantType result = arith_eval(res);
-        printf(g_interactive ? "= " CONSTANT_TYPE_FMT "\n" : CONSTANT_TYPE_FMT "\n", result);
+        whisper("= ");
+        printf(CONSTANT_TYPE_FMT "\n", result);
         update_ans(result);
         free_tree(res);
     }

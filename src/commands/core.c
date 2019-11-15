@@ -10,7 +10,6 @@
 #include "cmd_definition.h"
 #include "cmd_table.h"
 #include "console_util.h"
-#include "table.h"
 #include "../string_util.h"
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
@@ -67,13 +66,11 @@ Summary: Loop to ask user or file for command, ignores comments
 void process_input(FILE *file)
 {
     char *input = NULL;
-
     while (ask_input(file, &input, INTERACTIVE_ASK_PREFIX))
     {
         if (!begins_with(COMMENT_PREFIX, input)) parse_command(input);
         free(input);
     }
-
     // Loop was exited because input was EOF
     if (g_interactive) printf("\n");
 }

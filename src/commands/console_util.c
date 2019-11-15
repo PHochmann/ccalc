@@ -139,7 +139,7 @@ Summary:
 Returns:
     True when input was successfully parsed, false when syntax error in input or aborted when asked for constant
 */
-bool parse_input_from_console(char *input, char *error_fmt, Node **out_res)
+bool parse_input_from_console(char *input, char *error_fmt, bool transform, Node **out_res)
 {
     ParserError perr = parse_input(g_ctx, input, out_res);
     if (perr != PERR_SUCCESS)
@@ -149,7 +149,7 @@ bool parse_input_from_console(char *input, char *error_fmt, Node **out_res)
     }
     else
     {
-        transform_input(out_res);
+        transform_input(transform, out_res);
         return true;
     }
 }

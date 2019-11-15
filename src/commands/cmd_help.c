@@ -9,23 +9,28 @@
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
 
-#define VERSION "1.4.5"
+static char *VERSION = "1.4.5";
 
-static const size_t BASIC_IND =  1; // Index of first basic operator ($x before, should no be shown)
-static const size_t TRIG_IND  = 19; // Index of first trigonometric function
-static const size_t MISC_IND  = 31; // Index of first misc. function
-static const size_t CONST_IND = 48; // Index of first constant
+static char *INFOBOX_FMT =
+    " Scientific calculator in which you can define your own functions and constants \n"
+    "Version %s (c) 2019, Philipp Hochmann\n"
+    "https://github.com/PhilippHochmann/Calculator";
 
-static char *command_descriptions[7][2] = {
+static char *COMMAND_TABLE[7][2] = {
     { "<func|const> = <after>",                  "Adds new function or constant." },
     { "table <expr> ; <from> ; <to> ; <step>  \n"
       "   [fold <expr> ; <init>]",               "Prints table of values and optionally folds them.\n   In fold expression, 'x' is replaced with the intermediate result (init in first step),\n   'y' is replaced with the current value. Result is stored in 'ans'." },
     { "load <path>",                             "Loads file as if its content had been typed in." },
     { "debug <expr>",                            "Visually prints abstract syntax tree of expression." },
     { "help",                                    "Lists available commands and operators." },
-    { "clear",                                   "Clears user-defined functions." },
+    { "clear [last]",                            "Clears all or last user-defined functions and constants." },
     { "quit",                                    "Closes calculator." }
 };
+
+static const size_t BASIC_IND =  1; // Index of first basic operator ($x before, should no be shown)
+static const size_t TRIG_IND  = 19; // Index of first trigonometric function
+static const size_t MISC_IND  = 31; // Index of first misc. function
+static const size_t CONST_IND = 48; // Index of first constant
 
 bool cmd_help_check(char *input)
 {
@@ -82,15 +87,12 @@ void print_op(Operator *op)
 void cmd_help_exec(__attribute__((unused)) char *input)
 {
     Table table = get_empty_table();
-    add_cell_fmt(&table, TEXTPOS_CENTER,
-        " Scientific calculator written in C in which you can define your own constants and functions \n"
-        "Version %s (c) 2019, Philipp Hochmann\n"
-        "https://github.com/PhilippHochmann/Calculator", VERSION);
+    add_cell_fmt(&table, TEXTPOS_CENTER, INFOBOX_FMT, VERSION);
     print_table(&table, true);
     reset_table(&table);
     printf("\n");
 
-    add_cells_from_array(&table, 0, 0, 2, 7, command_descriptions, TEXTPOS_LEFT, TEXTPOS_LEFT);
+    add_cells_from_array(&table, 0, 0, 2, 7, COMMAND_TABLE, TEXTPOS_LEFT, TEXTPOS_LEFT);
     print_table(&table, false);
     reset_table(&table);
 
