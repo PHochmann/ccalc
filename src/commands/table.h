@@ -1,6 +1,12 @@
 #include <stdbool.h>
 
-#define MAX_COLS 5
+/*
+ * Supports newlines and ANSI color codes
+ * Only struct the user needs to use is Table
+*/
+
+// Current max. used in project
+#define MAX_COLS 4
 
 typedef enum
 {
@@ -44,4 +50,4 @@ void add_cell_fmt(Table *table, TextPosition textpos, char *fmt, ...);
 void add_cells_from_array(Table *table, size_t width, size_t height, char **array, TextPosition *alignments);
 void next_row(Table *table);
 void hline(Table *table);
-void print_table(Table *table, bool borders);
+void print_table(Table *table, bool print_borders);

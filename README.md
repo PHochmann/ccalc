@@ -1,5 +1,5 @@
 # Calculator
-Scientific calculator written in C in which you can define your own functions and constants
+Scientific calculator in which you can define your own functions and constants
 
 ## Setup guide
 1. Clone repository.

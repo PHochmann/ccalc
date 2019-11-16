@@ -307,7 +307,6 @@ Summary: Sets arithmetic context stored in global variable
 void arith_init_ctx()
 {
     __g_ctx = get_context(ARITH_MAX_OPS, operators);
-    
     ctx_add_ops(g_ctx, ARITH_NUM_OPS,
         op_get_prefix("$", 0),
 
@@ -370,6 +369,6 @@ void arith_init_ctx()
     
     // Set multiplication as glue-op
     ctx_set_glue_op(g_ctx, ctx_lookup_op(g_ctx, "*", OP_PLACE_INFIX));
-
+    // Initialize random for rand(2) command
     srand(time(NULL));
 }

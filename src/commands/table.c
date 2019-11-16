@@ -118,7 +118,7 @@ void get_dimensions(char *string, int *out_length, int *out_height)
 }
 
 /*
-Returns: A new table
+Returns: A new table with a single, empty row.
 */
 Table get_empty_table()
 {
@@ -131,7 +131,7 @@ Table get_empty_table()
 }
 
 /*
-Summary: Frees all rows and content strings in cells created by add_cell_fmt
+Summary: Frees all rows and content strings in cells created by add_cell_fmt.
     Don't use the table any more, get a new one!
 */
 void free_table(Table *table)
@@ -215,9 +215,9 @@ void add_cell_fmt(Table *table, TextPosition textpos, char *fmt, ...)
 }
 
 /*
-Summary: Puts contents of memory-continuous 2D array into table cell by cell.
+Summary: Puts contents of memory-contiguous 2D array into table cell by cell.
     Strings are not copied. Ensure that lifetime of array outlasts last call of print_table.
-    Position of next insertion is next cell in last row
+    Position of next insertion is next cell in last row.
 */
 void add_cells_from_array(Table *table, size_t width, size_t height, char **array, TextPosition *alignments)
 {
@@ -233,6 +233,9 @@ void add_cells_from_array(Table *table, size_t width, size_t height, char **arra
     }
 }
 
+/*
+Summary: Next inserted cell will be inserted at first column of next row.
+*/
 void next_row(Table *table)
 {
     struct Row *res = calloc(1, sizeof(struct Row));
@@ -241,8 +244,7 @@ void next_row(Table *table)
 }
 
 /*
-Summary: Inserts horizontal line above current row
-    Must be set in a sorted order, i.e. don't use it after using set_pos to go to a previous row.
+Summary: Inserts horizontal line above current row.
 */
 void hline(Table *table)
 {
@@ -250,11 +252,11 @@ void hline(Table *table)
 }
 
 /*
-Summary: Prints table to stdout
+Summary: Prints table to stdout, optionally with border-box around it
 */
-void print_table(Table *table, bool borders)
+void print_table(Table *table, bool print_borders)
 {
-    if (borders)
+    if (print_borders)
     {
         printf("┌");
         for (size_t i = 0; i < table->num_cols; i++)
@@ -264,46 +266,40 @@ void print_table(Table *table, bool borders)
         }
         printf("┐\n");
     }
-    // - - -
 
-    // Print cells
     struct Row *curr_row = table->first_row;
     while (curr_row != NULL)
     {
-        if (borders)
+        if (curr_row->hline_above)
         {
-            if (curr_row->hline_above)
+            if (print_borders) printf("├");
+            for (size_t k = 0; k < table->num_cols; k++)
             {
-                printf("├");
-                for (size_t k = 0; k < table->num_cols; k++)
-                {
-                    print_repeated("─", table->col_widths[k]);
-                    if (k != table->num_cols - 1) printf("┼");
-                }
-                printf("┤\n");
+                print_repeated("─", table->col_widths[k]);
+                if (print_borders && k != table->num_cols - 1) printf("┼");
             }
+            if (print_borders) printf("┤");
+            printf("\n");
         }
 
         for (int j = 0; j < curr_row->height; j++)
         {
-            if (borders) printf("│");
+            if (print_borders) printf("│");
 
             for (size_t k = 0; k < table->num_cols; k++)
             {
                 char *str = NULL;
                 int len = get_line(curr_row->cells[k].text, j, &str);
                 print_padded_substr(str, len, table->col_widths[k], curr_row->cells[k].textpos);
-                if (borders) printf("│");
+                if (print_borders) printf("│");
             }
             printf("\n");
         }
 
         curr_row = curr_row->next_row;
     }
-    // - - -
 
-    // Print bottom border
-    if (borders)
+    if (print_borders)
     {
         printf("└");
         for (size_t i = 0; i < table->num_cols; i++)
@@ -313,5 +309,4 @@ void print_table(Table *table, bool borders)
         }
         printf("┘\n");
     }
-    // - - -
 }

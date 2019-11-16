@@ -12,7 +12,7 @@
 
 char *arrayA[4][3] = {
     { "alpha", "beta", "gamma" },
-    { "1", "1110.1", "a" },
+    { "1", "1110.1", "a......." },
     { "2", "10.1", "b" },
     { "3", "23.1132310", "c" },
 };
@@ -40,12 +40,12 @@ bool table_test()
 
     // Case 3
     table = get_empty_table();
-    add_cell(&table, TEXTPOS_CENTER, "Test");
+    add_cell(&table, TEXTPOS_CENTER, "1st row");
     next_row(&table);
     hline(&table);
     next_row(&table);
     hline(&table);
-    add_cell(&table, TEXTPOS_CENTER, "Test");
+    add_cell(&table, TEXTPOS_CENTER, "3rd row");
     print_table(&table, true);
     free_table(&table);
 

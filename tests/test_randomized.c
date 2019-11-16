@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #include "test_randomized.h"
 #include "../src/arithmetics/arith_context.h"
@@ -14,7 +15,7 @@
 #define MAX_DYNAMIC_CHILDREN 5
 
 #define NUM_VARIABLE_NAMES 5
-static char *variable_names[] = { "x", "y", "z", "joe", "mama" };
+static char *variable_names[] = { "x", "y", "z", "abc", "def" };
 
 // Restrict operators to choose from to have more interesting expressions
 #define NUM_OP_INDICES 23
@@ -86,6 +87,16 @@ bool randomized_test()
         size_t buffer_len = tree_to_string(random_tree, NULL, 0, false) + 1;
         char stringed_tree[buffer_len];
         tree_to_string(random_tree, stringed_tree, buffer_len, false);
+
+        // To test glue-op: replace first '*' by space
+        if (rand() % 2 == 0)
+        {
+            char *asterisk = strstr(stringed_tree, "*");
+            if (asterisk != NULL)
+            {
+                *asterisk = ' ';
+            }
+        }
 
         // Parse stringed random tree
         Node *parsed_tree = NULL;
