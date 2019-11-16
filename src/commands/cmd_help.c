@@ -9,7 +9,7 @@
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
 
-static char *VERSION = "1.4.5";
+static char *VERSION = "1.4.6";
 
 static char *INFOBOX_FMT =
     " Scientific calculator in which you can define your own functions and constants \n"
@@ -89,12 +89,13 @@ void cmd_help_exec(__attribute__((unused)) char *input)
     Table table = get_empty_table();
     add_cell_fmt(&table, TEXTPOS_CENTER, INFOBOX_FMT, VERSION);
     print_table(&table, true);
-    reset_table(&table);
+    free_table(&table);
     printf("\n");
 
-    add_cells_from_array(&table, 0, 0, 2, 7, COMMAND_TABLE, TEXTPOS_LEFT, TEXTPOS_LEFT);
+    table = get_empty_table();
+    add_cells_from_array(&table, 2, 7, (char**)COMMAND_TABLE, (TextPosition[]){ TEXTPOS_LEFT, TEXTPOS_LEFT });
     print_table(&table, false);
-    reset_table(&table);
+    free_table(&table);
 
     printf("\nBasic operators:\n");
     for (size_t i = BASIC_IND; i < TRIG_IND; i++)
@@ -124,6 +125,7 @@ void cmd_help_exec(__attribute__((unused)) char *input)
     if (g_num_rules > ARITH_NUM_RULES)
     {
         printf("\nUser-defined functions and constants:\n");
+        table = get_empty_table();
         for (size_t i = ARITH_NUM_RULES; i < g_num_rules; i++)
         {
             char inlined_before[sizeof_tree_to_string(g_rules[i].before, true)];
@@ -139,7 +141,7 @@ void cmd_help_exec(__attribute__((unused)) char *input)
             next_row(&table);
         }
         print_table(&table, false);
-        reset_table(&table);
+        free_table(&table);
         printf("\n");
     }
     else

@@ -164,7 +164,7 @@ void cmd_table_exec(char *input)
     }
 
     print_table(&table, g_interactive);
-    reset_table(&table);
+    free_table(&table);
 
     if (num_args == 6)
     {

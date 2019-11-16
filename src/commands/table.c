@@ -123,73 +123,69 @@ Returns: A new table
 Table get_empty_table()
 {
     Table res;
-
-    for (size_t i = 0; i < MAX_COLS; i++)
-    {
-        for (size_t j = 0; j < MAX_ROWS; j++)
-        {
-            res.cells[i][j].free_on_reset = false;
-            res.cells[i][j].text = NULL;
-        }
-    }
-
     for (size_t i = 0; i < MAX_COLS; i++) res.col_widths[i] = 0;
-    for (size_t i = 0; i < MAX_ROWS; i++) res.row_heights[i] = 0;
-
     res.num_cols = 0;
-    res.num_rows = 0;
-    res.x = 0;
-    res.y = 0;
-    res.num_hlines = 0;
-
+    res.first_row = calloc(1, sizeof(struct Row));
+    res.curr_row = res.first_row;
     return res;
 }
 
 /*
-Summary: Resets all internal values, frees all content strings created by add_cell_fmt
+Summary: Frees all rows and content strings in cells created by add_cell_fmt
+    Don't use the table any more, get a new one!
 */
-void reset_table(Table *table)
+void free_table(Table *table)
 {
-    for (size_t i = 0; i < table->num_cols; i++)
+    struct Row *curr_row = table->first_row;
+    while (curr_row != NULL)
     {
-        table->col_widths[i] = 0;
-        for (size_t j = 0; j < table->num_rows; j++)
+        for (size_t i = 0; i < table->num_cols; i++)
         {
-            if (table->cells[i][j].free_on_reset)
+            if (curr_row->cells[i].free_on_reset)
             {
-                free(table->cells[i][j].text);
+                free(curr_row->cells[i].text);
             }
-            table->cells[i][j].text = NULL;
         }
-    }
 
-    for (size_t i = 0; i < MAX_ROWS; i++) table->row_heights[i] = 0;
-    
-    table->num_cols = 0;
-    table->num_rows = 0;
-    table->x = 0;
-    table->y = 0;
-    table->num_hlines = 0;
+        struct Row *next_row = curr_row->next_row;
+        free(curr_row);
+        curr_row = next_row;
+    }
 }
 
 void add_cell_internal(Table *table, TextPosition textpos, char *buffer, bool free_on_reset)
 {
-    if (table->x >= MAX_COLS || table->y >= MAX_ROWS) return;
+    if (table->curr_row->num_cells == MAX_COLS)
+    {
+        // Already max. amount of cells in row
+        return;
+    }
 
-    struct Cell *cell = &table->cells[table->x][table->y];
+    struct Cell *cell = &table->curr_row->cells[table->curr_row->num_cells];
     cell->text = buffer;
     cell->textpos = textpos;
+    cell->free_on_reset = free_on_reset;
 
     // Update book-keeping info
     int length = 0;
     int height = 0;
     get_dimensions(cell->text, &length, &height);
-    if (length > table->col_widths[table->x]) table->col_widths[table->x] = length;
-    if (height > table->row_heights[table->y]) table->row_heights[table->y] = height;
-    if (table->num_cols <= table->x) table->num_cols = table->x + 1;
-    if (table->num_rows <= table->y) table->num_rows = table->y + 1;
-    table->cells[table->x][table->y].free_on_reset = free_on_reset;
-    table->x++;
+
+    if (length > table->col_widths[table->curr_row->num_cells])
+    {
+        table->col_widths[table->curr_row->num_cells] = length;
+    }
+    if (height > table->curr_row->height)
+    {
+        table->curr_row->height = height;
+    }
+
+    table->curr_row->num_cells++;
+    
+    if (table->curr_row->num_cells > table->num_cols)
+    {
+        table->num_cols = table->curr_row->num_cells;
+    }
 }
 
 /*
@@ -219,30 +215,29 @@ void add_cell_fmt(Table *table, TextPosition textpos, char *fmt, ...)
 }
 
 /*
-Summary: Puts contents of array into table cell by cell. Strings are not copied!
-    Ensure that lifetime of array outlasts last call of print_table!
+Summary: Puts contents of memory-continuous 2D array into table cell by cell.
+    Strings are not copied. Ensure that lifetime of array outlasts last call of print_table.
     Position of next insertion is next cell in last row
 */
-void add_cells_from_array(Table *table, size_t x, size_t y, size_t width, size_t height, char *array[height][width], ...)
+void add_cells_from_array(Table *table, size_t width, size_t height, char **array, TextPosition *alignments)
 {
-    va_list alignments;
+    if (width > MAX_COLS) return;
 
     for (size_t i = 0; i < height; i++)
     {
-        set_position(table, x, y + i);
-        va_start(alignments, array);
         for (size_t j = 0; j < width; j++)
         {
-            add_cell(table, va_arg(alignments, TextPosition), array[i][j]);
+            add_cell(table, alignments[j], *(array + i * width + j));
         }
-        va_end(alignments);
+        next_row(table);
     }
 }
 
 void next_row(Table *table)
 {
-    table->y++;
-    table->x = 0;
+    struct Row *res = calloc(1, sizeof(struct Row));
+    table->curr_row->next_row = res;
+    table->curr_row = res;
 }
 
 /*
@@ -251,20 +246,7 @@ Summary: Inserts horizontal line above current row
 */
 void hline(Table *table)
 {
-    if (table->num_hlines + 1 < MAX_ROWS)
-    {
-        table->hlines[table->num_hlines++] = table->y;
-    }
-}
-
-/*
-Summary: Changes position of next cell to be added
-*/
-void set_position(Table *table, size_t col, size_t row)
-{
-    if (col >= MAX_COLS || row >= MAX_ROWS) return;
-    table->x = col;
-    table->y = row;
+    table->curr_row->hline_above = true;
 }
 
 /*
@@ -272,8 +254,6 @@ Summary: Prints table to stdout
 */
 void print_table(Table *table, bool borders)
 {
-    size_t hlines = 0;
-
     if (borders)
     {
         printf("┌");
@@ -287,13 +267,13 @@ void print_table(Table *table, bool borders)
     // - - -
 
     // Print cells
-    for (size_t i = 0; i < table->num_rows; i++)
+    struct Row *curr_row = table->first_row;
+    while (curr_row != NULL)
     {
         if (borders)
         {
-            while (hlines < table->num_hlines && table->hlines[hlines] == i)
+            if (curr_row->hline_above)
             {
-                hlines++;
                 printf("├");
                 for (size_t k = 0; k < table->num_cols; k++)
                 {
@@ -304,19 +284,21 @@ void print_table(Table *table, bool borders)
             }
         }
 
-        for (int j = 0; j < table->row_heights[i]; j++)
+        for (int j = 0; j < curr_row->height; j++)
         {
             if (borders) printf("│");
 
             for (size_t k = 0; k < table->num_cols; k++)
             {
                 char *str = NULL;
-                int len = get_line(table->cells[k][i].text, j, &str);
-                print_padded_substr(str, len, table->col_widths[k], table->cells[k][i].textpos);
+                int len = get_line(curr_row->cells[k].text, j, &str);
+                print_padded_substr(str, len, table->col_widths[k], curr_row->cells[k].textpos);
                 if (borders) printf("│");
             }
             printf("\n");
         }
+
+        curr_row = curr_row->next_row;
     }
     // - - -
 

@@ -12,6 +12,9 @@ RewriteRule get_rule(Node *before, Node *after)
     };
 }
 
+/*
+Summary: Frees trees "before" and "after"
+*/
 void free_rule(RewriteRule rule)
 {
     free_tree(rule.before);

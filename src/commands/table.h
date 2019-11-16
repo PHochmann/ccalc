@@ -1,7 +1,6 @@
 #include <stdbool.h>
 
-#define MAX_COLS 10
-#define MAX_ROWS 50
+#define MAX_COLS 5
 
 typedef enum
 {
@@ -17,29 +16,32 @@ struct Cell
     char *text;
 };
 
+struct Row
+{
+    size_t num_cells;
+    struct Cell cells[MAX_COLS];
+    bool hline_above;
+    int height;
+    struct Row *next_row;
+};
+
 typedef struct
 {
     // Table dimensions
     size_t num_cols;
-    size_t num_rows;
-    // Marker which cell is inserted next
-    size_t x;
-    size_t y;
+    // Start of linked list to rows
+    struct Row *first_row;
+    // Marker where to insert next cell
+    struct Row *curr_row;
     // Max. ocurring widths and heights in columns and rows
     int col_widths[MAX_COLS];
-    int row_heights[MAX_ROWS];
-    // Todo: fix missing hline when hline() was called after set_pos() was used to reset current cell
-    size_t num_hlines;
-    size_t hlines[MAX_ROWS];
-    struct Cell cells[MAX_COLS][MAX_ROWS];
 } Table;
 
 Table get_empty_table();
-void reset_table(Table *table);
+void free_table(Table *table);
 void add_cell(Table *table, TextPosition textpos, char *buffer);
 void add_cell_fmt(Table *table, TextPosition textpos, char *fmt, ...);
-void add_cells_from_array(Table *table, size_t x, size_t y, size_t width, size_t height, char *array[height][width], ...);
+void add_cells_from_array(Table *table, size_t width, size_t height, char **array, TextPosition *alignments);
 void next_row(Table *table);
 void hline(Table *table);
-void set_position(Table *table, size_t col, size_t row);
 void print_table(Table *table, bool borders);

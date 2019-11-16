@@ -55,7 +55,7 @@ int main()
     }
 
     print_table(&table, true);
-    reset_table(&table);
+    free_table(&table);
 
     if (!error)
     {
