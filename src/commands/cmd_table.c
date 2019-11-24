@@ -114,22 +114,24 @@ void cmd_table_exec(char *input)
     // Header
     if (g_interactive)
     {
-        add_cell(&table, TEXTPOS_CENTER, " # ");
+        add_cell(&table, ALIGN_CENTER, " # ");
+        vline(&table, BORDER_SINGLE);
 
         if (num_vars != 0)
         {
-            add_cell_fmt(&table, TEXTPOS_CENTER, VAR_COLOR " %s " COL_RESET, variables[0]);
+            add_cell_fmt(&table, ALIGN_CENTER, VAR_COLOR " %s " COL_RESET, variables[0]);
         }
         else
         {
-            add_cell(&table, TEXTPOS_RIGHT, "");
+            add_cell(&table, ALIGN_RIGHT, "");
         }
+        vline(&table, BORDER_SINGLE);
         
         char inlined_expr[sizeof_tree_to_string(expr, true)];
         unsafe_tree_to_string(expr, inlined_expr, true);
-        add_cell_fmt(&table, TEXTPOS_CENTER, " %s ", inlined_expr);
+        add_cell_fmt(&table, ALIGN_CENTER, " %s ", inlined_expr);
         next_row(&table);
-        hline(&table);
+        hline(&table, BORDER_SINGLE);
     }
 
     // Loop through all values and add them to table
@@ -140,9 +142,9 @@ void cmd_table_exec(char *input)
         replace_variable_nodes(&current_expr, current_val, variables[0]);
         double result = arith_eval(current_expr);
 
-        add_cell_fmt(&table, TEXTPOS_RIGHT, " %zu ", i);
-        add_cell_fmt(&table, TEXTPOS_RIGHT, " " CONSTANT_TYPE_FMT " ", start_val);
-        add_cell_fmt(&table, TEXTPOS_LEFT, " " CONSTANT_TYPE_FMT " ", result);
+        add_cell_fmt(&table, ALIGN_RIGHT, " %zu ", i);
+        add_cell_fmt(&table, ALIGN_RIGHT, " " CONSTANT_TYPE_FMT " ", start_val);
+        add_cell_fmt(&table, ALIGN_LEFT, " " CONSTANT_TYPE_FMT " ", result);
 
         if (num_args == 6)
         {
@@ -163,7 +165,7 @@ void cmd_table_exec(char *input)
         start_val += step_val;
     }
 
-    print_table(&table, g_interactive);
+    print_table(&table);
     free_table(&table);
 
     if (num_args == 6)

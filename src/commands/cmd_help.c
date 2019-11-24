@@ -9,6 +9,9 @@
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
 
+#define COMMAND "help"
+#define OPERATORS " operators"
+
 static char *VERSION = "1.4.6";
 
 static char *INFOBOX_FMT =
@@ -22,7 +25,7 @@ static char *COMMAND_TABLE[7][2] = {
       "   [fold <expr> ; <init>]",               "Prints table of values and optionally folds them.\n   In fold expression, 'x' is replaced with the intermediate result (init in first step),\n   'y' is replaced with the current value. Result is stored in 'ans'." },
     { "load <path>",                             "Loads file as if its content had been typed in." },
     { "debug <expr>",                            "Visually prints abstract syntax tree of expression." },
-    { "help",                                    "Lists available commands and operators." },
+    { "help [operators]",                        "Lists available commands and operators." },
     { "clear [last]",                            "Clears all or last user-defined functions and constants." },
     { "quit",                                    "Closes calculator." }
 };
@@ -34,7 +37,7 @@ static const size_t CONST_IND = 48; // Index of first constant
 
 bool cmd_help_check(char *input)
 {
-    return strcmp(input, "help") == 0;
+    return begins_with(COMMAND, input);
 }
 
 void print_op(Operator *op)
@@ -84,17 +87,18 @@ void print_op(Operator *op)
     printf(COL_RESET " ");
 }
 
-void cmd_help_exec(__attribute__((unused)) char *input)
+void normal_help()
 {
     Table table = get_empty_table();
-    add_cell_fmt(&table, TEXTPOS_CENTER, INFOBOX_FMT, VERSION);
-    print_table(&table, true);
+    add_cell_fmt(&table, ALIGN_CENTER, INFOBOX_FMT, VERSION);
+    make_boxed(&table, BORDER_DOUBLE);
+    print_table(&table);
     free_table(&table);
     printf("\n");
 
     table = get_empty_table();
-    add_cells_from_array(&table, 2, 7, (char**)COMMAND_TABLE, (TextPosition[]){ TEXTPOS_LEFT, TEXTPOS_LEFT });
-    print_table(&table, false);
+    add_cells_from_array(&table, 2, 7, (char**)COMMAND_TABLE, (TextAlignment[]){ ALIGN_LEFT, ALIGN_LEFT });
+    print_table(&table);
     free_table(&table);
 
     printf("\nBasic operators:\n");
@@ -130,22 +134,41 @@ void cmd_help_exec(__attribute__((unused)) char *input)
         {
             char inlined_before[sizeof_tree_to_string(g_rules[i].before, true)];
             unsafe_tree_to_string(g_rules[i].before, inlined_before, true);
-            add_cell_fmt(&table, TEXTPOS_LEFT, "%s", inlined_before);
+            add_cell_fmt(&table, ALIGN_LEFT, "%s", inlined_before);
 
-            add_cell(&table, TEXTPOS_LEFT, " = ");
+            add_cell(&table, ALIGN_LEFT, " = ");
 
             char inlined_after[sizeof_tree_to_string(g_rules[i].after, true)];
             unsafe_tree_to_string(g_rules[i].after, inlined_after, true);
-            add_cell_fmt(&table, TEXTPOS_LEFT, "%s", inlined_after);
+            add_cell_fmt(&table, ALIGN_LEFT, "%s", inlined_after);
 
             next_row(&table);
         }
-        print_table(&table, false);
+        print_table(&table);
         free_table(&table);
         printf("\n");
     }
     else
     {
         printf("\n\n");
+    }
+}
+
+void cmd_help_exec(char *input)
+{
+    if (strcmp(input, COMMAND OPERATORS) == 0)
+    {
+        //help_operators();
+    }
+    else
+    {
+        if (strcmp(input, COMMAND) == 0)
+        {
+            normal_help();
+        }
+        else
+        {
+            printf("Invalid syntax.\n");
+        }
     }
 }

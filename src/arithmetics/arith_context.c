@@ -105,7 +105,6 @@ double arith_eval(Node *tree)
         {
             return get_const_value(tree);
         }
-
         case NTYPE_OPERATOR:
         {
             size_t num_args = get_num_children(tree);
@@ -116,10 +115,9 @@ double arith_eval(Node *tree)
             }
             return op_eval(get_op(tree), num_args, args);
         }
-
         case NTYPE_VARIABLE:
         {
-            printf("Error: Encountered variable in arith_eval\n");
+            printf("Error: Encountered variable in arith_eval.\n");
             return -1;
         }
     }
@@ -132,6 +130,7 @@ double op_eval(Operator *op, size_t num_args, double *args)
     switch ((size_t)(op - operators))
     {
         case 0: // $x
+            printf("Warning: Tried to evaluate $ operator.\n");
             return args[0];
         case 1: // x+y
             return args[0] + args[1];
@@ -275,7 +274,7 @@ double op_eval(Operator *op, size_t num_args, double *args)
             return 343.2;
     }
 
-    printf("Error: No evaluation case in eval_op\n");
+    printf("Error: No evaluation case in eval_op.\n");
     return -1;
 }
 
