@@ -300,16 +300,8 @@ void print_table(Table *table)
 
                 char *str;
                 size_t str_len;
-                if (curr_row->cells[k].is_set || true)
-                {
-                    str = NULL;
-                    str_len = get_line_of_cell(&curr_row->cells[k], line_indices[k], &str);
-                }
-                else
-                {
-                    str = "\0";
-                    str_len = 0;
-                }
+                str = NULL;
+                str_len = get_line_of_cell(&curr_row->cells[k], line_indices[k], &str);
                 
                 print_padded(str,
                     str_len,
@@ -539,11 +531,41 @@ void hline(Table *table, BorderStyle style)
 }
 
 /*
+Summary: Inserts num hlines at supplied indices (pass them as int!)
+*/
+void hline_at(Table *table, BorderStyle style, size_t num, ...)
+{
+    va_list args;
+    va_start(args, num);
+    for (size_t i = 0; i < num; i++)
+    {
+        struct Row *row = get_row(table, (size_t)va_arg(args, int));
+        if (row != NULL) row->hline_above = style;
+    }
+    va_end(args);
+}
+
+/*
 Summary: Inserts vertical line right to current column.
 */
 void vline(Table *table, BorderStyle style)
 {
     table->vlines[table->curr_col] = style;
+}
+
+/*
+Summary: Inserts num vlines at supplied indices (pass them as int!)
+*/
+void vline_at(Table *table, BorderStyle style, size_t num, ...)
+{
+    va_list args;
+    va_start(args, num);
+    for (size_t i = 0; i < num; i++)
+    {
+        size_t x = (size_t)va_arg(args, int);
+        if (x <= MAX_COLS) table->vlines[x] = style;
+    }
+    va_end(args);
 }
 
 /*

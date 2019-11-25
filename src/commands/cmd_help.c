@@ -10,9 +10,8 @@
 #include "../table/table.h"
 
 #define COMMAND "help"
-#define OPERATORS " operators"
 
-static char *VERSION = "1.4.6";
+static char *VERSION = "1.4.7";
 
 static char *INFOBOX_FMT =
     " Scientific calculator in which you can define your own functions and constants \n"
@@ -25,7 +24,7 @@ static char *COMMAND_TABLE[7][2] = {
       "   [fold <expr> ; <init>]",               "Prints table of values and optionally folds them.\n   In fold expression, 'x' is replaced with the intermediate result (init in first step),\n   'y' is replaced with the current value. Result is stored in 'ans'." },
     { "load <path>",                             "Loads file as if its content had been typed in." },
     { "debug <expr>",                            "Visually prints abstract syntax tree of expression." },
-    { "help [operators]",                        "Lists available commands and operators." },
+    { "help",                                    "Lists available commands and operators." },
     { "clear [last]",                            "Clears all or last user-defined functions and constants." },
     { "quit",                                    "Closes calculator." }
 };
@@ -37,7 +36,7 @@ static const size_t CONST_IND = 48; // Index of first constant
 
 bool cmd_help_check(char *input)
 {
-    return begins_with(COMMAND, input);
+    return strcmp(COMMAND, input) == 0;
 }
 
 void print_op(Operator *op)
@@ -87,11 +86,11 @@ void print_op(Operator *op)
     printf(COL_RESET " ");
 }
 
-void normal_help()
+void cmd_help_exec(char __attribute__((unused)) *input)
 {
     Table table = get_empty_table();
     add_cell_fmt(&table, ALIGN_CENTER, INFOBOX_FMT, VERSION);
-    make_boxed(&table, BORDER_DOUBLE);
+    make_boxed(&table, BORDER_SINGLE);
     print_table(&table);
     free_table(&table);
     printf("\n");
@@ -151,24 +150,5 @@ void normal_help()
     else
     {
         printf("\n\n");
-    }
-}
-
-void cmd_help_exec(char *input)
-{
-    if (strcmp(input, COMMAND OPERATORS) == 0)
-    {
-        //help_operators();
-    }
-    else
-    {
-        if (strcmp(input, COMMAND) == 0)
-        {
-            normal_help();
-        }
-        else
-        {
-            printf("Invalid syntax.\n");
-        }
     }
 }

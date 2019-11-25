@@ -63,7 +63,9 @@ void free_table(Table *table);
 void set_position(Table *table, size_t x, size_t y);
 void next_row(Table *table);
 void hline(Table *table, BorderStyle style);
+void hline_at(Table *table, BorderStyle style, size_t num, ...);
 void vline(Table *table, BorderStyle style);
+void vline_at(Table *table, BorderStyle style, size_t num, ...);
 void make_boxed(Table *table, BorderStyle style);
 void print_table(Table *table);
 
