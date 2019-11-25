@@ -42,7 +42,6 @@ struct Row
     struct Cell cells[MAX_COLS];
     struct Row *next_row;
 };
-// - - -
 
 typedef struct
 {
@@ -66,7 +65,6 @@ void next_row(Table *table);
 void hline(Table *table, BorderStyle style);
 void vline(Table *table, BorderStyle style);
 void make_boxed(Table *table, BorderStyle style);
-void add_full_lines(Table *table, BorderStyle style);
 void print_table(Table *table);
 
 void add_empty_cell(Table *table);

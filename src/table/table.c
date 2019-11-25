@@ -55,6 +55,7 @@ void add_cell_internal(Table *table, TextAlignment align, size_t span_x, size_t 
                 table->curr_row->cells[cell->x + j].span_x = span_x;
                 table->curr_row->cells[cell->x + j].is_set = true;
                 table->curr_row->cells[cell->x + j].parent = cell;
+                table->curr_row->cells[cell->x + j].align = cell->align;
             }
             else
             {
@@ -255,11 +256,11 @@ void print_table(Table *table)
     size_t row_heights[table->num_rows];
     get_dimensions(table, col_widths, row_heights);
 
-    printf("Dimensions: ");
+    /*printf("Dimensions: ");
     for (size_t i = 0; i < table->num_cols; i++) printf("%zu ", col_widths[i]);
     printf("; ");
     for (size_t i = 0; i < table->num_rows; i++) printf("%zu ", row_heights[i]);
-    printf("\n");
+    printf("\n");*/
 
     size_t line_indices[table->num_cols];
     for (size_t i = 0; i < table->num_cols; i++) line_indices[i] = 0;
@@ -299,7 +300,7 @@ void print_table(Table *table)
 
                 char *str;
                 size_t str_len;
-                if (curr_row->cells[k].is_set)
+                if (curr_row->cells[k].is_set || true)
                 {
                     str = NULL;
                     str_len = get_line_of_cell(&curr_row->cells[k], line_indices[k], &str);
@@ -562,19 +563,5 @@ void make_boxed(Table *table, BorderStyle style)
     else
     {
         append_row(table)->hline_above = style;
-    }
-}
-
-void add_full_lines(Table *table, BorderStyle style)
-{
-    for (size_t i = 0; i <= table->num_cols; i++)
-    {
-        table->vlines[i] = style;
-    }
-    struct Row *row = table->first_row;
-    while (row != NULL)
-    {
-        row->hline_above = style;
-        row = row->next_row;
     }
 }

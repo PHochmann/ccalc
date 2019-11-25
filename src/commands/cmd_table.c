@@ -163,14 +163,17 @@ void cmd_table_exec(char *input)
         start_val += step_val;
     }
 
-    print_table(&table);
-    free_table(&table);
-
     if (num_args == 6)
     {
-        printf("Fold result: " CONSTANT_TYPE_FMT "\n", fold_val);
+        hline(&table, BORDER_SINGLE);
+        add_cell_span(&table, ALIGN_LEFT, 2, 1, " Fold result ");
+        add_cell_fmt(&table, ALIGN_LEFT, " " CONSTANT_TYPE_FMT " ", fold_val);
         update_ans(fold_val);
     }
+
+    if (g_interactive) make_boxed(&table, BORDER_SINGLE);
+    print_table(&table);
+    free_table(&table);
 
     exit:
     free_tree(expr);

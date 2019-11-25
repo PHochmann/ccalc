@@ -26,23 +26,6 @@ static Test (*test_getters[])() = {
 
 int main()
 {
-    /*Table t = get_empty_table();
-    hline(&t, BORDER_SINGLE);
-    vline(&t, BORDER_SINGLE);
-    add_cell(&t, ALIGN_LEFT, "LOL\nxD");
-    vline(&t, BORDER_DOUBLE);
-    add_cell_span(&t, ALIGN_LEFT, 1, 2, "ROFL\n1\n2\n3\n4");
-    vline(&t, BORDER_SINGLE);
-    next_row(&t);
-    hline(&t, BORDER_SINGLE);
-    add_cell_span(&t, ALIGN_CENTER, 1, 1, "LOL\nxD");
-    add_cell(&t, ALIGN_LEFT, "ROFL");
-    next_row(&t);
-    hline(&t, BORDER_DOUBLE);
-    print_table(&t);
-    free_table(&t);
-    return 0;*/
-
     arith_init_ctx();
     Table table = get_empty_table();
     add_cell(&table, ALIGN_LEFT, "");
@@ -70,6 +53,17 @@ int main()
             error = true;
         }
         next_row(&table);
+    }
+
+    hline(&table, BORDER_SINGLE);
+    add_cell_span(&table, ALIGN_CENTER, 3, 1, "Overall result");
+    if (!error)
+    {
+        add_cell(&table, ALIGN_LEFT, F_GREEN " passed " COL_RESET);
+    }
+    else
+    {
+        add_cell(&table, ALIGN_LEFT, F_RED " failed " COL_RESET);
     }
 
     make_boxed(&table, BORDER_SINGLE);
