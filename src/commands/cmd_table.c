@@ -2,11 +2,11 @@
 
 #include "cmd_table.h"
 #include "console_util.h"
-#include "table.h"
 #include "../string_util.h"
 #include "../tree/tree_to_string.h"
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
+#include "../table/table.h"
 
 #define COMMAND "table "
 #define FOLD_KEYWORD " fold "
@@ -116,7 +116,6 @@ void cmd_table_exec(char *input)
     {
         add_cell(&table, ALIGN_CENTER, " # ");
         vline(&table, BORDER_SINGLE);
-
         if (num_vars != 0)
         {
             add_cell_fmt(&table, ALIGN_CENTER, VAR_COLOR " %s " COL_RESET, variables[0]);
@@ -126,7 +125,6 @@ void cmd_table_exec(char *input)
             add_cell(&table, ALIGN_RIGHT, "");
         }
         vline(&table, BORDER_SINGLE);
-        
         char inlined_expr[sizeof_tree_to_string(expr, true)];
         unsafe_tree_to_string(expr, inlined_expr, true);
         add_cell_fmt(&table, ALIGN_CENTER, " %s ", inlined_expr);

@@ -1,20 +1,9 @@
+#pragma once
 #include <stdbool.h>
 #include <stdarg.h>
 
-/*
- * Supports newlines and ANSI color codes
- * Only struct the user needs to use is Table
-*/
-
-// Current max. used in project (can be extended without further modifications)
+// Can be extended without further modifications
 #define MAX_COLS 10
-
-enum ChildType
-{
-    CTYPE_NONE,
-    CTYPE_FROM_ABOVE,
-    CTYPE_FROM_LEFT,
-};
 
 typedef enum
 {
@@ -40,10 +29,9 @@ struct Cell
 
     // Calculated
     bool is_set;
-    size_t text_width;
-    size_t text_height;
     bool text_needs_free;
-    enum ChildType child_type;
+    size_t x;
+    size_t y;
     struct Cell *parent;
 };
 
@@ -54,6 +42,7 @@ struct Row
     struct Cell cells[MAX_COLS];
     struct Row *next_row;
 };
+// - - -
 
 typedef struct
 {
@@ -72,10 +61,12 @@ typedef struct
 
 Table get_empty_table();
 void free_table(Table *table);
+void set_position(Table *table, size_t x, size_t y);
 void next_row(Table *table);
 void hline(Table *table, BorderStyle style);
 void vline(Table *table, BorderStyle style);
 void make_boxed(Table *table, BorderStyle style);
+void add_full_lines(Table *table, BorderStyle style);
 void print_table(Table *table);
 
 void add_empty_cell(Table *table);

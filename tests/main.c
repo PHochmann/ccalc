@@ -8,8 +8,8 @@
 #include "test_randomized.h"
 #include "test_table.h"
 #include "../src/commands/core.h"
-#include "../src/commands/table.h"
 #include "../src/arithmetics/arith_context.h"
+#include "../src/table/table.h"
 
 #if TEST_TABLES
 static const size_t NUM_TESTS = 4;
@@ -26,7 +26,7 @@ static Test (*test_getters[])() = {
 
 int main()
 {
-    Table t = get_empty_table();
+    /*Table t = get_empty_table();
     hline(&t, BORDER_SINGLE);
     vline(&t, BORDER_SINGLE);
     add_cell(&t, ALIGN_LEFT, "LOL\nxD");
@@ -41,12 +41,12 @@ int main()
     hline(&t, BORDER_DOUBLE);
     print_table(&t);
     free_table(&t);
-    return 0;
-
+    return 0;*/
 
     arith_init_ctx();
     Table table = get_empty_table();
     add_cell(&table, ALIGN_LEFT, "");
+    vline(&table, BORDER_SINGLE);
     add_cell(&table, ALIGN_CENTER, " Test suite ");
     add_cell(&table, ALIGN_CENTER, " #Cases ");
     add_cell(&table, ALIGN_CENTER, " Result ");
@@ -72,6 +72,7 @@ int main()
         next_row(&table);
     }
 
+    make_boxed(&table, BORDER_SINGLE);
     print_table(&table);
     free_table(&table);
 

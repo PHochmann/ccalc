@@ -31,7 +31,7 @@ if [ "$1" = "-debug" ] || [ "$1" = "-d" ]; then
             ${DIR}/src/tree/*.c \
             ${DIR}/src/arithmetics/arith_context.c \
             ${DIR}/src/string_util.c \
-            ${DIR}/src/commands/table.c \
+            ${DIR}/src/table/*.c \
             ${DIR}/tests/*.c \
             -o ${DIR}/bin/tests.out -lm
         if [ "$?" = 0 ]; then

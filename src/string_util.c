@@ -34,35 +34,6 @@ bool is_delimiter(char *c)
     return strcmp(c, ",") == 0;
 }
 
-/*
-Summary: Calculates length of string displayed in console,
-    i.e. reads until \0 or \n and omits ANSI-escaped color sequences
-    Todo: Consider \t and other special chars
-*/
-size_t ansi_strlen(char *str)
-{
-    size_t res = 0;
-    size_t pos = 0;
-    while (str[pos] != '\0' && str[pos] != '\n')
-    {
-        if (str[pos] == 27) // Escape byte (27)
-        {
-            // Search for terminating byte and abort on end of string
-            // (should not happen on well-formed strings but could happen due to truncation)
-            while (str[pos] != 'm' && str[pos + 1] != '\0')
-            {
-                pos++;
-            }
-        }
-        else
-        {
-            res++;
-        }
-        pos++;
-    }
-    return res;
-}
-
 bool begins_with(char *prefix, char *str)
 {
     size_t prefix_length = strlen(prefix);

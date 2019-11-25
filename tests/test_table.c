@@ -3,9 +3,9 @@
 
 #include "test_table.h"
 #include "../src/string_util.h"
-#include "../src/commands/table.h"
+#include "../src/table/table.h"
 
-#define NUM_CASES 5
+#define NUM_CASES 4
 #define GREEN     "\x1B[92m"
 #define CYAN      "\x1B[1;36m"
 #define COL_RESET "\x1B[0m"
@@ -17,10 +17,6 @@ char *arrayA[4][3] = {
     { "3", "23.1132310", "c" },
 };
 
-char *arrayB[1][2] = {
-    { "centered", F_GREEN "centered" COL_RESET }
-};
-
 bool table_test()
 {
     Table table;
@@ -28,15 +24,16 @@ bool table_test()
     // Case 1
     table = get_empty_table();
     add_cells_from_array(&table, 3, 4, (char**)arrayA, (TextAlignment[]){ ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT });
-    hline(&table, BORDER_DOUBLE);
-    next_row(&table);
-    add_cells_from_array(&table, 2, 1, (char**)arrayB, (TextAlignment[]){ ALIGN_CENTER, ALIGN_CENTER });
-    next_row(&table);
-    hline(&table, BORDER_SINGLE);
-    add_cell(&table, ALIGN_CENTER, "");
+    add_cell_span(&table, ALIGN_CENTER, 2, 3, F_GREEN "centered" COL_RESET);
+    //next_row(&table);
+    //add_empty_cell(&table);
+    //next_row(&table);
+    //add_empty_cell(&table);
+    add_full_lines(&table, BORDER_DOUBLE);
     print_table(&table);
-    print_table(&table); // Case 2
     free_table(&table);
+
+    return false;
 
     // Case 3
     table = get_empty_table();

@@ -2,12 +2,12 @@
 #include <string.h>
 
 #include "cmd_help.h"
-#include "table.h"
 #include "../string_util.h"
 #include "../tree/operator.h"
 #include "../tree/tree_to_string.h"
 #include "../arithmetics/arith_context.h"
 #include "../arithmetics/arith_rules.h"
+#include "../table/table.h"
 
 #define COMMAND "help"
 #define OPERATORS " operators"
