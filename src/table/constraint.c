@@ -12,7 +12,7 @@ struct Constraint
     size_t min;
 };
 
-void set_paddings(size_t num_cells, struct Cell **col)
+void set_dot_paddings(size_t num_cells, struct Cell **col)
 {
     size_t dot_indices[num_cells];
     size_t max_dot_index = 0;
@@ -24,16 +24,16 @@ void set_paddings(size_t num_cells, struct Cell **col)
             char *dot = strstr(col[i]->text, get_decimal_separator());
             if (dot != NULL)
             {
-                dot_indices[i] = dot - col[i]->text;
+                dot_indices[i] = console_strlen(dot);
             }
             else
             {
-                size_t len = strlen(col[i]->text);
-                while (len > 0 && !is_digit(col[i]->text[len - 1]))
+                size_t bytes = strlen(col[i]->text);
+                while (bytes > 0 && !is_digit(col[i]->text[bytes - 1]))
                 {
-                    len--;
+                    bytes--;
                 }
-                dot_indices[i] = len;
+                dot_indices[i] = console_strlen(col[i]->text + bytes);
             }
             if (dot_indices[i] > max_dot_index)
             {
@@ -46,7 +46,7 @@ void set_paddings(size_t num_cells, struct Cell **col)
     {
         if (col[i]->align == ALIGN_NUMBERS)
         {
-            col[i]->padding = max_dot_index - dot_indices[i];
+            col[i]->dot_padding = max_dot_index - dot_indices[i];
         }
     }
 }
@@ -107,7 +107,7 @@ void get_dimensions(Table *table, size_t *out_col_widths, size_t *out_row_height
             curr_row = curr_row->next_row;
             index++;
         }
-        set_paddings(table->num_rows, cells);
+        set_dot_paddings(table->num_rows, cells);
     }
 
     // Satisfy constraints of width
@@ -120,7 +120,7 @@ void get_dimensions(Table *table, size_t *out_col_widths, size_t *out_row_height
             // Build constraints for set parent cells
             if (curr_row->cells[i].is_set && curr_row->cells[i].parent == NULL)
             {
-                size_t min = get_text_width(curr_row->cells[i].text) + curr_row->cells[i].padding;
+                size_t min = get_text_width(curr_row->cells[i].text) + curr_row->cells[i].dot_padding;
                 // Constraint can be weakened when vlines are in between
                 for (size_t j = i + 1; j < i + curr_row->cells[i].span_x; j++)
                 {

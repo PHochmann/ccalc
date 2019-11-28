@@ -83,8 +83,8 @@ void print_padded(char *string, int bytes, int total_length, int dot_padding, Te
         }
         case ALIGN_NUMBERS:
         {
-            printf("%*s%.*s%*s", dot_padding, "", bytes, string,
-                total_length - string_length - dot_padding, "");
+            printf("%*s%.*s%*s", total_length - dot_padding - string_length, "", bytes, string,
+                dot_padding, "");
             break;
         }
     }

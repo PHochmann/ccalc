@@ -12,9 +12,9 @@
 
 char *arrayA[4][4] = {
     { "alpha", "beta", "gamma", " delta " },
-    { "1", "-1110.1", "a.......", "777" },
-    { "2", "10.1", "b", "222" },
-    { "3.......", "23.1132310", "c", "333" },
+    { "1", "-1110.1", "a.......", " 777" },
+    { "2", "10.1", "b", " 222" },
+    { "3.......", "23.1132310", "c", " 333" },
 };
 
 bool table_test()
@@ -22,7 +22,7 @@ bool table_test()
     // Case 1
     Table t1 = get_empty_table();
     add_cells_from_array(&t1, 4, 4, (char**)arrayA,
-        (TextAlignment[]){ ALIGN_LEFT, ALIGN_NUMBERS, ALIGN_RIGHT, ALIGN_LEFT });
+        (TextAlignment[]){ ALIGN_LEFT, ALIGN_NUMBERS, ALIGN_RIGHT, ALIGN_CENTER });
     set_position(&t1, 1, 0);
     set_alignment(&t1, ALIGN_CENTER);
     set_position(&t1, 4, 0);
@@ -39,8 +39,10 @@ bool table_test()
     next_row(&t1);
     add_cell_span(&t1, ALIGN_CENTER, 2, 1, CYAN "span x" COL_RESET);
     make_boxed(&t1, BORDER_SINGLE);
-    hline_at(&t1, BORDER_DOUBLE, 4, 1, 4, 5, 6);
+    hline_at(&t1, BORDER_DOUBLE, 3, 1, 4, 5);
+    hline_at(&t1, BORDER_SINGLE, 1, 6);
     vline_at(&t1, BORDER_DOUBLE, 4, 1, 2, 3, 4);
+    vline_at(&t1, BORDER_DOUBLE, 1, 5);
     print_table(&t1);
     free_table(&t1);
 

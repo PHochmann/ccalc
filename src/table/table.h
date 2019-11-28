@@ -17,7 +17,7 @@ typedef enum
     ALIGN_LEFT,
     ALIGN_RIGHT,
     ALIGN_CENTER,
-    ALIGN_NUMBERS,
+    ALIGN_NUMBERS, // Aligned at dot, rightmost, DOES NOT SUPPORT \n
 } TextAlignment;
 
 struct Cell
@@ -33,7 +33,7 @@ struct Cell
     bool text_needs_free;
     size_t x;
     size_t y;
-    size_t padding;
+    size_t dot_padding;
     struct Cell *parent;
 };
 

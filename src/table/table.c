@@ -41,7 +41,7 @@ void add_cell_internal(Table *table, TextAlignment align, size_t span_x, size_t 
         .is_set = true,
         .text_needs_free = needs_free,
         .parent = NULL,
-        .padding = 0
+        .dot_padding = 0
     };
 
     // Insert rows and set child cells for span_x and span_y
@@ -130,17 +130,43 @@ void print_hline(BorderStyle style)
     }
 }
 
-void print_border_char(bool left, bool right, bool above, bool below, BorderStyle style)
+void print_intersection_char(bool left, bool right, bool above, bool below, BorderStyle hline_style, BorderStyle vline_style)
 {
+    // Fake intersection
     if (above && below && !left && !right)
     {
-        print_vline(style);
+        print_vline(vline_style);
         return;
     }
     if (!above && !below && left && right)
     {
-        print_hline(style);
+        print_hline(hline_style);
         return;
+    }
+
+    // True intersection
+    int style_choice = 0;
+    if (above) style_choice++;
+    if (below) style_choice++;
+    if (left) style_choice--;
+    if (right) style_choice--;
+
+    BorderStyle style = BORDER_NONE;
+    if (style_choice > 0) style = vline_style;
+    if (style_choice < 0) style = hline_style;
+    if (style_choice == 0)
+    {
+        if (hline_style == BORDER_DOUBLE && vline_style == BORDER_DOUBLE)
+        {
+            style = BORDER_DOUBLE;
+        }
+        else
+        {
+            if (hline_style == BORDER_SINGLE || vline_style == BORDER_SINGLE)
+            {
+                style = BORDER_SINGLE;
+            }
+        }
     }
 
     size_t matrix_y = 0;
@@ -181,13 +207,6 @@ bool has_upper_border(struct Cell *cell)
     return cell->parent == NULL || cell->parent->y == cell->y;
 }
 
-// When a hline and a vline intersect each other, choose the single border if present
-BorderStyle choose_style(BorderStyle a, BorderStyle b)
-{
-    if (a == BORDER_SINGLE || b == BORDER_SINGLE) return BORDER_SINGLE;
-    return a;
-}
-
 // Above row can be NULL, below row must not be NULL!
 void print_complete_line(Table *table,
     struct Row *above_row,
@@ -205,8 +224,7 @@ void print_complete_line(Table *table,
             bool left = i > 0 && has_upper_border(&below_row->cells[i - 1]);
             bool right = i < MAX_COLS - 1 && has_upper_border(&below_row->cells[i]);
 
-            print_border_char(left, right, above, below,
-                choose_style(table->vlines[i], below_row->hline_above));
+            print_intersection_char(left, right, above, below, below_row->hline_above, table->vlines[i]);
         }
 
         // Print -- in between intersections (or content when cell has span_y > 1)
@@ -247,8 +265,7 @@ void print_complete_line(Table *table,
         bool below = !below_row->is_empty;
         bool left  = has_upper_border(&below_row->cells[table->num_cols - 1]);
         bool right = false;
-        print_border_char(left, right, above, below,
-            choose_style(table->vlines[table->num_cols], below_row->hline_above));
+        print_intersection_char(left, right, above, below, below_row->hline_above, table->vlines[table->num_cols]);
     }
     printf("\n");
 }
@@ -269,7 +286,7 @@ void print_debug(Table *table)
 */
 
 /*
-Summary: Prints table to stdout, optionally with border-box around it
+Summary: Prints table to stdout
 */
 void print_table(Table *table)
 {
@@ -321,7 +338,7 @@ void print_table(Table *table)
                 print_padded(str,
                     str_len,
                     get_total_width(table, col_widths, k, curr_row->cells[k].span_x),
-                    curr_row->cells[k].padding,
+                    curr_row->cells[k].dot_padding,
                     curr_row->cells[k].align);
                 
                 line_indices[k]++;
