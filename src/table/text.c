@@ -49,7 +49,7 @@ void print_repeated(char *string, size_t times)
     for (size_t i = 0; i < times; i++) printf("%s", string);
 }
 
-void print_padded(char *string, int bytes, int total_length, TextAlignment textpos)
+void print_padded(char *string, int bytes, int total_length, int dot_padding, TextAlignment textpos)
 {
     if (string == NULL)
     {
@@ -79,6 +79,13 @@ void print_padded(char *string, int bytes, int total_length, TextAlignment textp
             int padding = (total_length - string_length) / 2;
             printf("%*s%.*s%*s", padding, "", bytes, string,
                 (total_length - string_length) % 2 == 0 ? padding : padding + 1, "");
+            break;
+        }
+        case ALIGN_NUMBERS:
+        {
+            printf("%*s%.*s%*s", dot_padding, "", bytes, string,
+                total_length - string_length - dot_padding, "");
+            break;
         }
     }
 }

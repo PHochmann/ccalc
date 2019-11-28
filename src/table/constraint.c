@@ -1,5 +1,9 @@
+#include <string.h>
+#include <stdio.h>
+
 #include "constraint.h"
 #include "text.h"
+#include "../string_util.h"
 
 struct Constraint
 {
@@ -7,6 +11,45 @@ struct Constraint
     size_t to_index;
     size_t min;
 };
+
+void set_paddings(size_t num_cells, struct Cell **col)
+{
+    size_t dot_indices[num_cells];
+    size_t max_dot_index = 0;
+
+    for (size_t i = 0; i < num_cells; i++)
+    {
+        if (col[i]->align == ALIGN_NUMBERS)
+        {
+            char *dot = strstr(col[i]->text, get_decimal_separator());
+            if (dot != NULL)
+            {
+                dot_indices[i] = dot - col[i]->text;
+            }
+            else
+            {
+                size_t len = strlen(col[i]->text);
+                while (len > 0 && !is_digit(col[i]->text[len - 1]))
+                {
+                    len--;
+                }
+                dot_indices[i] = len;
+            }
+            if (dot_indices[i] > max_dot_index)
+            {
+                max_dot_index = dot_indices[i];
+            }
+        }
+    }
+
+    for (size_t i = 0; i < num_cells; i++)
+    {
+        if (col[i]->align == ALIGN_NUMBERS)
+        {
+            col[i]->padding = max_dot_index - dot_indices[i];
+        }
+    }
+}
 
 size_t needed_to_satisfy(struct Constraint *constr, size_t *vars)
 {
@@ -52,6 +95,21 @@ void get_dimensions(Table *table, size_t *out_col_widths, size_t *out_row_height
     size_t num_cells_upper = table->num_cols * table->num_rows;
     struct Constraint constrs[num_cells_upper];
 
+    // Calculate padding for ALIGN_AT_DOT
+    for (size_t i = 0; i < table->num_cols; i++)
+    {
+        struct Cell *cells[table->num_rows];
+        struct Row *curr_row = table->first_row;
+        size_t index = 0;
+        while (curr_row != NULL)
+        {
+            cells[index] = &curr_row->cells[i];
+            curr_row = curr_row->next_row;
+            index++;
+        }
+        set_paddings(table->num_rows, cells);
+    }
+
     // Satisfy constraints of width
     struct Row *curr_row = table->first_row;
     size_t index = 0;
@@ -62,7 +120,7 @@ void get_dimensions(Table *table, size_t *out_col_widths, size_t *out_row_height
             // Build constraints for set parent cells
             if (curr_row->cells[i].is_set && curr_row->cells[i].parent == NULL)
             {
-                size_t min = get_text_width(curr_row->cells[i].text);
+                size_t min = get_text_width(curr_row->cells[i].text) + curr_row->cells[i].padding;
                 // Constraint can be weakened when vlines are in between
                 for (size_t j = i + 1; j < i + curr_row->cells[i].span_x; j++)
                 {

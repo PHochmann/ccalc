@@ -11,22 +11,26 @@
 #define HLINE_DOUBLE "═"
 #define VLINE_SINGLE "│"
 #define VLINE_DOUBLE "║"
-static const char *BORDERS_SINGLE[3][3] = {
+static const char *BORDER_MATRIX_SINGLE[3][3] = {
     { "┌", "┬", "┐" },
     { "├", "┼", "┤" },
     { "└", "┴", "┘" },
 };
-static const char *BORDERS_DOUBLE[3][3] = {
+static const char *BORDER_MATRIX_DOUBLE[3][3] = {
     { "╔", "╦", "╗" },
     { "╠", "╬", "╣" },
     { "╚", "╩", "╝" },
 };
+
+// For ALIGN_NUMBERS
+char *decimal_separator = ".";
 
 void add_cell_internal(Table *table, TextAlignment align, size_t span_x, size_t span_y, char *text, bool needs_free)
 {
     if (table->curr_col + span_x > MAX_COLS) return;
 
     struct Cell *cell = &table->curr_row->cells[table->curr_col];
+    if (cell->is_set) return;
     *cell = (struct Cell){
         .align = align,
         .span_x = span_x,
@@ -36,7 +40,8 @@ void add_cell_internal(Table *table, TextAlignment align, size_t span_x, size_t 
         .y = cell->y,
         .is_set = true,
         .text_needs_free = needs_free,
-        .parent = NULL
+        .parent = NULL,
+        .padding = 0
     };
 
     // Insert rows and set child cells for span_x and span_y
@@ -149,13 +154,13 @@ void print_border_char(bool left, bool right, bool above, bool below, BorderStyl
 
     if (style == BORDER_DOUBLE)
     {
-        printf("%s", BORDERS_DOUBLE[matrix_y][matrix_x]);
+        printf("%s", BORDER_MATRIX_DOUBLE[matrix_y][matrix_x]);
     }
     else
     {
         if (style == BORDER_SINGLE)
         {
-            printf("%s", BORDERS_SINGLE[matrix_y][matrix_x]);
+            printf("%s", BORDER_MATRIX_SINGLE[matrix_y][matrix_x]);
         }
     }
 }
@@ -171,20 +176,17 @@ bool has_left_border(struct Cell *cell)
     return cell->parent == NULL || cell->parent->x == cell->x;
 }
 
-/*bool has_right_border(struct Cell *cell)
-{
-    return cell->span_x == 1 && (cell->parent == NULL || cell->parent->span_x - 1 == cell->x - cell->parent->x);
-}*/
-
 bool has_upper_border(struct Cell *cell)
 {
     return cell->parent == NULL || cell->parent->y == cell->y;
 }
 
-/*bool has_lower_border(struct Cell *cell)
+// When a hline and a vline intersect each other, choose the single border if present
+BorderStyle choose_style(BorderStyle a, BorderStyle b)
 {
-    return cell->span_y == 1 && (cell->parent == NULL || cell->parent->span_y - 1 == cell->y - cell->parent->y)
-}*/
+    if (a == BORDER_SINGLE || b == BORDER_SINGLE) return BORDER_SINGLE;
+    return a;
+}
 
 // Above row can be NULL, below row must not be NULL!
 void print_complete_line(Table *table,
@@ -202,7 +204,9 @@ void print_complete_line(Table *table,
             bool below = !below_row->is_empty && has_left_border(&below_row->cells[i]);
             bool left = i > 0 && has_upper_border(&below_row->cells[i - 1]);
             bool right = i < MAX_COLS - 1 && has_upper_border(&below_row->cells[i]);
-            print_border_char(left, right, above, below, below_row->hline_above);
+
+            print_border_char(left, right, above, below,
+                choose_style(table->vlines[i], below_row->hline_above));
         }
 
         // Print -- in between intersections (or content when cell has span_y > 1)
@@ -230,6 +234,7 @@ void print_complete_line(Table *table,
             print_padded(str,
                 len,
                 get_total_width(table, col_widths, i, parent->span_x),
+                0,
                 parent->align);
             i += parent->span_x - 1;
         }
@@ -242,10 +247,26 @@ void print_complete_line(Table *table,
         bool below = !below_row->is_empty;
         bool left  = has_upper_border(&below_row->cells[table->num_cols - 1]);
         bool right = false;
-        print_border_char(left, right, above, below, below_row->hline_above);
+        print_border_char(left, right, above, below,
+            choose_style(table->vlines[table->num_cols], below_row->hline_above));
     }
     printf("\n");
 }
+
+/*
+void print_debug(Table *table)
+{
+    size_t col_widths[table->num_cols];
+    size_t row_heights[table->num_rows];
+    get_dimensions(table, col_widths, row_heights);
+
+    printf("Num cols: %zu, Num rows: %zu\n, Dimensions: ", table->num_rows, table->num_cols);
+    for (size_t i = 0; i < table->num_cols; i++) printf("%zu ", col_widths[i]);
+    printf("; ");
+    for (size_t i = 0; i < table->num_rows; i++) printf("%zu ", row_heights[i]);
+    printf("\n");
+}
+*/
 
 /*
 Summary: Prints table to stdout, optionally with border-box around it
@@ -255,12 +276,6 @@ void print_table(Table *table)
     size_t col_widths[table->num_cols];
     size_t row_heights[table->num_rows];
     get_dimensions(table, col_widths, row_heights);
-
-    /*printf("Dimensions: ");
-    for (size_t i = 0; i < table->num_cols; i++) printf("%zu ", col_widths[i]);
-    printf("; ");
-    for (size_t i = 0; i < table->num_rows; i++) printf("%zu ", row_heights[i]);
-    printf("\n");*/
 
     size_t line_indices[table->num_cols];
     for (size_t i = 0; i < table->num_cols; i++) line_indices[i] = 0;
@@ -306,6 +321,7 @@ void print_table(Table *table)
                 print_padded(str,
                     str_len,
                     get_total_width(table, col_widths, k, curr_row->cells[k].span_x),
+                    curr_row->cells[k].padding,
                     curr_row->cells[k].align);
                 
                 line_indices[k]++;
@@ -586,4 +602,19 @@ void make_boxed(Table *table, BorderStyle style)
     {
         append_row(table)->hline_above = style;
     }
+}
+
+void set_decimal_separator(char *str)
+{
+    decimal_separator = str;
+}
+
+char *get_decimal_separator()
+{
+    return decimal_separator;
+}
+
+void set_alignment(Table *table, TextAlignment align)
+{
+    table->curr_row->cells[table->curr_col].align = align;
 }

@@ -141,8 +141,8 @@ void cmd_table_exec(char *input)
         double result = arith_eval(current_expr);
 
         add_cell_fmt(&table, ALIGN_RIGHT, " %zu ", i);
-        add_cell_fmt(&table, ALIGN_RIGHT, " " CONSTANT_TYPE_FMT " ", start_val);
-        add_cell_fmt(&table, ALIGN_LEFT, " " CONSTANT_TYPE_FMT " ", result);
+        add_cell_fmt(&table, ALIGN_NUMBERS, " " CONSTANT_TYPE_FMT " ", start_val);
+        add_cell_fmt(&table, ALIGN_NUMBERS, " " CONSTANT_TYPE_FMT " ", result);
 
         if (num_args == 6)
         {
@@ -166,8 +166,8 @@ void cmd_table_exec(char *input)
     if (num_args == 6)
     {
         hline(&table, BORDER_SINGLE);
-        add_cell_span(&table, ALIGN_LEFT, 2, 1, " Fold result ");
-        add_cell_fmt(&table, ALIGN_LEFT, " " CONSTANT_TYPE_FMT " ", fold_val);
+        add_cell_span(&table, ALIGN_CENTER, 2, 1, " Fold result ");
+        add_cell_fmt(&table, ALIGN_NUMBERS, " " CONSTANT_TYPE_FMT " ", fold_val);
         update_ans(fold_val);
     }
 

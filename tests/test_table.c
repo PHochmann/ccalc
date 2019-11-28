@@ -12,7 +12,7 @@
 
 char *arrayA[4][4] = {
     { "alpha", "beta", "gamma", " delta " },
-    { "1", "1110.1", "a.......", "777" },
+    { "1", "-1110.1", "a.......", "777" },
     { "2", "10.1", "b", "222" },
     { "3.......", "23.1132310", "c", "333" },
 };
@@ -22,31 +22,25 @@ bool table_test()
     // Case 1
     Table t1 = get_empty_table();
     add_cells_from_array(&t1, 4, 4, (char**)arrayA,
-        (TextAlignment[]){ ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT, ALIGN_LEFT });
-    set_position(&t1, 1, 1);
-    vline(&t1, BORDER_SINGLE);
-    hline(&t1, BORDER_SINGLE);
-    set_position(&t1, 2, 4);
-    vline(&t1, BORDER_SINGLE);
-    hline(&t1, BORDER_SINGLE);
-    set_position(&t1, 3, 0);
-    vline(&t1, BORDER_SINGLE);
+        (TextAlignment[]){ ALIGN_LEFT, ALIGN_NUMBERS, ALIGN_RIGHT, ALIGN_LEFT });
+    set_position(&t1, 1, 0);
+    set_alignment(&t1, ALIGN_CENTER);
     set_position(&t1, 4, 0);
-    vline(&t1, BORDER_DOUBLE);
     add_cell(&t1, ALIGN_LEFT, " test ");
     set_position(&t1, 3, 4);
-    add_cell_span(&t1, ALIGN_CENTER, 2, 3, "~ ~ span x ~ ~\nand y ");
+    add_cell_span(&t1, ALIGN_CENTER, 2, 1, "!");
+    set_position(&t1, 3, 5);
+    add_cell_span(&t1, ALIGN_CENTER, 2, 2, "span x\nand y"); 
     set_position(&t1, 0, 4);
     add_cell_span(&t1, ALIGN_CENTER, 2, 1, "span x");
     add_cell_span(&t1, ALIGN_CENTER, 1, 3, "span y\nspan y\nspan y\nspan y\nspan y");
     next_row(&t1);
-    hline(&t1, BORDER_SINGLE);
-    add_cell_span(&t1, ALIGN_CENTER, 2, 1, "span x");
+    add_cell_span(&t1, ALIGN_CENTER, 2, 1, GREEN "span x" COL_RESET);
     next_row(&t1);
-    hline(&t1, BORDER_SINGLE);
-    add_cell_span(&t1, ALIGN_CENTER, 2, 1, "span x");
-    next_row(&t1);
+    add_cell_span(&t1, ALIGN_CENTER, 2, 1, CYAN "span x" COL_RESET);
     make_boxed(&t1, BORDER_SINGLE);
+    hline_at(&t1, BORDER_DOUBLE, 4, 1, 4, 5, 6);
+    vline_at(&t1, BORDER_DOUBLE, 4, 1, 2, 3, 4);
     print_table(&t1);
     free_table(&t1);
 
@@ -69,8 +63,8 @@ bool table_test()
     add_cell_fmt(&t2, ALIGN_LEFT, "%d", 9);
     next_row(&t2);
     add_cell_span(&t2, ALIGN_LEFT, 5, 1, " ");
-    vline_at(&t2, BORDER_DOUBLE, 6, 0, 1, 2, 3, 4, 5);
-    hline_at(&t2, BORDER_DOUBLE, 6, 0, 1, 2, 3, 4, 5);
+    vline_at(&t2, BORDER_SINGLE, 6, 0, 1, 2, 3, 4, 5);
+    hline_at(&t2, BORDER_SINGLE, 6, 0, 1, 2, 3, 4, 5);
     print_table(&t2);
     free_table(&t2);
 
