@@ -1,9 +1,9 @@
 #include <string.h>
-#include <stdio.h>
 
 #include "constraint.h"
 #include "text.h"
-#include "../string_util.h"
+#include "printing.h"
+#include "../string_util.h" // For is_digit
 
 // For ALIGN_NUMBERS
 char *decimal_separator = ".";
@@ -15,14 +15,16 @@ struct Constraint
     size_t min;
 };
 
-void set_dot_paddings(size_t num_cells, Cell **col)
+void set_dot_paddings(size_t num_cells, TextAlignment default_align, struct Cell **col)
 {
     size_t dot_indices[num_cells];
     size_t max_dot_index = 0;
 
     for (size_t i = 0; i < num_cells; i++)
     {
-        if (col[i]->settings.align == ALIGN_NUMBERS)
+        if (col[i]->text == NULL) continue;
+
+        if (get_align(default_align, col[i]) == ALIGN_NUMBERS)
         {
             char *dot = strstr(col[i]->text, decimal_separator);
             if (dot != NULL)
@@ -47,7 +49,7 @@ void set_dot_paddings(size_t num_cells, Cell **col)
 
     for (size_t i = 0; i < num_cells; i++)
     {
-        if (col[i]->settings.align == ALIGN_NUMBERS)
+        if (get_align(default_align, col[i]) == ALIGN_NUMBERS)
         {
             col[i]->dot_padding = max_dot_index - dot_indices[i];
         }
@@ -101,7 +103,7 @@ void get_dimensions(Table *table, size_t *out_col_widths, size_t *out_row_height
     // Calculate padding for ALIGN_AT_DOT
     for (size_t i = 0; i < table->num_cols; i++)
     {
-        Cell *cells[table->num_rows];
+        struct Cell *cells[table->num_rows];
         struct Row *curr_row = table->first_row;
         size_t index = 0;
         while (curr_row != NULL)
@@ -110,7 +112,7 @@ void get_dimensions(Table *table, size_t *out_col_widths, size_t *out_row_height
             curr_row = curr_row->next_row;
             index++;
         }
-        set_dot_paddings(table->num_rows, cells);
+        set_dot_paddings(table->num_rows, table->alignments[i], cells);
     }
 
     // Satisfy constraints of width
@@ -118,23 +120,23 @@ void get_dimensions(Table *table, size_t *out_col_widths, size_t *out_row_height
     size_t index = 0;
     while (curr_row != NULL)
     {
-        for (size_t i = 0; i < MAX_COLS; i++)
+        for (size_t i = 0; i < table->num_cols; i++)
         {
             // Build constraints for set parent cells
             if (curr_row->cells[i].is_set && curr_row->cells[i].parent == NULL)
             {
                 size_t min = get_text_width(curr_row->cells[i].text) + curr_row->cells[i].dot_padding;
                 // Constraint can be weakened when vlines are in between
-                for (size_t j = i + 1; j < i + curr_row->cells[i].settings.span_x; j++)
+                for (size_t j = i + 1; j < i + curr_row->cells[i].span_x; j++)
                 {
                     if (min == 0) break;
-                    if (table->vlines[j]) min--;
+                    if (table->border_left_counters[j] > 0) min--;
                 }
 
                 constrs[index] = (struct Constraint){
                     .min = min,
                     .from_index = i,
-                    .to_index = i + curr_row->cells[i].settings.span_x
+                    .to_index = i + curr_row->cells[i].span_x
                 };
                 index++;
             }
@@ -150,7 +152,7 @@ void get_dimensions(Table *table, size_t *out_col_widths, size_t *out_row_height
     size_t row_index = 0;
     while (curr_row != NULL)
     {
-        for (size_t i = 0; i < MAX_COLS; i++)
+        for (size_t i = 0; i < table->num_cols; i++)
         {
             if (curr_row->cells[i].is_set && curr_row->cells[i].parent == NULL)
             {
@@ -158,17 +160,17 @@ void get_dimensions(Table *table, size_t *out_col_widths, size_t *out_row_height
                 struct Row *row_checked_for_hline = curr_row->next_row;
 
                 // Constraint can be weakened when hlines are in between
-                for (size_t j = i + 1; j < i + curr_row->cells[i].settings.span_y; j++)
+                for (size_t j = i + 1; j < i + curr_row->cells[i].span_y; j++)
                 {
                     if (row_checked_for_hline == NULL || min == 0) break;
-                    if (row_checked_for_hline->hline) min--;
+                    if (row_checked_for_hline->border_above_counter > 0) min--;
                     row_checked_for_hline = row_checked_for_hline->next_row;
                 }
 
                 constrs[index] = (struct Constraint){
                     .min = min,
                     .from_index = row_index,
-                    .to_index = row_index + curr_row->cells[i].settings.span_y
+                    .to_index = row_index + curr_row->cells[i].span_y
                 };
                 index++;
             }

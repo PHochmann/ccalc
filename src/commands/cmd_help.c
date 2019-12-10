@@ -89,16 +89,15 @@ void print_op(Operator *op)
 void cmd_help_exec(char __attribute__((unused)) *input)
 {
     Table table = get_empty_table();
-    add_cell_fmt(&table, get_settings_align(ALIGN_CENTER), INFOBOX_FMT, VERSION);
+    add_cell_fmt(&table, INFOBOX_FMT, VERSION);
     make_boxed(&table, BORDER_SINGLE);
+    set_default_alignments(&table, 1, (TextAlignment[]){ ALIGN_CENTER });
     print_table(&table);
     free_table(&table);
     printf("\n");
 
     table = get_empty_table();
-    add_from_array(&table, 2, 7,
-        (TextAlignment[]){ ALIGN_LEFT, ALIGN_LEFT },
-        (char**)COMMAND_TABLE);
+    add_cells_from_array(&table, 2, 7, (char**)COMMAND_TABLE);
     print_table(&table);
     free_table(&table);
 
@@ -135,13 +134,13 @@ void cmd_help_exec(char __attribute__((unused)) *input)
         {
             char inlined_before[sizeof_tree_to_string(g_rules[i].before, true)];
             unsafe_tree_to_string(g_rules[i].before, inlined_before, true);
-            add_cell_fmt(&table, get_settings_align(ALIGN_LEFT), "%s", inlined_before);
+            add_cell_fmt(&table, "%s", inlined_before);
 
-            add_cell(&table, get_settings_align(ALIGN_LEFT), " = ");
+            add_cell(&table, " = ");
 
             char inlined_after[sizeof_tree_to_string(g_rules[i].after, true)];
             unsafe_tree_to_string(g_rules[i].after, inlined_after, true);
-            add_cell_fmt(&table, get_settings_align(ALIGN_LEFT), "%s", inlined_after);
+            add_cell_fmt(&table, "%s", inlined_after);
 
             next_row(&table);
         }

@@ -114,11 +114,13 @@ void cmd_table_exec(char *input)
     // Header
     if (g_interactive)
     {
-        add_cell(&table, get_settings_align(ALIGN_CENTER), " # ");
-
+        override_alignment(&table, ALIGN_CENTER);
+        add_cell(&table, " # ");
+        set_vline(&table, BORDER_SINGLE);
         if (num_vars != 0)
         {
-            add_cell_fmt(&table, get_settings_align(ALIGN_CENTER), VAR_COLOR " %s " COL_RESET, variables[0]);
+            override_alignment(&table, ALIGN_CENTER);
+            add_cell_fmt(&table, VAR_COLOR " %s " COL_RESET, variables[0]);
         }
         else
         {
@@ -127,8 +129,11 @@ void cmd_table_exec(char *input)
 
         char inlined_expr[sizeof_tree_to_string(expr, true)];
         unsafe_tree_to_string(expr, inlined_expr, true);
-        add_cell_fmt(&table, get_settings_align(ALIGN_CENTER), " %s ", inlined_expr);
+        override_alignment(&table, ALIGN_CENTER);
+        set_vline(&table, BORDER_SINGLE);
+        add_cell_fmt(&table, " %s ", inlined_expr);
         next_row(&table);
+        set_hline(&table, BORDER_SINGLE);
     }
 
     // Loop through all values and add them to table
@@ -139,9 +144,9 @@ void cmd_table_exec(char *input)
         replace_variable_nodes(&current_expr, current_val, variables[0]);
         double result = arith_eval(current_expr);
 
-        add_cell_fmt(&table, get_settings_align(ALIGN_RIGHT), " %zu ", i);
-        add_cell_fmt(&table, get_settings_align(ALIGN_NUMBERS), " " CONSTANT_TYPE_FMT " ", start_val);
-        add_cell_fmt(&table, get_settings_align(ALIGN_NUMBERS), " " CONSTANT_TYPE_FMT " ", result);
+        add_cell_fmt(&table, " %zu ", i);
+        add_cell_fmt(&table, " " CONSTANT_TYPE_FMT " ", start_val);
+        add_cell_fmt(&table, " " CONSTANT_TYPE_FMT " ", result);
 
         if (num_args == 6)
         {
@@ -164,22 +169,22 @@ void cmd_table_exec(char *input)
 
     if (num_args == 6)
     {
-        add_cell(&table, get_settings_align_span(ALIGN_NUMBERS, 2, 1), " Fold result ");
-        add_cell_fmt(&table, get_settings_align(ALIGN_NUMBERS), " " CONSTANT_TYPE_FMT " ", fold_val);
+        set_hline(&table, BORDER_SINGLE);
+        set_span(&table, 2, 1);
+        override_alignment(&table, ALIGN_CENTER);
+        add_cell(&table, " Fold result ");
+        override_left_border(&table, BORDER_DOUBLE);
+        add_cell_fmt(&table, " " CONSTANT_TYPE_FMT " ", fold_val);
         update_ans(fold_val);
+        next_row(&table);
     }
 
     if (g_interactive)
     {
-        horizontal_line(&table, BORDER_SINGLE, 1, 1);
-        if (num_args == 6)
-        {
-            horizontal_line(&table, BORDER_SINGLE, 1, table.num_rows - 1);
-        }
-        vertical_line(&table, BORDER_SINGLE, 2, 1, 2);
         make_boxed(&table, BORDER_SINGLE);
     }
 
+    set_default_alignments(&table, 3, (TextAlignment[]){ ALIGN_RIGHT, ALIGN_NUMBERS, ALIGN_NUMBERS });
     print_table(&table);
     free_table(&table);
 

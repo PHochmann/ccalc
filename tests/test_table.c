@@ -28,16 +28,16 @@ bool table_test()
     set_position(&t1, 4, 0);
     add_standard_cell(&t1, " test ");
     set_position(&t1, 3, 4);
-    add_cell(&t1, get_settings_align_span(ALIGN_CENTER, 2, 1), "!");
+    add_cell(&t1, "!");
     set_position(&t1, 3, 5);
-    add_cell(&t1, get_settings_align_span(ALIGN_CENTER, 2, 2), "span x\nand y"); 
+    add_cell(&t1, "span x\nand y"); 
     set_position(&t1, 0, 4);
-    add_cell(&t1, get_settings_align_span(ALIGN_CENTER, 2, 1), "span x");
-    add_cell(&t1, get_settings_align_span(ALIGN_CENTER, 1, 3), "span y\nspan y\nspan y\nspan y\nspan y");
+    add_cell(&t1, "span x");
+    add_cell(&t1, "span y\nspan y\nspan y\nspan y\nspan y");
     next_row(&t1);
-    add_cell(&t1, get_settings_align_span(ALIGN_CENTER, 2, 1), GREEN "span x" COL_RESET);
+    add_cell(&t1, GREEN "span x" COL_RESET);
     next_row(&t1);
-    add_cell(&t1, get_settings_align_span(ALIGN_CENTER, 2, 1), CYAN "span x" COL_RESET);
+    add_cell(&t1, CYAN "span x" COL_RESET);
     make_boxed(&t1, BORDER_SINGLE);
     horizontal_line(&t1, BORDER_DOUBLE, 3, 1, 4, 5);
     horizontal_line(&t1, BORDER_SINGLE, 1, 6);
@@ -48,13 +48,13 @@ bool table_test()
 
     // Case 2
     Table t2 = get_empty_table();
-    add_cell(&t2, get_settings_align_span(ALIGN_LEFT, 5, 1), " ");
+    add_cell(&t2, " ");
     next_row(&t2);
-    add_cell(&t2, get_settings_align_span(ALIGN_LEFT, 1, 3), " ");
+    add_cell(&t2, " ");
     add_standard_cell_fmt(&t2, "%d", 1);
     add_standard_cell_fmt(&t2, "%d", 2);
     add_standard_cell_fmt(&t2, "%d", 3);
-    add_cell(&t2, get_settings_align_span(ALIGN_LEFT, 1, 3), " ");
+    add_cell(&t2, " ");
     next_row(&t2);
     add_standard_cell_fmt(&t2, "%d", 4);
     add_standard_cell_fmt(&t2, "%d", 5);
@@ -64,7 +64,7 @@ bool table_test()
     add_standard_cell_fmt(&t2, "%d", 8);
     add_standard_cell_fmt(&t2, "%d", 9);
     next_row(&t2);
-    add_cell(&t2, get_settings_align_span(ALIGN_LEFT, 5, 1), " ");
+    add_cell(&t2, " ");
     vertical_line(&t2, BORDER_SINGLE, 6, 0, 1, 2, 3, 4, 5);
     horizontal_line(&t2, BORDER_SINGLE, 6, 0, 1, 2, 3, 4, 5);
     print_table(&t2);

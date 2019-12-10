@@ -7,64 +7,61 @@
 
 typedef enum
 {
-    BORDER_NONE   = 0,
-    BORDER_SINGLE = 1,
-    BORDER_DOUBLE = 2,
+    BORDER_NONE,
+    BORDER_SINGLE,
+    BORDER_DOUBLE,
 } BorderStyle;
 
 typedef enum
 {
     ALIGN_LEFT,
     ALIGN_RIGHT,
-    ALIGN_CENTER,
-    ALIGN_NUMBERS, // Aligned at dot, rightmost, DOES NOT SUPPORT \n
+    ALIGN_CENTER,  // Centered (rounded to the left)
+    ALIGN_NUMBERS, // Aligned at dot, rightmost, DOES NOT SUPPORT \n YET
 } TextAlignment;
 
-typedef struct
+struct Cell
 {
-    TextAlignment align;
-    size_t span_x;
-    size_t span_y;
-    BorderStyle border_left;
-    BorderStyle border_above;
-} CellSettings;
-
-typedef struct Cell
-{
-    // User-supplied (or generated for child cells)
-    CellSettings settings;
     char *text;
 
+    // Settings
+    TextAlignment align;
+    BorderStyle border_left;
+    BorderStyle border_above;
+    size_t span_x;
+    size_t span_y;
+
+    bool override_align;        // Set for col
+    bool override_border_left;  // Set for col
+    bool override_border_above; // Set for row
+
     // Generated
-    bool is_set;
-    bool text_needs_free;
-    size_t x;
-    size_t y;
-    size_t dot_padding;
-    struct Cell *parent;
-} Cell;
+    bool is_set;          // Indicates whether data is valid
+    bool text_needs_free; // When set to true, text will be freed on free_table
+    size_t x;             // Column position
+    size_t y;             // Row position
+    size_t dot_padding;   // Right padding needed to align dots
+    struct Cell *parent;  // Cell that spans into this cell
+};
 
 struct Row
 {
-    Cell cells[MAX_COLS];
+    struct Cell cells[MAX_COLS];
     struct Row *next_row;
-    // Info whether a hline has been set
-    bool hline;
+    BorderStyle border_above;
+    size_t border_above_counter; // Counts cells that override their border_above
 };
 
 typedef struct
 {
-    // Number of columns (max. of num_cells over all rows)
-    size_t num_cols;
-    // Number of rows (length of linked list)
-    size_t num_rows;
-    // Start of linked list to rows
-    struct Row *first_row;
-    // Markers where to insert next cell
-    struct Row *curr_row;
-    size_t curr_col;
-    // Info whether a vline has been set
-    bool vlines[MAX_COLS];
+    size_t num_cols;                                // Number of columns (max. of num_cells over all rows)
+    size_t num_rows;                                // Number of rows (length of linked list)
+    struct Row *first_row;                          // Start of linked list to rows
+    struct Row *curr_row;                           // Marker of row of next inserted cell
+    size_t curr_col;                                // Marker of col of next inserted cell
+    BorderStyle borders_left[MAX_COLS];             // todo
+    TextAlignment alignments[MAX_COLS];             // todo
+    size_t border_left_counters[MAX_COLS]; // Counts cells that override their border_left
 } Table;
 
 // Data and printing
@@ -72,31 +69,25 @@ Table get_empty_table();
 void print_table(Table *table);
 void free_table(Table *table);
 
-// Lines
-void horizontal_line(Table *table, BorderStyle style, size_t num, ...);
-void vertical_line(Table *table, BorderStyle style, size_t num, ...);
-void make_boxed(Table *table, BorderStyle style);
-
 // Control
 void set_position(Table *table, size_t x, size_t y);
 void next_row(Table *table);
-void set_alignment_of_col(Table *table, TextAlignment align, size_t col, bool exclude_header);
 
 // Cell insertion
 void add_empty_cell(Table *table);
-void add_standard_cell(Table *table, char *text);
-void add_cell(Table *table, CellSettings settings, char *text);
-void add_cell_at(Table *table, size_t x, size_t y, CellSettings settings, char *text);
-void add_managed_cell(Table *table, CellSettings settings, char *text);
-void add_standard_cell_fmt(Table *table, char *fmt, ...);
-void add_cell_fmt(Table *table, CellSettings settings, char *fmt, ...);
-void v_add_cell_fmt(Table *table, CellSettings settings, char *fmt, va_list args);
-void add_from_array(Table *table, size_t width, size_t height, TextAlignment *col_aligns, char **array);
+void add_cell(Table *table, char *text);
+void add_cell_gc(Table *table, char *text);
+void add_cell_fmt(Table *table, char *fmt, ...);
+void v_add_cell_fmt(Table *table, char *fmt, va_list args);
+void add_cells_from_array(Table *table, size_t width, size_t height, char **array);
 
 // Settings
-CellSettings get_standard_settings();
-CellSettings get_settings_align(TextAlignment align);
-CellSettings get_settings_align_span(TextAlignment align, size_t span_x, size_t span_y);
-CellSettings get_settings_align_span_border(TextAlignment align, size_t span_x, size_t span_y, BorderStyle border_left, BorderStyle border_above);
-void change_settings(Table *table, CellSettings settings);
-void change_settings_at(Table *table, size_t x, size_t y, CellSettings settings);
+void set_default_alignments(Table *table, size_t num_alignments, TextAlignment *alignments);
+void override_alignment(Table *table, TextAlignment alignment);
+void set_hline(Table *table, BorderStyle style);
+void set_vline(Table *table, BorderStyle style);
+void set_all_hlines(Table *table, BorderStyle style);
+void make_boxed(Table *table, BorderStyle style);
+void override_left_border(Table *table, BorderStyle style);
+void override_above_border(Table *table, BorderStyle style);
+void set_span(Table *table, size_t span_x, size_t span_y);
