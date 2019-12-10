@@ -7,34 +7,35 @@
 #include "constraint.h"
 #include "text.h"
 
-#define HLINE_SINGLE "─"
-#define HLINE_DOUBLE "═"
-#define VLINE_SINGLE "│"
-#define VLINE_DOUBLE "║"
-static const char *BORDER_MATRIX_SINGLE[3][3] = {
-    { "┌", "┬", "┐" },
-    { "├", "┼", "┤" },
-    { "└", "┴", "┘" },
-};
-static const char *BORDER_MATRIX_DOUBLE[3][3] = {
-    { "╔", "╦", "╗" },
-    { "╠", "╬", "╣" },
-    { "╚", "╩", "╝" },
+static char *BORDER_MATRIX_SINGLE[] = {
+    "┌", "┬", "┐",
+    "├", "┼", "┤",
+    "└", "┴", "┘",
+    "─", "│", " ",
 };
 
-// For ALIGN_NUMBERS
-char *decimal_separator = ".";
+static char *BORDER_MATRIX_DOUBLE[] = {
+    "╔", "╦", "╗",
+    "╠", "╬", "╣",
+    "╚", "╩", "╝",
+    "═", "║", " ",
+};
 
-void add_cell_internal(Table *table, TextAlignment align, size_t span_x, size_t span_y, char *text, bool needs_free)
+static size_t HLINE_INDEX = 9;
+static size_t VLINE_INDEX = 10;
+
+// Index encodes whether a border intersects (0: no intersection, 1: intersection), clockwise
+static size_t BORDER_LOOKUP[16] = { 11, 11, 11, 6, 11, 10, 0, 3, 11, 8, 9, 7, 2, 5, 1, 4 };
+
+void add_cell_internal(Table *table, CellSettings settings, char *text, bool needs_free)
 {
-    if (table->curr_col + span_x > MAX_COLS) return;
+    if (table->curr_col + settings.span_x > MAX_COLS) return;
 
-    struct Cell *cell = &table->curr_row->cells[table->curr_col];
+    Cell *cell = &table->curr_row->cells[table->curr_col];
     if (cell->is_set) return;
-    *cell = (struct Cell){
-        .align = align,
-        .span_x = span_x,
-        .span_y = span_y,
+
+    *cell = (Cell){
+        .settings = settings,
         .text = text,
         .x = cell->x,
         .y = cell->y,
@@ -47,40 +48,51 @@ void add_cell_internal(Table *table, TextAlignment align, size_t span_x, size_t 
     // Insert rows and set child cells for span_x and span_y
     struct Row *curr_row = table->curr_row;
     size_t curr_col = table->curr_col;
-    for (size_t i = 0; i < span_y; i++)
-    {
-        table->curr_row->is_empty = false;
+    CellSettings *parent_settings = &cell->settings;
 
-        for (size_t j = 0; j < span_x; j++)
+    for (size_t i = 0; i < settings.span_y; i++)
+    {
+        for (size_t j = 0; j < settings.span_x; j++)
         {
             if (i == 0 && j == 0) continue;
+            Cell *child = &table->curr_row->cells[cell->x + j];
 
-            if (!table->curr_row->cells[cell->x + j].is_set)
+            if (!child->is_set)
             {
-                table->curr_row->cells[cell->x + j].span_x = span_x;
-                table->curr_row->cells[cell->x + j].is_set = true;
-                table->curr_row->cells[cell->x + j].parent = cell;
-                table->curr_row->cells[cell->x + j].align = cell->align;
+                //child->settings = settings;
+                child->is_set = true;
+                child->parent = cell;
+                //printf("%s", cell->text);
             }
             else
             {
                 // Span clashes with already set cell, truncate it and finalize method
-                cell->span_y = i + 1;
-                cell->span_x = j + 1;
+                parent_settings->span_y = i;
+                parent_settings->span_x = j;
                 goto continuation;
             }
         }
 
-        next_row(table);
+        if (i + 1 < settings.span_y) next_row(table);
     }
     continuation:
     table->curr_row = curr_row;
     table->curr_col = curr_col;
 
     // Update book-keeping info and next insertion marker
-    if (table->curr_col + span_x > table->num_cols)
+    if (settings.border_left != BORDER_NONE)
     {
-        table->num_cols = table->curr_col + span_x;
+        table->vlines[table->curr_col] = true;
+    }
+
+    if (settings.border_above != BORDER_NONE)
+    {
+        table->curr_row->hline = true;
+    }
+
+    if (table->curr_col + settings.span_x > table->num_cols)
+    {
+        table->num_cols = table->curr_col + settings.span_x;
     }
 
     while (table->curr_col != MAX_COLS && table->curr_row->cells[table->curr_col].is_set)
@@ -94,117 +106,69 @@ size_t get_total_width(Table *table, size_t *col_widths, size_t col, size_t span
     size_t sum = 0;
     for (size_t i = 0; i < span_x; i++)
     {
-        if (i < span_x - 1 && table->vlines[col + i + 1] != BORDER_NONE) sum++;
+        if (i < span_x - 1 && table->vlines[col + i + 1]) sum++;
         sum += col_widths[col + i];
     }
     return sum;
 }
 
-void print_vline(BorderStyle style)
+bool spans_from_above(Cell *cell)
 {
-    switch (style)
-    {
-        case BORDER_SINGLE:
-            printf(VLINE_SINGLE);
-            break;
-        case BORDER_DOUBLE:
-            printf(VLINE_DOUBLE);
-            break;
-        case BORDER_NONE:
-            break;
-    }
+    return cell->parent != NULL && cell->parent->y < cell->y;
 }
 
-void print_hline(BorderStyle style)
+bool spans_from_left(Cell *cell)
 {
-    switch (style)
-    {
-        case BORDER_SINGLE:
-            printf(HLINE_SINGLE);
-            break;
-        case BORDER_DOUBLE:
-            printf(HLINE_DOUBLE);
-            break;
-        case BORDER_NONE:
-            break;
-    }
+    return cell->parent != NULL && cell->parent->x < cell->x;
 }
 
-void print_intersection_char(bool left, bool right, bool above, bool below, BorderStyle hline_style, BorderStyle vline_style)
+void print_intersection_char(Cell *right_above, Cell *left_below, Cell *right_below)
 {
-    // Fake intersection
-    if (above && below && !left && !right)
-    {
-        print_vline(vline_style);
-        return;
-    }
-    if (!above && !below && left && right)
-    {
-        print_hline(hline_style);
-        return;
-    }
+    BorderStyle above = right_above == NULL
+        || spans_from_left(right_above) ? BORDER_NONE : right_above->settings.border_left;
+    BorderStyle right = right_below == NULL
+        || spans_from_above(right_below) ? BORDER_NONE : right_below->settings.border_above;
+    BorderStyle below = right_below == NULL
+        || spans_from_left(right_below) ? BORDER_NONE : right_below->settings.border_left;
+    BorderStyle left  = left_below == NULL
+        || spans_from_above(left_below) ? BORDER_NONE : left_below->settings.border_above;
 
-    // True intersection
-    int style_choice = 0;
-    if (above) style_choice++;
-    if (below) style_choice++;
-    if (left) style_choice--;
-    if (right) style_choice--;
-
-    BorderStyle style = BORDER_NONE;
-    if (style_choice > 0) style = vline_style;
-    if (style_choice < 0) style = hline_style;
-    if (style_choice == 0)
+    size_t index = 0;
+    if (above != BORDER_NONE)
     {
-        if (hline_style == BORDER_DOUBLE && vline_style == BORDER_DOUBLE)
-        {
-            style = BORDER_DOUBLE;
-        }
-        else
-        {
-            if (hline_style == BORDER_SINGLE || vline_style == BORDER_SINGLE)
-            {
-                style = BORDER_SINGLE;
-            }
-        }
+        index |= (1 << 0);
+    }
+    if (right != BORDER_NONE)
+    {
+        index |= (1 << 1);
+    }
+    if (below != BORDER_NONE)
+    {
+        index |= (1 << 2);
+    }
+    if (left != BORDER_NONE)
+    {
+        index |= (1 << 3);
     }
 
-    size_t matrix_y = 0;
-    size_t matrix_x = 0;
-    if (!above) matrix_y = 0;
-    if (above && below) matrix_y = 1;
-    if (above && !below) matrix_y = 2;
-    if (!left) matrix_x = 0;
-    if (left && right) matrix_x = 1;
-    if  (left && !right) matrix_x = 2;
+    //printf("%zu ", index);
+    //if (right_above != NULL) printf("%p", (void*)right_above->parent);
 
-    if (style == BORDER_DOUBLE)
+    int style_selection = above + right + below + left;
+    if (style_selection > 4)
     {
-        printf("%s", BORDER_MATRIX_DOUBLE[matrix_y][matrix_x]);
+        printf("%s", BORDER_MATRIX_DOUBLE[BORDER_LOOKUP[index]]);
     }
     else
     {
-        if (style == BORDER_SINGLE)
-        {
-            printf("%s", BORDER_MATRIX_SINGLE[matrix_y][matrix_x]);
-        }
+        printf("%s", BORDER_MATRIX_SINGLE[BORDER_LOOKUP[index]]);
     }
 }
 
-size_t get_line_of_cell(struct Cell *cell, size_t line_index, char **out_start)
+size_t get_line_of_cell(Cell *cell, size_t line_index, char **out_start)
 {
     if (cell->parent == NULL) return get_line_of_string(cell->text, line_index, out_start);
     return get_line_of_string(cell->parent->text, line_index, out_start);
-}
-
-bool has_left_border(struct Cell *cell)
-{
-    return cell->parent == NULL || cell->parent->x == cell->x;
-}
-
-bool has_upper_border(struct Cell *cell)
-{
-    return cell->parent == NULL || cell->parent->y == cell->y;
 }
 
 // Above row can be NULL, below row must not be NULL!
@@ -217,73 +181,58 @@ void print_complete_line(Table *table,
     for (size_t i = 0; i < table->num_cols; i++)
     {
         // Print vline-hline intersection
-        if (table->vlines[i] != BORDER_NONE)
+        if (table->vlines[i])
         {
-            bool above = above_row != NULL && has_left_border(&above_row->cells[i]);
-            bool below = !below_row->is_empty && has_left_border(&below_row->cells[i]);
-            bool left = i > 0 && has_upper_border(&below_row->cells[i - 1]);
-            bool right = i < MAX_COLS - 1 && has_upper_border(&below_row->cells[i]);
-
-            print_intersection_char(left, right, above, below, below_row->hline_above, table->vlines[i]);
+            print_intersection_char(
+                above_row != NULL ? &above_row->cells[i] : NULL,
+                i > 0 ? &below_row->cells[i - 1] : NULL,
+                &below_row->cells[i]);
         }
 
         // Print -- in between intersections (or content when cell has span_y > 1)
-        if (has_upper_border(&below_row->cells[i]))
+        if (below_row->cells[i].parent == NULL || below_row->cells[i].parent->y == below_row->cells[i].y)
         {
-            switch (below_row->hline_above)
+            switch (below_row->cells[i].settings.border_above)
             {
                 case BORDER_SINGLE:
-                    print_repeated(HLINE_SINGLE, col_widths[i]);
+                    print_repeated(BORDER_MATRIX_SINGLE[HLINE_INDEX], col_widths[i]);
                     break;
                 case BORDER_DOUBLE:
-                    print_repeated(HLINE_DOUBLE, col_widths[i]);
+                    print_repeated(BORDER_MATRIX_DOUBLE[HLINE_INDEX], col_widths[i]);
                     break;
                 case BORDER_NONE:
-                    break;
+                    print_repeated(" ", col_widths[i]);
             }
         }
         else
         {
-            struct Cell *parent = below_row->cells[i].parent;
-
+            Cell *parent = below_row->cells[i].parent;
             char *str = NULL;
             size_t len = get_line_of_cell(parent, line_indices[i], &str);
             line_indices[i]++;
             print_padded(str,
                 len,
-                get_total_width(table, col_widths, i, parent->span_x),
+                get_total_width(table, col_widths, i, parent->settings.span_x),
                 0,
-                parent->align);
-            i += parent->span_x - 1;
+                parent->settings.align);
+            i += parent->settings.span_x - 1;
         }
-    }
-
-    // Print last vline-hline intersection on right border
-    if (table->vlines[table->num_cols] != BORDER_NONE)
-    {
-        bool above = above_row != NULL;
-        bool below = !below_row->is_empty;
-        bool left  = has_upper_border(&below_row->cells[table->num_cols - 1]);
-        bool right = false;
-        print_intersection_char(left, right, above, below, below_row->hline_above, table->vlines[table->num_cols]);
     }
     printf("\n");
 }
 
-/*
 void print_debug(Table *table)
 {
     size_t col_widths[table->num_cols];
     size_t row_heights[table->num_rows];
     get_dimensions(table, col_widths, row_heights);
 
-    printf("Num cols: %zu, Num rows: %zu\n, Dimensions: ", table->num_rows, table->num_cols);
+    printf("Num rows: %zu, Num cols: %zu, Dimensions: ", table->num_rows, table->num_cols);
     for (size_t i = 0; i < table->num_cols; i++) printf("%zu ", col_widths[i]);
     printf("; ");
     for (size_t i = 0; i < table->num_rows; i++) printf("%zu ", row_heights[i]);
     printf("\n");
 }
-*/
 
 /*
 Summary: Prints table to stdout
@@ -294,6 +243,8 @@ void print_table(Table *table)
     size_t row_heights[table->num_rows];
     get_dimensions(table, col_widths, row_heights);
 
+    //print_debug(table);
+
     size_t line_indices[table->num_cols];
     for (size_t i = 0; i < table->num_cols; i++) line_indices[i] = 0;
 
@@ -303,7 +254,7 @@ void print_table(Table *table)
     size_t row_index = 0;
     while (curr_row != NULL)
     {
-        if (curr_row->hline_above != BORDER_NONE)
+        if (curr_row->hline)
         {
             print_complete_line(table,
                 prev_row,
@@ -311,8 +262,6 @@ void print_table(Table *table)
                 line_indices,
                 col_widths);
         }
-
-        if (curr_row->is_empty) break;
 
         // Reset line indices for newly beginning cell, don't reset them for cells that are children spanning from above
         for (size_t j = 0; j < table->num_cols; j++)
@@ -326,9 +275,22 @@ void print_table(Table *table)
         for (size_t j = 0; j < row_heights[row_index]; j++)
         {
             // Print cell
-            for (size_t k = 0; k < table->num_cols; k += curr_row->cells[k].span_x)
+            for (size_t k = 0; k < table->num_cols; k += curr_row->cells[k].settings.span_x)
             {
-                print_vline(table->vlines[k]);
+                if (table->vlines[k])
+                {
+                    switch (curr_row->cells[k].settings.border_left)
+                    {
+                        case BORDER_SINGLE:
+                            printf("%s", BORDER_MATRIX_SINGLE[VLINE_INDEX]);
+                            break;
+                        case BORDER_DOUBLE:
+                            printf("%s", BORDER_MATRIX_DOUBLE[VLINE_INDEX]);
+                            break;
+                        case BORDER_NONE:
+                            printf(" ");
+                    }
+                }
 
                 char *str;
                 size_t str_len;
@@ -337,13 +299,13 @@ void print_table(Table *table)
                 
                 print_padded(str,
                     str_len,
-                    get_total_width(table, col_widths, k, curr_row->cells[k].span_x),
+                    get_total_width(table, col_widths, k, curr_row->cells[k].settings.span_x),
                     curr_row->cells[k].dot_padding,
-                    curr_row->cells[k].align);
+                    curr_row->cells[k].settings.align);
                 
                 line_indices[k]++;
             }
-            print_vline(table->vlines[table->num_cols]);
+
             printf("\n");
         }
 
@@ -356,20 +318,15 @@ void print_table(Table *table)
 struct Row *malloc_row(size_t y)
 {
     struct Row *res = calloc(1, sizeof(struct Row));
-    *res = (struct Row){
-        .hline_above = BORDER_NONE,
-        .is_empty = true
-    };
     for (size_t i = 0; i < MAX_COLS; i++)
     {
-        res->cells[i] = (struct Cell){
+        res->cells[i] = (Cell){
             .is_set = false,
             .x = i,
             .y = y,
             .parent = NULL,
             .text = NULL,
-            .span_x = 1,
-            .span_y = 1,
+            .settings = get_settings_align(ALIGN_LEFT)
         };
     }
     return res;
@@ -382,7 +339,6 @@ struct Row *append_row(Table *table)
     {
         row = row->next_row;
     }
-    row->is_empty = false;
     row->next_row = malloc_row(table->num_rows);
     table->num_rows++;
     return row->next_row;
@@ -393,6 +349,29 @@ struct Row *get_row(Table *table, size_t index)
     struct Row *row = table->first_row;
     while (index-- > 0 && row != NULL) row = row->next_row;
     return row;
+}
+
+void hline_internal(Table *table, BorderStyle style, struct Row *row)
+{
+    for (size_t i = 0; i < table->num_cols; i++)
+    {
+        row->cells[i].settings.border_above = style;
+    }
+    row->hline = style != BORDER_NONE;
+}
+
+void vline_internal(Table *table, BorderStyle style, size_t col)
+{
+    if (col >= MAX_COLS) return;
+
+    struct Row *curr_row = table->first_row;
+    while (curr_row != NULL)
+    {
+        curr_row->cells[col].settings.border_left = style;
+        curr_row = curr_row->next_row;
+    }
+    table->vlines[col] = style != BORDER_NONE;
+    if (col >= table->num_cols) table->num_cols = col + 1;
 }
 
 // ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ User-functions ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
@@ -406,7 +385,6 @@ void next_row(Table *table)
 
     // Extend linked list if necessary
     table->curr_col = 0;
-    table->curr_row->is_empty = false;
     if (table->curr_row->next_row == NULL)
     {
         table->curr_row = append_row(table);
@@ -433,7 +411,7 @@ Table get_empty_table()
         .first_row = first_row,
         .curr_row = first_row,
         .num_rows = 1,
-        .vlines = { BORDER_NONE }
+        .vlines = { false }
     };
 }
 
@@ -477,63 +455,72 @@ void set_position(Table *table, size_t x, size_t y)
     }
 }
 
-void add_empty_cell(Table *table)
-{
-    add_cell(table, ALIGN_LEFT, "");
-}
-
 /*
 Summary: Adds next cell. Buffer is not copied. print_table will access it.
     Ensure that lifetime of buffer outlasts last call of print_table!
 */
-void add_cell_span(Table *table, TextAlignment align, size_t span_x, size_t span_y, char *text)
+void add_cell(Table *table, CellSettings settings, char *text)
 {
-    add_cell_internal(table, align, span_x, span_y, text, false);
+    add_cell_internal(table, settings, text, false);
 }
 
-void v_add_cell_fmt_span(Table *table,
-    TextAlignment align,
-    size_t span_x,
-    size_t span_y,
-    char *fmt,
-    va_list args)
+void add_cell_at(Table *table, size_t x, size_t y, CellSettings settings, char *text)
 {
-    va_list args_copy;
-    va_copy(args_copy, args);
-    size_t needed = vsnprintf(NULL, 0, fmt, args) + 1;
-    char *buffer = malloc(needed * sizeof(char));
-    vsnprintf(buffer, needed, fmt, args_copy);
-    add_cell_internal(table, align, span_x, span_y, buffer, true);
+    struct Row *temp_row = table->curr_row;
+    size_t temp_col = table->curr_col;
+    set_position(table, x, y);
+    add_cell_internal(table, settings, text, false);
+    table->curr_row = temp_row;
+    table->curr_col = temp_col;
 }
 
-void add_cell(Table *table, TextAlignment align, char *text)
+void add_standard_cell(Table *table, char *text)
 {
-    add_cell_span(table, align, 1, 1, text);
+    add_cell_internal(table, get_standard_settings(), text, false);
+}
+
+/*
+Summary: Same as add_cell, but frees buffer on reset
+*/
+void add_managed_cell(Table *table, CellSettings settings, char *text)
+{
+    add_cell_internal(table, settings, text, true);
+}
+
+void add_empty_cell(Table *table)
+{
+    add_cell_internal(table, get_settings_align(ALIGN_LEFT), NULL, false);
+}
+
+void add_standard_cell_fmt(Table *table, char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    v_add_cell_fmt(table, get_standard_settings(), fmt, args);
+    va_end(args);
 }
 
 /*
 Summary: Adds next cell and maintains buffer of text.
     Use add_cell to save memory if you maintain a content string yourself.
 */
-void add_cell_fmt(Table *table, TextAlignment align, char *fmt, ...)
+void add_cell_fmt(Table *table, CellSettings settings, char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    v_add_cell_fmt_span(table, align, 1, 1, fmt, args);
+    v_add_cell_fmt(table, settings, fmt, args);
     va_end(args);
 }
 
-void v_add_cell_fmt(Table *table, TextAlignment align, char *fmt, va_list args)
+void v_add_cell_fmt(Table *table, CellSettings settings, char *fmt, va_list args)
 {
-    v_add_cell_fmt_span(table, align, 1, 1, fmt, args);
-}
-
-void add_cell_fmt_span(Table *table, TextAlignment align, size_t span_x, size_t span_y, char *fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    v_add_cell_fmt_span(table, align, span_x, span_y, fmt, args);
-    va_end(args);
+    va_list args_copy;
+    va_copy(args_copy, args);
+    size_t needed = vsnprintf(NULL, 0, fmt, args) + 1;
+    char *buffer = malloc(needed * sizeof(char));
+    vsnprintf(buffer, needed, fmt, args_copy);
+    add_cell_internal(table, settings, buffer, true);
+    va_end(args_copy);
 }
 
 /*
@@ -541,62 +528,57 @@ Summary: Puts contents of memory-contiguous 2D array into table cell by cell.
     Strings are not copied. Ensure that lifetime of array outlasts last call of print_table.
     Position of next insertion is first cell in next row.
 */
-void add_cells_from_array(Table *table, size_t width, size_t height, char **array, TextAlignment *alignments)
+void add_from_array(Table *table, size_t width, size_t height, TextAlignment *col_aligns, char **array)
 {
     if (table->curr_col + width > MAX_COLS) return;
-
     for (size_t i = 0; i < height; i++)
     {
         for (size_t j = 0; j < width; j++)
         {
-            add_cell(table, alignments[j], *(array + i * width + j));
+            add_cell(table, get_settings_align(col_aligns[j]), *(array + i * width + j));
         }
         next_row(table);
     }
 }
 
 /*
-Summary: Inserts horizontal line above current row.
-*/
-void hline(Table *table, BorderStyle style)
-{
-    table->curr_row->hline_above = style;
-}
-
-/*
 Summary: Inserts num hlines at supplied indices (pass them as int!)
 */
-void hline_at(Table *table, BorderStyle style, size_t num, ...)
+void horizontal_line(Table *table, BorderStyle style, size_t num, ...)
 {
     va_list args;
     va_start(args, num);
     for (size_t i = 0; i < num; i++)
     {
-        struct Row *row = get_row(table, (size_t)va_arg(args, int));
-        if (row != NULL) row->hline_above = style;
+        size_t index = (size_t)va_arg(args, int);
+        struct Row *row = NULL;
+        if (index < table->num_rows)
+        {
+            row = get_row(table, index);
+        }
+        else
+        {
+            while (index >= table->num_rows)
+            {
+                row = append_row(table);
+            }
+        }
+        hline_internal(table, style, row);
     }
     va_end(args);
 }
 
 /*
-Summary: Inserts vertical line right to current column.
-*/
-void vline(Table *table, BorderStyle style)
-{
-    table->vlines[table->curr_col] = style;
-}
-
-/*
 Summary: Inserts num vlines at supplied indices (pass them as int!)
 */
-void vline_at(Table *table, BorderStyle style, size_t num, ...)
+void vertical_line(Table *table, BorderStyle style, size_t num, ...)
 {
     va_list args;
     va_start(args, num);
     for (size_t i = 0; i < num; i++)
     {
-        size_t x = (size_t)va_arg(args, int);
-        if (x <= MAX_COLS) table->vlines[x] = style;
+        size_t col = (size_t)va_arg(args, int);
+        if (col < MAX_COLS) vline_internal(table, style, col);
     }
     va_end(args);
 }
@@ -606,32 +588,74 @@ Summary: Puts enclosing borders around current content of table
 */
 void make_boxed(Table *table, BorderStyle style)
 {
-    table->vlines[0] = style;
-    table->vlines[table->num_cols] = style;
-    table->first_row->hline_above = style;
-    struct Row *row = table->first_row;
-    while (row->next_row != NULL) row = row->next_row;
-    if (row->is_empty)
+    horizontal_line(table, style, 2, 0, table->num_rows);
+    vertical_line(table, style, 2, 0, table->num_cols);
+    struct Row *last_row = get_row(table, table->num_rows - 1);
+    last_row->cells[0].settings.border_left = BORDER_NONE;
+    last_row->cells[table->num_cols - 1].settings.border_left = BORDER_NONE;
+}
+
+void set_alignment_of_col(Table *table, TextAlignment align, size_t col, bool exclude_header)
+{
+    struct Row *row;
+    if (exclude_header)
     {
-        row->hline_above = style;
+        if (table->first_row != NULL)
+        {
+            row = table->first_row->next_row;
+        }
+        else
+        {
+            row = NULL;
+        }
     }
     else
     {
-        append_row(table)->hline_above = style;
+        row = table->first_row;
+    }
+
+    while (row != NULL)
+    {
+        row->cells[col].settings.align = align;
+        row = row->next_row;
     }
 }
 
-void set_decimal_separator(char *str)
+CellSettings get_standard_settings()
 {
-    decimal_separator = str;
+    return get_settings_align(ALIGN_LEFT);
 }
 
-char *get_decimal_separator()
+CellSettings get_settings_align(TextAlignment align)
 {
-    return decimal_separator;
+    return get_settings_align_span(align, 1, 1);
 }
 
-void set_alignment(Table *table, TextAlignment align)
+CellSettings get_settings_align_span(TextAlignment align, size_t span_x, size_t span_y)
 {
-    table->curr_row->cells[table->curr_col].align = align;
+    return get_settings_align_span_border(align, span_x, span_y, BORDER_NONE, BORDER_NONE);
+}
+
+CellSettings get_settings_align_span_border(TextAlignment align, size_t span_x, size_t span_y, BorderStyle border_left, BorderStyle border_above)
+{
+    return (CellSettings){
+        .align = align,
+        .span_x = span_x,
+        .span_y = span_y,
+        .border_left = border_left,
+        .border_above = border_above
+    };
+}
+
+void change_settings(Table *table, CellSettings settings)
+{
+    table->curr_row->cells[table->curr_col].settings = settings;
+}
+
+void change_settings_at(Table *table, size_t x, size_t y, CellSettings settings)
+{
+    if (x >= table->num_cols) return;
+    struct Row *row = get_row(table, y);
+    if (row == NULL) return;
+    row->cells[x].settings = settings;
 }

@@ -49,7 +49,7 @@ void print_repeated(char *string, size_t times)
     for (size_t i = 0; i < times; i++) printf("%s", string);
 }
 
-void print_padded(char *string, int bytes, int total_length, int dot_padding, TextAlignment textpos)
+void print_padded(char *string, int bytes, int total_length, int dot_padding, TextAlignment align)
 {
     if (string == NULL)
     {
@@ -62,7 +62,7 @@ void print_padded(char *string, int bytes, int total_length, int dot_padding, Te
     int string_length = console_strlen(string);
     int adjusted_total_len = total_length + bytes - string_length;
 
-    switch (textpos)
+    switch (align)
     {
         case ALIGN_LEFT:
         {
@@ -92,6 +92,7 @@ void print_padded(char *string, int bytes, int total_length, int dot_padding, Te
 
 size_t get_num_lines(char *string)
 {
+    if (string == NULL) return 0;
     size_t res = 1;
     size_t pos = 0;
     while (string[pos] != '\0')

@@ -1,6 +1,6 @@
 # - - - - - - - Build configuration - - - - - - -
 use_readline=true
-test_tables=true
+test_tables=false
 # - - - - - - - - - - - - - - - - - - - - - - - -
 
 LFLAGS="-lm"

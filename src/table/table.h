@@ -7,9 +7,9 @@
 
 typedef enum
 {
-    BORDER_NONE,
-    BORDER_SINGLE,
-    BORDER_DOUBLE,
+    BORDER_NONE   = 0,
+    BORDER_SINGLE = 1,
+    BORDER_DOUBLE = 2,
 } BorderStyle;
 
 typedef enum
@@ -20,29 +20,36 @@ typedef enum
     ALIGN_NUMBERS, // Aligned at dot, rightmost, DOES NOT SUPPORT \n
 } TextAlignment;
 
-struct Cell
+typedef struct
 {
-    // User-supplied
     TextAlignment align;
     size_t span_x;
     size_t span_y;
+    BorderStyle border_left;
+    BorderStyle border_above;
+} CellSettings;
+
+typedef struct Cell
+{
+    // User-supplied (or generated for child cells)
+    CellSettings settings;
     char *text;
 
-    // Calculated
+    // Generated
     bool is_set;
     bool text_needs_free;
     size_t x;
     size_t y;
     size_t dot_padding;
     struct Cell *parent;
-};
+} Cell;
 
 struct Row
 {
-    bool is_empty;
-    BorderStyle hline_above;
-    struct Cell cells[MAX_COLS];
+    Cell cells[MAX_COLS];
     struct Row *next_row;
+    // Info whether a hline has been set
+    bool hline;
 };
 
 typedef struct
@@ -51,18 +58,14 @@ typedef struct
     size_t num_cols;
     // Number of rows (length of linked list)
     size_t num_rows;
-    // Vertical lines
-    BorderStyle vlines[MAX_COLS + 1];
     // Start of linked list to rows
     struct Row *first_row;
     // Markers where to insert next cell
     struct Row *curr_row;
     size_t curr_col;
+    // Info whether a vline has been set
+    bool vlines[MAX_COLS];
 } Table;
-
-// Settings
-void set_decimal_separator(char *str);
-char *get_decimal_separator();
 
 // Data and printing
 Table get_empty_table();
@@ -70,23 +73,30 @@ void print_table(Table *table);
 void free_table(Table *table);
 
 // Lines
-void hline(Table *table, BorderStyle style);
-void hline_at(Table *table, BorderStyle style, size_t num, ...);
-void vline(Table *table, BorderStyle style);
-void vline_at(Table *table, BorderStyle style, size_t num, ...);
+void horizontal_line(Table *table, BorderStyle style, size_t num, ...);
+void vertical_line(Table *table, BorderStyle style, size_t num, ...);
 void make_boxed(Table *table, BorderStyle style);
 
 // Control
 void set_position(Table *table, size_t x, size_t y);
 void next_row(Table *table);
-void set_alignment(Table *table, TextAlignment align);
+void set_alignment_of_col(Table *table, TextAlignment align, size_t col, bool exclude_header);
 
 // Cell insertion
 void add_empty_cell(Table *table);
-void add_cell(Table *table, TextAlignment align, char *text);
-void add_cell_span(Table *table, TextAlignment align, size_t span_x, size_t span_y, char *text);
-void add_cell_fmt(Table *table, TextAlignment align, char *fmt, ...);
-void v_add_cell_fmt(Table *table, TextAlignment align, char *fmt, va_list args);
-void add_cell_fmt_span(Table *table, TextAlignment align, size_t span_x, size_t span_y, char *fmt, ...);
-void v_add_cell_fmt_span(Table *table, TextAlignment align, size_t span_x, size_t span_y, char *fmt, va_list args);
-void add_cells_from_array(Table *table, size_t width, size_t height, char **array, TextAlignment *alignments);
+void add_standard_cell(Table *table, char *text);
+void add_cell(Table *table, CellSettings settings, char *text);
+void add_cell_at(Table *table, size_t x, size_t y, CellSettings settings, char *text);
+void add_managed_cell(Table *table, CellSettings settings, char *text);
+void add_standard_cell_fmt(Table *table, char *fmt, ...);
+void add_cell_fmt(Table *table, CellSettings settings, char *fmt, ...);
+void v_add_cell_fmt(Table *table, CellSettings settings, char *fmt, va_list args);
+void add_from_array(Table *table, size_t width, size_t height, TextAlignment *col_aligns, char **array);
+
+// Settings
+CellSettings get_standard_settings();
+CellSettings get_settings_align(TextAlignment align);
+CellSettings get_settings_align_span(TextAlignment align, size_t span_x, size_t span_y);
+CellSettings get_settings_align_span_border(TextAlignment align, size_t span_x, size_t span_y, BorderStyle border_left, BorderStyle border_above);
+void change_settings(Table *table, CellSettings settings);
+void change_settings_at(Table *table, size_t x, size_t y, CellSettings settings);
