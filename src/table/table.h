@@ -31,9 +31,9 @@ struct Cell
     size_t span_x;
     size_t span_y;
 
-    bool override_align;        // Set for col
-    bool override_border_left;  // Set for col
-    bool override_border_above; // Set for row
+    bool override_align;        // Default set for col in table
+    bool override_border_left;  // Default set for col in table
+    bool override_border_above; // Default set in row
 
     // Generated
     bool is_set;          // Indicates whether data is valid

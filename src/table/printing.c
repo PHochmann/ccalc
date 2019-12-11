@@ -45,6 +45,7 @@ size_t get_line_of_cell(struct Cell *cell, size_t line_index, char **out_start)
 
 TextAlignment get_align(TextAlignment default_align, struct Cell *cell)
 {
+    if (cell->parent != NULL) return get_align(default_align, cell->parent);
     if (cell->override_align)
     {
         return cell->align;
@@ -52,6 +53,18 @@ TextAlignment get_align(TextAlignment default_align, struct Cell *cell)
     else
     {
         return default_align;
+    }
+}
+
+size_t get_span_x(struct Cell *cell)
+{
+    if (cell->parent != NULL)
+    {
+        return cell->parent->span_x;
+    }
+    else
+    {
+        return cell->span_x;
     }
 }
 
@@ -270,7 +283,7 @@ void print_table_internal(Table *table)
         for (size_t j = 0; j < row_heights[row_index]; j++)
         {
             // Print cell
-            for (size_t k = 0; k < table->num_cols; k += curr_row->cells[k].span_x)
+            for (size_t k = 0; k < table->num_cols; k += get_span_x(&curr_row->cells[k]))
             {
                 if (table->border_left_counters[k] > 0)
                 {
@@ -292,10 +305,9 @@ void print_table_internal(Table *table)
                 str = NULL;
                 str_len = get_line_of_cell(&curr_row->cells[k], line_indices[k], &str);
                 
-                //printf("%d ", get_align(table->alignments[k], &curr_row->cells[k]));
                 print_padded(str,
                     str_len,
-                    get_total_width(table, col_widths, k, curr_row->cells[k].span_x),
+                    get_total_width(table, col_widths, k, get_span_x(&curr_row->cells[k])),
                     curr_row->cells[k].dot_padding,
                     get_align(table->alignments[k], &curr_row->cells[k]));
                 
