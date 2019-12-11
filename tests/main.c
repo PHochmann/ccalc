@@ -27,37 +27,46 @@ static Test (*test_getters[])() = {
 int main()
 {
     arith_init_ctx();
+
     Table table = get_empty_table();
+    set_default_alignments(&table, 4, (TextAlignment[]){ ALIGN_LEFT, ALIGN_LEFT, ALIGN_RIGHT, ALIGN_LEFT });
     add_empty_cell(&table);
-    add_cell(&table, get_settings_align_span_border(ALIGN_CENTER, 1, 1, BORDER_NONE, BORDER_SINGLE), " Test suite ");
-    add_cell(&table, get_settings_align(ALIGN_CENTER), " #Cases ");
-    add_cell(&table, get_settings_align(ALIGN_CENTER), " Result ");
+    set_vline(&table, BORDER_SINGLE);
+    override_left_border(&table, BORDER_NONE);
+    override_alignment(&table, ALIGN_CENTER);
+    add_cell(&table, " Test suite ");
+    override_alignment(&table, ALIGN_CENTER);
+    add_cell(&table, " #Cases ");
+    override_alignment(&table, ALIGN_CENTER);
+    add_cell(&table, " Result ");
     next_row(&table);
+    set_hline(&table, BORDER_SINGLE);
 
     bool error = false;
     for (size_t i = 0; i < NUM_TESTS; i++)
     {
         Test test = test_getters[i]();
-        add_cell_fmt(&table, get_settings_align(ALIGN_LEFT), " %zu ", i + 1);
-        add_cell_fmt(&table, get_settings_align(ALIGN_LEFT), " %s ", test.name);
-        add_cell_fmt(&table, get_settings_align(ALIGN_RIGHT), " %d ", test.num_cases);
+        add_cell_fmt(&table, " %zu ", i + 1);
+        add_cell_fmt(&table, " %s ", test.name);
+        add_cell_fmt(&table, " %d ", test.num_cases);
         if (test.suite())
         {
-            add_cell(&table, get_settings_align(ALIGN_LEFT), F_GREEN " passed " COL_RESET);
+            add_cell(&table, F_GREEN " passed " COL_RESET);
         }
         else
         {
-            add_cell(&table, get_settings_align(ALIGN_LEFT), F_RED " failed " COL_RESET);
+            add_cell(&table, F_RED " failed " COL_RESET);
             error = true;
         }
         next_row(&table);
     }
-    add_cell(&table, get_settings_align_span(ALIGN_CENTER, 3, 1), "Overall result");
-    add_standard_cell(&table, error ? F_RED " failed " COL_RESET : F_GREEN " passed " COL_RESET);
 
-    horizontal_line(&table, BORDER_SINGLE, 2, 1, NUM_TESTS + 1);
-    vertical_line(&table, BORDER_SINGLE, 1, 1);
-    change_settings_at(&table, 1, 0, get_settings_align_span_border(ALIGN_LEFT, 1, 1, BORDER_NONE, BORDER_NONE));
+    set_span(&table, 3, 1);
+    override_alignment(&table, ALIGN_CENTER);
+    set_hline(&table, BORDER_SINGLE);
+    add_cell(&table, "Overall result");
+    add_cell(&table, error ? F_RED " failed " COL_RESET : F_GREEN " passed " COL_RESET);
+    next_row(&table);
     make_boxed(&table, BORDER_SINGLE);
     print_table(&table);
     free_table(&table);

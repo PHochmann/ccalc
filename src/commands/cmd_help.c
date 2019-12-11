@@ -11,7 +11,7 @@
 
 #define COMMAND "help"
 
-static char *VERSION = "1.4.7";
+static char *VERSION = "1.4.8";
 
 static char *INFOBOX_FMT =
     " Scientific calculator in which you can define your own functions and constants \n"
@@ -90,6 +90,7 @@ void cmd_help_exec(char __attribute__((unused)) *input)
 {
     Table table = get_empty_table();
     add_cell_fmt(&table, INFOBOX_FMT, VERSION);
+    next_row(&table);
     make_boxed(&table, BORDER_SINGLE);
     set_default_alignments(&table, 1, (TextAlignment[]){ ALIGN_CENTER });
     print_table(&table);

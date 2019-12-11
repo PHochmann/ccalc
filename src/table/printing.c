@@ -216,7 +216,7 @@ void print_table_internal(Table *table)
     size_t row_heights[table->num_rows];
     get_dimensions(table, col_widths, row_heights);
 
-    print_debug(table);
+    //print_debug(table);
 
     // Special cases: If last row/col is empty, delete all vlines/hlines in it
     if (row_heights[table->num_rows - 1] == 0)
