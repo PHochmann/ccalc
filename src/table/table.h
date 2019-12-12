@@ -78,7 +78,7 @@ void add_empty_cell(Table *table);
 void add_cell(Table *table, char *text);
 void add_cell_gc(Table *table, char *text);
 void add_cell_fmt(Table *table, char *fmt, ...);
-void v_add_cell_fmt(Table *table, char *fmt, va_list args);
+void add_cell_vfmt(Table *table, char *fmt, va_list args);
 void add_cells_from_array(Table *table, size_t width, size_t height, char **array);
 
 // Settings

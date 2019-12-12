@@ -202,11 +202,11 @@ void add_cell_fmt(Table *table, char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    v_add_cell_fmt(table, fmt, args);
+    add_cell_vfmt(table, fmt, args);
     va_end(args);
 }
 
-void v_add_cell_fmt(Table *table, char *fmt, va_list args)
+void add_cell_vfmt(Table *table, char *fmt, va_list args)
 {
     va_list args_copy;
     va_copy(args_copy, args);

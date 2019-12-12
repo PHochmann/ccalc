@@ -6,6 +6,7 @@
 #include "../src/table/table.h"
 
 #define NUM_CASES 1
+
 #define GREEN     "\x1B[92m"
 #define CYAN      "\x1B[1;36m"
 #define YELLOW    "\x1B[33;1m"
@@ -38,22 +39,27 @@ bool table_test()
     set_span(&t1, 2, 2);
     override_alignment(&t1, ALIGN_RIGHT);
     override_above_border(&t1, BORDER_NONE);
-    add_cell(&t1, "NO BORDER ABOVE\nAND SPAN XY\nAND SO ON...");
+    add_cell(&t1, "^ no border\nand span x\nand also y");
     set_position(&t1, 0, 4);
     set_hline(&t1, BORDER_SINGLE);
-    add_cell(&t1, "span x");
+    set_span(&t1, 2, 1);
+    add_cell(&t1, " span x");
     override_alignment(&t1, ALIGN_LEFT);
     set_vline(&t1, BORDER_SINGLE);
     set_span(&t1, 1, 3);
-    add_cell(&t1, "span y\nspan y\nspan y\nspan y\nspan y (and no left border)");
+    add_cell(&t1, "span y\nspan y\nspan y\nspan y\n< span y");
     next_row(&t1);
     set_hline(&t1, BORDER_SINGLE);
-    add_cell(&t1, GREEN "span x" COL_RESET);
+    set_span(&t1, 2, 1);
+    add_cell(&t1, GREEN " span x" COL_RESET);
     next_row(&t1);
     set_hline(&t1, BORDER_DOUBLE);
-    add_cell(&t1, CYAN "span x" COL_RESET);
+    set_span(&t1, 2, 1);
+    add_cell(&t1, CYAN " span x" COL_RESET);
     next_row(&t1);
     set_position(&t1, 1, 6);
+    set_vline(&t1, BORDER_SINGLE);
+    set_position(&t1, 2, 6);
     override_left_border(&t1, BORDER_NONE);
     make_boxed(&t1, BORDER_SINGLE);
     print_table(&t1);

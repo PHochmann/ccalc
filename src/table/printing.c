@@ -300,11 +300,8 @@ void print_table_internal(Table *table)
                     }
                 }
 
-                char *str;
-                size_t str_len;
-                str = NULL;
-                str_len = get_line_of_cell(&curr_row->cells[k], line_indices[k], &str);
-                
+                char *str = NULL;
+                size_t str_len = get_line_of_cell(&curr_row->cells[k], line_indices[k], &str);
                 print_padded(str,
                     str_len,
                     get_total_width(table, col_widths, k, get_span_x(&curr_row->cells[k])),

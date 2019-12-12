@@ -85,6 +85,7 @@ void satisfy_constraints(size_t num_constrs, struct Constraint *constrs, size_t 
         if (needed > 0)
         {
             size_t length = constrs[i].to_index - constrs[i].from_index;
+            if (length == 0) continue;
             size_t adjustment = needed / length;
             for (size_t j = 0; j < length; j++)
             {

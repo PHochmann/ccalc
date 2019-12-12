@@ -29,7 +29,8 @@ int main()
     arith_init_ctx();
 
     Table table = get_empty_table();
-    set_default_alignments(&table, 4, (TextAlignment[]){ ALIGN_LEFT, ALIGN_LEFT, ALIGN_RIGHT, ALIGN_LEFT });
+    set_default_alignments(&table, 4,
+        (TextAlignment[]){ ALIGN_RIGHT, ALIGN_LEFT, ALIGN_RIGHT, ALIGN_LEFT });
     add_empty_cell(&table);
     set_vline(&table, BORDER_SINGLE);
     override_left_border(&table, BORDER_NONE);
@@ -40,12 +41,13 @@ int main()
     override_alignment(&table, ALIGN_CENTER);
     add_cell(&table, " Result ");
     next_row(&table);
-    set_hline(&table, BORDER_SINGLE);
+    set_hline(&table, BORDER_DOUBLE);
 
     bool error = false;
     for (size_t i = 0; i < NUM_TESTS; i++)
     {
         Test test = test_getters[i]();
+        if (i == 0) override_above_border(&table, BORDER_SINGLE);
         add_cell_fmt(&table, " %zu ", i + 1);
         add_cell_fmt(&table, " %s ", test.name);
         add_cell_fmt(&table, " %d ", test.num_cases);

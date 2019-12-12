@@ -173,7 +173,6 @@ void cmd_table_exec(char *input)
         set_span(&table, 2, 1);
         override_alignment(&table, ALIGN_CENTER);
         add_cell(&table, " Fold result ");
-        override_left_border(&table, BORDER_DOUBLE);
         add_cell_fmt(&table, " " CONSTANT_TYPE_FMT " ", fold_val);
         update_ans(fold_val);
         next_row(&table);
