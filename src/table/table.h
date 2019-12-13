@@ -54,13 +54,13 @@ struct Row
 
 typedef struct
 {
-    size_t num_cols;                                // Number of columns (max. of num_cells over all rows)
-    size_t num_rows;                                // Number of rows (length of linked list)
-    struct Row *first_row;                          // Start of linked list to rows
-    struct Row *curr_row;                           // Marker of row of next inserted cell
-    size_t curr_col;                                // Marker of col of next inserted cell
-    BorderStyle borders_left[MAX_COLS];             // todo
-    TextAlignment alignments[MAX_COLS];             // todo
+    size_t num_cols;                       // Number of columns (max. of num_cells over all rows)
+    size_t num_rows;                       // Number of rows (length of linked list)
+    struct Row *first_row;                 // Start of linked list to rows
+    struct Row *curr_row;                  // Marker of row of next inserted cell
+    size_t curr_col;                       // Marker of col of next inserted cell
+    BorderStyle borders_left[MAX_COLS];    // todo
+    TextAlignment alignments[MAX_COLS];    // todo
     size_t border_left_counters[MAX_COLS]; // Counts cells that override their border_left
 } Table;
 

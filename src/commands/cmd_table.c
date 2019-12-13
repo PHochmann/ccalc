@@ -117,9 +117,9 @@ void cmd_table_exec(char *input)
         override_alignment(&table, ALIGN_CENTER);
         add_cell(&table, " # ");
         set_vline(&table, BORDER_SINGLE);
+        override_alignment(&table, ALIGN_CENTER);
         if (num_vars != 0)
         {
-            override_alignment(&table, ALIGN_CENTER);
             add_cell_fmt(&table, VAR_COLOR " %s " COL_RESET, variables[0]);
         }
         else

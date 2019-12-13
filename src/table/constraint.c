@@ -49,6 +49,7 @@ void set_dot_paddings(size_t num_cells, TextAlignment default_align, struct Cell
 
     for (size_t i = 0; i < num_cells; i++)
     {
+        if (col[i]->text == NULL) continue;
         if (get_align(default_align, col[i]) == ALIGN_NUMBERS)
         {
             col[i]->dot_padding = max_dot_index - dot_indices[i];
@@ -75,7 +76,10 @@ void satisfy_constraints(size_t num_constrs, struct Constraint *constrs, size_t 
     {
         if (constrs[i].to_index - constrs[i].from_index == 1)
         {
-            result[constrs[i].from_index] = constrs[i].min;
+            if (result[constrs[i].from_index] < constrs[i].min)
+            {
+                result[constrs[i].from_index] = constrs[i].min;
+            }
         }
     }
 
@@ -101,7 +105,7 @@ void get_dimensions(Table *table, size_t *out_col_widths, size_t *out_row_height
     size_t num_cells_upper = table->num_cols * table->num_rows;
     struct Constraint constrs[num_cells_upper];
 
-    // Calculate padding for ALIGN_AT_DOT
+    // Calculate padding for ALIGN_NUMBERS
     for (size_t i = 0; i < table->num_cols; i++)
     {
         struct Cell *cells[table->num_rows];

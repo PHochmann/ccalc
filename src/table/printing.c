@@ -178,7 +178,7 @@ void print_complete_line(Table *table,
                 &below_row->cells[i]);
         }
 
-        // Print -- in between intersections (or content when cell has span_y > 1)
+        // Print hline in between intersections (or content when cell has span_y > 1)
         if (below_row->cells[i].parent == NULL || below_row->cells[i].parent->y == below_row->cells[i].y)
         {
             switch (get_border_above(below_row->border_above, &below_row->cells[i]))
@@ -271,7 +271,7 @@ void print_table_internal(Table *table)
                 col_widths);
         }
 
-        // Reset line indices for newly beginning cell, don't reset them for cells that are children spanning from above
+        // Reset line indices for newly beginning cells, don't reset them for cells that are children spanning from above
         for (size_t j = 0; j < table->num_cols; j++)
         {
             if (curr_row->cells[j].parent == NULL || curr_row->cells[j].y == curr_row->cells[j].parent->y)
