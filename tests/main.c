@@ -41,7 +41,7 @@ int main()
     override_alignment(&table, ALIGN_CENTER);
     add_cell(&table, " Result ");
     next_row(&table);
-    set_hline(&table, BORDER_DOUBLE);
+    set_hline(&table, BORDER_SINGLE);
 
     bool error = false;
     for (size_t i = 0; i < NUM_TESTS; i++)
