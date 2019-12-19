@@ -14,7 +14,7 @@ bool cmd_debug_check(char *input)
     return begins_with(COMMAND, input);
 }
 
-void cmd_debug_exec(char *input)
+bool cmd_debug_exec(char *input)
 {
     Node *res;
     if (parse_input_from_console(input + strlen(COMMAND), "Error: %s.\n", true, &res))
@@ -24,5 +24,10 @@ void cmd_debug_exec(char *input)
         print_tree(res, true);
         printf("\n");
         free_tree(res);
+        return true;
+    }
+    else
+    {
+        return false;
     }
 }

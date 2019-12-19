@@ -20,14 +20,14 @@ bool cmd_load_check(char *input)
 /*
 Summary: Opens file and processes its content as from stdin
 */
-void cmd_load_exec(char *input)
+bool cmd_load_exec(char *input)
 {
     FILE *file = fopen(input + strlen(COMMAND), "r");
 
     if (file == NULL)
     {
         printf("Error loading file: %s.\n", strerror(errno));
-        return;
+        return false;
     }
     
     whisper("File successfully loaded.\n");
@@ -36,6 +36,6 @@ void cmd_load_exec(char *input)
     bool interactive = set_interactive(false);
     process_input(file);
     set_interactive(interactive);
-    
     fclose(file);
+    return true;
 }

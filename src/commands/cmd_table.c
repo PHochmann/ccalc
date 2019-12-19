@@ -18,7 +18,7 @@ bool cmd_table_check(char *input)
     return begins_with(COMMAND, input);
 }
 
-void cmd_table_exec(char *input)
+bool cmd_table_exec(char *input)
 {
     input += strlen(COMMAND);
     char *args[6];
@@ -27,9 +27,10 @@ void cmd_table_exec(char *input)
     if (num_args != 4 && num_args != 6)
     {
         printf("Table Error: Invalid syntax.\n");
-        return;
+        return false;
     }
 
+    bool success = false;
     Node *expr = NULL;
     Node *start = NULL;
     Node *end = NULL;
@@ -37,7 +38,10 @@ void cmd_table_exec(char *input)
     Node *fold_expr = NULL;
     Node *fold_init = NULL;
 
-    if (!parse_input_from_console(args[0], "Error in expression: %s.\n", true, &expr)) return;
+    if (!parse_input_from_console(args[0], "Error in expression: %s.\n", true, &expr))
+    {
+        return false;
+    }
 
     char *variables[count_variables(expr)];
     size_t num_vars = list_variables(expr, variables);
@@ -187,6 +191,8 @@ void cmd_table_exec(char *input)
     print_table(&table);
     free_table(&table);
 
+    success = true;
+
     exit:
     free_tree(expr);
     free_tree(start);
@@ -194,4 +200,6 @@ void cmd_table_exec(char *input)
     free_tree(step);
     free_tree(fold_expr);
     free_tree(fold_init);
+
+    return success;
 }

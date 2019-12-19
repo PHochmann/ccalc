@@ -1,5 +1,8 @@
 #pragma once
+#include <stdbool.h>
 #include <stdio.h>
+
+bool g_error;
 
 void init_commands();
 void unload_commands();

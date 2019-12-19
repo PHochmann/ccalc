@@ -22,7 +22,7 @@ bool cmd_definition_check(char *input)
     return strstr(input, DEFINITION_OP) != NULL;
 }
 
-void add_function(char *name, char *left, char *right)
+bool add_function(char *name, char *left, char *right)
 {
     // Add function operator to parse left input
     // Must be OP_DYNAMIC_ARITY because we do not know the actual arity yet
@@ -34,13 +34,13 @@ void add_function(char *name, char *left, char *right)
     // Parse without applying rules to correctly determine if function already exists
     if (!parse_input_from_console(left, FMT_ERROR_LEFT, false, &left_n))
     {
-        goto cleanup;
+        goto error;
     }
 
     if (get_type(left_n) != NTYPE_OPERATOR || get_op(left_n)->placement != OP_PLACE_FUNCTION)
     {
         printf(FMT_ERROR_LEFT, "Not a function or constant.");
-        goto cleanup;
+        goto error;
     }
 
     size_t new_arity = get_num_children(left_n);
@@ -50,20 +50,20 @@ void add_function(char *name, char *left, char *right)
         if (get_type(get_child(left_n, i)) != NTYPE_VARIABLE)
         {
             printf(FMT_ERROR_LEFT, "Function arguments must be variables.");
-            goto cleanup;
+            goto error;
         }
     }
 
     if (new_arity != count_variables_distinct(left_n))
     {
         printf(FMT_ERROR_LEFT, "Function arguments must be distinct variables.");
-        goto cleanup;
+        goto error;
     }
 
     if (ctx_lookup_function(g_ctx, name, new_arity) != NULL)
     {
         printf("Function or constant already exists.\n");
-        goto cleanup;
+        goto error;
     }
 
     // Assign correct arity
@@ -71,13 +71,13 @@ void add_function(char *name, char *left, char *right)
 
     if (!parse_input_from_console(right, FMT_ERROR_RIGHT, false, &right_n))
     {
-        goto cleanup;
+        goto error;
     }
 
     if (find_matching_discarded(right_n, left_n))
     {
         printf("Recursive definition.\n");
-        goto cleanup;
+        goto error;
     }
 
     if (new_arity == 0)
@@ -106,24 +106,25 @@ void add_function(char *name, char *left, char *right)
 
     // Add rule to eliminate operator before evaluation
     g_rules[g_num_rules++] = get_rule(left_n, right_n);
-    return;
+    return true;
 
-    cleanup:
+    error:
     g_ctx->num_ops--;
     free_tree(left_n);
     free_tree(right_n);
     free(name);
+    return false;
 }
 
 /*
 Summary: Adds a new function symbol to context and adds a new rule to substitute function with its right hand side
 */
-void cmd_definition_exec(char *input)
+bool cmd_definition_exec(char *input)
 {
     if (g_ctx->num_ops == g_ctx->max_ops || g_num_rules == ARITH_MAX_RULES)
     {
         printf("Can't add any more functions or constants.\n");
-        return;
+        return false;
     }
     
     // Overwrite first char of operator to make function definition a proper string
@@ -139,7 +140,7 @@ void cmd_definition_exec(char *input)
     {
         // Only reason for tokenize to fail is max. number of tokens exceeded
         printf(FMT_ERROR_LEFT, perr_to_string(PERR_MAX_TOKENS_EXCEEDED));
-        return;
+        return false;
     }
     
     if (num_tokens > 0)
@@ -151,15 +152,15 @@ void cmd_definition_exec(char *input)
         {
             free(name);
             printf(FMT_ERROR_LEFT, "Functions and constants must only consist of letters.");
-            return;
+            return false;
         }
 
-        add_function(name, input, right_input);
+        return add_function(name, input, right_input);
     }
     else
     {
         // Zero tokens: expression is empty
         printf(FMT_ERROR_LEFT, perr_to_string(PERR_EMPTY));
-        return;
+        return false;
     }
 }

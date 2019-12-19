@@ -17,14 +17,25 @@
 #define INTERACTIVE_ASK_PREFIX "> "
 #define COMMENT_PREFIX         "'"
 
+// Quit command:
+
+bool cmd_quit_check(char *input)
+{
+    return strcmp(input, "quit") == 0;
+}
+
+bool cmd_quit_exec(char *input)
+{
+    free(input);
+    exit(g_error ? EXIT_FAILURE : EXIT_SUCCESS);
+    return true;
+}
+
 struct Command
 {
     bool (*checkHandler)(char*);
-    void (*execHandler)(char*);
+    bool (*execHandler)(char*);
 };
-
-bool cmd_quit_check(char *input);
-void cmd_quit_exec(char *input);
 
 static const size_t NUM_COMMANDS = 8;
 static const struct Command commands[] = {
@@ -57,6 +68,7 @@ void init_commands()
     init_console_util();
     arith_init_ctx();
     arith_init_rules();
+    g_error = false;
 }
 
 /*
@@ -85,21 +97,11 @@ void parse_command(char *input)
     {
         if (commands[i].checkHandler(input))
         {
-            commands[i].execHandler(input);
+            if (!commands[i].execHandler(input))
+            {
+                g_error = true;
+            }
             return;
         }
     }
-}
-
-// Quit command:
-
-bool cmd_quit_check(char *input)
-{
-    return strcmp(input, "quit") == 0;
-}
-
-void cmd_quit_exec(char *input)
-{
-    free(input);
-    exit(EXIT_SUCCESS);
 }

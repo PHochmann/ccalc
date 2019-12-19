@@ -86,7 +86,7 @@ void print_op(Operator *op)
     printf(COL_RESET " ");
 }
 
-void cmd_help_exec(char __attribute__((unused)) *input)
+bool cmd_help_exec(char __attribute__((unused)) *input)
 {
     Table table = get_empty_table();
     add_cell_fmt(&table, INFOBOX_FMT, VERSION);
@@ -153,4 +153,6 @@ void cmd_help_exec(char __attribute__((unused)) *input)
     {
         printf("\n\n");
     }
+
+    return true;
 }

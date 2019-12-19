@@ -6,9 +6,6 @@
  * Scientific calculator in which you can define your own functions and constants
  * https://github.com/PhilippHochmann/Calculator
  * (c) 2019 Philipp Hochmann, phil.hochmann [ät] gmail [dot] com
- * 
- * tree > matching > arithmetics > commands
- * In no package a smaller package's file will be included
  */
 
 int main(int argc, char **argv)
@@ -23,5 +20,5 @@ int main(int argc, char **argv)
     if (isatty(STDIN_FILENO)) set_interactive(true);
     // Enter loop to read all input lines
     process_input(stdin);
-    return EXIT_SUCCESS;
+    return g_error ? EXIT_FAILURE : EXIT_SUCCESS;
 }

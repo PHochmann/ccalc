@@ -20,7 +20,7 @@ bool cmd_evaluation_check(__attribute__((unused)) char *input)
 /*
 Summary: The evaluation command is executed when input is no other command (hence last in command array at core.c)
 */
-void cmd_evaluation_exec(char *input)
+bool cmd_evaluation_exec(char *input)
 {
     Node *res;
     if (parse_input_from_console(input, ERROR_FMT, true, &res))
@@ -69,16 +69,23 @@ void cmd_evaluation_exec(char *input)
                 printf("\n");
                 set_interactive(temp);
                 free_tree(res);
-                return;
+                return true;
             }
         }
         // Restore previous value of g_interactive
         set_interactive(temp);
 
+        // Print result
         ConstantType result = arith_eval(res);
         whisper("= ");
         printf(CONSTANT_TYPE_FMT "\n", result);
         update_ans(result);
         free_tree(res);
+        
+        return true;
+    }
+    else
+    {
+        return false;
     }
 }

@@ -14,12 +14,12 @@ bool cmd_clear_check(char *input)
 /*
 Summary: Removes all user-defined functions and constants from context
 */
-void cmd_clear_exec(__attribute__((unused)) char *input)
+bool cmd_clear_exec(__attribute__((unused)) char *input)
 {
     if (g_num_rules == ARITH_NUM_RULES)
     {
         printf("No functions or constants defined.\n");
-        return;
+        return true;
     }
 
     if (strcmp("clear", input) == 0)
@@ -27,6 +27,7 @@ void cmd_clear_exec(__attribute__((unused)) char *input)
         arith_reset_ctx();   // To remove user-defined functions from parsing context
         arith_reset_rules(); // To remove their elimination rules
         whisper("Functions and constants cleared.\n");
+        return true;
     }
     else
     {
@@ -36,11 +37,13 @@ void cmd_clear_exec(__attribute__((unused)) char *input)
             g_ctx->num_ops--;
             free(g_ctx->operators[g_ctx->num_ops].name);
             free_rule(g_rules[g_num_rules]);
-            whisper("Last function or constant removed.\n");
+            whisper("Removed last function or constant.\n");
+            return true;
         }
         else
         {
             printf("Syntax error.\n");
+            return false;
         }
     }
 }
