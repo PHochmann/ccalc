@@ -11,6 +11,7 @@
 #include "../src/arithmetics/arith_context.h"
 #include "../src/table/table.h"
 
+// Table test is last test
 #if TEST_TABLES
 static const size_t NUM_TESTS = 4;
 #else
@@ -34,12 +35,10 @@ int main()
     add_empty_cell(&table);
     set_vline(&table, BORDER_SINGLE);
     override_left_border(&table, BORDER_NONE);
-    override_alignment(&table, ALIGN_CENTER);
     add_cell(&table, " Test suite ");
-    override_alignment(&table, ALIGN_CENTER);
     add_cell(&table, " #Cases ");
-    override_alignment(&table, ALIGN_CENTER);
     add_cell(&table, " Result ");
+    override_alignment_of_row(&table, ALIGN_CENTER);
     next_row(&table);
     set_hline(&table, BORDER_SINGLE);
 

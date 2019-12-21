@@ -26,6 +26,8 @@ bool table_test()
     Table t1 = get_empty_table();
     set_default_alignments(&t1, 5, (TextAlignment[]){ ALIGN_LEFT, ALIGN_NUMBERS, ALIGN_RIGHT, ALIGN_CENTER, ALIGN_CENTER });
     add_cells_from_array(&t1, 4, 4, (char**)arrayA);
+    set_position(&t1, 0, 0);
+    override_alignment_of_row(&t1, ALIGN_CENTER);
     set_position(&t1, 4, 0);
     set_vline(&t1, BORDER_SINGLE);
     add_cell(&t1, " test ");

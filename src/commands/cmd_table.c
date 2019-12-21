@@ -118,10 +118,8 @@ bool cmd_table_exec(char *input)
     // Header
     if (g_interactive)
     {
-        override_alignment(&table, ALIGN_CENTER);
         add_cell(&table, " # ");
         set_vline(&table, BORDER_SINGLE);
-        override_alignment(&table, ALIGN_CENTER);
         if (num_vars != 0)
         {
             add_cell_fmt(&table, VAR_COLOR " %s " COL_RESET, variables[0]);
@@ -133,9 +131,9 @@ bool cmd_table_exec(char *input)
 
         char inlined_expr[sizeof_tree_to_string(expr, true)];
         unsafe_tree_to_string(expr, inlined_expr, true);
-        override_alignment(&table, ALIGN_CENTER);
         set_vline(&table, BORDER_SINGLE);
         add_cell_fmt(&table, " %s ", inlined_expr);
+        override_alignment_of_row(&table, ALIGN_CENTER);
         next_row(&table);
         set_hline(&table, BORDER_SINGLE);
     }
@@ -171,17 +169,6 @@ bool cmd_table_exec(char *input)
         start_val += step_val;
     }
 
-    if (num_args == 6)
-    {
-        set_hline(&table, BORDER_SINGLE);
-        set_span(&table, 2, 1);
-        override_alignment(&table, ALIGN_CENTER);
-        add_cell(&table, " Fold result ");
-        add_cell_fmt(&table, " " CONSTANT_TYPE_FMT " ", fold_val);
-        update_ans(fold_val);
-        next_row(&table);
-    }
-
     if (g_interactive)
     {
         make_boxed(&table, BORDER_SINGLE);
@@ -190,6 +177,12 @@ bool cmd_table_exec(char *input)
     set_default_alignments(&table, 3, (TextAlignment[]){ ALIGN_RIGHT, ALIGN_NUMBERS, ALIGN_NUMBERS });
     print_table(&table);
     free_table(&table);
+
+    if (num_args == 6)
+    {
+        printf("Fold result: " CONSTANT_TYPE_FMT "\n", fold_val);
+        update_ans(fold_val);
+    }
 
     success = true;
 

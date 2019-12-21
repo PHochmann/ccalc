@@ -30,6 +30,12 @@ void add_cell_internal(Table *table, char *text, bool needs_free)
     }
 }
 
+void override_alignment_internal(struct Cell *cell, TextAlignment alignment)
+{
+    cell->align = alignment;
+    cell->override_align = true;
+}
+
 struct Row *malloc_row(size_t y)
 {
     struct Row *res = calloc(1, sizeof(struct Row));
@@ -235,6 +241,9 @@ void add_cells_from_array(Table *table, size_t width, size_t height, char **arra
     }
 }
 
+/*
+Summary: Sets default alignment of columns
+*/
 void set_default_alignments(Table *table, size_t num_alignments, TextAlignment *alignments)
 {
     for (size_t i = 0; i < num_alignments; i++)
@@ -243,10 +252,23 @@ void set_default_alignments(Table *table, size_t num_alignments, TextAlignment *
     }
 }
 
+/*
+Summary: Overrides alignment of current cell
+*/
 void override_alignment(Table *table, TextAlignment alignment)
 {
-    get_curr_cell(table)->align = alignment;
-    get_curr_cell(table)->override_align = true;
+    override_alignment_internal(get_curr_cell(table), alignment);
+}
+
+/*
+Summary: Overrides alignment of all cells in current row
+*/
+void override_alignment_of_row(Table *table, TextAlignment alignment)
+{
+    for (size_t i = 0; i < table->num_cols; i++)
+    {
+        override_alignment_internal(&table->curr_row->cells[i], alignment);
+    }
 }
 
 void set_hline(Table *table, BorderStyle style)
@@ -328,7 +350,6 @@ void set_span(Table *table, size_t span_x, size_t span_y)
     struct Cell *cell = &table->curr_row->cells[table->curr_col];
     struct Row *row = table->curr_row;
     size_t col = table->curr_col;
-
     cell->span_x = span_x;
     cell->span_y = span_y;
 

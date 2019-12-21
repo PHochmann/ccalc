@@ -218,10 +218,10 @@ void print_debug(Table *table)
     size_t row_heights[table->num_rows];
     get_dimensions(table, col_widths, row_heights);
 
-    printf("Num rows: %zu, Num cols: %zu, Dimensions: ", table->num_rows, table->num_cols);
-    for (size_t i = 0; i < table->num_cols; i++) printf("%zu ", col_widths[i]);
-    printf("; ");
+    printf("#rows: %zu, #cols: %zu\n", table->num_rows, table->num_cols);
     for (size_t i = 0; i < table->num_rows; i++) printf("%zu ", row_heights[i]);
+    printf("; ");
+    for (size_t i = 0; i < table->num_cols; i++) printf("%zu ", col_widths[i]);
     printf("\n");
 }
 

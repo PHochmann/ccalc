@@ -11,7 +11,6 @@
 #define SEED                 21
 #define NUM_CASES            1000
 #define MAX_INNER_NODES      250
-#define MAX_CONST            1000
 #define MAX_DYNAMIC_CHILDREN 5
 
 #define NUM_VARIABLE_NAMES 5
