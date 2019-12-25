@@ -22,9 +22,9 @@ fi
 echo "Compiling Calculator (use_readline = ${use_readline})"
 mkdir -p ${DIR}/bin
 
-if [ "$1" = "-debug" ] || [ "$1" = "-d" ]; then
+if [ "$1" = "-t" ] || [ "$1" = "-d" ]; then
     gcc ${DEFINES} -Og -g2 ${CFLAGS} ${FILES} -o ${BIN} ${LFLAGS}
-    if [ "$?" = 0 ]; then
+    if [ "$?" = 0 ] && [ "$1" = "-t" ]; then
         gcc ${DEFINES} -Og -g2 ${CFLAGS} \
             ${DIR}/src/tree/*.c \
             ${DIR}/src/arithmetics/arith_context.c \

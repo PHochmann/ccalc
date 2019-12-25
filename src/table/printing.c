@@ -35,6 +35,7 @@ Summary: Calculates length of string displayed in console,
 */
 size_t console_strlen(char *str)
 {
+    if (str == NULL) return 0;
     size_t res = 0;
     size_t pos = 0;
     while (str[pos] != '\0' && str[pos] != '\n')

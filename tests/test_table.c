@@ -15,9 +15,9 @@
 
 char *arrayA[4][4] = {
     { "alpha", YELLOW "beta" COL_RESET, "gamma", " delta " },
-    { "1", YELLOW " -1110.1 " COL_RESET, "a.......", " 777" },
-    { "2", " 10.1 ", "b", " 222" },
-    { "3.......", RED " 23.1132310 " COL_RESET, "c", " 333" },
+    { " 1 ", YELLOW " -1110.1 " COL_RESET, "a....... ", " 777" },
+    { " 2 ", " 10.1 ", "b ", " 222" },
+    { " 3....... ", RED " 23.1132310 " COL_RESET, "c ", " 333" },
 };
 
 bool table_test()
@@ -41,7 +41,7 @@ bool table_test()
     set_span(&t1, 2, 2);
     override_alignment(&t1, ALIGN_RIGHT);
     override_above_border(&t1, BORDER_NONE);
-    add_cell(&t1, "^ no border\nand span x\nand also y");
+    add_cell(&t1, " ^ no border \n and span x \n and also y ");
     set_position(&t1, 0, 4);
     set_hline(&t1, BORDER_SINGLE);
     set_span(&t1, 2, 1);
@@ -49,7 +49,7 @@ bool table_test()
     override_alignment(&t1, ALIGN_LEFT);
     set_vline(&t1, BORDER_SINGLE);
     set_span(&t1, 1, 3);
-    add_cell(&t1, "span y\nspan y\nspan y\nspan y\n< span y");
+    add_cell(&t1, " span y \n span y \n span y \n span y \n < span y ");
     next_row(&t1);
     set_hline(&t1, BORDER_SINGLE);
     set_span(&t1, 2, 1);
