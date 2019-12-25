@@ -6,7 +6,6 @@
 #include "table.h"
 #include "printing.h"
 #include "constraint.h"
-#include "text.h"
 
 void add_cell_internal(Table *table, char *text, bool needs_free)
 {

@@ -3,7 +3,6 @@
 
 #include "printing.h"
 #include "table.h"
-#include "text.h"
 #include "constraint.h"
 
 static char *BORDER_MATRIX_SINGLE[] = {
@@ -25,6 +24,135 @@ static size_t VLINE_INDEX = 10;
 
 // Index encodes whether a border intersects (0: no intersection, 1: intersection), clockwise
 static size_t BORDER_LOOKUP[16] = { 11, 11, 11, 6, 11, 10, 0, 3, 11, 8, 9, 7, 2, 5, 1, 4 };
+
+#define ESC       27
+#define ESC_TERM 109
+
+/*
+Summary: Calculates length of string displayed in console,
+    i.e. reads until \0 or \n and omits ANSI-escaped color sequences
+    Todo: Consider \t and other special chars
+*/
+size_t console_strlen(char *str)
+{
+    size_t res = 0;
+    size_t pos = 0;
+    while (str[pos] != '\0' && str[pos] != '\n')
+    {
+        if (str[pos] == ESC)
+        {
+            // Search for terminating byte and abort on end of string
+            // (should not happen on well-formed strings but could happen due to truncation)
+            while (str[pos] != ESC_TERM && str[pos + 1] != '\0')
+            {
+                pos++;
+            }
+        }
+        else
+        {
+            res++;
+        }
+        pos++;
+    }
+    return res;
+}
+
+void print_repeated(char *string, size_t times)
+{
+    for (size_t i = 0; i < times; i++) printf("%s", string);
+}
+
+void print_text(struct Cell *cell, TextAlignment default_align, size_t line_index, int total_length)
+{
+    if (cell->parent != NULL)
+    {
+        cell = cell->parent;
+    }
+
+    if (cell->text == NULL)
+    {
+        printf("%*s", total_length, "");
+        return;
+    }
+
+    char *string = NULL;
+    int bytes = get_line_of_string(cell->text, line_index, &string);
+
+    // Lengths passed to printf are including color codes
+    // We need to adjust the total length to include them
+    int string_length = console_strlen(string);
+    int adjusted_total_len = total_length + bytes - string_length;
+
+    switch (get_align(default_align, cell))
+    {
+        case ALIGN_LEFT:
+        {
+            printf("%-*.*s", adjusted_total_len, bytes, string);
+            break;
+        }
+        case ALIGN_RIGHT:
+        {
+            printf("%*.*s", adjusted_total_len, bytes, string);
+            break;
+        }
+        case ALIGN_CENTER:
+        {
+            int padding = (total_length - string_length) / 2;
+            printf("%*s%.*s%*s", padding, "", bytes, string,
+                (total_length - string_length) % 2 == 0 ? padding : padding + 1, "");
+            break;
+        }
+        case ALIGN_NUMBERS:
+        {
+            printf("%*s%.*s%*s", total_length - (int)(cell->dot_padding) - string_length, "", bytes, string,
+                (int)(cell->dot_padding), "");
+            break;
+        }
+    }
+}
+
+// Returns: Length of line (excluding \n or \0)
+size_t get_line_of_string(char *string, size_t line_index, char **out_start)
+{
+    if (string == NULL)
+    {
+        return 0;
+    }
+
+    // Search for start of line
+    if (line_index > 0)
+    {
+        while (*string != '\0')
+        {
+            string++;
+            if (*string == '\n')
+            {
+                line_index--;
+                if (line_index == 0)
+                {
+                    string++;
+                    break;
+                }
+            }
+        }
+    }
+
+    // String does not have that much lines
+    if (line_index != 0)
+    {
+        return 0;
+    }
+
+    *out_start = string;
+
+    // Count length of line
+    size_t count = 0;
+    while (string[count] != '\0' && string[count] != '\n')
+    {
+        count++;
+    }
+    return count;
+}
 
 size_t get_total_width(Table *table, size_t *col_widths, size_t col, size_t span_x)
 {
@@ -198,14 +326,11 @@ void print_complete_line(Table *table,
         else
         {
             struct Cell *parent = below_row->cells[i].parent;
-            char *str = NULL;
-            size_t len = get_line_of_cell(parent, line_indices[i], &str);
+            print_text(parent,
+                table->alignments[i],
+                line_indices[i],
+                get_total_width(table, col_widths, i, parent->span_x));
             line_indices[i]++;
-            print_padded(str,
-                len,
-                get_total_width(table, col_widths, i, parent->span_x),
-                0,
-                get_align(table->alignments[i], parent));
             i += parent->span_x - 1;
         }
     }
@@ -266,11 +391,7 @@ void print_table_internal(Table *table)
     {
         if (curr_row->border_above_counter > 0)
         {
-            print_complete_line(table,
-                prev_row,
-                curr_row,
-                line_indices,
-                col_widths);
+            print_complete_line(table, prev_row, curr_row, line_indices, col_widths);
         }
 
         // Reset line indices for newly beginning cells, don't reset them for cells that are children spanning from above
@@ -302,13 +423,10 @@ void print_table_internal(Table *table)
                     }
                 }
 
-                char *str = NULL;
-                size_t str_len = get_line_of_cell(&curr_row->cells[k], line_indices[k], &str);
-                print_padded(str,
-                    str_len,
-                    get_total_width(table, col_widths, k, get_span_x(&curr_row->cells[k])),
-                    curr_row->cells[k].dot_padding,
-                    get_align(table->alignments[k], &curr_row->cells[k]));
+                print_text(&curr_row->cells[k],
+                    table->alignments[k],
+                    line_indices[k],
+                    get_total_width(table, col_widths, k, get_span_x(&curr_row->cells[k])));
                 
                 line_indices[k]++;
             }

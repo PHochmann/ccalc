@@ -1,7 +1,6 @@
 #include <string.h>
 
 #include "constraint.h"
-#include "text.h"
 #include "printing.h"
 #include "../string_util.h" // For is_digit
 
@@ -96,6 +95,35 @@ void satisfy_constraints(size_t num_constrs, struct Constraint *constrs, size_t 
             }
         }
     }
+}
+
+size_t get_num_lines(char *string)
+{
+    if (string == NULL) return 0;
+    size_t res = 1;
+    size_t pos = 0;
+    while (string[pos] != '\0')
+    {
+        if (string[pos] == '\n')
+        {
+            res++;
+        }
+        pos++;
+    }
+    return res;
+}
+
+size_t get_text_width(char *str)
+{
+    size_t res = 0;
+    for (size_t i = 0; i < get_num_lines(str); i++)
+    {
+        char *line;
+        get_line_of_string(str, i, &line);
+        size_t line_width = console_strlen(line);
+        if (line_width > res) res = line_width;
+    }
+    return res;
 }
 
 void get_dimensions(Table *table, size_t *out_col_widths, size_t *out_row_heights)
