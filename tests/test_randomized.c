@@ -104,14 +104,14 @@ bool randomized_test()
         // Check results
         if (result != PERR_SUCCESS)
         {
-            printf("[3] Parser error: %s.\n", perr_to_string(result));
+            printf("[4] Parser error: %s.\n", perr_to_string(result));
             error = true;
         }
         else
         {
             if (tree_equals(random_tree, parsed_tree) != NULL)
             {
-                printf("[3] Parsed tree not equal to generated tree.\n");
+                printf("[4] Parsed tree not equal to generated tree.\n");
                 error = true;
             }
         }

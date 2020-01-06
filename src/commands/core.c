@@ -33,8 +33,8 @@ bool cmd_quit_exec(char *input)
 
 struct Command
 {
-    bool (*checkHandler)(char*);
-    bool (*execHandler)(char*);
+    bool (*check_handler)(char*);
+    bool (*exec_handler)(char*);
 };
 
 static const size_t NUM_COMMANDS = 8;
@@ -95,9 +95,9 @@ void parse_command(char *input)
 {
     for (size_t i = 0; i < NUM_COMMANDS; i++)
     {
-        if (commands[i].checkHandler(input))
+        if (commands[i].check_handler(input))
         {
-            if (!commands[i].execHandler(input))
+            if (!commands[i].exec_handler(input))
             {
                 g_error = true;
             }

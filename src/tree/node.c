@@ -311,10 +311,11 @@ Params
     tree:         Tree to search for variable occurrences
     tree_to_copy: Tree, the variables are replaced by
     var_name:     name of variable to search for
+Returns: Number of nodes that have been replaced
 */
-void replace_variable_nodes(Node **tree, Node *tree_to_copy, char *var_name)
+size_t replace_variable_nodes(Node **tree, Node *tree_to_copy, char *var_name)
 {
-    if (tree == NULL || *tree == NULL || tree_to_copy == NULL || var_name == NULL) return;
+    if (tree == NULL || *tree == NULL || tree_to_copy == NULL || var_name == NULL) return 0;
 
     Node **instances[count_variables(*tree)];
     size_t num_instances = get_variable_nodes(tree, var_name, instances);
@@ -322,4 +323,5 @@ void replace_variable_nodes(Node **tree, Node *tree_to_copy, char *var_name)
     {
         tree_replace(instances[i], tree_copy(tree_to_copy));
     }
+    return num_instances;
 }

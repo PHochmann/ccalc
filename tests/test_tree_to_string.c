@@ -41,7 +41,7 @@ bool tree_to_string_test()
 
         if (parse_input(g_ctx, tests[i].input, &node) != PERR_SUCCESS)
         {
-            printf("[2] Parser Error in '%s'\n", tests[i].input);
+            printf("[3] Parser Error in '%s'\n", tests[i].input);
             return false;
         }
 
@@ -49,13 +49,13 @@ bool tree_to_string_test()
         if (tree_to_string(node, NULL, 0, false) != expected_length
             || tree_to_string(node, result, expected_length + 1, false) != expected_length)
         {
-            printf("[2] Unexpected length in '%s'\n", tests[i].input);
+            printf("[3] Unexpected length in '%s'\n", tests[i].input);
             goto error;
         }
 
         if (strcmp(tests[i].expected_result, result) != 0)
         {
-            printf("[2] Unexpected result in '%s'\n", tests[i].input);
+            printf("[3] Unexpected result in '%s'\n", tests[i].input);
             goto error;
         }
 

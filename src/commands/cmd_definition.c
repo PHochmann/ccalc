@@ -84,17 +84,28 @@ bool add_function(char *name, char *left, char *right)
     {
         /*
          * User-defined constants are zero-arity functions with corresponding elimination rule.
-         * Previously defined rules do not refer to them, because the string was parsed to 
+         * Previously defined rules do not refer to them, because the string was parsed to a
          * variable node, not an operator. For users, this is confusing, because the technical
          * difference between variables and constant operators is not clear.
          * => Replace unbounded variables of the same name with this new constant.
          */
+        bool replaced_variable = false;
         for (size_t i = ARITH_NUM_RULES; i < g_num_rules; i++)
         {
+            // Check if variables are unbounded...
             if (count_variable_nodes(g_rules[i].before, name) == 0)
             {
-                replace_variable_nodes(&g_rules[i].after, left_n, name);
+                // ...if they are, replace them by new definition
+                if (replace_variable_nodes(&g_rules[i].after, left_n, name) > 0)
+                {
+                    replaced_variable = true;
+                }
             }
+        }
+
+        if (replaced_variable)
+        {
+            whisper("Note: Unbounded variables in previously defined functions or constants are now bounded.\n");
         }
 
         whisper("Added constant.\n");

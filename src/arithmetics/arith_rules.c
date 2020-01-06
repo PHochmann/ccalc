@@ -92,6 +92,7 @@ void transform_input(bool all_rules, Node **tree)
     if (ans != NULL) replace_variable_nodes(tree, ans, ANS_VAR);
     if (all_rules)
     {
+        // Even when all_rules is set to false, we want to execute predefined rules (like eliminiation of $)
         apply_ruleset(tree, g_num_rules, g_rules);
     }
     else

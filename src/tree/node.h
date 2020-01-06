@@ -64,4 +64,4 @@ size_t count_variables_distinct(Node *tree);
 size_t get_variable_nodes(Node **tree, char *var_name, Node ***out_instances);
 size_t count_variable_nodes(Node *tree, char *var_name);
 size_t list_variables(Node *tree, char **out_variables);
-void replace_variable_nodes(Node **tree, Node *tree_to_copy, char *var_name);
+size_t replace_variable_nodes(Node **tree, Node *tree_to_copy, char *var_name);

@@ -8,20 +8,14 @@
 
 bool cmd_clear_check(char *input)
 {
-    return begins_with("clear", input);
+    return strcmp("clear", input) == 0 || strcmp("clear last", input) == 0;
 }
 
 /*
 Summary: Removes all user-defined functions and constants from context
 */
-bool cmd_clear_exec(__attribute__((unused)) char *input)
+bool cmd_clear_exec(char *input)
 {
-    if (g_num_rules == ARITH_NUM_RULES)
-    {
-        printf("No functions or constants defined.\n");
-        return true;
-    }
-
     if (strcmp("clear", input) == 0)
     {
         arith_reset_ctx();   // To remove user-defined functions from parsing context
@@ -31,19 +25,17 @@ bool cmd_clear_exec(__attribute__((unused)) char *input)
     }
     else
     {
-        if (strcmp("clear last", input) == 0)
+        if (g_num_rules == ARITH_NUM_RULES)
         {
-            g_num_rules--;
-            g_ctx->num_ops--;
-            free(g_ctx->operators[g_ctx->num_ops].name);
-            free_rule(g_rules[g_num_rules]);
-            whisper("Removed last function or constant.\n");
-            return true;
-        }
-        else
-        {
-            printf("Syntax error.\n");
+            printf("No functions or constants defined.\n");
             return false;
         }
+
+        g_num_rules--;
+        g_ctx->num_ops--;
+        free(g_ctx->operators[g_ctx->num_ops].name);
+        free_rule(g_rules[g_num_rules]);
+        whisper("Removed last function or constant.\n");
+        return true;
     }
 }

@@ -3,6 +3,7 @@
 #include <stdbool.h>
 
 #include "test.h"
+#include "test_node.h"
 #include "test_parser.h"
 #include "test_tree_to_string.h"
 #include "test_randomized.h"
@@ -13,12 +14,13 @@
 
 // Table test is last test
 #if TEST_TABLES
-static const size_t NUM_TESTS = 4;
+static const size_t NUM_TESTS = 5;
 #else
-static const size_t NUM_TESTS = 3;
+static const size_t NUM_TESTS = 4;
 #endif
 
 static Test (*test_getters[])() = {
+    get_node_test,
     get_parser_test,
     get_tree_to_string_test,
     get_randomized_test,

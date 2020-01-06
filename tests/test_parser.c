@@ -7,6 +7,8 @@
 #include "../src/tree/parser.h"
 #include "../src/arithmetics/arith_context.h"
 
+static const int TEST_NUMBER = 2;
+
 // To check if parsed tree evaluates to expected value
 struct ValueTest {
     char *input;
@@ -115,12 +117,12 @@ bool parser_test()
     {
         if (parse_input(g_ctx, valueTests[i].input, &node) != PERR_SUCCESS)
         {
-            printf("[1] Parser Error in '%s'\n", valueTests[i].input);
+            printf("[%d] Parser Error in '%s'\n", TEST_NUMBER, valueTests[i].input);
             return false;
         }
         if (!almost_equals(arith_eval(node), valueTests[i].result))
         {
-            printf("[1] Unexpected result in '%s'\n", valueTests[i].input);
+            printf("[%d] Unexpected result in '%s'\n", TEST_NUMBER, valueTests[i].input);
             goto error;
         }
         free_tree(node);
@@ -131,7 +133,7 @@ bool parser_test()
     {
         if (parse_input(g_ctx, errorTests[i].input, NULL) != errorTests[i].result)
         {
-            printf("[1] Unexpected error type in '%s'\n", errorTests[i].input);
+            printf("[%d] Unexpected error type in '%s'\n", TEST_NUMBER, errorTests[i].input);
             goto error;
         }
     }

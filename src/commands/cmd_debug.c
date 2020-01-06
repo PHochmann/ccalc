@@ -7,7 +7,8 @@
 #include "../arithmetics/arith_context.h"
 #include "../string_util.h"
 
-#define COMMAND "debug "
+#define COMMAND   "debug "
+#define ERROR_FMT "Error: %s.\n"
 
 bool cmd_debug_check(char *input)
 {
@@ -17,7 +18,7 @@ bool cmd_debug_check(char *input)
 bool cmd_debug_exec(char *input)
 {
     Node *res;
-    if (parse_input_from_console(input + strlen(COMMAND), "Error: %s.\n", true, &res))
+    if (parse_input_from_console(input + strlen(COMMAND), ERROR_FMT, true, &res))
     {
         print_tree_visually(res);
         printf("= ");
