@@ -7,8 +7,6 @@
 #include "../src/tree/parser.h"
 #include "../src/arithmetics/arith_context.h"
 
-static const int TEST_NUMBER = 2;
-
 // To check if parsed tree evaluates to expected value
 struct ValueTest {
     char *input;
@@ -108,7 +106,7 @@ bool almost_equals(double a, double b)
     return (fabs(a - b) < EPSILON);
 }
 
-bool parser_test()
+char *parser_test()
 {
     Node *node = NULL;
 
@@ -117,15 +115,16 @@ bool parser_test()
     {
         if (parse_input(g_ctx, valueTests[i].input, &node) != PERR_SUCCESS)
         {
-            printf("[%d] Parser Error in '%s'\n", TEST_NUMBER, valueTests[i].input);
-            return false;
+            return create_error("Parser Error for '%s'\n", valueTests[i].input);
         }
-        if (!almost_equals(arith_eval(node), valueTests[i].result))
-        {
-            printf("[%d] Unexpected result in '%s'\n", TEST_NUMBER, valueTests[i].input);
-            goto error;
-        }
+
+        bool is_equal = almost_equals(arith_eval(node), valueTests[i].result);
         free_tree(node);
+
+        if (!is_equal)
+        {
+            return create_error("Unexpected result for '%s'\n", valueTests[i].input);
+        }
     }
 
     // Perform error tests
@@ -133,16 +132,11 @@ bool parser_test()
     {
         if (parse_input(g_ctx, errorTests[i].input, NULL) != errorTests[i].result)
         {
-            printf("[%d] Unexpected error type in '%s'\n", TEST_NUMBER, errorTests[i].input);
-            goto error;
+            return create_error("Unexpected error type for '%s'\n", errorTests[i].input);
         }
     }
 
-    return true;
-
-    error:
-    free_tree(node);
-    return false;
+    return NULL;
 }
 
 Test get_parser_test()

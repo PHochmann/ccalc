@@ -20,7 +20,7 @@ char *arrayA[4][4] = {
     { " 3....... ", RED " 23.1132310 " COL_RESET, "c ", " 333" },
 };
 
-bool table_test()
+char *table_test()
 {
     // Case 1
     Table t1 = get_empty_table();
@@ -71,7 +71,15 @@ bool table_test()
     printf("Does this look right to you [Y/n]? ");
     char input = getchar();
     printf("\n");
-    return input == '\n' || input == 'y' || input == 'Y';
+
+    if (input == '\n' || input == 'y' || input == 'Y')
+    {
+        return NULL;
+    }
+    else
+    {
+        return create_error("Table does not look right.\n");
+    }
 }
 
 Test get_table_test()

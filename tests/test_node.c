@@ -4,21 +4,16 @@
 #include "test_node.h"
 #include "../src/tree/operator.h"
 #include "../src/tree/node.h"
+#include "../src/tree/tree_to_string.h"
 
-static const int TEST_NUMBER = 1;
-static const size_t NUM_CASES = 4;
+static const size_t NUM_CASES = 5;
 
-#define PRINT_ERROR_RETURN_VAL(function) {\
-    printf("[%d] Unexpected return value of %s.\n", TEST_NUMBER, function);\
-    error = true;\
+#define ERROR_RETURN_VAL(function) {\
+    return create_error("Unexpected return value of %s.\n", function);\
 }
 
-// Todo: Write a test for every function in node.c
-
-bool node_test()
+char *node_test()
 {
-    bool error = false;
-
     Operator op = op_get_function("test", OP_DYNAMIC_ARITY);
 
     // Manually construct tree: test(x, test(x, y), y, 42, x)
@@ -35,41 +30,67 @@ bool node_test()
     // Case 1
     if (count_variables(root) != 5)
     {
-        PRINT_ERROR_RETURN_VAL("count_variables");
+        free_tree(root);
+        ERROR_RETURN_VAL("count_variables");
     }
 
     // Case 2
     if (count_variables_distinct(root) != 2)
     {
-        PRINT_ERROR_RETURN_VAL("count_variables_distinct");
+        free_tree(root);
+        ERROR_RETURN_VAL("count_variables_distinct");
     }
 
     // Case 3
     Node **vars_x[3];
     if (get_variable_nodes(&root, "x", vars_x) != 3)
     {
-        PRINT_ERROR_RETURN_VAL("get_variable_nodes");
+        free_tree(root);
+        ERROR_RETURN_VAL("get_variable_nodes");
     }
 
     if (*vars_x[0] != get_child(root, 0)
         || *vars_x[1] != get_child(get_child(root, 1), 0)
         || *vars_x[2] != get_child(root, 4))
     {
-        printf("[%d] Unexpected out_instances of get_variable_nodes.\n", TEST_NUMBER);
-        return false;
+        free_tree(root);
+        return create_error("Unexpected out_instances of get_variable_nodes.\n");
     }
 
     // Case 4
-    Node *replacement = tree_copy(child);
-    if (replace_variable_nodes(&root, child, "y") != 2)
+    if (tree_equals(root, child) == NULL)
     {
-        PRINT_ERROR_RETURN_VAL("replace_variable_nodes");
+        free_tree(root);
+        ERROR_RETURN_VAL("tree_equals");
     }
 
-    free_tree(replacement);
-    free_tree(root);
+    // Case 5
+    // Check correct replacement by building new tree by hand
+    Node *root_copy = tree_copy(root);
+    Node *child_copy = tree_copy(child);
+    free_tree(get_child(root_copy, 2));
+    set_child(root_copy, 2, tree_copy(child));
+    free_tree(get_child(get_child(root_copy, 1), 1));
+    set_child(get_child(root_copy, 1), 1, tree_copy(child));
 
-    return !error;
+    // Replace
+    Node *replacement = tree_copy(child);
+    if (replace_variable_nodes(&root, child_copy, "y") != 2)
+    {
+        ERROR_RETURN_VAL("replace_variable_nodes"); // Mem. leak
+    }
+    
+    // Check equality
+    if (tree_equals(root_copy, root) != NULL)
+    {
+        return create_error("Unexpected replacement of replace_variable_nodes (or tree_copy broken).\n"); // Mem. leak
+    }
+
+    free_tree(root);
+    free_tree(root_copy);
+    free_tree(child_copy);
+    free_tree(replacement);
+    return NULL;
 }
 
 Test get_node_test()

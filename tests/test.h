@@ -6,7 +6,9 @@
 #define COL_RESET "\x1B[0m"
 
 typedef struct {
-    bool (*suite)(); // Returns: True if test passed, otherwise false
+    char *(*suite)(); // Returns NULL or error message
     int num_cases;
     char *name;
 } Test;
+
+char *create_error(char *fmt, ...);

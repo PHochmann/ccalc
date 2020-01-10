@@ -24,17 +24,16 @@ typedef enum
 
 struct Cell
 {
-    char *text;
+    char *text; // Actual content to be displayed
 
     // Settings
-    TextAlignment align;
-    BorderStyle border_left;
-    BorderStyle border_above;
-    size_t span_x;
-    size_t span_y;
-
-    bool override_align;        // Default set for col in table
-    bool override_border_left;  // Default set for col in table
+    TextAlignment align;        // Non default, how to place text in col width
+    BorderStyle border_left;    // Non-default border left
+    BorderStyle border_above;   // Non-default border above
+    size_t span_x;              // How many cols to span over
+    size_t span_y;              // How many rows to span over
+    bool override_align;        // Default set for each col in table
+    bool override_border_left;  // Default set for each col in table
     bool override_border_above; // Default set in row
 
     // Generated
@@ -48,9 +47,9 @@ struct Cell
 
 struct Row
 {
-    struct Cell cells[MAX_COLS];
-    struct Row *next_row;
-    BorderStyle border_above;
+    struct Cell cells[MAX_COLS]; // All cells of this row from left to right
+    struct Row *next_row;        // Pointer to next row or NULL if last row
+    BorderStyle border_above;    // Default border above (can be overwritten in cell)
     size_t border_above_counter; // Counts cells that override their border_above
 };
 
@@ -61,8 +60,8 @@ typedef struct
     struct Row *first_row;                 // Start of linked list to rows
     struct Row *curr_row;                  // Marker of row of next inserted cell
     size_t curr_col;                       // Marker of col of next inserted cell
-    BorderStyle borders_left[MAX_COLS];    // todo
-    TextAlignment alignments[MAX_COLS];    // todo
+    BorderStyle borders_left[MAX_COLS];    // Default left border of cols
+    TextAlignment alignments[MAX_COLS];    // Default alignment of cols
     size_t border_left_counters[MAX_COLS]; // Counts cells that override their border_left
 } Table;
 

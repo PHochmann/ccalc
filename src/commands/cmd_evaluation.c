@@ -10,7 +10,7 @@
 #include "../arithmetics/arith_rules.h"
 
 #define ERROR_FMT        "Error: %s.\n"
-#define ASK_VARIABLE_FMT "%s? > "
+#define ASK_VARIABLE_FMT "%s? "
 
 bool cmd_evaluation_check(__attribute__((unused)) char *input)
 {

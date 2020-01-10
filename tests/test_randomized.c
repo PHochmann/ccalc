@@ -71,9 +71,9 @@ Summary:
     This test does not test them independently.
     Note that dynamic arity functions coexisting with fixed-arity function of same name cause false negatives
 */
-bool randomized_test()
+char *randomized_test()
 {
-    bool error = false;
+    char *res = NULL;
     srand(SEED);
 
     for (size_t i = 0; i < NUM_CASES; i++)
@@ -104,37 +104,22 @@ bool randomized_test()
         // Check results
         if (result != PERR_SUCCESS)
         {
-            printf("[4] Parser error: %s.\n", perr_to_string(result));
-            error = true;
+            res = create_error("Parser error: %s.\n", perr_to_string(result));
         }
         else
         {
             if (tree_equals(random_tree, parsed_tree) != NULL)
             {
-                printf("[4] Parsed tree not equal to generated tree.\n");
-                error = true;
+                res = create_error("Parsed tree not equal to generated tree.\n");
             }
-        }
-
-        if (error)
-        {
-            printf("Random:\n");
-            print_tree_visually(random_tree);
-            printf("Parsed:\n");
-            print_tree_visually(parsed_tree);
-            printf("String:\n%s\n", stringed_tree);
         }
 
         free_tree(random_tree);
         free_tree(parsed_tree);
-
-        if (error)
-        {
-            return false;
-        }
+        if (res != NULL) return res;
     }
 
-    return true;
+    return NULL;
 }
 
 Test get_randomized_test()

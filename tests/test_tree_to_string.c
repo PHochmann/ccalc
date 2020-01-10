@@ -30,8 +30,9 @@ static struct TreeToStringTest tests[] = {
         "-sqrt(abs(((-(-a)!)!)*(-(-sum(-b+c-d+e,f^g^h-i,-sum(j,k),l+m)))*(-(-n)!)!))" },
 };
 
-bool tree_to_string_test()
+char *tree_to_string_test()
 {
+    char *res = NULL;
     Node *node = NULL;
 
     for (size_t i = 0; i < NUM_CASES; i++)
@@ -41,32 +42,31 @@ bool tree_to_string_test()
 
         if (parse_input(g_ctx, tests[i].input, &node) != PERR_SUCCESS)
         {
-            printf("[3] Parser Error in '%s'\n", tests[i].input);
-            return false;
+            return create_error("Parser Error in '%s'\n", tests[i].input);
         }
 
         // Check if tree_to_string returns correct length with and without buffer
         if (tree_to_string(node, NULL, 0, false) != expected_length
             || tree_to_string(node, result, expected_length + 1, false) != expected_length)
         {
-            printf("[3] Unexpected length in '%s'\n", tests[i].input);
+            res = create_error("Unexpected length in '%s'\n", tests[i].input);
             goto error;
         }
 
         if (strcmp(tests[i].expected_result, result) != 0)
         {
-            printf("[3] Unexpected result in '%s'\n", tests[i].input);
+            res = create_error("Unexpected result in '%s'\n", tests[i].input);
             goto error;
         }
 
         free_tree(node);
     }
 
-    return true;
+    return NULL;
 
     error:
     free_tree(node);
-    return false;
+    return res;
 }
 
 Test get_tree_to_string_test()

@@ -52,13 +52,18 @@ int main()
         add_cell_fmt(&table, " %zu ", i + 1);
         add_cell_fmt(&table, " %s ", test.name);
         add_cell_fmt(&table, " %d ", test.num_cases);
-        if (test.suite())
+
+        char *result = test.suite();
+
+        if (result == NULL)
         {
             add_cell(&table, F_GREEN " passed " COL_RESET);
         }
         else
         {
             add_cell(&table, F_RED " failed " COL_RESET);
+            printf("[" F_RED "%s" COL_RESET "] %s", test.name, result);
+            free(result);
             error = true;
         }
         next_row(&table);

@@ -5,6 +5,9 @@
 #include "table.h"
 #include "constraint.h"
 
+#define ESC_START  27
+#define ESC_END   109
+
 static char *BORDER_MATRIX_SINGLE[] = {
     "┌", "┬", "┐",
     "├", "┼", "┤",
@@ -25,9 +28,6 @@ static size_t VLINE_INDEX = 10;
 // Index encodes whether a border intersects (0: no intersection, 1: intersection), clockwise
 static size_t BORDER_LOOKUP[16] = { 11, 11, 11, 6, 11, 10, 0, 3, 11, 8, 9, 7, 2, 5, 1, 4 };
 
-#define ESC       27
-#define ESC_TERM 109
-
 /*
 Summary: Calculates length of string displayed in console,
     i.e. reads until \0 or \n and omits ANSI-escaped color sequences
@@ -40,11 +40,11 @@ size_t console_strlen(char *str)
     size_t pos = 0;
     while (str[pos] != '\0' && str[pos] != '\n')
     {
-        if (str[pos] == ESC)
+        if (str[pos] == ESC_START)
         {
             // Search for terminating byte and abort on end of string
             // (should not happen on well-formed strings but could happen due to truncation)
-            while (str[pos] != ESC_TERM && str[pos + 1] != '\0')
+            while (str[pos] != ESC_END && str[pos + 1] != '\0')
             {
                 pos++;
             }
