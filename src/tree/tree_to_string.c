@@ -241,7 +241,9 @@ void print_tree(Node *node, bool color)
     printf("%s", buffer);
 }
 
-/* Algorithm to put tree into single string ends here. What follows is a method to visually print a tree-like representation for debugging purposes */
+/* Algorithm to put tree into single string ends here.
+ * What follows is a method to visually print a tree-like representation for debugging purposes
+ */
 
 #define EMPTY_TAB  "    "
 #define LINE_TAB   "│   "

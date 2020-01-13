@@ -87,13 +87,17 @@ char *randomized_test()
         char stringed_tree[buffer_len];
         tree_to_string(random_tree, stringed_tree, buffer_len, false);
 
-        // To test glue-op: replace first '*' by space
-        if (rand() % 2 == 0)
+        // To test glue-op: replace some '*' by spaces
+        while (rand() % 4 != 0)
         {
             char *asterisk = strstr(stringed_tree, "*");
             if (asterisk != NULL)
             {
                 *asterisk = ' ';
+            }
+            else
+            {
+                break;
             }
         }
 
@@ -110,6 +114,10 @@ char *randomized_test()
         {
             if (tree_equals(random_tree, parsed_tree) != NULL)
             {
+                printf("Generated tree:\n");
+                print_tree_visually(random_tree);
+                printf("Parsed tree tree:\n");
+                print_tree_visually(parsed_tree);
                 res = create_error("Parsed tree not equal to generated tree.\n");
             }
         }

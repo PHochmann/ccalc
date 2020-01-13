@@ -83,7 +83,7 @@ char *node_test()
     // Check equality
     if (tree_equals(root_copy, root) != NULL)
     {
-        return create_error("Unexpected replacement of replace_variable_nodes (or tree_copy broken).\n"); // Mem. leak
+        return create_error("Unexpected replacement by replace_variable_nodes (or tree_copy broken).\n"); // Mem. leak
     }
 
     free_tree(root);

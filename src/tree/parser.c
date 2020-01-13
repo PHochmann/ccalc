@@ -451,7 +451,7 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
     }
     
     exit:
-    // If parsing wasn't successful, free partial results
+    // If parsing wasn't successful or result is discarded, free partial results
     if (state.result != PERR_SUCCESS || out_res == NULL)
     {
         while (state.num_nodes > 0)

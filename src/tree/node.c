@@ -310,7 +310,7 @@ Summary: Replaces every occurrence of a variable with a certain name by a given 
 Params
     tree:         Tree to search for variable occurrences
     tree_to_copy: Tree, the variables are replaced by
-    var_name:     name of variable to search for
+    var_name:     Name of variable to search for
 Returns: Number of nodes that have been replaced
 */
 size_t replace_variable_nodes(Node **tree, Node *tree_to_copy, char *var_name)

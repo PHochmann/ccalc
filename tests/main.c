@@ -45,6 +45,7 @@ int main()
     set_hline(&table, BORDER_SINGLE);
 
     bool error = false;
+    char *results[NUM_TESTS];
     for (size_t i = 0; i < NUM_TESTS; i++)
     {
         Test test = test_getters[i]();
@@ -53,17 +54,15 @@ int main()
         add_cell_fmt(&table, " %s ", test.name);
         add_cell_fmt(&table, " %d ", test.num_cases);
 
-        char *result = test.suite();
+        results[i] = test.suite();
 
-        if (result == NULL)
+        if (results[i] == NULL)
         {
             add_cell(&table, F_GREEN " passed " COL_RESET);
         }
         else
         {
             add_cell(&table, F_RED " failed " COL_RESET);
-            printf("[" F_RED "%s" COL_RESET "] %s", test.name, result);
-            free(result);
             error = true;
         }
         next_row(&table);
@@ -76,6 +75,15 @@ int main()
     add_cell(&table, error ? F_RED " failed " COL_RESET : F_GREEN " passed " COL_RESET);
     next_row(&table);
     make_boxed(&table, BORDER_SINGLE);
+
+    for (size_t i = 0; i < NUM_TESTS; i++)
+    {
+        if (results[i] != NULL)
+        {
+            printf("[" F_RED "%s" COL_RESET "] %s", test_getters[i]().name, results[i]);
+            free(results[i]);
+        }
+    }
     print_table(&table);
     free_table(&table);
 

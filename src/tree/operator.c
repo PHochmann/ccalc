@@ -44,7 +44,7 @@ Operator op_get_postfix(char *name, Precedence precedence)
     };
 }
 
-// Constants are just zero-arity functions, pi and pi() are semantically equivalent
+// Constants are just zero-arity functions, i.e. pi and pi() are semantically equivalent
 Operator op_get_constant(char *name)
 {
     return op_get_function(name, 0);
