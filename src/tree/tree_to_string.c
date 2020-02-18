@@ -5,6 +5,8 @@
 #include "../string_util.h"
 
 #define SSIZE_MAX 2147483647
+#define OPENING_P "("
+#define CLOSING_P ")"
 
 // Encapsulates printing settings and buffer state to be communicated to auxiliary functions (singleton)
 struct PrintingState
@@ -46,12 +48,12 @@ void to_buffer(struct PrintingState *state, const char *format, ...)
 
 void p_open(struct PrintingState *state)
 {
-    to_buffer(state, "(");
+    to_buffer(state, OPENING_P);
 }
 
 void p_close(struct PrintingState *state)
 {
-    to_buffer(state, ")");
+    to_buffer(state, CLOSING_P);
 }
 
 void tree_to_string_internal(struct PrintingState *state, Node *node, bool l, bool r);

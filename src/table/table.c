@@ -38,6 +38,7 @@ void override_alignment_internal(struct Cell *cell, TextAlignment alignment)
 struct Row *malloc_row(size_t y)
 {
     struct Row *res = calloc(1, sizeof(struct Row));
+    if (res == NULL) return NULL;
     for (size_t i = 0; i < MAX_COLS; i++)
     {
         res->cells[i] = (struct Cell){
@@ -342,23 +343,24 @@ void override_above_border(Table *table, BorderStyle style)
 }
 
 /*
-Summary: todo
+Summary: Changes span of current cell
+    When spanning cell clashes with already set cells, the span will be truncated
+Returns: True when span had to be truncated, False otherwise
 */
 void set_span(Table *table, size_t span_x, size_t span_y)
 {
     struct Cell *cell = &table->curr_row->cells[table->curr_col];
-    struct Row *row = table->curr_row;
-    size_t col = table->curr_col;
     cell->span_x = span_x;
     cell->span_y = span_y;
 
     // Inserts rows and sets child cells
+    struct Row *row = table->curr_row;
     for (size_t i = 0; i < span_y; i++)
     {
         for (size_t j = 0; j < span_x; j++)
         {
             if (i == 0 && j == 0) continue;
-            struct Cell *child = &table->curr_row->cells[cell->x + j];
+            struct Cell *child = &row->cells[cell->x + j];
 
             if (!child->is_set)
             {
@@ -381,13 +383,17 @@ void set_span(Table *table, size_t span_x, size_t span_y)
                 // Span clashes with already set cell, truncate it and finalize method
                 cell->span_y = i;
                 cell->span_x = j;
-                goto continuation;
+                return;
             }
         }
 
-        if (i + 1 < span_y) next_row(table);
+        if (i + 1 < span_y && row->next_row == NULL)
+        {
+            row = append_row(table);
+        }
+        else
+        {
+            row = row->next_row;
+        }
     }
-    continuation:
-    table->curr_row = row;
-    table->curr_col = col;
 }

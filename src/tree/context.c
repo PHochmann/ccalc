@@ -47,11 +47,13 @@ bool ctx_add_ops(ParsingContext *ctx, size_t count, ...)
 
 /*
 Summary: Adds operator to context
-    To associate every operand with exactly one operator in a unique manner, infix operators with the same precedence must have the same associativity.
+    To associate every operand with exactly one operator in a unique manner,
+    infix operators with the same precedence must have the same associativity.
 Returns: ID of new operator, -1 if one of the following:
     * buffer is full
     * ctx is NULL
-    * infix operator with inconsistent associativity is given (infix operator with same precedence has different associativity)
+    * infix operator with inconsistent associativity is given
+          (another infix operator with same precedence has different associativity)
     * function of same name and arity is present in context
 */
 int ctx_add_op(ParsingContext *ctx, Operator op)

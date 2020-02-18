@@ -6,7 +6,7 @@
 #include "../tree/operator.h"
 #include "../tree/tree_to_string.h"
 #include "../arithmetics/arith_context.h"
-#include "../arithmetics/arith_rules.h"
+#include "../arithmetics/arith_transformation.h"
 #include "../table/table.h"
 
 #define COMMAND "help"
@@ -29,10 +29,10 @@ static char *COMMAND_TABLE[7][2] = {
     { "quit",                                    "Closes calculator." }
 };
 
-static const size_t BASIC_IND =  1; // Index of first basic operator ($x before, should no be shown)
-static const size_t TRIG_IND  = 19; // Index of first trigonometric function
-static const size_t MISC_IND  = 31; // Index of first misc. function
-static const size_t CONST_IND = 48; // Index of first constant
+static const size_t BASIC_IND =  2; // Index of first basic operator ($x and x@y before, should no be shown)
+static const size_t TRIG_IND  = 20; // Index of first trigonometric function
+static const size_t MISC_IND  = 32; // Index of first misc. function
+static const size_t CONST_IND = 49; // Index of first constant
 
 bool cmd_help_check(char *input)
 {
@@ -127,20 +127,22 @@ bool cmd_help_exec(char __attribute__((unused)) *input)
     }
 
     // Print user-defined functions if there are any
-    if (g_num_rules > ARITH_NUM_RULES)
+    if (arith_get_num_userdefined() > 0)
     {
         printf("\nUser-defined functions and constants:\n");
         table = get_empty_table();
-        for (size_t i = ARITH_NUM_RULES; i < g_num_rules; i++)
+        for (size_t i = 0; i < arith_get_num_userdefined(); i++)
         {
-            char inlined_before[sizeof_tree_to_string(g_rules[i].before, true)];
-            unsafe_tree_to_string(g_rules[i].before, inlined_before, true);
+            RewriteRule *rule = arith_get_userdefined(i);
+
+            char inlined_before[sizeof_tree_to_string(rule->before, true)];
+            unsafe_tree_to_string(rule->before, inlined_before, true);
             add_cell_fmt(&table, "%s", inlined_before);
 
             add_cell(&table, " = ");
 
-            char inlined_after[sizeof_tree_to_string(g_rules[i].after, true)];
-            unsafe_tree_to_string(g_rules[i].after, inlined_after, true);
+            char inlined_after[sizeof_tree_to_string(rule->after, true)];
+            unsafe_tree_to_string(rule->after, inlined_after, true);
             add_cell_fmt(&table, "%s", inlined_after);
 
             next_row(&table);

@@ -48,7 +48,7 @@ Summary: Helper function to parse commands to extract strings between delimiters
 Example: split("abc x def ghi", out, 2, " x ", " g") = 3
     out = { "abc", "def", "hi" }
 */
-size_t split(char *str, char **out_strs, size_t num_delimiters, ...)
+size_t str_split(char *str, char **out_strs, size_t num_delimiters, ...)
 {
     va_list args;
     va_start(args, num_delimiters);
@@ -114,7 +114,7 @@ char *perr_to_string(ParserError perr)
 }
 
 // Currently not in use
-/*void trim(char *str)
+/*void strtrim(char *str)
 {
     while (*str == ' ') str++;
     char *end = str + strlen(str) - 1;

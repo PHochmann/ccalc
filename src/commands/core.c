@@ -12,7 +12,7 @@
 #include "console_util.h"
 #include "../string_util.h"
 #include "../arithmetics/arith_context.h"
-#include "../arithmetics/arith_rules.h"
+#include "../arithmetics/arith_transformation.h"
 
 #define INTERACTIVE_ASK_PREFIX "> "
 #define COMMENT_PREFIX         "'"
@@ -55,9 +55,9 @@ Summary: Frees all ressources so that heap is empty after exit, except data mall
 */
 void unload_commands()
 {
-    arith_unload_ctx();
-    arith_unload_rules();
-    unload_console_util();
+    arith_reset_ctx();
+    arith_unload_transformation();
+    console_util_reset();
 }
 
 /*
@@ -65,9 +65,9 @@ Summary: Sets parsing context and initializes commands
 */
 void init_commands()
 {
-    init_console_util();
+    console_util_init();
     arith_init_ctx();
-    arith_init_rules();
+    arith_init_transformation();
     g_error = false;
 }
 

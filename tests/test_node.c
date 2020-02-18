@@ -77,6 +77,10 @@ char *node_test()
     Node *replacement = tree_copy(child);
     if (replace_variable_nodes(&root, child_copy, "y") != 2)
     {
+        free_tree(root);
+        free_tree(root_copy);
+        free_tree(child_copy);
+        free_tree(replacement);
         ERROR_RETURN_VAL("replace_variable_nodes"); // Mem. leak
     }
     

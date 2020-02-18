@@ -7,7 +7,7 @@
 #include "../tree/tree_to_string.h"
 #include "../tree/node.h"
 #include "../arithmetics/arith_context.h"
-#include "../arithmetics/arith_rules.h"
+#include "../arithmetics/arith_transformation.h"
 
 #define ERROR_FMT        "Error: %s.\n"
 #define ASK_VARIABLE_FMT "%s? "
@@ -54,7 +54,7 @@ bool cmd_evaluation_exec(char *input)
                 if (count_variables(res_var) > 0)
                 {
                     // Not a constant given - ask again
-                    printf("Not a constant expression.\n");
+                    printf("Error: Not a constant expression.\n");
                     free_tree(res_var);
                     i--;
                     continue;
@@ -69,7 +69,7 @@ bool cmd_evaluation_exec(char *input)
                 printf("\n");
                 set_interactive(temp);
                 free_tree(res);
-                return true;
+                return false;
             }
         }
         // Restore previous value of g_interactive
@@ -79,7 +79,7 @@ bool cmd_evaluation_exec(char *input)
         ConstantType result = arith_eval(res);
         whisper("= ");
         printf(CONSTANT_TYPE_FMT "\n", result);
-        update_ans(result);
+        arith_update_ans(result);
         free_tree(res);
         
         return true;

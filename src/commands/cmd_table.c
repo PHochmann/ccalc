@@ -5,7 +5,7 @@
 #include "../string_util.h"
 #include "../tree/tree_to_string.h"
 #include "../arithmetics/arith_context.h"
-#include "../arithmetics/arith_rules.h"
+#include "../arithmetics/arith_transformation.h"
 #include "../table/table.h"
 
 #define COMMAND "table "
@@ -22,11 +22,11 @@ bool cmd_table_exec(char *input)
 {
     input += strlen(COMMAND);
     char *args[6];
-    size_t num_args = split(input, args, 5, ";", ";", ";", FOLD_KEYWORD, ";");
+    size_t num_args = str_split(input, args, 5, ";", ";", ";", FOLD_KEYWORD, ";");
 
     if (num_args != 4 && num_args != 6)
     {
-        printf("Table Error: Invalid syntax.\n");
+        printf("Error: Invalid syntax.\n");
         return false;
     }
 
@@ -47,7 +47,7 @@ bool cmd_table_exec(char *input)
     size_t num_vars = list_variables(expr, variables);
     if (num_vars > 1)
     {
-        printf("Expression contains more than one variable.\n");
+        printf("Error: Expression contains more than one variable.\n");
         goto exit;
     }
 
@@ -62,7 +62,7 @@ bool cmd_table_exec(char *input)
         || count_variables(end) > 0
         || count_variables(step) > 0)
     {
-        printf("Start, end and step must be constant.\n");
+        printf("Error: Start, end and step must be constant.\n");
         goto exit;
     }
 
@@ -72,7 +72,7 @@ bool cmd_table_exec(char *input)
 
     if (step_val == 0)
     {
-        printf("Step must not be zero.\n");
+        printf("Error: Step must not be zero.\n");
         goto exit;
     }
 
@@ -91,14 +91,14 @@ bool cmd_table_exec(char *input)
             - count_variable_nodes(fold_expr, FOLD_VAR_1)
             - count_variable_nodes(fold_expr, FOLD_VAR_2) != 0)
         {
-            printf("Fold expression must not contain any variables except '"
+            printf("Error: Fold expression must not contain any variables except '"
                 FOLD_VAR_1 "' and '" FOLD_VAR_2 "'.\n");
             goto exit;
         }
 
         if (count_variables(fold_init) > 0)
         {
-            printf("Initial fold value must be constant.\n");
+            printf("Error: Initial fold value must be constant.\n");
             goto exit;
         }
 
@@ -181,7 +181,7 @@ bool cmd_table_exec(char *input)
     if (num_args == 6)
     {
         printf("Fold result: " CONSTANT_TYPE_FMT "\n", fold_val);
-        update_ans(fold_val);
+        arith_update_ans(fold_val);
     }
 
     success = true;

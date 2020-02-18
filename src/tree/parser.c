@@ -12,25 +12,23 @@
 // Represents an operator (with metadata) while being parsed
 struct OpData
 {
-    // Pointer to operator in context, NULL denotes opening parenthesis
-    Operator *op;
-    // Indicates whether to count operands
-    bool count_operands;
-    // Records number of operands to pop
-    size_t arity;
+    Operator *op;        // Pointer to operator in context, NULL denotes opening parenthesis
+    bool count_operands; // Indicates whether to count operands
+    size_t arity;        // Records number of operands to pop
 };
 
-// Encapsulates current state to be communicated to auxiliary functions (singleton)
+// Encapsulates current state of shunting-yard algo. to be communicated to auxiliary functions
 struct ParserState
 {
-    ParsingContext *ctx;
-    size_t num_nodes;
-    Node *node_stack[MAX_STACK_SIZE];
-    size_t num_ops;
-    struct OpData op_stack[MAX_STACK_SIZE];
-    ParserError result;
+    ParsingContext *ctx;                    // Contains operators and glue-op
+    size_t num_nodes;                       // Size of node stack
+    Node *node_stack[MAX_STACK_SIZE];       // Constructed nodes
+    size_t num_ops;                         // Size of operator stack
+    struct OpData op_stack[MAX_STACK_SIZE]; // Parsed operators
+    ParserError result;                     // Success when no error occurred
 };
 
+// Attempts to parse a substring to a double
 bool try_parse_constant(char *in, ConstantType *out)
 {
     char *end;
@@ -488,7 +486,7 @@ ParserError parse_input(ParsingContext *ctx, char *input, Node **out_res)
 
 /*
 Summary: Calls parse_input, omits ParserError
-Returns: AST or NULL when error occurred
+Returns: Operator tree or NULL when error occurred
 */
 Node *parse_conveniently(ParsingContext *ctx, char *input)
 {

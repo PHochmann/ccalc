@@ -8,7 +8,7 @@
 #include "../matching/matching.h"
 #include "../matching/rewrite_rule.h"
 #include "../arithmetics/arith_context.h"
-#include "../arithmetics/arith_rules.h"
+#include "../arithmetics/arith_transformation.h"
 #include "../string_util.h"
 
 #define DEFINITION_OP   "="
@@ -62,7 +62,7 @@ bool add_function(char *name, char *left, char *right)
 
     if (ctx_lookup_function(g_ctx, name, new_arity) != NULL)
     {
-        printf("Function or constant already exists.\n");
+        printf("Error: Function or constant already exists.\n");
         goto error;
     }
 
@@ -76,7 +76,7 @@ bool add_function(char *name, char *left, char *right)
 
     if (find_matching_discarded(right_n, left_n))
     {
-        printf("Recursive definition.\n");
+        printf("Error: Recursive definition.\n");
         goto error;
     }
 
@@ -90,13 +90,14 @@ bool add_function(char *name, char *left, char *right)
          * => Replace unbounded variables of the same name with this new constant.
          */
         bool replaced_variable = false;
-        for (size_t i = ARITH_NUM_RULES; i < g_num_rules; i++)
+        for (size_t i = 0; i < arith_get_num_userdefined(); i++)
         {
+            RewriteRule *rule = arith_get_userdefined(i);
             // Check if variables are unbounded...
-            if (count_variable_nodes(g_rules[i].before, name) == 0)
+            if (count_variable_nodes(rule->before, name) == 0)
             {
                 // ...if they are, replace them by new definition
-                if (replace_variable_nodes(&g_rules[i].after, left_n, name) > 0)
+                if (replace_variable_nodes(&rule->after, left_n, name) > 0)
                 {
                     replaced_variable = true;
                 }
@@ -116,7 +117,7 @@ bool add_function(char *name, char *left, char *right)
     }
 
     // Add rule to eliminate operator before evaluation
-    g_rules[g_num_rules++] = get_rule(left_n, right_n);
+    arith_add_rule(get_rule(left_n, right_n));
     return true;
 
     error:
@@ -132,9 +133,9 @@ Summary: Adds a new function symbol to context and adds a new rule to substitute
 */
 bool cmd_definition_exec(char *input)
 {
-    if (g_ctx->num_ops == g_ctx->max_ops || g_num_rules == ARITH_MAX_RULES)
+    if (g_ctx->num_ops == g_ctx->max_ops || !arith_can_add_rule())
     {
-        printf("Can't add any more functions or constants.\n");
+        printf("Error: Can't add any more functions or constants.\n");
         return false;
     }
     

@@ -130,27 +130,29 @@ double op_eval(Operator *op, size_t num_args, double *args)
     switch ((size_t)(op - operators))
     {
         case 0: // $x
-            printf("Warning: Tried to evaluate $ operator.\n");
+            printf("Warning: Tried to evaluate $ operator in op_eval.\n");
             return args[0];
-        case 1: // x+y
+        case 1: // x@y
+            return 0;
+        case 2: // x+y
             return args[0] + args[1];
-        case 2: // x-y
+        case 3: // x-y
             return args[0] - args[1];
-        case 3: // x*y
+        case 4: // x*y
             return args[0] * args[1];
-        case 4: // x/y
+        case 5: // x/y
             return args[0] / args[1];
-        case 5: // x^y
+        case 6: // x^y
             return pow(args[0], args[1]);
-        case 6: // x C y
+        case 7: // x C y
             return binomial(args[0], args[1]);
-        case 7: // x mod y
+        case 8: // x mod y
             return fmod(args[0], args[1]);
-        case 8: // -x
+        case 9: // -x
             return -args[0];
-        case 9: // +x
+        case 10: // +x
             return args[0];
-        case 10: // x!
+        case 11: // x!
         {
             double res = 1;
             for (double i = trunc(args[0]); i > 1; i--)
@@ -159,47 +161,47 @@ double op_eval(Operator *op, size_t num_args, double *args)
             }
             return res;
         }
-        case 11: // x%
+        case 12: // x%
             return args[0] / 100;
-        case 12: // exp(x)
+        case 13: // exp(x)
             return exp(args[0]);
-        case 13: // root(x, n)
+        case 14: // root(x, n)
             return pow(args[0], 1 / args[1]);
-        case 14: // sqrt(x)
+        case 15: // sqrt(x)
             return sqrt(args[0]);
-        case 15: // log(x, n)
+        case 16: // log(x, n)
             return log(args[0]) / log(args[1]);
-        case 16: // ln(x)
+        case 17: // ln(x)
             return log(args[0]);
-        case 17: // ld(x)
+        case 18: // ld(x)
             return log2(args[0]);
-        case 18: // log(x)
+        case 19: // log(x)
             return log10(args[0]);
-        case 19: // sin(x)
+        case 20: // sin(x)
             return sin(args[0]);
-        case 20: // cos(x)
+        case 21: // cos(x)
             return cos(args[0]);
-        case 21: // tan(x)
+        case 22: // tan(x)
             return tan(args[0]);
-        case 22: // asin(x)
+        case 23: // asin(x)
             return asin(args[0]);
-        case 23: // acos(x)
+        case 24: // acos(x)
             return acos(args[0]);
-        case 24: // atan(x)
+        case 25: // atan(x)
             return atan(args[0]);
-        case 25: // sinh(x)
+        case 26: // sinh(x)
             return sinh(args[0]);
-        case 26: // cosh(x)
+        case 27: // cosh(x)
             return cosh(args[0]);
-        case 27: // tanh(x)
+        case 28: // tanh(x)
             return tanh(args[0]);
-        case 28: // asinh(x)
+        case 29: // asinh(x)
             return asinh(args[0]);
-        case 29: // acosh(x)
+        case 30: // acosh(x)
             return acosh(args[0]);
-        case 30: // atanh(x)
+        case 31: // atanh(x)
             return atanh(args[0]);
-        case 31: // max(x, y, ...)
+        case 32: // max(x, y, ...)
         {
             double res = -INFINITY;
             for (size_t i = 0; i < num_args; i++)
@@ -209,7 +211,7 @@ double op_eval(Operator *op, size_t num_args, double *args)
             }
             return res;
         }
-        case 32: // min(x, y, ...)
+        case 33: // min(x, y, ...)
         {
             double res = INFINITY;
             for (size_t i = 0; i < num_args; i++)
@@ -219,62 +221,62 @@ double op_eval(Operator *op, size_t num_args, double *args)
             }
             return res;
         }
-        case 33: // abs(x)
+        case 34: // abs(x)
             return fabs(args[0]);
-        case 34: // ceil(x)
+        case 35: // ceil(x)
             return ceil(args[0]);
-        case 35: // floor(x)
+        case 36: // floor(x)
             return floor(args[0]);
-        case 36: // round(x)
+        case 37: // round(x)
             return round(args[0]);
-        case 37: // trunc(x)
+        case 38: // trunc(x)
             return trunc(args[0]);
-        case 38: // frac(x)
+        case 39: // frac(x)
             return args[0] - floor(args[0]);
-        case 39: // sgn(x)
+        case 40: // sgn(x)
             return args[0] < 0 ? -1 : (args[0] > 0) ? 1 : 0;
-        case 40: // sum(x, y, ...)
+        case 41: // sum(x, y, ...)
         {
             double res = 0;
             for (size_t i = 0; i < num_args; i++) res += args[i];
             return res;
         }
-        case 41: // prod(x, y, ...)
+        case 42: // prod(x, y, ...)
         {
             double res = 1;
             for (size_t i = 0; i < num_args; i++) res *= args[i];
             return res;
         }
-        case 42: // avg(x, y, ...)
+        case 43: // avg(x, y, ...)
         {
             if (num_args == 0) return 0;
             double res = 0;
             for (size_t i = 0; i < num_args; i++) res += args[i];
             return res / num_args;
         }
-        case 43: // gcd(x, y)
+        case 44: // gcd(x, y)
             return euclid(args[0], args[1]);
-        case 44: // lcm(x, y)
+        case 45: // lcm(x, y)
             return fabs(trunc(args[0]) * trunc(args[1])) / euclid(args[0], args[1]);
-        case 45: // rand(x, y)
+        case 46: // rand(x, y)
             return random_between(args[0], args[1]);
-        case 46: // fib(x)
+        case 47: // fib(x)
             return fibonacci(args[0]);
-        case 47: // gamma(x)
+        case 48: // gamma(x)
             return tgamma(args[0]);
-        case 48: // pi
+        case 49: // pi
             return 3.14159265359;
-        case 49: // e
+        case 50: // e
             return 2.71828182846;
-        case 50: // phi
+        case 51: // phi
             return 1.61803398874;
-        case 51: // clight (m/s)
+        case 52: // clight (m/s)
             return 299792458;
-        case 52: // csound (m/s)
+        case 53: // csound (m/s)
             return 343.2;
     }
 
-    printf("Error: No evaluation case in eval_op.\n");
+    printf("Error: No evaluation case in op_eval.\n");
     return -1;
 }
 
@@ -291,15 +293,6 @@ void arith_reset_ctx()
     __g_ctx.num_ops = ARITH_NUM_OPS;
 }
 
-void arith_unload_ctx()
-{
-    // Free custom operator's names
-    for (size_t i = ARITH_NUM_OPS; i < g_ctx->num_ops; i++)
-    {
-        free(g_ctx->operators[i].name);
-    }
-}
-
 /*
 Summary: Sets arithmetic context stored in global variable
 */
@@ -308,6 +301,7 @@ void arith_init_ctx()
     __g_ctx = get_context(ARITH_MAX_OPS, operators);
     ctx_add_ops(g_ctx, ARITH_NUM_OPS,
         op_get_prefix("$", 0),
+        op_get_infix("@", 7, OP_ASSOC_LEFT),
 
         op_get_infix("+", 2, OP_ASSOC_LEFT),
         op_get_infix("-", 2, OP_ASSOC_LEFT),

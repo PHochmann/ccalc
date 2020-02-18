@@ -5,23 +5,24 @@
 #ifdef USE_READLINE
 #include <readline/readline.h>
 #include <readline/history.h>
+static const size_t PROMPT_BUFFER = 15;
 #endif
 
 #include "console_util.h"
 #include "../string_util.h"
 #include "../arithmetics/arith_context.h"
-#include "../arithmetics/arith_rules.h"
+#include "../arithmetics/arith_transformation.h"
 
 static const size_t MAX_INPUT_LENGTH = 100;
 
-void unload_console_util()
+void console_util_reset()
 {
 #ifdef USE_READLINE
     rl_clear_history();
 #endif
 }
 
-void init_console_util()
+void console_util_init()
 {
     g_interactive = false;
 #ifdef USE_READLINE
@@ -42,7 +43,7 @@ bool set_interactive(bool value)
 }
 
 /*
-Summary: printf-wrapper to filter unimportant prints in non-interactive mode
+Summary: printf-wrapper that filters unimportant prints in non-interactive mode
 */
 void whisper(const char *format, ...)
 {
@@ -55,8 +56,37 @@ void whisper(const char *format, ...)
     }
 }
 
+bool ask_input_getline(FILE *file, char **out_input, char *prompt_fmt, va_list args)
+{
+    if (g_interactive)
+    {
+        vprintf(prompt_fmt, args);
+    }
+    
+    // Would be no problem to put input on stack, but we want to have the same interface as readline, which puts input on heap
+    size_t size = MAX_INPUT_LENGTH;
+    *out_input = malloc(MAX_INPUT_LENGTH);
+    if (getline(out_input, &size, file) == -1)
+    {
+        free(*out_input);
+        return false;
+    }
+
+    // Overwrite newline char
+    (*out_input)[strlen(*out_input) - 1] = '\0';
+    return true;
+}
+
+
+/*
+Summary: Used whenever input is requested. Prompt is only printed when interactive.
+Params
+    prompt: Prompt to display when interactive
+    file: Used when not interactive - should be stdin when arguments are piped in or file when load command is used
+    out_input: Pointer to string that will be read. String must be free'd after use.
+*/
 #ifdef USE_READLINE
-static const size_t PROMPT_BUFFER = 15;
+
 // File is stdin, g_interactive is true
 bool ask_input_readline(char **out_input, char *prompt_fmt, va_list args)
 {
@@ -80,56 +110,35 @@ bool ask_input_readline(char **out_input, char *prompt_fmt, va_list args)
     add_history(*out_input);
     return true;
 }
-#endif
 
-bool ask_input_getline(FILE *file, char **out_input, char *prompt_fmt, va_list args)
+bool vask_input(FILE *file, char **out_input, char *prompt_fmt, va_list args)
 {
+    // Use readline when interactive
     if (g_interactive)
     {
-        vprintf(prompt_fmt, args);
+        return ask_input_readline(out_input, prompt_fmt, args);
     }
-    
-    // Would be no problem to put input on stack, but we want to have the same interface as readline, which puts input on heap
-    size_t size = MAX_INPUT_LENGTH;
-    *out_input = malloc(MAX_INPUT_LENGTH);
-    if (getline(out_input, &size, file) == -1)
+    else
     {
-        free(*out_input);
-        return false;
+        return ask_input_getline(file, out_input, prompt_fmt, args);
     }
-
-    // Overwrite newline char
-    (*out_input)[strlen(*out_input) - 1] = '\0';
-    return true;
 }
 
-/*
-Summary: Used whenever input is requested. Prompt is only printed when interactive.
-Params
-    prompt: Prompt to display when interactive
-    file: Used when not interactive - should be stdin when arguments are piped in or file when load command is used
-    out_input: Pointer to string that will be read. String must be free'd after use.
-*/
+#else
+
+bool vask_input(FILE *file, char **out_input, char *prompt_fmt, va_list args)
+{
+    return ask_input_getline(file, out_input, prompt_fmt, args);
+}
+
+#endif
+
 bool ask_input(FILE *file, char **out_input, char *prompt_fmt, ...)
 {
     va_list args;
     va_start(args, prompt_fmt);
     bool res;
-
-#ifdef USE_READLINE
-    // Use readline if it is installed and we are in interactive mode
-    if (g_interactive)
-    {
-        res = ask_input_readline(out_input, prompt_fmt, args);
-    }
-    else
-    {
-        res = ask_input_getline(file, out_input, prompt_fmt, args);
-    }
-#else
-    res = ask_input_getline(file, out_input, prompt_fmt, args);
-#endif
-
+    res = vask_input(file, out_input, prompt_fmt, args);
     va_end(args);
     return res;
 }
@@ -150,7 +159,11 @@ bool parse_input_from_console(char *input, char *error_fmt, bool transform, Node
     }
     else
     {
-        transform_input(transform, out_res);
+        if (!arith_transform_input(transform, out_res))
+        {
+            free_tree(*out_res);
+            return false;
+        }
         return true;
     }
 }

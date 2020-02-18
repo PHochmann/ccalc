@@ -175,7 +175,7 @@ void tree_replace(Node **tree_to_replace, Node *tree_to_insert)
 
 /*
 Returns: Total number of variable nodes in tree.
-    Can be used as an upper bound for the needed size of a buffer to supply to get_variable_nodes etc.
+    Can be used as an upper bound for the needed size of a buffer to supply to get_variable_nodes
 */
 size_t count_variables(Node *tree)
 {
