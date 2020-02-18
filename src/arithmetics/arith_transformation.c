@@ -175,7 +175,7 @@ bool arith_transform_input(bool all_rules, Node **tree)
 
     // Replace ans@x
     Matching ans_matching;
-    while (get_matching(tree, ans_pattern, &ans_matching))
+    while (find_matching(tree, ans_pattern, &ans_matching))
     {
         if (count_variables(ans_matching.mapped_nodes[0]) > 0)
         {
