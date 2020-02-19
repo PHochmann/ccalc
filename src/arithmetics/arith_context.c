@@ -301,8 +301,8 @@ void arith_init_ctx()
     __g_ctx = get_context(ARITH_MAX_OPS, operators);
     ctx_add_ops(g_ctx, ARITH_NUM_OPS,
         op_get_prefix("$", 0),
-        op_get_infix("@", 7, OP_ASSOC_LEFT),
-
+        op_get_prefix("@", 7),
+        
         op_get_infix("+", 2, OP_ASSOC_LEFT),
         op_get_infix("-", 2, OP_ASSOC_LEFT),
         op_get_infix("*", 3, OP_ASSOC_LEFT),

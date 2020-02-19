@@ -1,10 +1,6 @@
 #pragma once
 #include "../tree/node.h"
 
-#define VAR_PREFIX   "v_"
-#define CONST_PREFIX "c_"
-#define NAME_PREFIX  "n_"
-
 /*
 Contains successful matching
 */

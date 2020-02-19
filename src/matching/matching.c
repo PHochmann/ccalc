@@ -57,28 +57,7 @@ bool get_matching(Node **tree, Node *pattern, Matching *out_matching)
                 }
                 
                 if (!already_bound)
-                {
-                    // Check special rules
-                    if (begins_with(CONST_PREFIX, get_var_name(curr_pattern))
-                        && get_type(curr_tree) != NTYPE_CONSTANT)
-                    {
-                        return false;
-                    }
-
-                    if (begins_with(VAR_PREFIX, get_var_name(curr_pattern))
-                        && get_type(curr_tree) != NTYPE_VARIABLE)
-                    {
-                        return false;
-                    }
-
-                    if (begins_with(NAME_PREFIX, get_var_name(curr_pattern))
-                        && (get_type(curr_tree) != NTYPE_VARIABLE
-                            || strcmp(get_var_name(curr_pattern) + strlen(NAME_PREFIX),
-                                get_var_name(curr_tree)) != 0))
-                    {
-                        return false;
-                    }
-                    
+                {                    
                     // Bind variable
                     mapped_vars[num_mapped_vars] = get_var_name(curr_pattern);
                     mapped_nodes[num_mapped_vars] = curr_tree;

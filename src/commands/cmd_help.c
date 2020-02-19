@@ -11,7 +11,7 @@
 
 #define COMMAND "help"
 
-static char *VERSION = "1.4.8";
+static char *VERSION = "1.4.9";
 
 static char *INFOBOX_FMT =
     " Scientific calculator in which you can define your own functions and constants \n"

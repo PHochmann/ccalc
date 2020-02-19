@@ -105,7 +105,7 @@ void arith_init_transformation()
         rules);
 
     next_ans = 0;
-    ans_pattern = parse_conveniently(g_ctx, ANS_VAR "@x");
+    ans_pattern = parse_conveniently(g_ctx, "@x");
 }
 
 bool arith_can_add_rule()
@@ -179,16 +179,16 @@ bool arith_transform_input(bool all_rules, Node **tree)
     {
         if (count_variables(ans_matching.mapped_nodes[0]) > 0)
         {
-            printf("Error: ans@x-expression must be constant.\n");
+            printf("Error: @-expression must be constant.\n");
             free_matching(ans_matching);
             return false;
         }
 
-        size_t index = (size_t)arith_eval(ans_matching.mapped_nodes[0]);
+        int index = (int)arith_eval(ans_matching.mapped_nodes[0]);
 
-        if (index >= ANS_HISTORY_SIZE)
+        if (index < 0 || index >= ANS_HISTORY_SIZE)
         {
-            printf("Error: History size is %d.\n", ANS_HISTORY_SIZE);
+            printf("Error: @x for x between 0 and %d.\n", ANS_HISTORY_SIZE - 1);
             free_matching(ans_matching);
             return false;
         }
