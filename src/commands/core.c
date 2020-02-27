@@ -17,6 +17,9 @@
 #define INTERACTIVE_ASK_PREFIX "> "
 #define COMMENT_PREFIX         "'"
 
+// Is set to true when a command reported an error, affects exit code
+bool error;
+
 // Quit command:
 
 bool cmd_quit_check(char *input)
@@ -27,7 +30,7 @@ bool cmd_quit_check(char *input)
 bool cmd_quit_exec(char *input)
 {
     free(input);
-    exit(g_error ? EXIT_FAILURE : EXIT_SUCCESS);
+    exit(error ? EXIT_FAILURE : EXIT_SUCCESS);
     return true;
 }
 
@@ -68,14 +71,15 @@ void init_commands()
     console_util_init();
     arith_init_ctx();
     arith_init_transformation();
-    g_error = false;
+    error = false;
 }
 
 /*
 Summary: Loop to ask user or file for command, ignores comments
     You may want to call set_interactive before
+Returns: True when no command exited with an error, false otherwise
 */
-void process_input(FILE *file)
+bool process_input(FILE *file)
 {
     char *input = NULL;
     while (ask_input(file, &input, INTERACTIVE_ASK_PREFIX))
@@ -85,6 +89,7 @@ void process_input(FILE *file)
     }
     // Loop was exited because input was EOF
     if (g_interactive) printf("\n");
+    return !error;
 }
 
 /*
@@ -99,7 +104,7 @@ void parse_command(char *input)
         {
             if (!commands[i].exec_handler(input))
             {
-                g_error = true;
+                error = true;
             }
             return;
         }

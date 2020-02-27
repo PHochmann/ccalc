@@ -16,9 +16,8 @@ int main(int argc, char **argv)
     atexit(unload_commands);
     // Parse any arguments non-interactively
     for (int i = 1; i < argc; i++) parse_command(argv[i]);
-    // If we are connected to a shell, use readline and show whispered messages (interactive mode)
+    // If we are connected to a terminal, use readline and show whispered messages (interactive mode)
     if (isatty(STDIN_FILENO)) set_interactive(true);
-    // Enter loop to read all input lines
-    process_input(stdin);
-    return g_error ? EXIT_FAILURE : EXIT_SUCCESS;
+    // Enter loop to read all input lines, return appropiate exit code
+    return process_input(stdin) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
