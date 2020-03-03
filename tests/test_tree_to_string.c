@@ -6,7 +6,7 @@
 #include "../src/tree/context.h"
 #include "../src/tree/node.h"
 #include "../src/tree/parser.h"
-#include "../src/arithmetics/arith_context.h"
+#include "../src/core/arith_context.h"
 
 struct TreeToStringTest {
     char *input;
@@ -32,6 +32,7 @@ static struct TreeToStringTest tests[] = {
 
 char *tree_to_string_test()
 {
+    core_init_ctx();
     char *res = NULL;
     Node *node = NULL;
 

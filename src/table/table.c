@@ -83,6 +83,18 @@ struct Cell *get_curr_cell(Table *table)
     return &table->curr_row->cells[table->curr_col];
 }
 
+void free_row(Table *table, struct Row *row)
+{
+    for (size_t i = 0; i < table->num_cols; i++)
+    {
+        if (row->cells[i].text_needs_free)
+        {
+            free(row->cells[i].text);
+        }
+    }
+    free(row);
+}
+
 // ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ User-functions ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 
 /*
@@ -109,18 +121,6 @@ Summary: Prints table to stdout
 void print_table(Table *table)
 {
     print_table_internal(table);
-}
-
-void free_row(Table *table, struct Row *row)
-{
-    for (size_t i = 0; i < table->num_cols; i++)
-    {
-        if (row->cells[i].text_needs_free)
-        {
-            free(row->cells[i].text);
-        }
-    }
-    free(row);
 }
 
 /*

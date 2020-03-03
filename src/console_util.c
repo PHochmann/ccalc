@@ -1,7 +1,6 @@
 #define _GNU_SOURCE
-#include <stdio.h>
 #include <stdarg.h>
-#include <string.h>
+#include <stdio.h>
 #ifdef USE_READLINE
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -9,9 +8,7 @@ static const size_t PROMPT_BUFFER = 15;
 #endif
 
 #include "console_util.h"
-#include "../string_util.h"
-#include "../arithmetics/arith_context.h"
-#include "../arithmetics/arith_transformation.h"
+#include "string_util.h"
 
 static const size_t MAX_INPUT_LENGTH = 100;
 
@@ -144,26 +141,25 @@ bool ask_input(FILE *file, char **out_input, char *prompt_fmt, ...)
 }
 
 /*
-Summary:
-    Parses input, does post-processing of input, gives feedback on command line
-Returns:
-    True when input was successfully parsed, false when syntax error in input or aborted when asked for constant
+Returns: True when 'y' typed, false when 'n' typed or aborted
 */
-bool parse_input_from_console(char *input, char *error_fmt, bool transform, Node **out_res)
+bool ask_yes_no(bool default_val)
 {
-    ParserError perr = parse_input(g_ctx, input, out_res);
-    if (perr != PERR_SUCCESS)
+    while (true)
     {
-        printf(error_fmt, perr_to_string(perr));
-        return false;
-    }
-    else
-    {
-        if (!arith_transform_input(transform, out_res))
+        char res = getchar();
+        switch (res)
         {
-            free_tree(*out_res);
-            return false;
+            case '\n':
+                return default_val;
+            case 'Y':
+            case 'y':
+                return true;
+            case 'N':
+            case 'n':
+                return false;
         }
-        return true;
+        printf("Input not recognized.\n");
     }
+    return default_val;
 }

@@ -325,3 +325,50 @@ size_t replace_variable_nodes(Node **tree, Node *tree_to_copy, char *var_name)
     }
     return num_instances;
 }
+
+/*
+Summary: Evaluates operator tree
+Returns: True if reduction could be applied, i.e. no variable in tree and reduction-function did not return false
+Params
+    tree:      Tree to reduce to a constant
+    reduction: Function that takes an operator, number of children, and pointer to number of children many child values
+    out:       Reduction result
+*/
+bool reduce(Node *tree, Evaluation reduction, ConstantType *out)
+{
+    switch (get_type(tree))
+    {
+        case NTYPE_CONSTANT:
+            *out = get_const_value(tree);
+            return true;
+
+        case NTYPE_OPERATOR:
+        {
+            size_t num_args = get_num_children(tree);
+            ConstantType args[num_args];
+            for (size_t i = 0; i < num_args; i++)
+            {
+                if (!reduce(get_child(tree, i), reduction, &args[i]))
+                {
+                    return false;
+                }
+            }
+            if (!reduction(get_op(tree), num_args, args, out))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        case NTYPE_VARIABLE:
+            return false;
+    }
+    return false;
+}
+
+ConstantType convenient_reduce(Node *tree, Evaluation reduction)
+{
+    ConstantType res = 0;
+    reduce(tree, reduction, &res);
+    return res;
+}

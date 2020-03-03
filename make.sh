@@ -27,7 +27,12 @@ if [ "$1" = "-t" ] || [ "$1" = "-d" ]; then
     if [ "$?" = 0 ] && [ "$1" = "-t" ]; then
         gcc ${DEFINES} -Og -g2 ${CFLAGS} \
             ${DIR}/src/tree/*.c \
-            ${DIR}/src/arithmetics/arith_context.c \
+            ${DIR}/src/core/arith_context.c \
+            ${DIR}/src/core/history.c \
+            ${DIR}/src/core/simplification.c \
+            ${DIR}/src/core/evaluation.c \
+            ${DIR}/src/transformation/matching.c \
+            ${DIR}/src/transformation/rewrite_rule.c \
             ${DIR}/src/string_util.c \
             ${DIR}/src/table/*.c \
             ${DIR}/tests/*.c \

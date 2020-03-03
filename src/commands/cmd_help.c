@@ -5,23 +5,22 @@
 #include "../string_util.h"
 #include "../tree/operator.h"
 #include "../tree/tree_to_string.h"
-#include "../arithmetics/arith_context.h"
-#include "../arithmetics/arith_transformation.h"
+#include "../core/arith_context.h"
 #include "../table/table.h"
 
 #define COMMAND "help"
 
-static char *VERSION = "1.4.9";
+static char *VERSION = "1.5.0";
 
 static char *INFOBOX_FMT =
     " Scientific calculator in which you can define your own functions and constants \n"
-    "Version %s (c) 2019, Philipp Hochmann\n"
+    "Version %s (c) 2018-2020, Philipp Hochmann\n"
     "https://github.com/PhilippHochmann/Calculator";
 
 static char *COMMAND_TABLE[7][2] = {
     { "<func|const> = <after>",                  "Adds new function or constant." },
     { "table <expr> ; <from> ; <to> ; <step>  \n"
-      "   [fold <expr> ; <init>]",               "Prints table of values and optionally folds them.\n   In fold expression, 'x' is replaced with the intermediate result (init in first step),\n   'y' is replaced with the current value. Result is stored in 'ans'." },
+      "   [fold <expr> ; <init>]",               "Prints table of values and optionally folds them.\n   In fold expression, 'x' is replaced with the intermediate result (init in first step),\n   'y' is replaced with the current value. Result is stored in history." },
     { "load <path>",                             "Loads file as if its content had been typed in." },
     { "debug <expr>",                            "Visually prints abstract syntax tree of expression." },
     { "help",                                    "Lists available commands and operators." },
@@ -33,6 +32,7 @@ static const size_t BASIC_IND =  2; // Index of first basic operator ($x and x@y
 static const size_t TRIG_IND  = 20; // Index of first trigonometric function
 static const size_t MISC_IND  = 32; // Index of first misc. function
 static const size_t CONST_IND = 49; // Index of first constant
+static const size_t LAST_IND  = 52; // Index of last constant
 
 bool cmd_help_check(char *input)
 {
@@ -121,19 +121,19 @@ bool cmd_help_exec(char __attribute__((unused)) *input)
     }
 
     printf("\nConstants:\n");
-    for (size_t i = CONST_IND; i < ARITH_NUM_OPS; i++)
+    for (size_t i = CONST_IND; i <= LAST_IND; i++)
     {
         print_op(&g_ctx->operators[i]);
     }
 
     // Print user-defined functions if there are any
-    if (arith_get_num_userdefined() > 0)
+    if (get_num_composite_functions() > 0)
     {
         printf("\nUser-defined functions and constants:\n");
         table = get_empty_table();
-        for (size_t i = 0; i < arith_get_num_userdefined(); i++)
+        for (size_t i = 0; i < get_num_composite_functions(); i++)
         {
-            RewriteRule *rule = arith_get_userdefined(i);
+            RewriteRule *rule = get_composite_function(i);
 
             char inlined_before[sizeof_tree_to_string(rule->before, true)];
             unsafe_tree_to_string(rule->before, inlined_before, true);

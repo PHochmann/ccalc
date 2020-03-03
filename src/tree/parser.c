@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <string.h>
+
 #include "tokenizer.h"
 #include "parser.h"
 #include "../string_util.h"
@@ -462,7 +463,7 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
     return state.result;
 }
 
-/* Parsing algorithm ends here. What follows are functions to invoke the parser conveniently. */
+/* Parsing algorithm ends here. The following functions can be used to invoke parsing conveniently. */
 
 static const size_t MAX_TOKENS = 200;
 

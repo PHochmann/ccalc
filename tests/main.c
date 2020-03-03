@@ -8,8 +8,7 @@
 #include "test_tree_to_string.h"
 #include "test_randomized.h"
 #include "test_table.h"
-#include "../src/commands/core.h"
-#include "../src/arithmetics/arith_context.h"
+#include "../src/commands/commands.h"
 #include "../src/table/table.h"
 
 // Table test is last test
@@ -29,8 +28,6 @@ static Test (*test_getters[])() = {
 
 int main()
 {
-    arith_init_ctx();
-
     Table table = get_empty_table();
     set_default_alignments(&table, 4,
         (TextAlignment[]){ ALIGN_RIGHT, ALIGN_LEFT, ALIGN_RIGHT, ALIGN_LEFT });

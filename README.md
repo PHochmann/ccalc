@@ -22,7 +22,7 @@ When starting the calculator normally, you can enter expressions and commands in
 | Command                                     | Description                                              |
 | ---                                         | ---                                                      |
 | ```<func\|const> = <after>```               | Adds new function or constant.                           |
-| ```table <expr> ; <from> ; <to> ; <step> [fold <expr> ; <init>]``` | Prints table of values and optionally folds them. In fold expression, ```x``` is replaced with the intermediate result (init in first step), ```y``` is replaced with the current value. Result of fold is stored in ```ans```. |
+| ```table <expr> ; <from> ; <to> ; <step> [fold <expr> ; <init>]``` | Prints table of values and optionally folds them. In fold expression, ```x``` is replaced with the intermediate result (init in first step), ```y``` is replaced with the current value. Result of fold is stored in history. |
 | ```load <path>```                           | Loads file as if its content had been typed in.          |
 | ```debug <expr>```                          | Visually prints abstract syntax tree of expression.      |
 | ```help```                                  | Lists available commands and operators.                  |

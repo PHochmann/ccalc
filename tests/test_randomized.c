@@ -2,7 +2,7 @@
 #include <string.h>
 
 #include "test_randomized.h"
-#include "../src/arithmetics/arith_context.h"
+#include "../src/core/arith_context.h"
 #include "../src/tree/node.h"
 #include "../src/tree/parser.h"
 #include "../src/tree/tree_to_string.h"
@@ -73,6 +73,7 @@ Summary:
 */
 char *randomized_test()
 {
+    core_init_ctx();
     char *res = NULL;
     srand(SEED);
 

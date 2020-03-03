@@ -1,11 +1,10 @@
 #include <string.h>
+#include <stdio.h>
 
 #include "cmd_debug.h"
-#include "console_util.h"
-#include "../tree/parser.h"
-#include "../tree/tree_to_string.h"
-#include "../arithmetics/arith_context.h"
 #include "../string_util.h"
+#include "../tree/tree_to_string.h"
+#include "../core/arith_context.h"
 
 #define COMMAND   "debug "
 #define ERROR_FMT "Error: %s.\n"
@@ -18,7 +17,7 @@ bool cmd_debug_check(char *input)
 bool cmd_debug_exec(char *input)
 {
     Node *res;
-    if (parse_input_from_console(input + strlen(COMMAND), ERROR_FMT, true, &res))
+    if (core_parse_input(input + strlen(COMMAND), ERROR_FMT, true, &res))
     {
         print_tree_visually(res);
         printf("= ");

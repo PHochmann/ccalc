@@ -3,11 +3,11 @@
 #include <string.h>
 
 #include "cmd_evaluation.h"
-#include "console_util.h"
+#include "../console_util.h"
 #include "../tree/tree_to_string.h"
-#include "../tree/node.h"
-#include "../arithmetics/arith_context.h"
-#include "../arithmetics/arith_transformation.h"
+#include "../core/arith_context.h"
+#include "../core/history.h"
+#include "../core/evaluation.h"
 
 #define ERROR_FMT        "Error: %s.\n"
 #define ASK_VARIABLE_FMT "%s? "
@@ -23,7 +23,7 @@ Summary: The evaluation command is executed when input is no other command (henc
 bool cmd_evaluation_exec(char *input)
 {
     Node *res;
-    if (parse_input_from_console(input, ERROR_FMT, true, &res))
+    if (core_parse_input(input, ERROR_FMT, true, &res))
     {
         // Make expression constant by asking for values and binding them to variables
         char *vars[count_variables(res)];
@@ -42,7 +42,7 @@ bool cmd_evaluation_exec(char *input)
             if (ask_input(stdin, &input, ASK_VARIABLE_FMT, vars[i]))
             {
                 Node *res_var;
-                if (!parse_input_from_console(input, ERROR_FMT, true, &res_var))
+                if (!core_parse_input(input, ERROR_FMT, true, &res_var))
                 {
                     // Error while parsing - ask again
                     free(input);
@@ -76,10 +76,10 @@ bool cmd_evaluation_exec(char *input)
         set_interactive(temp);
 
         // Print result
-        ConstantType result = arith_eval(res);
+        ConstantType result = arith_evaluate(res);
         whisper("= ");
         printf(CONSTANT_TYPE_FMT "\n", result);
-        arith_update_ans(result);
+        core_update_history(result);
         free_tree(res);
         
         return true;

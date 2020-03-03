@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "core.h"
+#include "commands.h"
 #include "cmd_evaluation.h"
 #include "cmd_help.h"
 #include "cmd_clear.h"
@@ -9,10 +9,11 @@
 #include "cmd_debug.h"
 #include "cmd_definition.h"
 #include "cmd_table.h"
-#include "console_util.h"
 #include "../string_util.h"
-#include "../arithmetics/arith_context.h"
-#include "../arithmetics/arith_transformation.h"
+#include "../console_util.h"
+#include "../core/arith_context.h"
+#include "../core/history.h"
+#include "../core/simplification.h"
 
 #define INTERACTIVE_ASK_PREFIX "> "
 #define COMMENT_PREFIX         "'"
@@ -58,8 +59,8 @@ Summary: Frees all ressources so that heap is empty after exit, except data mall
 */
 void unload_commands()
 {
-    arith_reset_ctx();
-    arith_unload_transformation();
+    clear_composite_functions();
+    simplification_unload();
     console_util_reset();
 }
 
@@ -68,9 +69,9 @@ Summary: Sets parsing context and initializes commands
 */
 void init_commands()
 {
+    core_init_ctx();
+    simplification_init();
     console_util_init();
-    arith_init_ctx();
-    arith_init_transformation();
     error = false;
 }
 
@@ -84,7 +85,7 @@ bool process_input(FILE *file)
     char *input = NULL;
     while (ask_input(file, &input, INTERACTIVE_ASK_PREFIX))
     {
-        if (!begins_with(COMMENT_PREFIX, input)) parse_command(input);
+        if (!begins_with(COMMENT_PREFIX, input)) exec_command(input);
         free(input);
     }
     // Loop was exited because input was EOF
@@ -96,7 +97,7 @@ bool process_input(FILE *file)
 Summary: Tries to apply a command to input
     First command whose check-function returns true is executed
 */
-void parse_command(char *input)
+void exec_command(char *input)
 {
     for (size_t i = 0; i < NUM_COMMANDS; i++)
     {

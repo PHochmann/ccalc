@@ -2,14 +2,12 @@
 #include <string.h>
 
 #include "cmd_definition.h"
-#include "console_util.h"
+#include "../string_util.h"
+#include "../console_util.h"
 #include "../tree/node.h"
 #include "../tree/tokenizer.h"
-#include "../matching/matching.h"
-#include "../matching/rewrite_rule.h"
-#include "../arithmetics/arith_context.h"
-#include "../arithmetics/arith_transformation.h"
-#include "../string_util.h"
+#include "../transformation/rewrite_rule.h"
+#include "../core/arith_context.h"
 
 #define DEFINITION_OP   "="
 #define FMT_ERROR_LEFT  "Error in left expression: %s\n"
@@ -32,7 +30,7 @@ bool add_function(char *name, char *left, char *right)
     Node *right_n = NULL;
     
     // Parse without applying rules to correctly determine if function already exists
-    if (!parse_input_from_console(left, FMT_ERROR_LEFT, false, &left_n))
+    if (!core_parse_input(left, FMT_ERROR_LEFT, false, &left_n))
     {
         goto error;
     }
@@ -60,16 +58,7 @@ bool add_function(char *name, char *left, char *right)
         goto error;
     }
 
-    if (ctx_lookup_function(g_ctx, name, new_arity) != NULL)
-    {
-        printf("Error: Function or constant already exists.\n");
-        goto error;
-    }
-
-    // Assign correct arity
-    g_ctx->operators[g_ctx->num_ops - 1].arity = new_arity;
-
-    if (!parse_input_from_console(right, FMT_ERROR_RIGHT, false, &right_n))
+    if (!core_parse_input(right, FMT_ERROR_RIGHT, false, &right_n))
     {
         goto error;
     }
@@ -78,6 +67,36 @@ bool add_function(char *name, char *left, char *right)
     {
         printf("Error: Recursive definition.\n");
         goto error;
+    }
+
+    bool redefinition = false;
+
+    if (ctx_lookup_function(g_ctx, name, new_arity) != NULL)
+    {
+        printf("Function or constant already exists. Redefine it [y/N]? ");
+        
+        for (size_t i = 0; i < get_num_composite_functions(); i++)
+        {
+            RewriteRule *rule = get_composite_function(i);
+            if (find_matching_discarded(rule->after, right_n))
+            {
+                printf("\nWarning: This will affect at least one other function or constant. ");
+            }
+        }
+
+        if (ask_yes_no(false))
+        {
+            redefinition = true;
+        }
+        else
+        {
+            goto error;
+        }
+    }
+    else
+    {
+        // Assign correct arity
+        g_ctx->operators[g_ctx->num_ops - 1].arity = new_arity;
     }
 
     if (new_arity == 0)
@@ -90,9 +109,9 @@ bool add_function(char *name, char *left, char *right)
          * => Replace unbounded variables of the same name with this new constant.
          */
         bool replaced_variable = false;
-        for (size_t i = 0; i < arith_get_num_userdefined(); i++)
+        for (size_t i = 0; i < get_num_composite_functions(); i++)
         {
-            RewriteRule *rule = arith_get_userdefined(i);
+            RewriteRule *rule = get_composite_function(i);
             // Check if variables are unbounded...
             if (count_variable_nodes(rule->before, name) == 0)
             {
@@ -109,6 +128,7 @@ bool add_function(char *name, char *left, char *right)
             whisper("Note: Unbounded variables in previously defined functions or constants are now bounded.\n");
         }
 
+
         whisper("Added constant.\n");
     }
     else
@@ -117,7 +137,15 @@ bool add_function(char *name, char *left, char *right)
     }
 
     // Add rule to eliminate operator before evaluation
-    arith_add_rule(get_rule(left_n, right_n));
+    RewriteRule rule = get_rule(left_n, right_n);
+    if (!redefinition)
+    {
+        add_composite_function(rule);
+    }
+    else
+    {
+        redefine_composite_function(rule);
+    }
     return true;
 
     error:
@@ -133,7 +161,7 @@ Summary: Adds a new function symbol to context and adds a new rule to substitute
 */
 bool cmd_definition_exec(char *input)
 {
-    if (g_ctx->num_ops == g_ctx->max_ops || !arith_can_add_rule())
+    if (!can_add_composite_function())
     {
         printf("Error: Can't add any more functions or constants.\n");
         return false;

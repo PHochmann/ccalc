@@ -29,6 +29,21 @@ static size_t VLINE_INDEX = 10;
 static size_t BORDER_LOOKUP[16] = { 11, 11, 11, 6, 11, 10, 0, 3, 11, 8, 9, 7, 2, 5, 1, 4 };
 
 /*
+void print_debug(Table *table)
+{
+    size_t col_widths[table->num_cols];
+    size_t row_heights[table->num_rows];
+    get_dimensions(table, col_widths, row_heights);
+
+    printf("#rows: %zu, #cols: %zu\n", table->num_rows, table->num_cols);
+    for (size_t i = 0; i < table->num_rows; i++) printf("%zu ", row_heights[i]);
+    printf("; ");
+    for (size_t i = 0; i < table->num_cols; i++) printf("%zu ", col_widths[i]);
+    printf("\n");
+}
+*/
+
+/*
 Summary: Calculates length of string displayed in console,
     i.e. reads until \0 or \n and omits ANSI-escaped color sequences
     Todo: Consider \t and other special chars
@@ -338,25 +353,11 @@ void print_complete_line(Table *table,
     printf("\n");
 }
 
-void print_debug(Table *table)
-{
-    size_t col_widths[table->num_cols];
-    size_t row_heights[table->num_rows];
-    get_dimensions(table, col_widths, row_heights);
-
-    printf("#rows: %zu, #cols: %zu\n", table->num_rows, table->num_cols);
-    for (size_t i = 0; i < table->num_rows; i++) printf("%zu ", row_heights[i]);
-    printf("; ");
-    for (size_t i = 0; i < table->num_cols; i++) printf("%zu ", col_widths[i]);
-    printf("\n");
-}
-
 void print_table_internal(Table *table)
 {
     size_t col_widths[table->num_cols];
     size_t row_heights[table->num_rows];
     get_dimensions(table, col_widths, row_heights);
-
     //print_debug(table);
 
     // Special cases: If last row/col is empty, delete all vlines/hlines in it

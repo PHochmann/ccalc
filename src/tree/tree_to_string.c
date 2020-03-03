@@ -244,7 +244,7 @@ void print_tree(Node *node, bool color)
 }
 
 /* Algorithm to put tree into single string ends here.
- * What follows is a method to visually print a tree-like representation for debugging purposes
+ * The following function can be used to visually print a tree-like representation for debugging purposes
  */
 
 #define EMPTY_TAB  "    "

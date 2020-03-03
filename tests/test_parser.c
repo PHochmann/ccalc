@@ -5,7 +5,8 @@
 #include "../src/tree/context.h"
 #include "../src/tree/node.h"
 #include "../src/tree/parser.h"
-#include "../src/arithmetics/arith_context.h"
+#include "../src/core/arith_context.h"
+#include "../src/core/evaluation.h"
 
 // To check if parsed tree evaluates to expected value
 struct ValueTest {
@@ -108,6 +109,7 @@ bool almost_equals(double a, double b)
 
 char *parser_test()
 {
+    core_init_ctx();
     Node *node = NULL;
 
     // Perform value tests
@@ -118,7 +120,7 @@ char *parser_test()
             return create_error("Parser Error for '%s'\n", valueTests[i].input);
         }
 
-        bool is_equal = almost_equals(arith_eval(node), valueTests[i].result);
+        bool is_equal = almost_equals(arith_evaluate(node), valueTests[i].result);
         free_tree(node);
 
         if (!is_equal)

@@ -126,6 +126,19 @@ size_t get_text_width(char *str)
     return res;
 }
 
+// out_cells must hold table->num_rows pointers to cells
+void get_col(Table *table, size_t col_index, struct Cell **out_cells)
+{
+    struct Row *curr_row = table->first_row;
+    size_t index = 0;
+    while (curr_row != NULL)
+    {
+        out_cells[index] = &curr_row->cells[col_index];
+        curr_row = curr_row->next_row;
+        index++;
+    }
+}
+
 void get_dimensions(Table *table, size_t *out_col_widths, size_t *out_row_heights)
 {
     size_t num_cells_upper = table->num_cols * table->num_rows;
@@ -135,14 +148,7 @@ void get_dimensions(Table *table, size_t *out_col_widths, size_t *out_row_height
     for (size_t i = 0; i < table->num_cols; i++)
     {
         struct Cell *cells[table->num_rows];
-        struct Row *curr_row = table->first_row;
-        size_t index = 0;
-        while (curr_row != NULL)
-        {
-            cells[index] = &curr_row->cells[i];
-            curr_row = curr_row->next_row;
-            index++;
-        }
+        get_col(table, i, (struct Cell**)&cells);
         set_dot_paddings(table->num_rows, table->alignments[i], cells);
     }
 
