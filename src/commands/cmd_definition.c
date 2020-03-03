@@ -24,7 +24,7 @@ bool add_function(char *name, char *left, char *right)
 {
     // Add function operator to parse left input
     // Must be OP_DYNAMIC_ARITY because we do not know the actual arity yet
-    ctx_add_op(g_ctx, op_get_function(name, OP_DYNAMIC_ARITY));
+    Operator *tentative_op = ctx_add_op(g_ctx, op_get_function(name, OP_DYNAMIC_ARITY));
 
     Node *left_n = NULL;
     Node *right_n = NULL;
@@ -71,16 +71,17 @@ bool add_function(char *name, char *left, char *right)
 
     bool redefinition = false;
 
-    if (ctx_lookup_function(g_ctx, name, new_arity) != NULL)
+    if (get_op(left_n) != tentative_op)
     {
         printf("Function or constant already exists. Redefine it [y/N]? ");
         
         for (size_t i = 0; i < get_num_composite_functions(); i++)
         {
             RewriteRule *rule = get_composite_function(i);
-            if (find_matching_discarded(rule->after, right_n))
+            if (find_matching_discarded(rule->after, left_n))
             {
                 printf("\nWarning: This will affect at least one other function or constant. ");
+                break;
             }
         }
 
@@ -128,7 +129,6 @@ bool add_function(char *name, char *left, char *right)
             whisper("Note: Unbounded variables in previously defined functions or constants are now bounded.\n");
         }
 
-
         whisper("Added constant.\n");
     }
     else
@@ -145,6 +145,8 @@ bool add_function(char *name, char *left, char *right)
     else
     {
         redefine_composite_function(rule);
+        g_ctx->num_ops--;
+        free(name);
     }
     return true;
 
@@ -185,7 +187,9 @@ bool cmd_definition_exec(char *input)
     
     if (num_tokens > 0)
     {
+        // Function name is first token
         char *name = tokens[0];
+        // All other tokens can be freed
         for (size_t i = 1; i < num_tokens; i++) free(tokens[i]);
 
         if (!is_letter(name[0]))

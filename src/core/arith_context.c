@@ -154,12 +154,8 @@ bool core_parse_input(char *input, char *error_fmt, bool replace_comp_funcs, Nod
     {
         if (replace_comp_funcs)
         {
-            for (size_t i = 0; i < num_comp_func; i++)
-            {
-                while (apply_rule(out_res, &composite_functions[i]));
-            }
+            apply_ruleset(out_res, num_comp_func, composite_functions);
         }
-
         if (!core_simplify(out_res) || !core_replace_history(out_res))
         {
             free_tree(*out_res);

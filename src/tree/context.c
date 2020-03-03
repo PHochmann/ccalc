@@ -34,7 +34,7 @@ bool ctx_add_ops(ParsingContext *ctx, size_t count, ...)
     
     for (size_t i = 0; i < count; i++)
     {
-        if (ctx_add_op(ctx, va_arg(args, Operator)) == -1)
+        if (ctx_add_op(ctx, va_arg(args, Operator)) == NULL)
         {
             va_end(args);
             return false;
@@ -49,25 +49,25 @@ bool ctx_add_ops(ParsingContext *ctx, size_t count, ...)
 Summary: Adds operator to context
     To associate every operand with exactly one operator in a unique manner,
     infix operators with the same precedence must have the same associativity.
-Returns: ID of new operator, -1 if one of the following:
+Returns: pointer to operator within context, NULL if one of the following:
     * buffer is full
     * ctx is NULL
     * infix operator with inconsistent associativity is given
           (another infix operator with same precedence has different associativity)
     * function of same name and arity is present in context
 */
-int ctx_add_op(ParsingContext *ctx, Operator op)
+Operator *ctx_add_op(ParsingContext *ctx, Operator op)
 {
-    if (ctx == NULL || ctx->num_ops == ctx->max_ops) return -1;
+    if (ctx == NULL || ctx->num_ops == ctx->max_ops) return NULL;
     
     // Check for name clash
     if (op.placement != OP_PLACE_FUNCTION)
     {
-        if (ctx_lookup_op(ctx, op.name, op.placement) != NULL) return -1;
+        if (ctx_lookup_op(ctx, op.name, op.placement) != NULL) return NULL;
     }
     else
     {
-        if (ctx_lookup_function(ctx, op.name, op.arity) != NULL) return -1;
+        if (ctx_lookup_function(ctx, op.name, op.arity) != NULL) return NULL;
     }
 
     // Consistency checks
@@ -80,14 +80,14 @@ int ctx_add_op(ParsingContext *ctx, Operator op)
             {                
                 if (ctx->operators[i].assoc != op.assoc)
                 {
-                    return -1;
+                    return NULL;
                 }
             }
         }
     }
 
     ctx->operators[ctx->num_ops++] = op;
-    return ctx->num_ops - 1;
+    return &ctx->operators[ctx->num_ops - 1];
 }
 
 /*
