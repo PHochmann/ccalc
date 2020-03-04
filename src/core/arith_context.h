@@ -11,7 +11,6 @@ void core_init_ctx();
 size_t get_num_composite_functions();
 RewriteRule *get_composite_function(size_t index);
 bool can_add_composite_function();
-void redefine_composite_function(RewriteRule new_rule);
 void add_composite_function(RewriteRule rule);
 void pop_composite_function();
 void clear_composite_functions();

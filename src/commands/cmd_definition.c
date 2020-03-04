@@ -13,50 +13,99 @@
 #define FMT_ERROR_LEFT  "Error in left expression: %s\n"
 #define FMT_ERROR_RIGHT "Error in right expression: %s\n"
 
-static const size_t MAX_TOKENS = 100;
+static const size_t MAX_TOKENS = 50;
 
 bool cmd_definition_check(char *input)
 {
     return strstr(input, DEFINITION_OP) != NULL;
 }
 
-bool add_function(char *name, char *left, char *right)
+bool do_left_checks(Node *left_n)
 {
-    // Add function operator to parse left input
-    // Must be OP_DYNAMIC_ARITY because we do not know the actual arity yet
-    Operator *tentative_op = ctx_add_op(g_ctx, op_get_function(name, OP_DYNAMIC_ARITY));
-
-    Node *left_n = NULL;
-    Node *right_n = NULL;
-    
-    // Parse without applying rules to correctly determine if function already exists
-    if (!core_parse_input(left, FMT_ERROR_LEFT, false, &left_n))
-    {
-        goto error;
-    }
-
     if (get_type(left_n) != NTYPE_OPERATOR || get_op(left_n)->placement != OP_PLACE_FUNCTION)
     {
         printf(FMT_ERROR_LEFT, "Not a function or constant.");
-        goto error;
+        return false;
     }
 
-    size_t new_arity = get_num_children(left_n);
-    
-    for (size_t i = 0; i < new_arity; i++)
+    for (size_t i = 0; i < get_num_children(left_n); i++)
     {
         if (get_type(get_child(left_n, i)) != NTYPE_VARIABLE)
         {
             printf(FMT_ERROR_LEFT, "Function arguments must be variables.");
+            return false;
+        }
+    }
+
+    if (get_num_children(left_n) != count_variables_distinct(left_n))
+    {
+        printf(FMT_ERROR_LEFT, "Function arguments must be distinct variables.");
+        return false;
+    }
+
+    return true;
+}
+
+bool add_function(char *name, char *left, char *right)
+{
+    // Check if left side can be parsed without adding tentative operator
+    // If it succeeds, we are redefining an already existing function
+    Node *left_n = NULL;
+    Node *right_n = NULL;
+    RewriteRule *redefined_rule = NULL;
+
+    if (parse_input(g_ctx, left, &left_n) == PERR_SUCCESS)
+    {
+        if (get_type(left_n) == NTYPE_OPERATOR && get_op(left_n)->placement == OP_PLACE_FUNCTION)
+        {
+            // Name is not needed since no new function will be added
+            free(name);
+
+            // Check if found function is a composite function...
+            for (size_t i = 0; i < get_num_composite_functions(); i++)
+            {
+                if (get_op(get_composite_function(i)->before) == get_op(left_n))
+                {
+                    redefined_rule = get_composite_function(i);
+                }
+            }
+
+            // ...if not, the function is built-in. Fail here.
+            if (redefined_rule == NULL)
+            {
+                printf("Error: Built-in functions can not be redefined.\n");
+                free_tree(left_n);
+                return false;
+            }
+        }
+        else
+        {
+            free_tree(left_n);
+        }
+    }
+    
+    if (redefined_rule == NULL)
+    {
+        if (!can_add_composite_function())
+        {
+            printf("Error: Can not add any more functions or constants.\n");
+            free(name);
+            return false;
+        }
+
+        // Add function operator to parse left input
+        // Must be OP_DYNAMIC_ARITY because we do not know the actual arity yet
+        ctx_add_op(g_ctx, op_get_function(name, OP_DYNAMIC_ARITY));
+        if (!core_parse_input(left, FMT_ERROR_LEFT, false, &left_n))
+        {
             goto error;
         }
     }
 
-    if (new_arity != count_variables_distinct(left_n))
-    {
-        printf(FMT_ERROR_LEFT, "Function arguments must be distinct variables.");
-        goto error;
-    }
+    if (!do_left_checks(left_n)) goto error;
+
+    // Assign correct arity
+    get_op(left_n)->arity = get_num_children(left_n);
 
     if (!core_parse_input(right, FMT_ERROR_RIGHT, false, &right_n))
     {
@@ -69,9 +118,7 @@ bool add_function(char *name, char *left, char *right)
         goto error;
     }
 
-    bool redefinition = false;
-
-    if (get_op(left_n) != tentative_op)
+    if (redefined_rule != NULL)
     {
         printf("Function or constant already exists. Redefine it [y/N]? ");
         
@@ -85,22 +132,10 @@ bool add_function(char *name, char *left, char *right)
             }
         }
 
-        if (ask_yes_no(false))
-        {
-            redefinition = true;
-        }
-        else
-        {
-            goto error;
-        }
-    }
-    else
-    {
-        // Assign correct arity
-        g_ctx->operators[g_ctx->num_ops - 1].arity = new_arity;
+        if (!ask_yes_no(false)) goto error;
     }
 
-    if (new_arity == 0)
+    if (get_op(left_n)->arity == 0)
     {
         /*
          * User-defined constants are zero-arity functions with corresponding elimination rule.
@@ -129,32 +164,50 @@ bool add_function(char *name, char *left, char *right)
             whisper("Note: Unbounded variables in previously defined functions or constants are now bounded.\n");
         }
 
-        whisper("Added constant.\n");
+        if (redefined_rule == NULL)
+        {
+            whisper("Added constant.\n");
+        }
+        else
+        {
+            whisper("Redefined constant.\n");
+        }
     }
     else
     {
-        whisper("Added function.\n");
+        if (redefined_rule == NULL)
+        {
+            whisper("Added function.\n");
+        }
+        else
+        {
+            whisper("Redefined function.\n");
+        }
     }
 
     // Add rule to eliminate operator before evaluation
     RewriteRule rule = get_rule(left_n, right_n);
-    if (!redefinition)
+    if (redefined_rule == NULL)
     {
         add_composite_function(rule);
     }
     else
     {
-        redefine_composite_function(rule);
-        g_ctx->num_ops--;
-        free(name);
+        free_tree(redefined_rule->before);
+        free_tree(redefined_rule->after);
+        redefined_rule->before = left_n;
+        redefined_rule->after = right_n;
     }
     return true;
 
     error:
-    g_ctx->num_ops--;
     free_tree(left_n);
     free_tree(right_n);
-    free(name);
+    if (redefined_rule == NULL)
+    {
+        g_ctx->num_ops--;
+        free(name);
+    }
     return false;
 }
 
@@ -162,13 +215,7 @@ bool add_function(char *name, char *left, char *right)
 Summary: Adds a new function symbol to context and adds a new rule to substitute function with its right hand side
 */
 bool cmd_definition_exec(char *input)
-{
-    if (!can_add_composite_function())
-    {
-        printf("Error: Can't add any more functions or constants.\n");
-        return false;
-    }
-    
+{   
     // Overwrite first char of operator to make function definition a proper string
     char *right_input = strstr(input, DEFINITION_OP);
     *right_input = '\0';

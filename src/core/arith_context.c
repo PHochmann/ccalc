@@ -98,19 +98,6 @@ bool can_add_composite_function()
     return num_comp_func < NUM_COMP_FUNC;
 }
 
-/*
-Summary: Redefines composite function
-Params:
-    new_rule: New rewrite rule that will replace the old one. Root of before must be operator node with op in g_ctx->operators
-        Segfault otherwise
-*/
-void redefine_composite_function(RewriteRule new_rule)
-{
-    size_t index = get_op(new_rule.before) - g_ctx->operators - NUM_OPS;
-    free_rule(composite_functions[index]);
-    composite_functions[index] = new_rule;
-}
-
 void add_composite_function(RewriteRule rule)
 {
     composite_functions[num_comp_func] = rule;
