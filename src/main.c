@@ -1,19 +1,17 @@
 #include <stdlib.h>
 #include <unistd.h>
-#include <time.h>
 
 #include "console_util.h"
 #include "commands/commands.h"
 
 /*
- * Scientific calculator in which you can define your own functions and constants
+ * Scientific calculator in which you can define new functions and constants
  * https://github.com/PhilippHochmann/Calculator
- * (c) 2019 Philipp Hochmann, phil.hochmann [ät] gmail [dot] com
+ * (c) 2020 Philipp Hochmann, phil.hochmann [ät] gmail [dot] com
  */
 
 int main(int argc, char **argv)
 {
-    srand(time(NULL));
     // Build arithmetic context, initialize commands
     init_commands();
     // Free all ressources at exit

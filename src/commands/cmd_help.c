@@ -8,82 +8,101 @@
 #include "../core/arith_context.h"
 #include "../table/table.h"
 
-#define COMMAND "help"
+#define COMMAND   "help"
+#define TTY_WIDTH 80
 
 static char *VERSION = "1.5.0";
 
 static char *INFOBOX_FMT =
-    " Scientific calculator in which you can define your own functions and constants \n"
-    "Version %s (c) 2018-2020, Philipp Hochmann\n"
+    "Calculator %s (c) 2020, Philipp Hochmann\n"
+    " Scientific calculator in which you can define new functions and constants \n"
     "https://github.com/PhilippHochmann/Calculator";
 
 static char *COMMAND_TABLE[7][2] = {
-    { "<func|const> = <after>",                  "Adds new function or constant." },
+    { "<func|const> = <after>",                  "Adds or redefines function or constant." },
     { "table <expr> ; <from> ; <to> ; <step>  \n"
-      "   [fold <expr> ; <init>]",               "Prints table of values and optionally folds them.\n   In fold expression, 'x' is replaced with the intermediate result (init in first step),\n   'y' is replaced with the current value. Result is stored in history." },
-    { "load <path>",                             "Loads file as if its content had been typed in." },
-    { "debug <expr>",                            "Visually prints abstract syntax tree of expression." },
-    { "help",                                    "Lists available commands and operators." },
-    { "clear [last]",                            "Clears all or last user-defined functions and constants." },
-    { "quit",                                    "Closes calculator." }
+      "   [fold <expr> ; <init>]",               "Prints table of values." },
+    { "load <path>",                             "Executes commands in file." },
+    { "clear [last]",                            "Clears functions and constants." },
+    { "quit",                                    "Closes application." }
 };
 
 static const size_t BASIC_IND =  2; // Index of first basic operator ($x and x@y before, should no be shown)
 static const size_t TRIG_IND  = 20; // Index of first trigonometric function
 static const size_t MISC_IND  = 32; // Index of first misc. function
 static const size_t CONST_IND = 49; // Index of first constant
-static const size_t LAST_IND  = 52; // Index of last constant
+static const size_t LAST_IND  = 54; // Index of last constant
 
 bool cmd_help_check(char *input)
 {
     return strcmp(COMMAND, input) == 0;
 }
 
-void print_op(Operator *op)
+// Returns number of characters printed
+int print_op(Operator *op)
 {
     printf(OP_COLOR);
+    int res = 0;
     switch (op->placement)
     {
         case OP_PLACE_PREFIX:
             if (op->arity != 0)
             {
-                printf("%sx", op->name);
+                res = printf("%sx", op->name);
             }
             else
             {
-                printf("%s", op->name);
+                res = printf("%s", op->name);
             }
             break;
             
         case OP_PLACE_INFIX:
             if (is_letter(op->name[0]))
             {
-                printf("x %s y", op->name);
+                res = printf("x %s y", op->name);
             }
             else
             {
-                printf("x%sy", op->name);
+                res = printf("x%sy", op->name);
             }
             break;
             
         case OP_PLACE_POSTFIX:
-            printf("x%s", op->name);
+            res = printf("x%s", op->name);
             break;
             
         case OP_PLACE_FUNCTION:
             switch (op->arity)
             {
                 case 0:
-                    printf("%s", op->name);
+                    res = printf("%s", op->name);
                     break;
                 case OP_DYNAMIC_ARITY:
-                    printf("%s(*)", op->name);
+                    res = printf("%s(*)", op->name);
                     break;
                 default:
-                    printf("%s(%zu)", op->name, op->arity);
+                    res = printf("%s(%zu)", op->name, op->arity);
             }
     }
     printf(COL_RESET " ");
+    return res + 1;
+}
+
+void print_ops_between(size_t start, size_t end)
+{
+    int remaining_width = TTY_WIDTH;
+    for (size_t i = start; i < end; i++)
+    {
+        remaining_width -= print_op(&g_ctx->operators[i]);
+        if (i + 1 < end)
+        {
+            if (remaining_width - (int)strlen(g_ctx->operators[i + 1].name) - 4 < 0)
+            {
+                printf("\n");
+                remaining_width = TTY_WIDTH;
+            }
+        }
+    }
 }
 
 bool cmd_help_exec(char __attribute__((unused)) *input)
@@ -103,28 +122,13 @@ bool cmd_help_exec(char __attribute__((unused)) *input)
     free_table(&table);
 
     printf("\nBasic operators:\n");
-    for (size_t i = BASIC_IND; i < TRIG_IND; i++)
-    {
-        print_op(&g_ctx->operators[i]);
-    }
-
+    print_ops_between(BASIC_IND, TRIG_IND);
     printf("\nTrigonometric functions:\n");
-    for (size_t i = TRIG_IND; i < MISC_IND; i++)
-    {
-        print_op(&g_ctx->operators[i]);
-    }
-
+    print_ops_between(TRIG_IND, MISC_IND);
     printf("\nMiscellaneous functions:\n");
-    for (size_t i = MISC_IND; i < CONST_IND; i++)
-    {
-        print_op(&g_ctx->operators[i]);
-    }
-
+    print_ops_between(MISC_IND, CONST_IND);
     printf("\nConstants:\n");
-    for (size_t i = CONST_IND; i <= LAST_IND; i++)
-    {
-        print_op(&g_ctx->operators[i]);
-    }
+    print_ops_between(CONST_IND, LAST_IND);
 
     // Print user-defined functions if there are any
     if (get_num_composite_functions() > 0)

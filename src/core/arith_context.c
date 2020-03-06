@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <time.h>
 
 #include "arith_context.h"
 #include "simplification.h"
@@ -78,9 +79,9 @@ void core_init_ctx()
         op_get_constant("phi"),
         op_get_constant("clight"),
         op_get_constant("csound"));
-    
     // Set multiplication as glue-op
     ctx_set_glue_op(g_ctx, ctx_lookup_op(g_ctx, "*", OP_PLACE_INFIX));
+    srand(time(NULL));
 }
 
 size_t get_num_composite_functions()
