@@ -64,6 +64,7 @@ void unload_commands()
     clear_composite_functions();
     simplification_unload();
     console_util_reset();
+    unload_history();
 }
 
 /*
@@ -74,6 +75,7 @@ void init_commands()
     core_init_ctx();
     simplification_init();
     console_util_init();
+    init_history();
     error = false;
     input_on_heap = false;
 }

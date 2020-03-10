@@ -141,7 +141,7 @@ bool ask_input(FILE *file, char **out_input, char *prompt_fmt, ...)
 }
 
 /*
-Returns: True when 'y' typed, false when 'n' typed or aborted
+Returns: True when 'y' typed, false when 'n' typed
 */
 bool ask_yes_no(bool default_val)
 {

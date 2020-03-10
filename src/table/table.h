@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include <stdarg.h>
 
-// Can be extended without further modifications
+// Can be changed without further modifications
 #define MAX_COLS 10
 // For ALIGN_NUMBERS
 #define DECIMAL_SEPARATOR "."
