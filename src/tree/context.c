@@ -18,7 +18,6 @@ ParsingContext get_context(size_t max_ops, Operator *op_buffer)
         .operators = op_buffer,
         .glue_op = NULL,
     };
-
     return res;
 }
 
@@ -31,7 +30,6 @@ bool ctx_add_ops(ParsingContext *ctx, size_t count, ...)
 {
     va_list args;
     va_start(args, count);
-    
     for (size_t i = 0; i < count; i++)
     {
         if (ctx_add_op(ctx, va_arg(args, Operator)) == NULL)
@@ -40,7 +38,6 @@ bool ctx_add_ops(ParsingContext *ctx, size_t count, ...)
             return false;
         }
     }
-    
     va_end(args);
     return true;
 }
@@ -127,7 +124,6 @@ Operator *lookup_tentative_function(ParsingContext *ctx, char *name)
             }
         }
     }
-
     return non_zero_func;
 }
 
@@ -148,7 +144,6 @@ Operator *ctx_lookup_op(ParsingContext *ctx, char *name, OpPlacement placement)
             return &ctx->operators[i];
         }
     }
-    
     return NULL;
 }
 
@@ -169,7 +164,6 @@ Operator *ctx_lookup_function(ParsingContext *ctx, char *name, size_t arity)
             return &ctx->operators[i];
         }
     }
-    
     return NULL;
 }
 
@@ -191,6 +185,5 @@ bool ctx_is_function_overloaded(ParsingContext *ctx, char *name)
             found_first = true;
         }
     }
-
     return false;
 }

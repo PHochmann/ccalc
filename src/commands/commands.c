@@ -20,6 +20,8 @@
 
 // Is set to true when a command reported an error, affects exit code
 bool error;
+// Is set to true when input comes from getline or readline
+bool input_on_heap;
 
 // Quit command:
 
@@ -30,7 +32,7 @@ bool cmd_quit_check(char *input)
 
 bool cmd_quit_exec(char *input)
 {
-    free(input);
+    if (input_on_heap) free(input);
     exit(error ? EXIT_FAILURE : EXIT_SUCCESS);
     return true;
 }
@@ -73,6 +75,7 @@ void init_commands()
     simplification_init();
     console_util_init();
     error = false;
+    input_on_heap = false;
 }
 
 /*
@@ -82,6 +85,7 @@ Returns: True when no command exited with an error, false otherwise
 */
 bool process_input(FILE *file)
 {
+    input_on_heap = true;
     char *input = NULL;
     while (ask_input(file, &input, INTERACTIVE_ASK_PREFIX))
     {

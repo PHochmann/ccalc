@@ -30,7 +30,6 @@ bool cmd_load_exec(char *input)
     }
     
     whisper("File successfully loaded.\n");
-
     // Set g_interactive to false to read with getline from file
     bool interactive = set_interactive(false);
     process_input(file);

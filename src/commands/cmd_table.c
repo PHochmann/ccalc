@@ -186,7 +186,6 @@ bool cmd_table_exec(char *input)
     }
 
     success = true;
-
     exit:
     free_tree(expr);
     free_tree(start);
@@ -194,6 +193,5 @@ bool cmd_table_exec(char *input)
     free_tree(step);
     free_tree(fold_expr);
     free_tree(fold_init);
-
     return success;
 }

@@ -133,7 +133,6 @@ Returns: First node (in-order traversal) in 'a' that is not equal to respective 
 Node *tree_equals(Node *a, Node *b)
 {
     if (a == NULL || b == NULL) return NULL;
-    
     if (get_type(a) != get_type(b)) return a;
     
     switch (get_type(a))
@@ -151,14 +150,12 @@ Node *tree_equals(Node *a, Node *b)
             {
                 return a;
             }
-
             for (size_t i = 0; i < get_num_children(a); i++)
             {
                 Node *recursive_res = tree_equals(get_child(a, i), get_child(b, i));
                 if (recursive_res != NULL) return recursive_res;
             }
     }
-
     return NULL;
 }
 
