@@ -8,7 +8,7 @@ You can install package ```ccalc``` directly from the AUR.
 ### Install from github
 1. Clone repository.
 2. If you want to use readline, download its development files (Ubuntu: ```sudo apt-get install libreadline-dev```). If you do not want to use it, change the first line of ```make.sh``` to ```use_readline=false```.
-3. In root of repository, run ```./make.sh [-d]``` to compile sources.
+3. In root of repository, run ```./make.sh [-t]``` to compile sources and optionally run tests.
 
 ## How to use it
 When starting the calculator normally, you can enter expressions and commands interactively. Passed arguments will be evaluated beforehand. You can pipe in contents which will be evaluated as if typed in, after that the calculator terminates and does not enter interactive mode.
