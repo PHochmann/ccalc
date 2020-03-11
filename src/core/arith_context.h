@@ -7,7 +7,7 @@
 
 extern ParsingContext __g_ctx;
 
-void core_init_ctx();
+void init_core_ctx();
 size_t get_num_composite_functions();
 RewriteRule *get_composite_function(size_t index);
 bool can_add_composite_function();

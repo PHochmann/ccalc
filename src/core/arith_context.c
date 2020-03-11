@@ -20,7 +20,7 @@ RewriteRule composite_functions[NUM_COMP_FUNC];
 /*
 Summary: Sets arithmetic context stored in global variable
 */
-void core_init_ctx()
+void init_core_ctx()
 {
     num_comp_func = 0;
     __g_ctx = get_context(MAX_OPS, operators);

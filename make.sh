@@ -8,7 +8,7 @@ DEFINES=""
 DIR=$(dirname $0)
 CFLAGS="-std=c99 -Wall -Wextra -Werror -pedantic"
 FILES="$DIR/src/*/*.c $DIR/src/*.c"
-BIN="$DIR/bin/calculator.out"
+BIN="$DIR/bin/ccalc"
 
 if [ "$use_readline" = true ]; then
     LFLAGS="$LFLAGS -lreadline"
@@ -19,7 +19,7 @@ if [ "$test_tables" = true ]; then
     DEFINES="$DEFINES -DTEST_TABLES"
 fi
 
-echo "Compiling Calculator (use_readline = $use_readline)"
+echo "Compiling ccalc (use_readline = $use_readline)"
 mkdir -p $DIR/bin
 
 if [ "$1" = "-t" ] || [ "$1" = "-d" ]; then

@@ -109,7 +109,7 @@ bool almost_equals(double a, double b)
 
 char *parser_test()
 {
-    core_init_ctx();
+    init_core_ctx();
     Node *node = NULL;
 
     // Perform value tests

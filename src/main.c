@@ -6,10 +6,9 @@
 
 /*
  * Scientific calculator in which you can define new functions and constants
- * https://github.com/PhilippHochmann/Calculator
- * (c) 2020 Philipp Hochmann, phil.hochmann [ät] gmail [dot] com
+ * https://github.com/PhilippHochmann/ccalc
+ * (c) 2020 Philipp Hochmann, phil.hochmann[ät]gmail[dot]com
  */
-
 int main(int argc, char **argv)
 {
     // Build arithmetic context, initialize commands

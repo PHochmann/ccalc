@@ -1,4 +1,4 @@
-# Calculator
+# ccalc
 Scientific calculator in which you can define new functions and constants
 
 ## Setup guide

@@ -62,8 +62,8 @@ Summary: Frees all ressources so that heap is empty after exit, except data mall
 void unload_commands()
 {
     clear_composite_functions();
-    simplification_unload();
-    console_util_reset();
+    unload_simplification();
+    unload_console_util();
     unload_history();
 }
 
@@ -72,9 +72,9 @@ Summary: Sets parsing context and initializes commands
 */
 void init_commands()
 {
-    core_init_ctx();
-    simplification_init();
-    console_util_init();
+    init_core_ctx();
+    init_simplification();
+    init_console_util();
     init_history();
     error = false;
     input_on_heap = false;

@@ -39,12 +39,12 @@ bool parse_rules(size_t num_rules, char **input, RewriteRule *out_rules)
     return true;
 }
 
-void simplification_init()
+void init_simplification()
 {
     parse_rules(NUM_RULES, rule_strings, rules);
 }
 
-void simplification_unload()
+void unload_simplification()
 {
     for (size_t i = 0; i < NUM_RULES; i++)
     {

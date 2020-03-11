@@ -12,14 +12,14 @@ static const size_t PROMPT_BUFFER = 15;
 
 static const size_t MAX_INPUT_LENGTH = 100;
 
-void console_util_reset()
+void unload_console_util()
 {
 #ifdef USE_READLINE
     rl_clear_history();
 #endif
 }
 
-void console_util_init()
+void init_console_util()
 {
     g_interactive = false;
 #ifdef USE_READLINE

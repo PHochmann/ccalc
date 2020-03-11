@@ -32,7 +32,7 @@ static struct TreeToStringTest tests[] = {
 
 char *tree_to_string_test()
 {
-    core_init_ctx();
+    init_core_ctx();
     char *res = NULL;
     Node *node = NULL;
 

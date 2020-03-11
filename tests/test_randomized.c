@@ -73,7 +73,7 @@ Summary:
 */
 char *randomized_test()
 {
-    core_init_ctx();
+    init_core_ctx();
     char *res = NULL;
     srand(SEED);
 

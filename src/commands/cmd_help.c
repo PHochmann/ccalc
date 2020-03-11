@@ -14,7 +14,7 @@
 static char *VERSION = "1.5.0";
 
 static char *INFOBOX_FMT =
-    "Calculator %s (c) 2020, Philipp Hochmann\n"
+    "ccalc %s (c) 2020, Philipp Hochmann\n"
     " Scientific calculator in which you can define new functions and constants \n"
     "https://github.com/PhilippHochmann/Calculator";
 
