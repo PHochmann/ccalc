@@ -41,8 +41,11 @@ struct Cell
     bool text_needs_free; // When set to true, text will be freed on free_table
     size_t x;             // Column position
     size_t y;             // Row position
-    size_t dot_padding;   // Right padding needed to align dots
     struct Cell *parent;  // Cell that spans into this cell
+
+    size_t zero_position;
+    size_t zeros_needed;
+    bool dot_needed;
 };
 
 struct Row

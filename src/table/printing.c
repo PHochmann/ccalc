@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "../string_util.h"
 #include "printing.h"
 #include "table.h"
 #include "constraint.h"
@@ -120,8 +121,14 @@ void print_text(struct Cell *cell, TextAlignment default_align, size_t line_inde
         }
         case ALIGN_NUMBERS:
         {
-            printf("%*s%.*s%*s", total_length - (int)(cell->dot_padding) - string_length, "", bytes, string,
-                (int)(cell->dot_padding), "");
+            int num_inserted = cell->zeros_needed;
+            if (cell->dot_needed) num_inserted++;
+
+            print_repeated(" ", total_length - num_inserted - string_length);
+            printf("%.*s", (int)cell->zero_position, string);
+            if (cell->dot_needed) printf(DECIMAL_SEPARATOR);
+            print_repeated("0", cell->zeros_needed);
+            printf("%.*s", (int)(bytes - cell->zero_position), string + cell->zero_position);
             break;
         }
     }

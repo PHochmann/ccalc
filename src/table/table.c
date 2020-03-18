@@ -53,7 +53,9 @@ struct Row *malloc_row(size_t y)
             .span_x = 1,
             .span_y = 1,
             .text_needs_free = false,
-            .dot_padding = 0
+            .zeros_needed = 0,
+            .zero_position = 0,
+            .dot_needed = false
         };
     }
     return res;

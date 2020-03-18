@@ -13,33 +13,35 @@ struct Constraint
 
 void set_dot_paddings(size_t num_cells, TextAlignment default_align, struct Cell **col)
 {
-    size_t dot_indices[num_cells];
-    size_t max_dot_index = 0;
+    size_t after_dot[num_cells];
+    size_t max_after_dot = 0;
 
     for (size_t i = 0; i < num_cells; i++)
     {
         if (col[i]->text == NULL) continue;
-
+        after_dot[i] = 0;
         if (get_align(default_align, col[i]) == ALIGN_NUMBERS)
         {
-            char *dot = strstr(col[i]->text, DECIMAL_SEPARATOR);
-            if (dot != NULL)
+            bool before = true;
+            for (size_t j = 0; j < strlen(col[i]->text); j++)
             {
-                dot_indices[i] = console_strlen(dot);
-            }
-            else
-            {
-                size_t bytes = strlen(col[i]->text);
-                while (bytes > 0 && !is_digit(col[i]->text[bytes - 1]))
+                if (before)
                 {
-                    bytes--;
+                    if (col[i]->text[j] == DECIMAL_SEPARATOR[0])
+                    {
+                        before = false;
+                    }
                 }
-                dot_indices[i] = console_strlen(col[i]->text + bytes);
+                else
+                {
+                    if (is_digit(col[i]->text[j]))
+                    {
+                        after_dot[i]++;
+                    }
+                }
+                if (is_digit(col[i]->text[j])) col[i]->zero_position = j + 1;
             }
-            if (dot_indices[i] > max_dot_index)
-            {
-                max_dot_index = dot_indices[i];
-            }
+            if (after_dot[i] > max_after_dot) max_after_dot = after_dot[i];
         }
     }
 
@@ -48,7 +50,8 @@ void set_dot_paddings(size_t num_cells, TextAlignment default_align, struct Cell
         if (col[i]->text == NULL) continue;
         if (get_align(default_align, col[i]) == ALIGN_NUMBERS)
         {
-            col[i]->dot_padding = max_dot_index - dot_indices[i];
+            col[i]->zeros_needed = max_after_dot - after_dot[i];
+            if (max_after_dot > 0 && after_dot[i] == 0) col[i]->dot_needed = true;
         }
     }
 }
@@ -162,7 +165,8 @@ void get_dimensions(Table *table, size_t *out_col_widths, size_t *out_row_height
             // Build constraints for set parent cells
             if (curr_row->cells[i].is_set && curr_row->cells[i].parent == NULL)
             {
-                size_t min = get_text_width(curr_row->cells[i].text) + curr_row->cells[i].dot_padding;
+                size_t min = get_text_width(curr_row->cells[i].text) + curr_row->cells[i].zeros_needed;
+                if (curr_row->cells[i].dot_needed) min++;
                 // Constraint can be weakened when vlines are in between
                 for (size_t j = i + 1; j < i + curr_row->cells[i].span_x; j++)
                 {
