@@ -6,9 +6,6 @@
 #include "table.h"
 #include "constraint.h"
 
-#define ESC_START  27
-#define ESC_END   109
-
 static char *BORDER_MATRIX_SINGLE[] = {
     "┌", "┬", "┐",
     "├", "┼", "┤",
@@ -43,36 +40,6 @@ void print_debug(Table *table)
     printf("\n");
 }
 */
-
-/*
-Summary: Calculates length of string displayed in console,
-    i.e. reads until \0 or \n and omits ANSI-escaped color sequences
-    Todo: Consider \t and other special chars
-*/
-size_t console_strlen(char *str)
-{
-    if (str == NULL) return 0;
-    size_t res = 0;
-    size_t pos = 0;
-    while (str[pos] != '\0' && str[pos] != '\n')
-    {
-        if (str[pos] == ESC_START)
-        {
-            // Search for terminating byte and abort on end of string
-            // (should not happen on well-formed strings but could happen due to truncation)
-            while (str[pos] != ESC_END && str[pos + 1] != '\0')
-            {
-                pos++;
-            }
-        }
-        else
-        {
-            res++;
-        }
-        pos++;
-    }
-    return res;
-}
 
 void print_repeated(char *string, size_t times)
 {
@@ -126,7 +93,7 @@ void print_text(struct Cell *cell, TextAlignment default_align, size_t line_inde
 
             print_repeated(" ", total_length - num_inserted - string_length);
             printf("%.*s", (int)cell->zero_position, string);
-            if (cell->dot_needed) printf(DECIMAL_SEPARATOR);
+            if (cell->dot_needed) printf("%c", DECIMAL_SEPARATOR);
             print_repeated("0", cell->zeros_needed);
             printf("%.*s", (int)(bytes - cell->zero_position), string + cell->zero_position);
             break;

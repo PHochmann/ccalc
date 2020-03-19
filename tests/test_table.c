@@ -16,7 +16,7 @@
 char *arrayA[4][4] = {
     { "alpha", YELLOW "beta" COL_RESET, "gamma", " delta " },
     { " 1 ", YELLOW " -1110.1 " COL_RESET, "a....... ", " 777" },
-    { " 2 ", " 10.1 ", "b ", " 222" },
+    { " 2 ", " 10 ", "b ", " 222" },
     { " 3....... ", RED " 23.1132310 " COL_RESET, "c ", " 333" },
 };
 

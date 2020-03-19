@@ -1,5 +1,5 @@
 #include <string.h>
-
+#include <stdio.h>
 #include "constraint.h"
 #include "printing.h"
 #include "../string_util.h" // For is_digit
@@ -20,28 +20,53 @@ void set_dot_paddings(size_t num_cells, TextAlignment default_align, struct Cell
     {
         if (col[i]->text == NULL) continue;
         after_dot[i] = 0;
+
         if (get_align(default_align, col[i]) == ALIGN_NUMBERS)
         {
-            bool before = true;
-            for (size_t j = 0; j < strlen(col[i]->text); j++)
+            bool before_dot = true;
+            bool before_first_digit = true;
+
+            StringIterator iterator = get_iterator(col[i]->text);
+            char curr_char;
+            while ((curr_char = get_next_char(&iterator)) != '\0')
             {
-                if (before)
+                if (before_dot)
                 {
-                    if (col[i]->text[j] == DECIMAL_SEPARATOR[0])
+                    if (curr_char == DECIMAL_SEPARATOR)
                     {
-                        before = false;
+                        before_dot = false;
+                    }
+                    else
+                    {
+                        if (is_digit(curr_char))
+                        {
+                            before_first_digit = false;
+                        }
+                        else
+                        {
+                            if (!before_first_digit)
+                            {
+                                break;
+                            }
+                        }
                     }
                 }
                 else
                 {
-                    if (is_digit(col[i]->text[j]))
+                    if (is_digit(curr_char))
                     {
+                        before_first_digit = false;
                         after_dot[i]++;
                     }
+                    else
+                    {
+                        break;
+                    }
                 }
-                if (is_digit(col[i]->text[j])) col[i]->zero_position = j + 1;
             }
+
             if (after_dot[i] > max_after_dot) max_after_dot = after_dot[i];
+            if (!before_first_digit) col[i]->zero_position = iterator.index - 1;
         }
     }
 

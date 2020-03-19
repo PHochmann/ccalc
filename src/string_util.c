@@ -121,3 +121,42 @@ char *perr_to_string(ParserError perr)
     while (end > str && *end == ' ') end--;
     end[1] = '\0';
 }*/
+
+#define ESC_START  27
+#define ESC_END   109
+
+StringIterator get_iterator(char *string)
+{
+    return (StringIterator){ .string = string, .index = 0 };
+}
+
+char get_next_char(StringIterator *iterator)
+{
+    if (iterator->string[iterator->index] == ESC_START)
+    {
+        while (iterator->string[iterator->index] != ESC_END)
+        {
+            iterator->index++;
+        }
+        iterator->index++;
+    }
+    return iterator->string[iterator->index++];
+}
+
+/*
+Summary: Calculates length of string displayed in console,
+    i.e. reads until \0 or \n and omits ANSI-escaped color sequences
+    Todo: Consider \t and other special chars
+*/
+size_t console_strlen(char *str)
+{
+    StringIterator iterator = get_iterator(str);
+    size_t res = 0;
+    while (true)
+    {
+        char curr = get_next_char(&iterator);
+        if (curr == '\0' || curr == '\n') break;
+        res++;
+    }
+    return res;
+}

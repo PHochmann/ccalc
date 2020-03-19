@@ -5,7 +5,7 @@
 // Can be changed without further modifications
 #define MAX_COLS 10
 // For ALIGN_NUMBERS
-#define DECIMAL_SEPARATOR "."
+#define DECIMAL_SEPARATOR '.'
 
 typedef enum
 {
@@ -42,10 +42,10 @@ struct Cell
     size_t x;             // Column position
     size_t y;             // Row position
     struct Cell *parent;  // Cell that spans into this cell
-
-    size_t zero_position;
-    size_t zeros_needed;
-    bool dot_needed;
+    // Additionally generated for ALIGN_NUMBERS:
+    size_t zero_position; // Position of first padded trailing zero
+    size_t zeros_needed;  // Amount of padded trailing zeros
+    bool dot_needed;      // Whether DECIMAL_SEPARATOR needs to be printed
 };
 
 struct Row
