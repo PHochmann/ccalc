@@ -45,7 +45,14 @@ Params
 */
 Node *get_ans(size_t index)
 {
-    return ans[((int)next_ans - 1 - index) % ANS_HISTORY_SIZE];
+    if ((int)next_ans - 1 - (int)index < 0)
+    {
+        return ans[(int)next_ans - 1 - (int)index + ANS_HISTORY_SIZE];
+    }
+    else
+    {
+        return ans[next_ans - 1 - index];
+    }
 }
 
 void core_update_history(ConstantType value)
