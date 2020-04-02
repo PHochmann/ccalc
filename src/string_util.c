@@ -150,6 +150,7 @@ Summary: Calculates length of string displayed in console,
 */
 size_t console_strlen(char *str)
 {
+    if (str == NULL) return 0;
     StringIterator iterator = get_iterator(str);
     size_t res = 0;
     while (true)
