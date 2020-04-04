@@ -5,7 +5,7 @@ Scientific calculator in which you can define new functions and constants
 ### Arch and Manjaro
 You can install package ```ccalc``` directly from the AUR.
 
-### Install from github
+### Install from GitHub
 1. Clone repository.
 2. If you want to use readline, download its development files (Ubuntu: ```sudo apt-get install libreadline-dev```). If you do not want to use it, change the first line of ```make.sh``` to ```use_readline=false```.
 3. In root of repository, run ```./make.sh [-t]``` to compile sources and optionally run tests.
