@@ -91,7 +91,7 @@ double random_between(double min, double max)
     return rand() % diff + min;
 }
 
-bool op_eval(Operator *op, size_t num_args, double *args, double *out)
+bool op_evaluate(Operator *op, size_t num_args, double *args, double *out)
 {
     switch ((size_t)(op - g_ctx->operators))
     {
@@ -116,11 +116,11 @@ bool op_eval(Operator *op, size_t num_args, double *args, double *out)
         case 8: // x mod y
             *out = fmod(args[0], args[1]);
             return true;
-        case 9: // -x
-            *out = -args[0];
-            return true;
-        case 10: // +x
+        case 9: // +x
             *out = args[0];
+            return true;
+        case 10: // -x
+            *out = -args[0];
             return true;
         case 11: // x!
         {
@@ -295,5 +295,5 @@ bool op_eval(Operator *op, size_t num_args, double *args, double *out)
 
 double arith_evaluate(Node *tree)
 {
-    return convenient_reduce(tree, op_eval);
+    return convenient_reduce(tree, op_evaluate);
 }

@@ -66,7 +66,15 @@ void set_dot_paddings(size_t num_cells, TextAlignment default_align, struct Cell
             }
 
             if (after_dot[i] > max_after_dot) max_after_dot = after_dot[i];
-            if (!before_first_digit) col[i]->zero_position = iterator.index - 1;
+            if (!before_first_digit)
+            {
+                col[i]->zero_position = iterator.index - 1;
+            }
+            else
+            {
+                col[i]->align = ALIGN_RIGHT;
+                col[i]->override_align = true;
+            }
         }
     }
 

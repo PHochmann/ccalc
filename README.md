@@ -5,7 +5,7 @@ Scientific calculator in which you can define new functions and constants
 ### Arch and Manjaro
 You can install package ```ccalc``` directly from the AUR.
 
-### Install from github
+### Install from GitHub
 1. Clone repository.
 2. If you want to use readline, download its development files (Ubuntu: ```sudo apt-get install libreadline-dev```). If you do not want to use it, change the first line of ```make.sh``` to ```use_readline=false```.
 3. In root of repository, run ```./make.sh [-t]``` to compile sources and optionally run tests.
@@ -29,7 +29,7 @@ When starting the calculator normally, you can enter expressions and commands in
 | ```table <expr> ; <from> ; <to> ; <step> [fold <expr> ; <init>]``` | Prints table of values and optionally folds them. In fold expression, ```x``` is replaced with the intermediate result (init in first step), ```y``` is replaced with the current value. Result of fold is stored in history. |
 | ```load <path>```                           | Loads file as if its content had been typed in.          |
 | ```debug <expr>```                          | Visually prints abstract syntax tree of expression.      |
-| ```help```                                  | Lists available commands and operators.                  |
+| ```help [operators]```                      | Lists available commands and operators.                  |
 | ```clear [last]```                          | Clears all or last user-defined functions and constants. |
 | ```quit```                                  | Closes application.                                      |
 
@@ -93,8 +93,8 @@ When starting the calculator normally, you can enter expressions and commands in
 | ```gcd(x, y)```      | Greatest common divisor                        |
 | ```lcm(x, y)```      | Least common multiple                          |
 | ```rand(min, max)``` | Random integer between min and max (exclusive) |
-| ```gamma(x)```       | Gamma function                                 |
 | ```fib(n)```         | Fibonacci sequence                             |
+| ```gamma(x)```       | Gamma function                                 |
 
 Note:
 * ```*``` is used to denote arbitrary number of operands

@@ -120,7 +120,6 @@ bool cmd_table_exec(char *input)
     if (g_interactive)
     {
         add_cell(&table, " # ");
-        set_vline(&table, BORDER_SINGLE);
         if (num_vars != 0)
         {
             add_cell_fmt(&table, VAR_COLOR " %s " COL_RESET, variables[0]);
@@ -132,7 +131,6 @@ bool cmd_table_exec(char *input)
 
         char inlined_expr[sizeof_tree_to_string(expr, true)];
         unsafe_tree_to_string(expr, inlined_expr, true);
-        set_vline(&table, BORDER_SINGLE);
         add_cell_fmt(&table, " %s ", inlined_expr);
         override_alignment_of_row(&table, ALIGN_CENTER);
         next_row(&table);
@@ -173,6 +171,7 @@ bool cmd_table_exec(char *input)
     if (g_interactive)
     {
         make_boxed(&table, BORDER_SINGLE);
+        set_all_vlines(&table, BORDER_SINGLE);
     }
 
     set_default_alignments(&table, 3, (TextAlignment[]){ ALIGN_RIGHT, ALIGN_NUMBERS, ALIGN_NUMBERS });

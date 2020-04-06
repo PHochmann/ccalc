@@ -7,16 +7,17 @@
 #include "../tree/tree_to_string.h"
 #include "../core/arith_context.h"
 #include "../table/table.h"
+#include "../core/evaluation.h"
 
-#define COMMAND   "help"
+#define HELP      "help"
+#define HELP_OPS  "help operators"
+#define VERSION   "1.5.1"
 #define TTY_WIDTH 80
-
-static char *VERSION = "1.5.0";
 
 static char *INFOBOX_FMT =
     "ccalc %s (c) 2020, Philipp Hochmann\n"
     " Scientific calculator in which you can define new functions and constants \n"
-    "https://github.com/PhilippHochmann/Calculator";
+    "https://github.com/PhilippHochmann/ccalc";
 
 static char *COMMAND_TABLE[7][2] = {
     { "<func|const> = <after>",                  "Adds or redefines function or constant." },
@@ -27,6 +28,61 @@ static char *COMMAND_TABLE[7][2] = {
     { "quit",                                    "Closes application." }
 };
 
+static char *OP_DESCRIPTIONS[52] = {
+    " Addition ",
+    " Subtraction ",
+    " Multiplication ",
+    " Division ",
+    " Exponentiation ",
+    " Binomial coefficient ",
+    " Modulo operator ",
+    " Identity ",
+    " Negation ",
+    " Factorial ",
+    " Division by 100 ",
+    " Natural exponential function ",
+    " nth root of x ",
+    " Square root ",
+    " Logarithm to base n ",
+    " Natural logarithm ",
+    " Binary logarithm ",
+    " Logarithm to base 10 ",
+    " Sine ",
+    " Cosine ",
+    " Tangent ",
+    " Inverse sine ",
+    " Inverse cosine ",
+    " Inverse tangens ",
+    " Hyperbolic sine ",
+    " Hyperbolic cosine ",
+    " Hyperbolic tangent ",
+    " Inverse hyperbolic sine ",
+    " Inverse hyperbolic cosine ",
+    " Inverse hyperbolic tangent ",
+    " Maximum ",
+    " Minimum ",
+    " Absolute value ",
+    " Round up to nearest integer ",
+    " Round down to nearest integer ",
+    " Round to nearest integer ",
+    " Round towards zero to nearest integer ",
+    " Fractional part of x ",
+    " Sign of x (-1, 0, 1) ",
+    " Sum of all operands ",
+    " Product of all operands ",
+    " Arithmetic mean of all operands ",
+    " Greatest common divisor ",
+    " Least common multiple ",
+    " Random integer between min and max (exclusive) ",
+    " Fibonacci sequence ",
+    " Gamma function ",
+    " Archimedes' constant ",
+    " Euler's number ",
+    " Golden ratio ",
+    " Speed of light [m/s] ",
+    " Speed of sound in air at 20 deg. C [m/s] "
+};
+
 static const size_t BASIC_IND =  2; // Index of first basic operator ($x and x@y before, should no be shown)
 static const size_t TRIG_IND  = 20; // Index of first trigonometric function
 static const size_t MISC_IND  = 32; // Index of first misc. function
@@ -35,7 +91,7 @@ static const size_t LAST_IND  = 54; // Index of last constant
 
 bool cmd_help_check(char *input)
 {
-    return strcmp(COMMAND, input) == 0;
+    return strcmp(HELP, input) == 0 || strcmp(HELP_OPS, input) == 0;
 }
 
 // Returns number of characters printed
@@ -105,7 +161,81 @@ void print_ops_between(size_t start, size_t end)
     }
 }
 
-bool cmd_help_exec(char __attribute__((unused)) *input)
+void print_op_table(OpPlacement place, bool assoc, bool precedence, bool arity, bool value)
+{
+    Table table = get_empty_table();
+    set_default_alignments(&table, 2, (TextAlignment[]){ ALIGN_LEFT, ALIGN_NUMBERS });
+    override_alignment_of_row(&table, ALIGN_LEFT);
+    add_cell(&table, " Name ");
+    if (precedence) add_cell(&table, " Precedence ");
+    if (assoc) add_cell(&table, " Assoc. ");
+    if (arity) add_cell(&table, " Arity ");
+    if (value) add_cell(&table, " Value ");
+    add_cell(&table, " Description ");
+    next_row(&table);
+    for (size_t i = BASIC_IND; i < LAST_IND; i++)
+    {
+        if (g_ctx->operators[i].placement == place &&
+            (place != OP_PLACE_FUNCTION || (value == (g_ctx->operators[i].arity == 0))))
+        {
+            add_cell_fmt(&table, " %s ", g_ctx->operators[i].name);
+
+            if (precedence)
+            {
+                add_cell_fmt(&table, " %d ", g_ctx->operators[i].precedence);
+            }
+
+            if (assoc)
+            {
+                switch (g_ctx->operators[i].assoc)
+                {
+                    case OP_ASSOC_LEFT:
+                        add_cell(&table, " Left ");
+                        break;
+                    case OP_ASSOC_RIGHT:
+                        add_cell(&table, " Right ");
+                }
+            }
+
+            if (arity)
+            {
+                if (g_ctx->operators[i].arity != OP_DYNAMIC_ARITY)
+                {
+                    add_cell_fmt(&table, " %d ", g_ctx->operators[i].arity);
+                }
+                else
+                {
+                    add_cell(&table, " * ");
+                }
+            }
+
+            if (value)
+            {
+                double const_val;
+                op_evaluate(&g_ctx->operators[i], 0, NULL, &const_val);
+                override_alignment(&table, ALIGN_NUMBERS);
+                add_cell_fmt(&table, " " CONSTANT_TYPE_FMT " ", const_val);
+            }
+            
+            add_cell(&table, OP_DESCRIPTIONS[i - BASIC_IND]);
+            next_row(&table);
+        }
+    }
+    print_table(&table);
+    free_table(&table);
+    printf("\n");
+}
+
+void print_op_tables()
+{
+    print_op_table(OP_PLACE_INFIX, true, true, false, false);
+    print_op_table(OP_PLACE_PREFIX, false, true, false, false);
+    print_op_table(OP_PLACE_POSTFIX, false, true, false, false);
+    print_op_table(OP_PLACE_FUNCTION, false, false, true, false);
+    print_op_table(OP_PLACE_FUNCTION, false, false, false, true);
+}
+
+void print_short_help()
 {
     Table table = get_empty_table();
     add_cell_fmt(&table, INFOBOX_FMT, VERSION);
@@ -159,6 +289,17 @@ bool cmd_help_exec(char __attribute__((unused)) *input)
     {
         printf("\n\n");
     }
+}
 
+bool cmd_help_exec(char *input)
+{
+    if (strcmp(input, HELP) == 0)
+    {
+        print_short_help();
+    }
+    else
+    {
+        print_op_tables();
+    }
     return true;
 }

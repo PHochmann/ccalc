@@ -32,7 +32,7 @@ int main()
     set_default_alignments(&table, 4,
         (TextAlignment[]){ ALIGN_RIGHT, ALIGN_LEFT, ALIGN_RIGHT, ALIGN_LEFT });
     add_empty_cell(&table);
-    set_vline(&table, BORDER_SINGLE);
+    set_vline(&table, 0, BORDER_SINGLE);
     override_left_border(&table, BORDER_NONE);
     add_cell(&table, " Test suite ");
     add_cell(&table, " #Cases ");

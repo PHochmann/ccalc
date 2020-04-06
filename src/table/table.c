@@ -267,7 +267,7 @@ Summary: Overrides alignment of all cells in current row
 */
 void override_alignment_of_row(Table *table, TextAlignment alignment)
 {
-    for (size_t i = 0; i < table->num_cols; i++)
+    for (size_t i = 0; i < MAX_COLS; i++)
     {
         override_alignment_internal(&table->curr_row->cells[i], alignment);
     }
@@ -286,31 +286,31 @@ void set_hline(Table *table, BorderStyle style)
     table->curr_row->border_above = style;
 }
 
-void set_vline(Table *table, BorderStyle style)
+void set_vline(Table *table, size_t index, BorderStyle style)
 {
-    if (table->num_cols <= table->curr_col)
+    if (table->num_cols <= index)
     {
-        table->num_cols = table->curr_col + 1;
+        table->num_cols = index + 1;
     }
-    if (table->borders_left[table->curr_col] != BORDER_NONE)
+    if (table->borders_left[index] != BORDER_NONE)
     {
-        table->border_left_counters[table->curr_col]--;
+        table->border_left_counters[index]--;
     }
     if (style != BORDER_NONE)
     {
-        table->border_left_counters[table->curr_col]++;
+        table->border_left_counters[index]++;
     }
 
-    table->borders_left[table->curr_col] = style;
+    table->borders_left[index] = style;
 }
 
 void make_boxed(Table *table, BorderStyle style)
 {
     set_position(table, 0, 0);
-    set_vline(table, style);
+    set_vline(table, 0, style);
     set_hline(table, style);
     set_position(table, table->num_cols, table->num_rows - 1);
-    set_vline(table, style);
+    set_vline(table, table->num_cols, style);
     set_hline(table, style);
 }
 
@@ -398,4 +398,14 @@ void set_span(Table *table, size_t span_x, size_t span_y)
             row = row->next_row;
         }
     }
+}
+
+void set_all_vlines(Table *table, BorderStyle style)
+{
+    size_t cc = table->curr_col;
+    for (size_t i = 1; i < table->num_cols; i++)
+    {
+        set_vline(table, i, style);
+    }
+    table->curr_col = cc;
 }

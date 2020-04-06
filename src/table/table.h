@@ -90,8 +90,9 @@ void set_default_alignments(Table *table, size_t num_alignments, TextAlignment *
 void override_alignment(Table *table, TextAlignment alignment);
 void override_alignment_of_row(Table *table, TextAlignment alignment);
 void set_hline(Table *table, BorderStyle style);
-void set_vline(Table *table, BorderStyle style);
+void set_vline(Table *table, size_t index, BorderStyle style);
 void make_boxed(Table *table, BorderStyle style);
+void set_all_vlines(Table *table, BorderStyle style);
 void override_left_border(Table *table, BorderStyle style);
 void override_above_border(Table *table, BorderStyle style);
 void set_span(Table *table, size_t span_x, size_t span_y);
