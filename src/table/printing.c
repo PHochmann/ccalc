@@ -53,14 +53,14 @@ void print_text(struct Cell *cell, TextAlignment default_align, size_t line_inde
         cell = cell->parent;
     }
 
-    if (cell->text == NULL)
+    char *string = NULL;
+    int bytes = get_line_of_string(cell->text, line_index, &string);
+
+    if (string == NULL)
     {
         printf("%*s", total_length, "");
         return;
     }
-
-    char *string = NULL;
-    int bytes = get_line_of_string(cell->text, line_index, &string);
 
     // Lengths passed to printf are including color codes
     // We need to adjust the total length to include them
@@ -106,6 +106,7 @@ size_t get_line_of_string(char *string, size_t line_index, char **out_start)
 {
     if (string == NULL)
     {
+        *out_start = NULL;
         return 0;
     }
 
