@@ -328,23 +328,10 @@ void print_complete_line(Table *table,
     printf("\n");
 }
 
-void print_table_internal(Table *table)
+void override_superfluous_lines(Table *table, size_t last_col_width, size_t last_row_height)
 {
-    size_t col_widths[table->num_cols];
-    size_t row_heights[table->num_rows];
-    get_dimensions(table, col_widths, row_heights);
-    //print_debug(table);
-
     // Special cases: If last row/col is empty, delete all vlines/hlines in it
-    if (row_heights[table->num_rows - 1] == 0)
-    {
-        for (size_t i = 0; i < table->num_cols; i++)
-        {
-            table->curr_col = i;
-            override_left_border(table, BORDER_NONE);
-        }
-    }
-    if (col_widths[table->num_cols - 1] == 0)
+    if (last_col_width == 0)
     {
         struct Row *row = table->first_row;
         table->curr_col = table->num_cols - 1;
@@ -355,7 +342,33 @@ void print_table_internal(Table *table)
             row = row->next_row;
         }
     }
-    // - -
+    else
+    {
+        struct Row *row = table->first_row;
+        while (row != NULL)
+        {
+            table->curr_row = row;
+            row = row->next_row;
+        }
+    }
+    // table->curr_row is last row now
+    if (last_row_height == 0)
+    {
+        for (size_t i = 0; i < table->num_cols; i++)
+        {
+            table->curr_col = i;
+            override_left_border(table, BORDER_NONE);
+        }
+    }
+}
+
+void print_table_internal(Table *table)
+{
+    size_t col_widths[table->num_cols];
+    size_t row_heights[table->num_rows];
+    get_dimensions(table, col_widths, row_heights);
+    override_superfluous_lines(table, col_widths[table->num_cols - 1], row_heights[table->num_rows - 1]);
+    //print_debug(table);
 
     size_t line_indices[table->num_cols];
     for (size_t i = 0; i < table->num_cols; i++) line_indices[i] = 0;

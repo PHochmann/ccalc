@@ -80,7 +80,7 @@ static char *OP_DESCRIPTIONS[52] = {
     " Euler's number ",
     " Golden ratio ",
     " Speed of light [m/s] ",
-    " Speed of sound in air at 20 deg. C [m/s] "
+    " Speed of sound in air at 20 °C [m/s] "
 };
 
 static const size_t BASIC_IND =  2; // Index of first basic operator ($x and x@y before, should no be shown)

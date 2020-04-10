@@ -288,6 +288,8 @@ void set_hline(Table *table, BorderStyle style)
 
 void set_vline(Table *table, size_t index, BorderStyle style)
 {
+    if (index >= MAX_COLS) return;
+
     if (table->num_cols <= index)
     {
         table->num_cols = index + 1;
@@ -335,7 +337,7 @@ void override_above_border(Table *table, BorderStyle style)
     {
         table->curr_row->border_above_counter--;
     }
-    if( style != BORDER_NONE)
+    if (style != BORDER_NONE)
     {
         table->curr_row->border_above_counter++;
     }
@@ -347,7 +349,6 @@ void override_above_border(Table *table, BorderStyle style)
 /*
 Summary: Changes span of current cell
     When spanning cell clashes with already set cells, the span will be truncated
-Returns: True when span had to be truncated, False otherwise
 */
 void set_span(Table *table, size_t span_x, size_t span_y)
 {

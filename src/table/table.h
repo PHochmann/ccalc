@@ -3,7 +3,7 @@
 #include <stdarg.h>
 
 // Can be changed without further modifications
-#define MAX_COLS 10
+#define MAX_COLS 11
 // For ALIGN_NUMBERS
 #define DECIMAL_SEPARATOR '.'
 

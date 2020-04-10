@@ -27,7 +27,8 @@ bool cmd_table_exec(char *input)
 
     if (num_args != 4 && num_args != 6)
     {
-        printf("Error: Invalid syntax.\n");
+        printf("Error: Invalid syntax. Syntax is:\n"
+               "table <expr> ; <from> ; <to> ; <step> [fold <expr> ; <init>]\n");
         return false;
     }
 

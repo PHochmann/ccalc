@@ -5,27 +5,13 @@
 #include "../src/string_util.h"
 #include "../src/table/table.h"
 
-#define NUM_CASES 1
+#define NUM_CASES 2
 
 #define GREEN     "\x1B[92m"
 #define CYAN      "\x1B[1;36m"
 #define YELLOW    "\x1B[33;1m"
 #define RED       "\x1B[31;1m"
 #define COL_RESET "\x1B[0m"
-
-char *should_be = "┌──────────┬───────────────┬──────────┬───────┬──────┐\n"
-                  "│  alpha   │     " YELLOW "beta" COL_RESET "      │  gamma   │ delta │ test │\n"
-                  "├══════════┼═══════════════┼══════════┼═══════┼══════┤\n"
-                  "│ 1        │" YELLOW " -1110.1000000 " COL_RESET "│ a....... │  777  │      │\n"
-                  "│ 2        │    10.0000000 │        b │  222  │      │\n"
-                  "│ 3....... │" RED "    23.1132310 " COL_RESET "│        c │  333  │      │\n"
-                  "├──────────┴───────────────┼──────────┼───────┼──────┤\n"
-                  "│ span x                   │ span y   │   !   │      │\n"
-                  "├──────────────────────────┤ span y   │       └──────┤\n"
-                  "│" GREEN " span x" COL_RESET "                   │ span y   │  ^ no border │\n"
-                  "├══════════════════════════┘ span y   │   and span x │\n"
-                  "│" CYAN " span x" COL_RESET "                     < span y │   and also y │\n"
-                  "└─────────────────────────────────────┴──────────────┘";
 
 char *arrayA[4][4] = {
     { "alpha", YELLOW "beta" COL_RESET, "gamma", " delta " },
@@ -36,7 +22,6 @@ char *arrayA[4][4] = {
 
 char *table_test()
 {
-    printf("Should be:\n%s\nTest case:\n", should_be);
     // Case 1
     Table t1 = get_empty_table();
     set_default_alignments(&t1, 5, (TextAlignment[]){ ALIGN_LEFT, ALIGN_NUMBERS, ALIGN_RIGHT, ALIGN_CENTER, ALIGN_CENTER });
@@ -82,8 +67,23 @@ char *table_test()
     print_table(&t1);
     free_table(&t1);
 
+    // Case 2
+    Table t2 = get_empty_table();
+    for (size_t i = 0; i < MAX_COLS - 1; i++)
+    {
+        for (size_t j = 0; j < MAX_COLS - 1; j++)
+        {
+            override_alignment(&t2, ALIGN_RIGHT);
+            add_cell_fmt(&t2, " %d ", i * (MAX_COLS - 1) + j + 1);
+        }
+        next_row(&t2);
+    }
+    make_boxed(&t2, BORDER_DOUBLE);
+    print_table(&t2);
+    free_table(&t2);
+
     // Test is not automatic - ask user if tables look right
-    printf("Do these tables look the same [Y/n]? ");
+    printf("Do these look good [Y/n]? ");
     char input = getchar();
     printf("\n");
 

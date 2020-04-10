@@ -37,7 +37,7 @@ int main()
     add_cell(&table, " Test suite ");
     add_cell(&table, " #Cases ");
     add_cell(&table, " Result ");
-    override_alignment_of_row(&table, ALIGN_CENTER);
+    override_alignment_of_row(&table, ALIGN_LEFT);
     next_row(&table);
     set_hline(&table, BORDER_SINGLE);
 
@@ -67,8 +67,8 @@ int main()
 
     set_span(&table, 3, 1);
     override_alignment(&table, ALIGN_CENTER);
-    set_hline(&table, BORDER_SINGLE);
-    add_cell(&table, "Overall result");
+    set_hline(&table, BORDER_DOUBLE);
+    add_cell(&table, " End result ");
     add_cell(&table, error ? F_RED " failed " COL_RESET : F_GREEN " passed " COL_RESET);
     next_row(&table);
     make_boxed(&table, BORDER_SINGLE);
