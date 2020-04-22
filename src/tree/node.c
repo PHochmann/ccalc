@@ -331,7 +331,7 @@ Params
     reduction: Function that takes an operator, number of children, and pointer to number of children many child values
     out:       Reduction result
 */
-bool reduce(Node *tree, Evaluation reduction, ConstantType *out)
+bool reduce(Node *tree, Evaluation eval, ConstantType *out)
 {
     switch (get_type(tree))
     {
@@ -345,12 +345,12 @@ bool reduce(Node *tree, Evaluation reduction, ConstantType *out)
             ConstantType args[num_args];
             for (size_t i = 0; i < num_args; i++)
             {
-                if (!reduce(get_child(tree, i), reduction, &args[i]))
+                if (!reduce(get_child(tree, i), eval, &args[i]))
                 {
                     return false;
                 }
             }
-            if (!reduction(get_op(tree), num_args, args, out))
+            if (!eval(get_op(tree), num_args, args, out))
             {
                 return false;
             }
@@ -363,9 +363,9 @@ bool reduce(Node *tree, Evaluation reduction, ConstantType *out)
     return false;
 }
 
-ConstantType convenient_reduce(Node *tree, Evaluation reduction)
+ConstantType convenient_reduce(Node *tree, Evaluation eval)
 {
     ConstantType res = 0;
-    reduce(tree, reduction, &res);
+    reduce(tree, eval, &res);
     return res;
 }

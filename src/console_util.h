@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-bool g_interactive; // When set to true, whispered prints will be displayed and readline will be used
+extern bool g_interactive; // When set to true, whispered prints will be displayed and readline will be used
 
 void unload_console_util();
 void init_console_util();

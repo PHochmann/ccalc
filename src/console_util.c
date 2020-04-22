@@ -1,6 +1,7 @@
 #define _GNU_SOURCE
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 #ifdef USE_READLINE
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -11,6 +12,8 @@ static const size_t PROMPT_BUFFER = 15;
 #include "string_util.h"
 
 static const size_t MAX_INPUT_LENGTH = 100;
+
+bool g_interactive;
 
 void unload_console_util()
 {

@@ -66,5 +66,5 @@ size_t get_variable_nodes(Node **tree, char *var_name, Node ***out_instances);
 size_t count_variable_nodes(Node *tree, char *var_name);
 size_t list_variables(Node *tree, char **out_variables);
 size_t replace_variable_nodes(Node **tree, Node *tree_to_copy, char *var_name);
-bool reduce(Node *tree, Evaluation reduction, ConstantType *out);
-ConstantType convenient_reduce(Node *tree, Evaluation reduction);
+bool reduce(Node *tree, Evaluation eval, ConstantType *out);
+ConstantType convenient_reduce(Node *tree, Evaluation eval);
