@@ -132,7 +132,11 @@ bool add_function(char *name, char *left, char *right)
             }
         }
 
-        if (!ask_yes_no(false)) goto error;
+        if (!ask_yes_no(false))
+        {
+            printf("Aborted.\n");
+            goto error;
+        }
     }
 
     if (get_op(left_n)->arity == 0)

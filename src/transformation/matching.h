@@ -7,7 +7,7 @@ Contains successful matching
 typedef struct
 {
     // Subtree that could be matched, double indirection to replace it
-    Node **matched_tree;
+    Node **matched_subtree;
     // Size of mapped_vars and mapped_nodes
     size_t num_mapped;
     // Variables in pattern (on heap)

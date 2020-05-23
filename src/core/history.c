@@ -7,14 +7,14 @@
 #include "../tree/parser.h"
 
 #define ERROR_NOT_SET       "Error: This part of the history is not set yet.\n"
-#define ERROR_NOT_CONSTANT  "Error: @-expression must be constant.\n"
-#define ERROR_OUT_OF_BOUNDS "Error: @x for x between 0 and %d.\n"
+#define ERROR_NOT_CONSTANT  "Error: In @x, x must contain no variable.\n"
+#define ERROR_OUT_OF_BOUNDS "Error: In @x, x must be between 0 and %d.\n"
 #define ANS_VAR             "ans"
 
 #define ANS_HISTORY_SIZE 10
 
 size_t next_ans;
-Node *ans[ANS_HISTORY_SIZE]; // Results of last evaluations (flattened to single ConstantNodes)
+Node *ans[ANS_HISTORY_SIZE]; // Results of last evaluations (evaluated to single ConstantNodes)
 Node *ans_pattern;
 
 void init_history()
@@ -90,7 +90,7 @@ bool core_replace_history(Node **tree)
             return false;
         }
 
-        tree_replace(ans_matching.matched_tree, tree_copy(get_ans(index)));
+        tree_replace(ans_matching.matched_subtree, tree_copy(get_ans(index)));
         free_matching(ans_matching);
     }
 

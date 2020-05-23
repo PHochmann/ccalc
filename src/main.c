@@ -13,7 +13,7 @@ int main(int argc, char **argv)
 {
     // Build arithmetic context, initialize commands
     init_commands();
-    // Free all ressources at exit
+    // Free all resources at exit
     atexit(unload_commands);
     // Parse any arguments non-interactively
     for (int i = 1; i < argc; i++) exec_command(argv[i]);

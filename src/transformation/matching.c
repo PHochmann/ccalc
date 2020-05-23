@@ -95,10 +95,12 @@ bool get_matching(Node **tree, Node *pattern, Matching *out_matching)
     }
     
     // We successfully found matching! Construct it:
-    out_matching->matched_tree = tree;            // Used to replace later
-    out_matching->num_mapped   = num_mapped_vars; // Should be the same as total_mapped_vars
-    out_matching->mapped_vars  = malloc(sizeof(char*) * num_mapped_vars);
-    out_matching->mapped_nodes = malloc(sizeof(Node*) * num_mapped_vars);
+    *out_matching = (Matching){
+        .matched_subtree = tree,            // Used to replace later
+        .num_mapped      = num_mapped_vars, // Should be the same as total_mapped_vars
+        .mapped_vars     = malloc(sizeof(char*) * num_mapped_vars),
+        .mapped_nodes    = malloc(sizeof(Node*) * num_mapped_vars)
+    };
     
     for (size_t i = 0; i < num_mapped_vars; i++)
     {

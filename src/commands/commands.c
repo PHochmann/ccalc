@@ -57,7 +57,7 @@ static const struct Command commands[] = {
 };
 
 /*
-Summary: Frees all ressources so that heap is empty after exit, except data malloced by readline.
+Summary: Frees all resources so that heap is empty after exit, except data malloced by readline.
 */
 void unload_commands()
 {

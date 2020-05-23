@@ -49,7 +49,7 @@ void transform_matched_by_rule(Node *rule_after, Matching *matching)
         }
     }
     
-    tree_replace(matching->matched_tree, transformed);
+    tree_replace(matching->matched_subtree, transformed);
 }
 
 /*
