@@ -20,15 +20,23 @@ DEPS := $(OBJS:.o=.d)
 INC_DIRS := $(shell find $(SRC_DIRS) -type d)
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
-CFLAGS := -std=c99 -Wall -Wextra -Werror -pedantic -DUSE_READLINE
+CFLAGS := -std=c99 -Wall -Wextra -Werror -pedantic
+LDFLAGS := -lm
+
+ifneq ($(filter noreadline,$(MAKECMDGOALS)),noreadline)
+	CFLAGS += -DUSE_READLINE
+	LDFLAGS += -lreadline
+endif
+
 ifeq ($(filter debug,$(MAKECMDGOALS)),debug)
 	CFLAGS += -Og -g3
 endif
-LDFLAGS := -lm -lreadline
 
 all: $(BUILD_DIR)/$(TARGET_EXEC)
 
 debug: $(BUILD_DIR)/$(TARGET_EXEC)
+
+noreadline: $(BUILD_DIR)/$(TARGET_EXEC)
 
 tests: $(BUILD_DIR)/$(TARGET_EXEC)
 	./$(BUILD_DIR)/$(TARGET_EXEC)
