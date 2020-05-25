@@ -11,11 +11,11 @@
 
 #define HELP      "help"
 #define HELP_OPS  "help operators"
-#define VERSION   "1.5.1"
+#define VERSION   "1.5.2"
 #define TTY_WIDTH 80
 
 static char *INFOBOX_FMT =
-    "ccalc %s (c) 2020, Philipp Hochmann\n"
+    "ccalc %s (c) 2020 Philipp Hochmann, phil.hochmann[at]gmail[dot]com\n"
     " Scientific calculator in which you can define new functions and constants \n"
     "https://github.com/PhilippHochmann/ccalc";
 

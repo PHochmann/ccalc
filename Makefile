@@ -39,14 +39,16 @@ debug: $(BUILD_DIR)/$(TARGET_EXEC)
 noreadline: $(BUILD_DIR)/$(TARGET_EXEC)
 
 tests: $(BUILD_DIR)/$(TARGET_EXEC)
-	./$(BUILD_DIR)/$(TARGET_EXEC)
+	@./$(BUILD_DIR)/$(TARGET_EXEC)
 
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
-	$(CC) $(OBJS) -o $@ $(LDFLAGS) 
+	@$(CC) $(OBJS) -o $@ $(LDFLAGS)
+	@echo Done. Placed executable at $(BUILD_DIR)/$(TARGET_EXEC)
 
 $(BUILD_DIR)/%.c.o: %.c
-	mkdir -p $(dir $@)
-	$(CC) $(INC_FLAGS) $(CFLAGS) -c $< -o $@
+	@mkdir -p $(dir $@)
+	@echo Compiling $<
+	@$(CC) $(INC_FLAGS) $(CFLAGS) -c $< -o $@
 
 .PHONY: clean
 clean:
