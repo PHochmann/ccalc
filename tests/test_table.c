@@ -81,20 +81,8 @@ char *table_test()
     make_boxed(&t2, BORDER_DOUBLE);
     print_table(&t2);
     free_table(&t2);
-
-    // Test is not automatic - ask user if tables look right
-    printf("Do these look good [Y/n]? ");
-    char input = getchar();
-    printf("\n");
-
-    if (input == '\n' || input == 'y' || input == 'Y')
-    {
-        return NULL;
-    }
-    else
-    {
-        return create_error("Generated table does not look like it should do.\n");
-    }
+    
+    return NULL;
 }
 
 Test get_table_test()

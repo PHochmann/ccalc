@@ -19,7 +19,7 @@ typedef enum
     ALIGN_LEFT,
     ALIGN_RIGHT,
     ALIGN_CENTER,  // Centered (rounded to the left)
-    ALIGN_NUMBERS, // Aligned at dot, rightmost, DOES NOT SUPPORT \n YET
+    ALIGN_NUMBERS, // Aligned at dot, rightmost, does not support \n
 } TextAlignment;
 
 struct Cell

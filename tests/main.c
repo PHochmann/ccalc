@@ -11,13 +11,7 @@
 #include "../src/commands/commands.h"
 #include "../src/table/table.h"
 
-// Table test is last test
-#if TEST_TABLES
 static const size_t NUM_TESTS = 5;
-#else
-static const size_t NUM_TESTS = 4;
-#endif
-
 static Test (*test_getters[])() = {
     get_node_test,
     get_parser_test,

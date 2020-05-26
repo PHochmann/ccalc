@@ -18,7 +18,7 @@ bool cmd_evaluation_check(__attribute__((unused)) char *input)
 }
 
 /*
-Summary: The evaluation command is executed when input is no other command (hence last in command array at core.c)
+Summary: The evaluation command is executed when input is no other command (hence last in command array at commands.c)
 */
 bool cmd_evaluation_exec(char *input)
 {
