@@ -15,9 +15,9 @@
 
 static const size_t MAX_TOKENS = 50;
 
-bool cmd_definition_check(char *input)
+int cmd_definition_check(char *input)
 {
-    return strstr(input, DEFINITION_OP) != NULL;
+    return strstr(input, DEFINITION_OP) != 0 ? 1 : 0;
 }
 
 bool do_left_checks(Node *left_n)
@@ -218,7 +218,7 @@ bool add_function(char *name, char *left, char *right)
 /*
 Summary: Adds a new function symbol to context and adds a new rule to substitute function with its right hand side
 */
-bool cmd_definition_exec(char *input)
+bool cmd_definition_exec(char *input, __attribute__((unused)) int code)
 {   
     // Overwrite first char of operator to make function definition a proper string
     char *right_input = strstr(input, DEFINITION_OP);

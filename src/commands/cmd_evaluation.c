@@ -12,15 +12,15 @@
 #define ERROR_FMT        "Error: %s.\n"
 #define ASK_VARIABLE_FMT "%s? "
 
-bool cmd_evaluation_check(__attribute__((unused)) char *input)
+int cmd_evaluation_check(__attribute__((unused)) char *input)
 {
-    return true;
+    return 1;
 }
 
 /*
 Summary: The evaluation command is executed when input is no other command (hence last in command array at commands.c)
 */
-bool cmd_evaluation_exec(char *input)
+bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
 {
     Node *res;
     if (core_parse_input(input, ERROR_FMT, true, &res))

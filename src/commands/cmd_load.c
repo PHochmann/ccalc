@@ -11,15 +11,15 @@
 
 #define COMMAND "load "
 
-bool cmd_load_check(char *input)
+int cmd_load_check(char *input)
 {
-    return begins_with(COMMAND, input);
+    return begins_with(COMMAND, input) ? 1 : 0;
 }
 
 /*
 Summary: Opens file and processes its content as from stdin
 */
-bool cmd_load_exec(char *input)
+bool cmd_load_exec(char *input, __attribute__((unused)) int code)
 {
     FILE *file = fopen(input + strlen(COMMAND), "r");
 

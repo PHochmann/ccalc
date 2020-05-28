@@ -25,22 +25,22 @@ bool input_on_heap;
 
 // Quit command:
 
-bool cmd_quit_check(char *input)
+int cmd_quit_check(char *input)
 {
     return strcmp(input, "quit") == 0;
 }
 
-bool cmd_quit_exec(char *input)
+bool cmd_quit_exec(char *input, __attribute__((unused)) int check_code)
 {
     if (input_on_heap) free(input);
-    exit(error ? EXIT_FAILURE : EXIT_SUCCESS);
+    exit(error && g_interactive ? EXIT_FAILURE : EXIT_SUCCESS);
     return true;
 }
 
 struct Command
 {
-    bool (*check_handler)(char*);
-    bool (*exec_handler)(char*);
+    int (*check_handler)(char*);
+    bool (*exec_handler)(char*, int);
 };
 
 static const size_t NUM_COMMANDS = 8;
@@ -107,9 +107,10 @@ void exec_command(char *input)
 {
     for (size_t i = 0; i < NUM_COMMANDS; i++)
     {
-        if (commands[i].check_handler(input))
+        int check_code = commands[i].check_handler(input);
+        if (check_code != 0)
         {
-            if (!commands[i].exec_handler(input))
+            if (!commands[i].exec_handler(input, check_code))
             {
                 error = true;
             }

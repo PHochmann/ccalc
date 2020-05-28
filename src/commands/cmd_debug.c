@@ -6,20 +6,37 @@
 #include "../tree/tree_to_string.h"
 #include "../core/arith_context.h"
 
-#define COMMAND   "debug "
+#define DEBUG "debug "
+#define SHOW  "show "
+#define DEBUG_CODE 1
+#define SHOW_CODE  2
 #define ERROR_FMT "Error: %s.\n"
 
-bool cmd_debug_check(char *input)
+int cmd_debug_check(char *input)
 {
-    return begins_with(COMMAND, input);
+    if (begins_with(DEBUG, input)) return DEBUG_CODE;
+    if (begins_with(SHOW, input)) return SHOW_CODE;
+    return 0;
 }
 
-bool cmd_debug_exec(char *input)
+bool cmd_debug_exec(char *input, int code)
 {
-    Node *res;
-    if (core_parse_input(input + strlen(COMMAND), ERROR_FMT, true, &res))
+    if (code == DEBUG_CODE)
     {
-        print_tree_visually(res);
+        input += strlen(DEBUG);
+    }
+    else
+    {
+        if (code == SHOW_CODE) input += strlen(SHOW);
+    }
+
+    Node *res;
+    if (core_parse_input(input, ERROR_FMT, true, &res))
+    {
+        if (code == DEBUG_CODE)
+        {
+            print_tree_visually(res);
+        }
         printf("= ");
         print_tree(res, true);
         printf("\n");

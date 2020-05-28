@@ -14,12 +14,12 @@
 #define FOLD_VAR_1 "x"
 #define FOLD_VAR_2 "y"
 
-bool cmd_table_check(char *input)
+int cmd_table_check(char *input)
 {
-    return begins_with(COMMAND, input);
+    return begins_with(COMMAND, input) ? 1 : 0;
 }
 
-bool cmd_table_exec(char *input)
+bool cmd_table_exec(char *input, __attribute__((unused)) int code)
 {
     input += strlen(COMMAND);
     char *args[6];

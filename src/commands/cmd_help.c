@@ -11,6 +11,9 @@
 
 #define HELP      "help"
 #define HELP_OPS  "help operators"
+#define SHORT_HELP_CODE 1
+#define OPS_HELP_CODE   2
+
 #define VERSION   "1.5.2"
 #define TTY_WIDTH 80
 
@@ -89,9 +92,11 @@ static const size_t MISC_IND  = 32; // Index of first misc. function
 static const size_t CONST_IND = 49; // Index of first constant
 static const size_t LAST_IND  = 54; // Index of last constant
 
-bool cmd_help_check(char *input)
+int cmd_help_check(char *input)
 {
-    return strcmp(HELP, input) == 0 || strcmp(HELP_OPS, input) == 0;
+    if (strcmp(HELP, input) == 0) return SHORT_HELP_CODE;
+    if (strcmp(HELP_OPS, input) == 0) return OPS_HELP_CODE;
+    return 0;
 }
 
 // Returns number of characters printed
@@ -291,9 +296,9 @@ void print_short_help()
     }
 }
 
-bool cmd_help_exec(char *input)
+bool cmd_help_exec(__attribute__((unused)) char *input, int code)
 {
-    if (strcmp(input, HELP) == 0)
+    if (code == SHORT_HELP_CODE)
     {
         print_short_help();
     }
