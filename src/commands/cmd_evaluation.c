@@ -54,7 +54,7 @@ bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
                 if (count_variables(res_var) > 0)
                 {
                     // Not a constant given - ask again
-                    printf("Error: Not a constant expression.\n");
+                    report_error("Not a constant expression.\n");
                     free_tree(res_var);
                     i--;
                     continue;

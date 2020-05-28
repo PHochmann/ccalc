@@ -24,7 +24,7 @@ bool do_left_checks(Node *left_n)
 {
     if (get_type(left_n) != NTYPE_OPERATOR || get_op(left_n)->placement != OP_PLACE_FUNCTION)
     {
-        printf(FMT_ERROR_LEFT, "Not a function or constant.");
+        report_error(FMT_ERROR_LEFT, "Not a function or constant.");
         return false;
     }
 
@@ -32,14 +32,14 @@ bool do_left_checks(Node *left_n)
     {
         if (get_type(get_child(left_n, i)) != NTYPE_VARIABLE)
         {
-            printf(FMT_ERROR_LEFT, "Function arguments must be variables.");
+            report_error(FMT_ERROR_LEFT, "Function arguments must be variables.");
             return false;
         }
     }
 
     if (get_num_children(left_n) != count_variables_distinct(left_n))
     {
-        printf(FMT_ERROR_LEFT, "Function arguments must be distinct variables.");
+        report_error(FMT_ERROR_LEFT, "Function arguments must be distinct variables.");
         return false;
     }
 
@@ -73,7 +73,7 @@ bool add_function(char *name, char *left, char *right)
             // ...if not, the function is built-in. Fail here.
             if (redefined_rule == NULL)
             {
-                printf("Error: Built-in functions can not be redefined.\n");
+                report_error("Error: Built-in functions can not be redefined.\n");
                 free_tree(left_n);
                 return false;
             }
@@ -88,7 +88,7 @@ bool add_function(char *name, char *left, char *right)
     {
         if (!can_add_composite_function())
         {
-            printf("Error: Can not add any more functions or constants.\n");
+            report_error("Error: Can not add any more functions or constants.\n");
             free(name);
             return false;
         }
@@ -114,7 +114,7 @@ bool add_function(char *name, char *left, char *right)
 
     if (find_matching_discarded(right_n, left_n))
     {
-        printf("Error: Recursive definition.\n");
+        report_error("Error: Recursive definition.\n");
         goto error;
     }
 
@@ -232,7 +232,7 @@ bool cmd_definition_exec(char *input, __attribute__((unused)) int code)
     if (!tokenize(g_ctx, input, MAX_TOKENS, &num_tokens, tokens))
     {
         // Only reason for tokenize to fail is max. number of tokens exceeded
-        printf(FMT_ERROR_LEFT, perr_to_string(PERR_MAX_TOKENS_EXCEEDED));
+        report_error(FMT_ERROR_LEFT, perr_to_string(PERR_MAX_TOKENS_EXCEEDED));
         return false;
     }
     
@@ -246,7 +246,7 @@ bool cmd_definition_exec(char *input, __attribute__((unused)) int code)
         if (!is_letter(name[0]))
         {
             free(name);
-            printf(FMT_ERROR_LEFT, "Functions and constants must only consist of letters.");
+            report_error(FMT_ERROR_LEFT, "Functions and constants must only consist of letters.");
             return false;
         }
 
@@ -255,7 +255,7 @@ bool cmd_definition_exec(char *input, __attribute__((unused)) int code)
     else
     {
         // Zero tokens: expression is empty
-        printf(FMT_ERROR_LEFT, perr_to_string(PERR_EMPTY));
+        report_error(FMT_ERROR_LEFT, perr_to_string(PERR_EMPTY));
         return false;
     }
 }

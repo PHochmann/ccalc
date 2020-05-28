@@ -5,6 +5,7 @@
 #include "simplification.h"
 #include "history.h"
 #include "../string_util.h"
+#include "../console_util.h"
 #include "../tree/parser.h"
 
 #define NUM_OPS       54
@@ -135,7 +136,7 @@ bool core_parse_input(char *input, char *error_fmt, bool replace_comp_funcs, Nod
     ParserError perr = parse_input(g_ctx, input, out_res);
     if (perr != PERR_SUCCESS)
     {
-        printf(error_fmt, perr_to_string(perr));
+        report_error(error_fmt, perr_to_string(perr));
         return false;
     }
     else

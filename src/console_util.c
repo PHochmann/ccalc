@@ -166,3 +166,11 @@ bool ask_yes_no(bool default_val)
     }
     return default_val;
 }
+
+void report_error(char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    vfprintf(stderr, fmt, args);
+    va_end(args);
+}

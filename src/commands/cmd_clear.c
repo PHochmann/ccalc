@@ -30,7 +30,7 @@ bool cmd_clear_exec(__attribute__((unused)) char *input, int code)
     {
         if (get_num_composite_functions() == 0)
         {
-            printf("No functions or constants defined.\n");
+            report_error("No functions or constants defined.\n");
             return false;
         }
 

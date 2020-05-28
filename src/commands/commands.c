@@ -16,12 +16,10 @@
 #include "../core/simplification.h"
 
 #define INTERACTIVE_ASK_PREFIX "> "
-#define COMMENT_PREFIX         "'"
+#define COMMENT_PREFIX         '\''
 
 // Is set to true when a command reported an error, affects exit code
 bool error;
-// Is set to true when input comes from getline or readline
-bool input_on_heap;
 
 // Quit command:
 
@@ -30,10 +28,9 @@ int cmd_quit_check(char *input)
     return strcmp(input, "quit") == 0;
 }
 
-bool cmd_quit_exec(char *input, __attribute__((unused)) int check_code)
+bool cmd_quit_exec(__attribute__((unused)) char *input, __attribute__((unused)) int check_code)
 {
-    if (input_on_heap) free(input);
-    exit(error && g_interactive ? EXIT_FAILURE : EXIT_SUCCESS);
+    exit(error && !g_interactive ? EXIT_FAILURE : EXIT_SUCCESS);
     return true;
 }
 
@@ -77,7 +74,6 @@ void init_commands()
     init_console_util();
     init_history();
     error = false;
-    input_on_heap = false;
 }
 
 /*
@@ -87,16 +83,26 @@ Returns: True when no command exited with an error, false otherwise
 */
 bool process_input(FILE *file)
 {
-    input_on_heap = true;
     char *input = NULL;
     while (ask_input(file, &input, INTERACTIVE_ASK_PREFIX))
     {
-        if (!begins_with(COMMENT_PREFIX, input)) exec_command(input);
+        if (input[0] != '\0' && input[0] != COMMENT_PREFIX)
+        {
+            exec_command(input);
+        }
         free(input);
     }
-    // Loop was exited because input was EOF
-    if (g_interactive) printf("\n");
-    return !error;
+
+    if (g_interactive)
+    {
+        // Loop was exited because input was EOF
+        printf("\n");
+        return true;
+    }
+    else
+    {
+        return !error;
+    }
 }
 
 /*

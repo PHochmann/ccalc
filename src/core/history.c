@@ -1,8 +1,7 @@
-#include <stdio.h>
-
 #include "history.h"
 #include "arith_context.h"
 #include "evaluation.h"
+#include "../console_util.h"
 #include "../transformation/matching.h"
 #include "../tree/parser.h"
 
@@ -70,7 +69,7 @@ bool core_replace_history(Node **tree)
     {
         if (count_variables(ans_matching.mapped_nodes[0]) > 0)
         {
-            printf(ERROR_NOT_CONSTANT);
+            report_error(ERROR_NOT_CONSTANT);
             free_matching(ans_matching);
             return false;
         }
@@ -79,13 +78,13 @@ bool core_replace_history(Node **tree)
 
         if (index < 0 || index >= ANS_HISTORY_SIZE)
         {
-            printf(ERROR_OUT_OF_BOUNDS, ANS_HISTORY_SIZE - 1);
+            report_error(ERROR_OUT_OF_BOUNDS, ANS_HISTORY_SIZE - 1);
             free_matching(ans_matching);
             return false;
         }
         if (get_ans(index) == 0)
         {
-            printf(ERROR_NOT_SET);
+            report_error(ERROR_NOT_SET);
             free_matching(ans_matching);
             return false;
         }

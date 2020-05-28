@@ -29,7 +29,6 @@ bool cmd_load_exec(char *input, __attribute__((unused)) int code)
         return false;
     }
     
-    whisper("File successfully loaded.\n");
     // Set g_interactive to false to read with getline from file
     bool interactive = set_interactive(false);
     process_input(file);

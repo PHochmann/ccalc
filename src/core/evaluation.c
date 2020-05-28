@@ -289,7 +289,7 @@ bool op_evaluate(Operator *op, size_t num_args, double *args, double *out)
             return true;
     }
 
-    printf("Error: No reduction possible for operator %s.\n", op->name);
+    printf("Software defect: No reduction possible for operator %s.\n", op->name);
     return false;
 }
 

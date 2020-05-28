@@ -27,7 +27,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
 
     if (num_args != 4 && num_args != 6)
     {
-        printf("Error: Invalid syntax. Syntax is:\n"
+        report_error("Error: Invalid syntax. Syntax is:\n"
                "table <expr> ; <from> ; <to> ; <step> [fold <expr> ; <init>]\n");
         return false;
     }
@@ -49,7 +49,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     size_t num_vars = list_variables(expr, variables);
     if (num_vars > 1)
     {
-        printf("Error: Expression contains more than one variable.\n");
+        report_error("Error: Expression contains more than one variable.\n");
         goto exit;
     }
 
@@ -64,7 +64,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
         || count_variables(end) > 0
         || count_variables(step) > 0)
     {
-        printf("Error: Start, end and step must be constant.\n");
+        report_error("Error: Start, end and step must be constant.\n");
         goto exit;
     }
 
@@ -74,7 +74,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
 
     if (step_val == 0)
     {
-        printf("Error: Step must not be zero.\n");
+        report_error("Error: Step must not be zero.\n");
         goto exit;
     }
 
@@ -93,14 +93,14 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
             - count_variable_nodes(fold_expr, FOLD_VAR_1)
             - count_variable_nodes(fold_expr, FOLD_VAR_2) != 0)
         {
-            printf("Error: Fold expression must not contain any variables except '"
+            report_error("Error: Fold expression must not contain any variables except '"
                 FOLD_VAR_1 "' and '" FOLD_VAR_2 "'.\n");
             goto exit;
         }
 
         if (count_variables(fold_init) > 0)
         {
-            printf("Error: Initial fold value must be constant.\n");
+            report_error("Error: Initial fold value must be constant.\n");
             goto exit;
         }
 
