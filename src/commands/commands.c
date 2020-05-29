@@ -30,31 +30,43 @@ int cmd_quit_check(char *input)
 
 bool cmd_quit_exec(__attribute__((unused)) char *input, __attribute__((unused)) int check_code)
 {
-    exit(error && !g_interactive ? EXIT_FAILURE : EXIT_SUCCESS);
+    exit(error ? EXIT_FAILURE : EXIT_SUCCESS);
     return true;
 }
 
 struct Command
 {
-    int (*check_handler)(char*);
-    bool (*exec_handler)(char*, int);
+    /*
+    Summary: Checks if passed input string is applicable to a command.
+    Returns: 0 if command is not applicable, command-specific code otherwise.
+    */
+    int (*check_handler)(char* input);
+    /*
+    Summary: Exec handler is called when check handler returned a value other than 0.
+    Params:
+        input:      Input string to execute
+        check_code: Return value of check handler
+    Returns: True if command succeeded, False otherwise (to affect exit code)
+    */
+    bool (*exec_handler)(char* input, int check_code);
 };
 
 static const size_t NUM_COMMANDS = 8;
 static const struct Command commands[] = {
     { cmd_quit_check,       cmd_quit_exec },
-    { cmd_help_check,       cmd_help_exec},
+    { cmd_help_check,       cmd_help_exec },
     { cmd_table_check,      cmd_table_exec },
-    { cmd_definition_check, cmd_definition_exec},
-    { cmd_clear_check,      cmd_clear_exec},
+    { cmd_definition_check, cmd_definition_exec },
+    { cmd_clear_check,      cmd_clear_exec },
     { cmd_debug_check,      cmd_debug_exec },
-    { cmd_load_check,       cmd_load_exec},
+    { cmd_load_check,       cmd_load_exec },
     /* Evaluation is last command. Its check function always returns true. */
-    { cmd_evaluation_check, cmd_evaluation_exec}
+    { cmd_evaluation_check, cmd_evaluation_exec }
 };
 
 /*
-Summary: Frees all resources so that heap is empty after exit, except data malloced by readline.
+Summary: Frees all resources so that heap is empty after exit,
+    except data malloced by readline and input of quit-command
 */
 void unload_commands()
 {
@@ -78,7 +90,7 @@ void init_commands()
 
 /*
 Summary: Loop to ask user or file for command, ignores comments
-    You may want to call set_interactive before
+    You may want to call set_interactive before.
 Returns: True when no command exited with an error, false otherwise
 */
 bool process_input(FILE *file)
@@ -97,17 +109,13 @@ bool process_input(FILE *file)
     {
         // Loop was exited because input was EOF
         printf("\n");
-        return true;
     }
-    else
-    {
-        return !error;
-    }
+    return !error;
 }
 
 /*
-Summary: Tries to apply a command to input
-    First command whose check-function returns true is executed
+Summary: Tries to apply a command to input.
+    First command whose check-function does not return 0 is executed.
 */
 void exec_command(char *input)
 {

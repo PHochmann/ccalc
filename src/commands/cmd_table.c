@@ -16,7 +16,7 @@
 
 int cmd_table_check(char *input)
 {
-    return begins_with(COMMAND, input) ? 1 : 0;
+    return begins_with(COMMAND, input);
 }
 
 bool cmd_table_exec(char *input, __attribute__((unused)) int code)

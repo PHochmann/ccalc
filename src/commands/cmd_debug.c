@@ -16,7 +16,7 @@ int cmd_debug_check(char *input)
 {
     if (begins_with(DEBUG, input)) return DEBUG_CODE;
     if (begins_with(SHOW, input)) return SHOW_CODE;
-    return 0;
+    return false;
 }
 
 bool cmd_debug_exec(char *input, int code)

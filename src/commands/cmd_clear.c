@@ -12,7 +12,7 @@ int cmd_clear_check(char *input)
 {
     if (strcmp("clear", input) == 0) return CLEAR_CODE;
     if (strcmp("clear last", input) == 0) return CLEAR_LAST_CODE;
-    return 0;
+    return false;
 }
 
 /*

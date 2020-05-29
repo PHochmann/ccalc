@@ -96,7 +96,7 @@ int cmd_help_check(char *input)
 {
     if (strcmp(HELP, input) == 0) return SHORT_HELP_CODE;
     if (strcmp(HELP_OPS, input) == 0) return OPS_HELP_CODE;
-    return 0;
+    return false;
 }
 
 // Returns number of characters printed

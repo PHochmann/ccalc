@@ -14,7 +14,7 @@
 
 int cmd_evaluation_check(__attribute__((unused)) char *input)
 {
-    return 1;
+    return true;
 }
 
 /*

@@ -13,7 +13,7 @@
 #define ANS_HISTORY_SIZE 10
 
 size_t next_ans;
-Node *ans[ANS_HISTORY_SIZE]; // Results of last evaluations (evaluated to single ConstantNodes)
+Node *ans[ANS_HISTORY_SIZE]; // Results of last evaluations (each evaluated to single ConstantNode)
 Node *ans_pattern;
 
 void init_history()

@@ -17,7 +17,7 @@ static const size_t MAX_TOKENS = 50;
 
 int cmd_definition_check(char *input)
 {
-    return strstr(input, DEFINITION_OP) != 0 ? 1 : 0;
+    return strstr(input, DEFINITION_OP) != NULL;
 }
 
 bool do_left_checks(Node *left_n)
