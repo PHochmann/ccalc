@@ -5,6 +5,7 @@
 #include "../string_util.h"
 #include "../tree/tree_to_string.h"
 #include "../core/arith_context.h"
+#include "../core/evaluation.h"
 
 #define DEBUG "debug "
 #define SHOW  "show "
@@ -40,6 +41,10 @@ bool cmd_debug_exec(char *input, int code)
         printf("= ");
         print_tree(res, true);
         printf("\n");
+        if (count_variables(res) == 0)
+        {
+            printf("= " CONSTANT_TYPE_FMT "\n", arith_evaluate(res));
+        }
         free_tree(res);
         return true;
     }
