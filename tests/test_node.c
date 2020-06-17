@@ -58,10 +58,10 @@ char *node_test()
     }
 
     // Case 4
-    if (tree_equals(root, child) == NULL)
+    if (tree_compare(root, child) == NULL)
     {
         free_tree(root);
-        ERROR_RETURN_VAL("tree_equals");
+        ERROR_RETURN_VAL("tree_compare");
     }
 
     // Case 5
@@ -85,7 +85,7 @@ char *node_test()
     }
     
     // Check equality
-    if (tree_equals(root_copy, root) != NULL)
+    if (tree_compare(root_copy, root) != NULL)
     {
         return create_error("Unexpected replacement by replace_variable_nodes (or tree_copy broken).\n"); // Mem. leak
     }

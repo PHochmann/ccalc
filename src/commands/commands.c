@@ -15,6 +15,8 @@
 #include "../core/history.h"
 #include "../core/simplification.h"
 
+#include "../tree/tree_to_string.h"
+
 #define INTERACTIVE_ASK_PREFIX "> "
 #define COMMENT_PREFIX         '\''
 

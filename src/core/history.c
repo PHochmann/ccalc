@@ -65,32 +65,29 @@ bool core_replace_history(Node **tree)
 {
     // Replace @x
     Matching ans_matching;
-    while (find_matching(tree, ans_pattern, &ans_matching))
+    Node **matched_subtree;
+    while ((matched_subtree = find_matching(tree, ans_pattern, &ans_matching)) != NULL)
     {
-        if (count_variables(ans_matching.mapped_nodes[0]) > 0)
+        if (count_variables(ans_matching.mapped_nodes[0].nodes[0]) > 0)
         {
             report_error(ERROR_NOT_CONSTANT);
-            free_matching(ans_matching);
             return false;
         }
 
-        int index = (int)arith_evaluate(ans_matching.mapped_nodes[0]);
+        int index = (int)arith_evaluate(ans_matching.mapped_nodes[0].nodes[0]);
 
         if (index < 0 || index >= ANS_HISTORY_SIZE)
         {
             report_error(ERROR_OUT_OF_BOUNDS, ANS_HISTORY_SIZE - 1);
-            free_matching(ans_matching);
             return false;
         }
         if (get_ans(index) == 0)
         {
             report_error(ERROR_NOT_SET);
-            free_matching(ans_matching);
             return false;
         }
 
-        tree_replace(ans_matching.matched_subtree, tree_copy(get_ans(index)));
-        free_matching(ans_matching);
+        tree_replace(matched_subtree, tree_copy(get_ans(index)));
     }
 
     // Replace normal ans

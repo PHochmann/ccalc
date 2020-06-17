@@ -60,7 +60,6 @@ bool add_function(char *name, char *left, char *right)
         {
             // Name is not needed since no new function will be added
             free(name);
-
             // Check if found function is a composite function...
             for (size_t i = 0; i < get_num_composite_functions(); i++)
             {
@@ -69,7 +68,6 @@ bool add_function(char *name, char *left, char *right)
                     redefined_rule = get_composite_function(i);
                 }
             }
-
             // ...if not, the function is built-in. Fail here.
             if (redefined_rule == NULL)
             {
@@ -246,7 +244,7 @@ bool cmd_definition_exec(char *input, __attribute__((unused)) int code)
         if (!is_letter(name[0]))
         {
             free(name);
-            report_error(FMT_ERROR_LEFT, "Functions and constants must only consist of letters.");
+            report_error(FMT_ERROR_LEFT, "Not a function or constant.");
             return false;
         }
 

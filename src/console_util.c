@@ -148,11 +148,13 @@ Returns: True when 'y' typed, false when 'n' typed
 */
 bool ask_yes_no(bool default_val)
 {
-    while (true)
+    int selection = getchar();
+    if (selection != '\n')
     {
-        char res = getchar();
-        switch (res)
-        {
+        while (getchar() != '\n');
+    }
+    switch (selection)
+    {
             case '\n':
                 return default_val;
             case 'Y':
@@ -160,11 +162,12 @@ bool ask_yes_no(bool default_val)
                 return true;
             case 'N':
             case 'n':
+            case EOF:
                 return false;
-        }
-        printf("Input not recognized.\n");
+            default:
+                printf("Input not recognized.\n");
+                return false;
     }
-    return default_val;
 }
 
 void report_error(char *fmt, ...)

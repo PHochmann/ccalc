@@ -6,13 +6,26 @@
 #include "../tree/parser.h"
 #include "../transformation/rewrite_rule.h"
 
-#define NUM_RULES 5
-char *rule_strings[] = { "$x", "x",
+#define NUM_RULES 2
+char *rule_strings[] = {
+
+    "x+y", "sum(x, y)",
+    "sum(sum([xs]), [ys])", "sum([xs], [ys])"
+    //"sum([xs])+sum([ys])", "sum([xs], [ys])"
+
+    /*"$x", "x",
     "x+(y+z)", "x+y+z",
     "x*(y*z)", "x*y*z",
     "--x", "x",
-    "+x", "x",
+    "+x", "x",*/
 };
+
+// List matching ideas:
+/*
+    sum([as], x, [bs], -x, [cs]) -> sum([as], [bs], [cs])
+
+    sum([xs])+sum([ys]) -> sum([xs], [ys])
+*/
 
 RewriteRule rules[NUM_RULES];
 

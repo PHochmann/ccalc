@@ -11,15 +11,15 @@ typedef enum
 {
     BORDER_NONE,
     BORDER_SINGLE,
-    BORDER_DOUBLE,
+    BORDER_DOUBLE
 } BorderStyle;
 
 typedef enum
 {
     ALIGN_LEFT,
     ALIGN_RIGHT,
-    ALIGN_CENTER,  // Centered (rounded to the left)
-    ALIGN_NUMBERS, // Aligned at dot, rightmost, does not support \n
+    ALIGN_CENTER, // Centered (rounded to the left)
+    ALIGN_NUMBERS // Aligned at dot, rightmost, does not support \n
 } TextAlignment;
 
 struct Cell
@@ -32,11 +32,12 @@ struct Cell
     BorderStyle border_above;   // Non-default border above
     size_t span_x;              // How many cols to span over
     size_t span_y;              // How many rows to span over
+
+    // Generated
     bool override_align;        // Default set for each col in table
     bool override_border_left;  // Default set for each col in table
     bool override_border_above; // Default set in row
 
-    // Generated
     bool is_set;          // Indicates whether data is valid
     bool text_needs_free; // When set to true, text will be freed on free_table
     size_t x;             // Column position

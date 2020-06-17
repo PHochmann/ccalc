@@ -98,7 +98,7 @@ ConstantType get_const_value(Node *node)
 }
 
 /*
-Summary: Copies tree, tree_equals will be true of copy. Source tree can be safely free'd afterwards.
+Summary: Copies tree, tree_compare(tree, copy) will return NULL. Source tree can be safely free'd afterwards.
 */
 Node *tree_copy(Node *tree)
 {
@@ -130,7 +130,7 @@ Node *tree_copy(Node *tree)
 Summary: Checks if two trees represent exactly the same expression
 Returns: First node (in-order traversal) in 'a' that is not equal to respective node in 'b', NULL otherwise
 */
-Node *tree_equals(Node *a, Node *b)
+Node *tree_compare(Node *a, Node *b)
 {
     if (a == NULL || b == NULL) return NULL;
     if (get_type(a) != get_type(b)) return a;
@@ -152,7 +152,7 @@ Node *tree_equals(Node *a, Node *b)
             }
             for (size_t i = 0; i < get_num_children(a); i++)
             {
-                Node *recursive_res = tree_equals(get_child(a, i), get_child(b, i));
+                Node *recursive_res = tree_compare(get_child(a, i), get_child(b, i));
                 if (recursive_res != NULL) return recursive_res;
             }
     }
@@ -166,6 +166,36 @@ void tree_replace(Node **tree_to_replace, Node *tree_to_insert)
 {
     free_tree(*tree_to_replace);
     *tree_to_replace = tree_to_insert;
+}
+
+/*
+Nodes from list are copied, the others are not
+*/
+void tree_replace_by_list(Node **parent, size_t child_to_replace, NodeList list)
+{
+    if (list.size != 1)
+    {
+        Node *new_parent = malloc_operator_node(get_op(*parent), get_num_children(*parent) - 1 + list.size);
+        for (size_t i = 0; i < child_to_replace; i++)
+        {
+            set_child(new_parent, i, get_child(*parent, i));
+        }
+        for (size_t i = 0; i < list.size; i++)
+        {
+            set_child(new_parent, child_to_replace + i, tree_copy(list.nodes[i]));
+        }
+        for (size_t i = 0; i < get_num_children(*parent) - child_to_replace - 1; i++)
+        {
+            set_child(new_parent,
+                child_to_replace + list.size + i,
+                get_child(*parent, child_to_replace + i + 1));
+        }
+        *parent = new_parent;
+    }
+    else
+    {
+        tree_replace(get_child_addr(*parent, child_to_replace), tree_copy(list.nodes[0]));
+    }
 }
 
 // What follows are helper functions commonly used to search trees
@@ -321,6 +351,50 @@ size_t replace_variable_nodes(Node **tree, Node *tree_to_copy, char *var_name)
         tree_replace(instances[i], tree_copy(tree_to_copy));
     }
     return num_instances;
+}
+
+size_t replace_variable_nodes_by_list(Node **tree, NodeList list_of_nodes_to_copy, char *var_name)
+{
+    if (get_type(*tree) != NTYPE_OPERATOR)
+    {
+        if (list_of_nodes_to_copy.size != 1)
+        {
+            //Software defect: Can't subsitute a tree that consists of a single node with a list with more than one node
+            return 0;
+        }
+
+        if (get_type(*tree) == NTYPE_CONSTANT) return 0;
+        if (get_type(*tree) == NTYPE_VARIABLE)
+        {
+            if (strcmp(get_var_name(*tree), var_name) == 0)
+            {
+                tree_replace(tree, tree_copy(list_of_nodes_to_copy.nodes[0]));
+                return 1;
+            }
+        }
+        return 0;
+    }
+    else
+    {
+        size_t replacement_counter = 0;
+        for (size_t i = 0; i < get_num_children(*tree); i++)
+        {
+            if (get_type(get_child(*tree, i)) == NTYPE_VARIABLE)
+            {
+                if (strcmp(get_var_name(get_child(*tree, i)), var_name) == 0)
+                {
+                    tree_replace_by_list(tree, i, list_of_nodes_to_copy);
+                    replacement_counter++;
+                }
+            }
+            else
+            {
+                replacement_counter +=
+                    replace_variable_nodes_by_list(get_child_addr(*tree, i), list_of_nodes_to_copy, var_name);
+            }
+        }
+        return replacement_counter;
+    }
 }
 
 /*

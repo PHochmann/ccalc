@@ -1,6 +1,9 @@
 #include "rewrite_rule.h"
 #include "matching.h"
 
+#include "../tree/tree_to_string.h"
+#include <stdio.h>
+
 /*
 Summary: Constructs new rule. Warning: "before" and "after" are not copied, so don't free them!
 */
@@ -24,32 +27,21 @@ void free_rule(RewriteRule rule)
 /*
 Summary: Substitutes subtree in which matching was found according to rule
 */
-void transform_matched_by_rule(Node *rule_after, Matching *matching)
+void transform_matched_by_rule(Node *rule_after, Matching *matching, Node **matched_subtree)
 {
     if (rule_after == NULL || matching == NULL) return;
     
     /*
-     * We need to save all variable instances in "after" before we substitute
-     * because variable names are not sanitized
+     * TODO: Variable names should be sanitized
      */
-    Node *transformed = tree_copy(rule_after);
-    Node **var_instances[matching->num_mapped][count_variables(rule_after)];
-    size_t num_instances[matching->num_mapped];
 
+    Node *transformed = tree_copy(rule_after);
     for (size_t i = 0; i < matching->num_mapped; i++)
     {
-        num_instances[i] = get_variable_nodes(&transformed, matching->mapped_vars[i], var_instances[i]);
+        replace_variable_nodes_by_list(&transformed, matching->mapped_nodes[i], matching->mapped_vars[i]);
     }
     
-    for (size_t i = 0; i < matching->num_mapped; i++)
-    {
-        for (size_t j = 0; j < num_instances[i]; j++)
-        {
-            tree_replace(var_instances[i][j], tree_copy(matching->mapped_nodes[i]));
-        }
-    }
-    
-    tree_replace(matching->matched_subtree, transformed);
+    tree_replace(matched_subtree, transformed);
 }
 
 /*
@@ -59,11 +51,14 @@ Returns: True when matching could be applied, false otherwise
 bool apply_rule(Node **tree, RewriteRule *rule)
 {
     Matching matching;
+    
     // Try to find matching in tree with pattern specified in rule
-    if (!find_matching(tree, rule->before, &matching)) return false;
+    Node **res = find_matching(tree, rule->before, &matching);
+    if (res == NULL) return false;
+
     // If matching is found, transform tree with it
-    transform_matched_by_rule(rule->after, &matching);
-    free_matching(matching);
+    transform_matched_by_rule(rule->after, &matching, res);
+
     return true;
 }
 
