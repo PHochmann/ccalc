@@ -3,7 +3,7 @@
 
 #include "test_node.h"
 #include "../src/tree/operator.h"
-#include "../src/tree/node.h"
+#include "../src/tree/tree_util.h"
 #include "../src/tree/tree_to_string.h"
 
 static const size_t NUM_CASES = 5;
@@ -102,6 +102,6 @@ Test get_node_test()
     return (Test){
         node_test,
         NUM_CASES,
-        "Node"
+        "Tree_Util"
     };
 }

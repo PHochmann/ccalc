@@ -8,16 +8,18 @@
 #include "test_tree_to_string.h"
 #include "test_randomized.h"
 #include "test_table.h"
+#include "test_transformation.h"
 #include "../src/commands/commands.h"
 #include "../src/table/table.h"
 
-static const size_t NUM_TESTS = 5;
+static const size_t NUM_TESTS = 6;
 static Test (*test_getters[])() = {
     get_node_test,
     get_parser_test,
     get_tree_to_string_test,
     get_randomized_test,
     get_table_test,
+    get_transformation_test,
 };
 
 int main()
