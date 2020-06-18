@@ -2,32 +2,61 @@
 
 #include "simplification.h"
 #include "arith_context.h"
+#include "evaluation.h"
 #include "../tree/node.h"
 #include "../tree/parser.h"
 #include "../transformation/rewrite_rule.h"
 
-#define NUM_RULES 2
-char *rule_strings[] = {
-
-    "x+y", "sum(x, y)",
-    "sum(sum([xs]), [ys])", "sum([xs], [ys])"
-    //"sum([xs])+sum([ys])", "sum([xs], [ys])"
-
-    /*"$x", "x",
-    "x+(y+z)", "x+y+z",
-    "x*(y*z)", "x*y*z",
+#define NUM_NORMAL_FORM_RULES 4
+RewriteRule normal_form_rules[NUM_NORMAL_FORM_RULES];
+char *normal_form_strings[] = {
+    "$x", "x",
     "--x", "x",
-    "+x", "x",*/
+    "x-y", "x+(-y)",
+    "-(x+y)", "-x+(-y)",
 };
 
-// List matching ideas:
-/*
-    sum([as], x, [bs], -x, [cs]) -> sum([as], [bs], [cs])
+#define NUM_SIMPLIFICATION_RULES 17
+RewriteRule simplification_rules[NUM_SIMPLIFICATION_RULES];
+char *simplification_strings[] = {
+    /* Get a nice sum */
+    "x+y", "sum(x,y)",
+    "sum([xs], sum([ys]), [zs])", "sum([xs], [ys], [zs])",
+    "sum([xs])+sum([ys])", "sum([xs], [ys])",
+    "x+sum([xs])", "sum(x, [xs])",
+    "sum([xs])+x", "sum([xs], x)",
 
-    sum([xs])+sum([ys]) -> sum([xs], [ys])
-*/
+    /* Get a nice product */
+    "x*y", "prod(x,y)",
+    "prod([xs], prod([ys]), [zs])", "prod([xs], [ys], [zs])",
+    "prod([xs])*prod([ys])", "prod([xs], [ys])",
+    "x*prod([xs])", "prod(x, [xs])",
+    "prod([xs])*x", "prod([xs], x)",
 
-RewriteRule rules[NUM_RULES];
+    /* Simplify sums */
+    "sum([xs], 0, [ys])", "sum([xs], [ys])",
+    "sum([xs], x, [ys], -x, [zs])", "sum([xs], [ys], [zs])",
+    "sum([xs], -x, [ys], x, [zs])", "sum([xs], [ys], [zs])",
+
+    /* Simplify products */
+    "prod([xs], 0, [ys])", "0",
+    "prod([xs], 1, [ys])", "prod([xs], [ys])",
+
+    /* Operator lift */
+    "sum([xs], x, [ys], x, [zs])", "sum([xs], [ys], [zs], 2x)",
+    "sum([xs], cA*x, [ys], cB*x, [zs])", "sum([xs], [ys], [zs], (cA+cB)*x)",
+};
+
+#define NUM_PRETTY_RULES 6
+RewriteRule pretty_rules[NUM_PRETTY_RULES];
+char *pretty_strings[] = {
+    "x+(y+z)", "x+y+z",
+    "x*(y*z)", "x*y*z",
+    "sum(x, y)", "x+y",
+    "sum(x, [xs])", "x+sum([xs])",
+    "--x", "x",
+    "+x", "x",
+};
 
 bool parse_rule(char *before, char *after, RewriteRule *out_rule)
 {
@@ -35,7 +64,7 @@ bool parse_rule(char *before, char *after, RewriteRule *out_rule)
     if (before_n == NULL) return false;
     Node *after_n = parse_conveniently(g_ctx, after);
     if (after_n == NULL) return false;
-    *out_rule = get_rule(before_n, after_n);
+    *out_rule = get_rule(&before_n, &after_n);
     return true;
 }
 
@@ -54,14 +83,46 @@ bool parse_rules(size_t num_rules, char **input, RewriteRule *out_rules)
 
 void init_simplification()
 {
-    parse_rules(NUM_RULES, rule_strings, rules);
+    parse_rules(NUM_NORMAL_FORM_RULES, normal_form_strings, normal_form_rules);
+    parse_rules(NUM_SIMPLIFICATION_RULES, simplification_strings, simplification_rules);
+    parse_rules(NUM_PRETTY_RULES, pretty_strings, pretty_rules);
 }
 
 void unload_simplification()
 {
-    for (size_t i = 0; i < NUM_RULES; i++)
+    for (size_t i = 0; i < NUM_NORMAL_FORM_RULES; i++)
     {
-        free_rule(rules[i]);
+        free_rule(normal_form_rules[i]);
+    }
+    for (size_t i = 0; i < NUM_SIMPLIFICATION_RULES; i++)
+    {
+        free_rule(simplification_rules[i]);
+    }
+    for (size_t i = 0; i < NUM_PRETTY_RULES; i++)
+    {
+        free_rule(pretty_rules[i]);
+    }
+}
+
+/*
+Summary: Tries to apply rules (priorized by order) until no rule can be applied any more
+    Possibly not terminating!
+*/
+void apply_ruleset(Node **tree, size_t num_rules, RewriteRule *ruleset)
+{
+    while (true)
+    {
+        bool applied_flag = false;
+        for (size_t j = 0; j < num_rules; j++)
+        {
+            if (apply_rule(tree, &ruleset[j]))
+            {
+                replace_constant_subtrees(tree, op_evaluate);
+                applied_flag = true;
+                break;
+            }
+        }
+        if (!applied_flag) return;
     }
 }
 
@@ -71,6 +132,10 @@ Returns: True when transformations could be applied, False otherwise (currently:
 */
 bool core_simplify(Node **tree)
 {
-    apply_ruleset(tree, NUM_RULES, rules);
+    apply_ruleset(tree, NUM_NORMAL_FORM_RULES, normal_form_rules);
+    printf("~ ~ ~\n");
+    apply_ruleset(tree, NUM_SIMPLIFICATION_RULES, simplification_rules);
+    printf("~ ~ ~\n");
+    apply_ruleset(tree, NUM_PRETTY_RULES, pretty_rules);
     return true;
 }

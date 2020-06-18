@@ -3,6 +3,10 @@
 
 #define MAX_MAPPED_VARS 10
 
+#define MATCHING_LIST_PREFIX  '['
+#define MATCHING_CONST_PREFIX 'c'
+#define MATCHING_VAR_PREFIX   'v'
+
 /*
 Contains successful matching
 */
@@ -12,9 +16,10 @@ typedef struct
     size_t num_mapped;
     // Variables in pattern (on heap)
     // Not copied, thus lifetime coupled to RewriteRule or whatever supplied the pattern
-    char *mapped_vars[10];
+    char *mapped_vars[MAX_MAPPED_VARS];
+    char mapped_ids[MAX_MAPPED_VARS];
     // Subtrees in matched_tree that need to replace each mapped_var (on heap)
-    NodeList mapped_nodes[10];
+    NodeList mapped_nodes[MAX_MAPPED_VARS];
 } Matching;
 
 NodeList *lookup_mapped_var(Matching *matching, char *var);

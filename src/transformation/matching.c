@@ -1,14 +1,16 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include <stdio.h>
-#include "../tree/tree_to_string.h"
-
 #include "matching.h"
-#include "../tree/node.h"
+#include "../tree/tree_util.h"
 
-#define MAX_STACK_SIZE 20
-#define MAX_PARTITIONS 42
+/*
+Code in this file lacks buffer-overflow protection
+Todo: Add protection
+*/
+
+#define MAX_MATCHINGS 20
+#define MAX_PARTITIONS 20
 
 bool nodelists_equal(NodeList *a, NodeList *b)
 {
@@ -49,8 +51,6 @@ size_t match_parameter_lists(Matching matching,
     sizes[0] = 0;
     sums[0] = 0;
 
-    //printf("Start of match_param_lists num_tree_children=%zu, num_pattern_children=%zu\n", num_tree_children, num_pattern_children);
-
     while (num_candidates != 0)
     {
         num_candidates--;
@@ -66,12 +66,12 @@ size_t match_parameter_lists(Matching matching,
         if (sizes[i] < num_pattern_children)
         {
             if (get_type(pattern_children[sizes[i]]) == NTYPE_VARIABLE
-                && get_var_name(pattern_children[sizes[i]])[0] == '[')
+                && get_var_name(pattern_children[sizes[i]])[0] == MATCHING_LIST_PREFIX)
             {
                 NodeList *list = lookup_mapped_var(&matching, get_var_name(pattern_children[sizes[i]]));
                 if (list != NULL)
                 {
-                    // List is already bound, with it also its length is bound
+                    // List is already bound, thus also its length is bound
                     // Reactivate candidate with updated length
                     num_candidates++;
                     candidates[i][sizes[i]] = list->size;
@@ -89,7 +89,7 @@ size_t match_parameter_lists(Matching matching,
                         num_candidates++;
 
                         // We can copy over prefix because it is not overwritten
-                        // But don't copy to the same destination
+                        // But don't copy to the same destination (memcpy pointers are restricted)
                         if (j != 0)
                         {
                             memcpy(candidates[i + j], candidates[i], sizeof(size_t) * size_temp);
@@ -128,16 +128,9 @@ size_t match_parameter_lists(Matching matching,
 
     // We successfully found all possible partitions of the parameter list of tree on all parameters in pattern
     // Now, try to match them
-    Matching *additional_buffer = malloc(500 * sizeof(Matching));
+    Matching *additional_buffer = malloc(MAX_MATCHINGS * sizeof(Matching));
     while (num_results != 0)
     {
-        /*printf("Checking: ");
-        for (size_t y = 0; y < num_pattern_children; y++)
-        {
-            printf("%zu ", results[num_results - 1][y]);
-        }
-        printf("\n");*/
-
         num_results--;
         Matching *matchingsA = additional_buffer;
         Matching *matchingsB = out_matchings;
@@ -164,12 +157,16 @@ size_t match_parameter_lists(Matching matching,
             num_matchings = num_new_matchings;
         }
 
-        // Composition works when there are matchings in the end
+        // Partition works when there are matchings in the end
         if (num_matchings != 0)
         {
-            memcpy(out_matchings, matchingsA, sizeof(Matching) * num_matchings);
+            // Stop after first working partition
+            // Copy results of last iteration to output-buffer if last buffer wasn't already output-buffer
+            if (out_matchings != matchingsA)
+            {
+                memcpy(out_matchings, matchingsA, sizeof(Matching) * num_matchings);
+            }
             free(additional_buffer);
-            // Stop here
             return num_matchings;
         }
     }
@@ -217,6 +214,7 @@ size_t extend_matching(Matching matching,
                 out_matchings[0] = matching;
                 out_matchings[0].mapped_vars[matching.num_mapped]  = get_var_name(pattern);
                 out_matchings[0].mapped_nodes[matching.num_mapped] = tree_list;
+                out_matchings[0].mapped_ids[matching.num_mapped]   = get_id(pattern); // This is a dirty trick to avoid sanitizing variable names
                 out_matchings[0].num_mapped++;
                 return 1;
             }
@@ -264,9 +262,8 @@ bool get_matching(Node *tree, Node *pattern, Matching *out_matching)
     if (tree == NULL || pattern == NULL || out_matching == NULL) return false;
 
     // Due to exponential many partitions, a lot of states can occur. Use heap.
-    Matching *matchings = malloc(500 * sizeof(Matching));
-    size_t num_matchings = extend_matching(
-        (Matching){ .num_mapped = 0 }, pattern, (NodeList){ .size = 1, .nodes = &tree }, matchings);
+    Matching *matchings = malloc(MAX_MATCHINGS * sizeof(Matching));
+    size_t num_matchings = extend_matching((Matching){ .num_mapped = 0 }, pattern, (NodeList){ .size = 1, .nodes = &tree }, matchings);
 
     // Stack should contain only one element.
     if (num_matchings > 0)

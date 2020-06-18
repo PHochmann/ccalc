@@ -57,7 +57,7 @@ Node *get_ans(size_t index)
 void core_update_history(ConstantType value)
 {
     if (ans[next_ans] != NULL) free_tree(ans[next_ans]);
-    ans[next_ans] = malloc_constant_node(value);
+    ans[next_ans] = malloc_constant_node(NULL, value);
     next_ans = (next_ans + 1) % ANS_HISTORY_SIZE;
 }
 
