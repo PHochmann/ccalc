@@ -313,8 +313,9 @@ Nodes from list are copied, the others are not
 */
 void tree_replace_by_list(Node **parent, size_t child_to_replace, NodeList list)
 {
-    if (list.size != 1)
+    if (list.size != 1) // Parent needs to be replaced (but not via tree_replace because most children are preserved)
     {
+        free_tree(get_child(*parent, child_to_replace));
         Node *new_parent = malloc_operator_node(get_op(*parent), get_num_children(*parent) - 1 + list.size);
         for (size_t i = 0; i < child_to_replace; i++)
         {
@@ -330,6 +331,7 @@ void tree_replace_by_list(Node **parent, size_t child_to_replace, NodeList list)
                 child_to_replace + list.size + i,
                 get_child(*parent, child_to_replace + i + 1));
         }
+        free(*parent);
         *parent = new_parent;
     }
     else

@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "test_tree_to_string.h"
-#include "../src/tree/tree_to_string.h"
-#include "../src/tree/context.h"
+#include "../src/parsing/context.h"
+#include "../src/parsing/parser.h"
 #include "../src/tree/node.h"
-#include "../src/tree/parser.h"
+#include "../src/tree/tree_to_string.h"
 #include "../src/core/arith_context.h"
+#include "test_tree_to_string.h"
 
 struct TreeToStringTest {
     char *input;

@@ -4,7 +4,7 @@
 #include "arith_context.h"
 #include "evaluation.h"
 #include "../tree/node.h"
-#include "../tree/parser.h"
+#include "../parsing/parser.h"
 #include "../transformation/rewrite_rule.h"
 
 #define NUM_NORMAL_FORM_RULES 4
@@ -101,28 +101,6 @@ void unload_simplification()
     for (size_t i = 0; i < NUM_PRETTY_RULES; i++)
     {
         free_rule(pretty_rules[i]);
-    }
-}
-
-/*
-Summary: Tries to apply rules (priorized by order) until no rule can be applied any more
-    Possibly not terminating!
-*/
-void apply_ruleset(Node **tree, size_t num_rules, RewriteRule *ruleset)
-{
-    while (true)
-    {
-        bool applied_flag = false;
-        for (size_t j = 0; j < num_rules; j++)
-        {
-            if (apply_rule(tree, &ruleset[j]))
-            {
-                replace_constant_subtrees(tree, op_evaluate);
-                applied_flag = true;
-                break;
-            }
-        }
-        if (!applied_flag) return;
     }
 }
 

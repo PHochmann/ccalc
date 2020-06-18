@@ -6,7 +6,7 @@
 #include "history.h"
 #include "../string_util.h"
 #include "../console_util.h"
-#include "../tree/parser.h"
+#include "../parsing/parser.h"
 
 #define NUM_OPS       54
 #define NUM_COMP_FUNC 10

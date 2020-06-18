@@ -5,6 +5,7 @@
 #include "cmd_evaluation.h"
 #include "../console_util.h"
 #include "../tree/tree_to_string.h"
+#include "../tree/tree_util.h"
 #include "../core/arith_context.h"
 #include "../core/history.h"
 #include "../core/evaluation.h"

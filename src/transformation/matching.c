@@ -214,7 +214,6 @@ size_t extend_matching(Matching matching,
                 out_matchings[0] = matching;
                 out_matchings[0].mapped_vars[matching.num_mapped]  = get_var_name(pattern);
                 out_matchings[0].mapped_nodes[matching.num_mapped] = tree_list;
-                out_matchings[0].mapped_ids[matching.num_mapped]   = get_id(pattern); // This is a dirty trick to avoid sanitizing variable names
                 out_matchings[0].num_mapped++;
                 return 1;
             }

@@ -80,3 +80,25 @@ bool apply_rule(Node **tree, RewriteRule *rule)
 
     return true;
 }
+
+/*
+Summary: Tries to apply rules (priorized by order) until no rule can be applied any more
+    Possibly not terminating!
+*/
+void apply_ruleset(Node **tree, size_t num_rules, RewriteRule *ruleset)
+{
+    while (true)
+    {
+        bool applied_flag = false;
+        for (size_t j = 0; j < num_rules; j++)
+        {
+            if (apply_rule(tree, &ruleset[j]))
+            {
+                //replace_constant_subtrees(tree, op_evaluate);
+                applied_flag = true;
+                break;
+            }
+        }
+        if (!applied_flag) return;
+    }
+}

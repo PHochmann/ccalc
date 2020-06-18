@@ -1,9 +1,10 @@
+#include "../console_util.h"
+#include "../transformation/matching.h"
+#include "../parsing/parser.h"
+#include "../tree/tree_util.h"
 #include "history.h"
 #include "arith_context.h"
 #include "evaluation.h"
-#include "../console_util.h"
-#include "../transformation/matching.h"
-#include "../tree/parser.h"
 
 #define ERROR_NOT_SET       "Error: This part of the history is not set yet.\n"
 #define ERROR_NOT_CONSTANT  "Error: In @x, x must contain no variable.\n"
@@ -57,7 +58,7 @@ Node *get_ans(size_t index)
 void core_update_history(ConstantType value)
 {
     if (ans[next_ans] != NULL) free_tree(ans[next_ans]);
-    ans[next_ans] = malloc_constant_node(NULL, value);
+    ans[next_ans] = malloc_constant_node(value);
     next_ans = (next_ans + 1) % ANS_HISTORY_SIZE;
 }
 

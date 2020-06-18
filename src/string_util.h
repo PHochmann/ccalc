@@ -1,5 +1,5 @@
 #include <stdbool.h>
-#include "tree/parser.h"
+#include "parsing/parser.h"
 
 typedef struct
 {

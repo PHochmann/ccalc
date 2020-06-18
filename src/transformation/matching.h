@@ -8,18 +8,13 @@
 #define MATCHING_VAR_PREFIX   'v'
 
 /*
-Contains successful matching
+Summary: Contains successful or intermediate matching
 */
 typedef struct
 {
-    // Size of mapped_vars and mapped_nodes
-    size_t num_mapped;
-    // Variables in pattern (on heap)
-    // Not copied, thus lifetime coupled to RewriteRule or whatever supplied the pattern
-    char *mapped_vars[MAX_MAPPED_VARS];
-    char mapped_ids[MAX_MAPPED_VARS];
-    // Subtrees in matched_tree that need to replace each mapped_var (on heap)
-    NodeList mapped_nodes[MAX_MAPPED_VARS];
+    size_t num_mapped;                      // Size of mapped_vars and mapped_nodes
+    char *mapped_vars[MAX_MAPPED_VARS];     // Variables in pattern, not copied, thus lifetime coupled to RewriteRule or whatever supplied the pattern
+    NodeList mapped_nodes[MAX_MAPPED_VARS]; // Subtrees in matched_tree that need to replace each mapped_var
 } Matching;
 
 NodeList *lookup_mapped_var(Matching *matching, char *var);

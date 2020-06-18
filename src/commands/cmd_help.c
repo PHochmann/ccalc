@@ -14,7 +14,7 @@
 #define SHORT_HELP_CODE 1
 #define OPS_HELP_CODE   2
 
-#define VERSION   "1.5.2"
+#define VERSION   "1.5.3"
 #define TTY_WIDTH 80
 
 static char *INFOBOX_FMT =

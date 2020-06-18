@@ -4,7 +4,7 @@
 #include "test_randomized.h"
 #include "../src/core/arith_context.h"
 #include "../src/tree/tree_util.h"
-#include "../src/tree/parser.h"
+#include "../src/parsing/parser.h"
 #include "../src/tree/tree_to_string.h"
 #include "../src/string_util.h"
 

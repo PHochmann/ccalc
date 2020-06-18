@@ -5,7 +5,8 @@
 #include "../string_util.h"
 #include "../console_util.h"
 #include "../tree/node.h"
-#include "../tree/tokenizer.h"
+#include "../tree/tree_util.h"
+#include "../parsing/tokenizer.h"
 #include "../transformation/rewrite_rule.h"
 #include "../core/arith_context.h"
 

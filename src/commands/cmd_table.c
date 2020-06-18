@@ -4,6 +4,7 @@
 #include "../console_util.h"
 #include "../string_util.h"
 #include "../tree/tree_to_string.h"
+#include "../tree/tree_util.h"
 #include "../core/arith_context.h"
 #include "../core/history.h"
 #include "../core/evaluation.h"

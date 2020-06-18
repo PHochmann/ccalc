@@ -4,6 +4,7 @@
 #include <float.h>
 #include <math.h>
 
+#include "../tree/tree_util.h"
 #include "evaluation.h"
 #include "arith_context.h"
 
