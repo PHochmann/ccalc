@@ -1,8 +1,10 @@
 #include "../tree/tree_util.h"
-#include "../tree/tree_to_string.h" // Debugging
-#include <stdio.h> // Debugging
+#include "../core/evaluation.h"
 #include "rewrite_rule.h"
 #include "matching.h"
+
+#include "../tree/tree_to_string.h" // Debugging
+#include <stdio.h> // Debugging
 
 #define NEW_VAR_LENGTH 5
 #define NORMAL_VAR_ID  0
@@ -59,9 +61,6 @@ void transform_matched_by_rule(Node *rule_after, Matching *matching, Node **matc
     }
     mark_vars(transformed, NORMAL_VAR_ID);
     tree_replace(matched_subtree, transformed);
-
-    print_tree(*matched_subtree, false);
-    printf("\n");
 }
 
 /*
@@ -94,7 +93,9 @@ void apply_ruleset(Node **tree, size_t num_rules, RewriteRule *ruleset)
         {
             if (apply_rule(tree, &ruleset[j]))
             {
-                //replace_constant_subtrees(tree, op_evaluate);
+                print_tree(*tree, true);
+                printf("\n");
+                replace_constant_subtrees(tree, op_evaluate);
                 applied_flag = true;
                 break;
             }

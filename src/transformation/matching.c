@@ -4,13 +4,17 @@
 #include "matching.h"
 #include "../tree/tree_util.h"
 
+// Debug
+#include <stdio.h>
+#include "../tree/tree_to_string.h"
+
 /*
 Code in this file lacks buffer-overflow protection
 Todo: Add protection
 */
 
 #define MAX_MATCHINGS 20
-#define MAX_PARTITIONS 20
+#define MAX_PARTITIONS 50
 
 bool nodelists_equal(NodeList *a, NodeList *b)
 {
@@ -60,6 +64,7 @@ size_t match_parameter_lists(Matching matching,
         {
             // Candidate is finished and can be put into result list
             memcpy(results[num_results++], candidates[i], sizeof(size_t) * num_pattern_children);
+            if (num_results == MAX_PARTITIONS) printf("RAN OUT OF PARTITION SPACE");
             continue;
         }
         
@@ -87,6 +92,7 @@ size_t match_parameter_lists(Matching matching,
                     for (size_t j = 0; j + sum_temp <= num_tree_children; j++)
                     {
                         num_candidates++;
+                        if (num_candidates == MAX_PARTITIONS) printf("RAN OUT OF PARTITION SPACE");
 
                         // We can copy over prefix because it is not overwritten
                         // But don't copy to the same destination (memcpy pointers are restricted)
@@ -115,7 +121,7 @@ size_t match_parameter_lists(Matching matching,
         }
     }
 
-    /*printf("NUM_RESULTS: %zu\n", num_results);
+    /*printf("NUM_RESULTS: %zu, num_tree: %zu, num_pattern: %zu\n", num_results, num_tree_children, num_pattern_children);
     for (size_t x = 0; x < num_results; x++)
     {
         printf("[%zu] ", x);
@@ -124,11 +130,16 @@ size_t match_parameter_lists(Matching matching,
             printf("%zu ", results[x][y]);
         }
         printf("\n");
-    }*/
+    }
+    print_tree(*pattern_children, false);
+    printf("\n");
+    print_tree(*tree_children, false);
+    printf("\n");*/
 
     // We successfully found all possible partitions of the parameter list of tree on all parameters in pattern
     // Now, try to match them
     Matching *additional_buffer = malloc(MAX_MATCHINGS * sizeof(Matching));
+    if (additional_buffer == NULL) printf("ALARM!\n");
     while (num_results != 0)
     {
         num_results--;
@@ -210,6 +221,18 @@ size_t extend_matching(Matching matching,
             }
             else
             {
+                // Check special rules
+                switch (get_var_name(pattern)[0])
+                {
+                    case MATCHING_CONST_PREFIX:
+                        if (tree_list.size != 1
+                            || get_type(tree_list.nodes[0]) != NTYPE_CONSTANT) return 0;
+                        break;
+                    case MATCHING_NON_CONST_PREFIX:
+                        if (tree_list.size != 1
+                            || get_type(tree_list.nodes[0]) == NTYPE_CONSTANT) return 0;
+                }
+
                 // Bind variable
                 out_matchings[0] = matching;
                 out_matchings[0].mapped_vars[matching.num_mapped]  = get_var_name(pattern);
@@ -222,6 +245,7 @@ size_t extend_matching(Matching matching,
         // 2. Check constants for equality
         case NTYPE_CONSTANT:
         {
+            if (tree_list.size != 1) return 0;
             Node *comp = tree_compare(pattern, tree_list.nodes[0]);
             if (comp == NULL)
             {
@@ -238,6 +262,7 @@ size_t extend_matching(Matching matching,
         // 3. Check operator and arity for equality
         case NTYPE_OPERATOR:
         {
+            if (tree_list.size != 1) return 0;
             if (get_type(tree_list.nodes[0]) != NTYPE_OPERATOR
                 || get_op(pattern) != get_op(tree_list.nodes[0])
                 /*|| get_num_children(curr_pattern) != get_num_children(curr_tree)*/)

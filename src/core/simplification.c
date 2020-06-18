@@ -7,18 +7,28 @@
 #include "../parsing/parser.h"
 #include "../transformation/rewrite_rule.h"
 
-#define NUM_NORMAL_FORM_RULES 4
+#define NUM_NORMAL_FORM_RULES 8
 RewriteRule normal_form_rules[NUM_NORMAL_FORM_RULES];
 char *normal_form_strings[] = {
+    "vx+cx", "cx+vx",
+    "vx*cx", "cx*vx",
+    "x+(y+z)", "x+y+z",
+    "x*(y*z)", "x*y*z",
+
+    "x-y", "x+(-y)",
     "$x", "x",
     "--x", "x",
-    "x-y", "x+(-y)",
     "-(x+y)", "-x+(-y)",
+    "-(x*y)", "(-x)*y"
 };
 
-#define NUM_SIMPLIFICATION_RULES 17
+#define NUM_SIMPLIFICATION_RULES 26
 RewriteRule simplification_rules[NUM_SIMPLIFICATION_RULES];
 char *simplification_strings[] = {
+
+    /* Move constants */
+    "sum([xs], vx, [ys], cx, [zs])", "sum(cx, [xs], vx, [ys], [zs])", 
+
     /* Get a nice sum */
     "x+y", "sum(x,y)",
     "sum([xs], sum([ys]), [zs])", "sum([xs], [ys], [zs])",
@@ -41,21 +51,32 @@ char *simplification_strings[] = {
     /* Simplify products */
     "prod([xs], 0, [ys])", "0",
     "prod([xs], 1, [ys])", "prod([xs], [ys])",
+    "prod([xs], -1, [ys])", "-prod([xs], [ys])",
 
-    /* Operator lift */
-    "sum([xs], x, [ys], x, [zs])", "sum([xs], [ys], [zs], 2x)",
-    "sum([xs], cA*x, [ys], cB*x, [zs])", "sum([xs], [ys], [zs], (cA+cB)*x)",
+    /* Products within sum */
+    "sum([xs], prod(a, x), [ys], x, [zs])", "sum([xs], prod(a+1, x), [ys], [zs])",
+    "sum([xs], prod(x, a), [ys], x, [zs])", "sum([xs], prod(x, a+1), [ys], [zs])",
+    "sum([xs], prod(b, x), [ys], prod(a, x), [zs])", "sum([xs], [ys], prod(a+b, x), [zs])",
+    "sum([xs], prod(x, b), [ys], prod(x, a), [zs])", "sum([xs], [ys], prod(a+b, x), [zs])",
+    "sum([xs], prod(b, x), [ys], prod(x, a), [zs])", "sum([xs], [ys], prod(a+b, x), [zs])",
+    "sum([xs], prod(x, b), [ys], prod(a, x), [zs])", "sum([xs], [ys], prod(a+b, x), [zs])",
+    "sum([xs], x, [ys], prod(a, x), [zs])", "sum([xs], [ys], prod(a+1, x), [zs])",
+    "sum([xs], x, [ys], prod(x, a), [zs])", "sum([xs], [ys], prod(x, a+1), [zs])",
+    "sum([xs], x, [ys], x, [zs])", "sum(prod(2, x), [xs], [ys], [zs])",
 };
 
-#define NUM_PRETTY_RULES 6
+#define NUM_PRETTY_RULES 9
 RewriteRule pretty_rules[NUM_PRETTY_RULES];
 char *pretty_strings[] = {
     "x+(y+z)", "x+y+z",
     "x*(y*z)", "x*y*z",
     "sum(x, y)", "x+y",
     "sum(x, [xs])", "x+sum([xs])",
+    "sum(x)", "x",
+    "prod(x)", "x",
+    "prod(x, y)", "x*y",
+    "prod(x, [xs])", "x*sum([xs])",
     "--x", "x",
-    "+x", "x",
 };
 
 bool parse_rule(char *before, char *after, RewriteRule *out_rule)
