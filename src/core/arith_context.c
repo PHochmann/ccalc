@@ -145,7 +145,7 @@ bool core_parse_input(char *input, char *error_fmt, bool replace_comp_funcs, Nod
         {
             apply_ruleset(out_res, num_comp_func, composite_functions);
         }
-        if (!core_simplify(out_res) || !core_replace_history(out_res))
+        if (!core_simplify(out_res, false, false) || !core_replace_history(out_res))
         {
             free_tree(*out_res);
             return false;

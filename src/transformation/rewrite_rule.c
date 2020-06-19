@@ -3,9 +3,6 @@
 #include "rewrite_rule.h"
 #include "matching.h"
 
-#include "../tree/tree_to_string.h" // Debugging
-#include <stdio.h> // Debugging
-
 #define NEW_VAR_LENGTH 5
 #define NORMAL_VAR_ID  0
 #define RULE_VAR_ID    1
@@ -93,9 +90,6 @@ void apply_ruleset(Node **tree, size_t num_rules, RewriteRule *ruleset)
         {
             if (apply_rule(tree, &ruleset[j]))
             {
-                print_tree(*tree, true);
-                printf("\n");
-                replace_constant_subtrees(tree, op_evaluate);
                 applied_flag = true;
                 break;
             }

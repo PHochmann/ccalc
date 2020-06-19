@@ -1,25 +1,27 @@
-#include <stdio.h>
-
+#include "../tree/tree_util.h"
+#include "../parsing/parser.h"
+#include "../transformation/rewrite_rule.h"
 #include "simplification.h"
 #include "arith_context.h"
 #include "evaluation.h"
-#include "../tree/node.h"
-#include "../parsing/parser.h"
-#include "../transformation/rewrite_rule.h"
 
-#define NUM_NORMAL_FORM_RULES 8
-RewriteRule normal_form_rules[NUM_NORMAL_FORM_RULES];
-char *normal_form_strings[] = {
-    "vx+cx", "cx+vx",
-    "vx*cx", "cx*vx",
-    "x+(y+z)", "x+y+z",
-    "x*(y*z)", "x*y*z",
-
-    "x-y", "x+(-y)",
+#define NUM_OP_ELIMINATION_RULES 4
+RewriteRule op_elimination_rules[NUM_OP_ELIMINATION_RULES];
+char *op_elimination_strings[] = {
     "$x", "x",
     "--x", "x",
+    "x+(y+z)", "x+y+z",
+    "x*(y*z)", "x*y*z",
+};
+
+#define NUM_NORMAL_FORM_RULES 5
+RewriteRule normal_form_rules[NUM_NORMAL_FORM_RULES];
+char *normal_form_strings[] = {
+    "x-y", "x+(-y)",
     "-(x+y)", "-x+(-y)",
-    "-(x*y)", "(-x)*y"
+    "-(x*y)", "(-x)*y",
+    "vx+cx", "cx+vx",
+    "vx*cx", "cx*vx",
 };
 
 #define NUM_SIMPLIFICATION_RULES 28
@@ -106,6 +108,7 @@ bool parse_rules(size_t num_rules, char **input, RewriteRule *out_rules)
 
 void init_simplification()
 {
+    parse_rules(NUM_OP_ELIMINATION_RULES, op_elimination_strings, op_elimination_rules);
     parse_rules(NUM_NORMAL_FORM_RULES, normal_form_strings, normal_form_rules);
     parse_rules(NUM_SIMPLIFICATION_RULES, simplification_strings, simplification_rules);
     parse_rules(NUM_PRETTY_RULES, pretty_strings, pretty_rules);
@@ -113,6 +116,10 @@ void init_simplification()
 
 void unload_simplification()
 {
+    for (size_t i = 0; i < NUM_OP_ELIMINATION_RULES; i++)
+    {
+        free_rule(op_elimination_rules[i]);
+    }
     for (size_t i = 0; i < NUM_NORMAL_FORM_RULES; i++)
     {
         free_rule(normal_form_rules[i]);
@@ -131,12 +138,19 @@ void unload_simplification()
 Summary: Applies all pre-defined rewrite rules to tree
 Returns: True when transformations could be applied, False otherwise (currently: only true)
 */
-bool core_simplify(Node **tree)
+bool core_simplify(Node **tree, bool experimental_simplification, bool elim_constant_subtrees)
 {
-    apply_ruleset(tree, NUM_NORMAL_FORM_RULES, normal_form_rules);
-    printf("~ ~ ~\n");
-    apply_ruleset(tree, NUM_SIMPLIFICATION_RULES, simplification_rules);
-    printf("~ ~ ~\n");
-    apply_ruleset(tree, NUM_PRETTY_RULES, pretty_rules);
+    apply_ruleset(tree, NUM_OP_ELIMINATION_RULES, op_elimination_rules);
+    if (elim_constant_subtrees)
+    {
+        replace_constant_subtrees(tree, op_evaluate);
+    }
+    if (experimental_simplification)
+    {
+        apply_ruleset(tree, NUM_NORMAL_FORM_RULES, normal_form_rules);
+        apply_ruleset(tree, NUM_SIMPLIFICATION_RULES, simplification_rules);
+        apply_ruleset(tree, NUM_PRETTY_RULES, pretty_rules);
+        replace_constant_subtrees(tree, op_evaluate);
+    }
     return true;
 }
