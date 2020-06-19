@@ -162,16 +162,31 @@ size_t match_parameter_lists(Matching matching,
                 num_matchings = num_new_matchings;
 
                 // Fail when there are no matchings
-                // Todo: Delete all results with same prefix, since they will also yield no matching
                 if (num_matchings == 0)
                 {
-                    break;
+                    // Delete all partitions with same prefix since they will fail too
+                    while (num_results != 0)
+                    {
+                        // i is index of first child that could not be matched
+                        for (size_t j = 0; j <= i; j++)
+                        {
+                            if (results[num_results - 1][j] != results[i][j])
+                            {
+                                goto next_result;
+                            }
+                        }
+                        // Prefix is the same, delete:
+                        num_results--;
+                        printf("Skipped match-attempt :)\n");
+                    }
                 }
             }
 
-            // Partition works when there are matchings in the end
+            next_result:
+
             if (num_matchings != 0)
             {
+                // Partition works when there are matchings in the end
                 // Stop after first working partition
                 // Copy results of last iteration to output-buffer if last buffer wasn't already output-buffer
                 if (out_matchings != matchingsA)
