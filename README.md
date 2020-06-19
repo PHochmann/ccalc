@@ -20,7 +20,7 @@ When starting the calculator normally, you can enter expressions and commands in
 * You can define functions (and even overload them by arity) and constants (e.g. ```myFunc(x) = x^2```, ```myConst = 42```).
 * When applying unary functions to a literal, you can omit parentheses (e.g. ```sin2```).
 * Any line starting with ```'``` will be ignored (useful for comments in files to be loaded).
-* Use ```$``` to parse the following expression with maximal precedence, like in Haskell.
+* Use ```$``` to parse the rest of the expression as if it was put in parentheses, like in Haskell.
 
 ### Available commands
 | Command                       | Description                                                               |
