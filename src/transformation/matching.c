@@ -4,6 +4,8 @@
 #include "matching.h"
 #include "../tree/tree_util.h"
 
+#include <stdio.h>
+
 /*
 Code in this file lacks buffer-overflow protection
 Todo: Add protection
@@ -115,6 +117,18 @@ size_t match_parameter_lists(Matching matching,
         }
     }
 
+
+    printf("NUM_RESULTS: %zu\n", num_results);
+    for (size_t x = 0; x < num_results; x++)
+    {
+        printf("[%zu] ", x);
+        for (size_t y = 0; y < num_pattern_children; y++)
+        {
+            printf("%zu ", results[x][y]);
+        }
+        printf("\n");
+    }
+
     compute_results:
     {
         // We successfully found all possible partitions of the parameter list of tree on all parameters in pattern
@@ -146,6 +160,13 @@ size_t match_parameter_lists(Matching matching,
                 matchingsB = matchingsA;
                 matchingsA = temp;
                 num_matchings = num_new_matchings;
+
+                // Fail when there are no matchings
+                // Todo: Delete all results with same prefix, since they will also yield no matching
+                if (num_matchings == 0)
+                {
+                    break;
+                }
             }
 
             // Partition works when there are matchings in the end

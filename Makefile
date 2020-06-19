@@ -23,7 +23,7 @@ INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 CFLAGS := -std=c99 -Wall -Wextra -Werror -pedantic
 LDFLAGS := -lm
 
-ifneq (,$(filter $(MAKECMDGOALS),noreadline))
+ifeq (,$(filter $(MAKECMDGOALS),noreadline))
 	CFLAGS += -DUSE_READLINE
 	LDFLAGS += -lreadline
 endif

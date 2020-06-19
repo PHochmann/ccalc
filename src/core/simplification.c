@@ -24,9 +24,13 @@ char *normal_form_strings[] = {
     "vx*cx", "cx*vx",
 };
 
-#define NUM_SIMPLIFICATION_RULES 28
+#define NUM_SIMPLIFICATION_RULES 3
 RewriteRule simplification_rules[NUM_SIMPLIFICATION_RULES];
 char *simplification_strings[] = {
+
+    "x+y", "sum(x,y)",
+    "sum([xs], sum([ys]), [zs])", "sum([xs], [ys], [zs])",
+
 
     /* Move constants */
     "sum([xs], vx, [ys], cx, [zs])", "sum(cx, [xs], vx, [ys], [zs])", 
@@ -148,7 +152,9 @@ bool core_simplify(Node **tree, bool experimental_simplification, bool elim_cons
     if (experimental_simplification)
     {
         apply_ruleset(tree, NUM_NORMAL_FORM_RULES, normal_form_rules);
+        replace_constant_subtrees(tree, op_evaluate);
         apply_ruleset(tree, NUM_SIMPLIFICATION_RULES, simplification_rules);
+        replace_constant_subtrees(tree, op_evaluate);
         apply_ruleset(tree, NUM_PRETTY_RULES, pretty_rules);
         replace_constant_subtrees(tree, op_evaluate);
     }
