@@ -1,6 +1,6 @@
 #pragma once
 #include <stdbool.h>
-#include "operator.h"
+#include "../tree/operator.h"
 
 struct ParsingContext;
 
