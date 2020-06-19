@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "test_node.h"
+#include "test_tree_util.h"
 #include "../src/tree/operator.h"
 #include "../src/tree/tree_util.h"
 #include "../src/tree/tree_to_string.h"
@@ -9,10 +9,11 @@
 static const size_t NUM_CASES = 5;
 
 #define ERROR_RETURN_VAL(function) {\
-    return create_error("Unexpected return value of %s.\n", function);\
+    append_stringbuilder(error_builder, "Unexpected return value of %s.\n", function);\
+    return false;\
 }
 
-char *node_test()
+bool tree_util_test(StringBuilder *error_builder)
 {
     Operator op = op_get_function("test", OP_DYNAMIC_ARITY);
 
@@ -54,7 +55,8 @@ char *node_test()
         || *vars_x[2] != get_child(root, 4))
     {
         free_tree(root);
-        return create_error("Unexpected out_instances of get_variable_nodes.\n");
+        append_stringbuilder(error_builder, "Unexpected out_instances of get_variable_nodes.\n");
+        return false;
     }
 
     // Case 4
@@ -87,21 +89,22 @@ char *node_test()
     // Check equality
     if (tree_compare(root_copy, root) != NULL)
     {
-        return create_error("Unexpected replacement by replace_variable_nodes (or tree_copy broken).\n"); // Mem. leak
+        append_stringbuilder(error_builder, "Unexpected replacement by replace_variable_nodes (or tree_copy broken).\n"); // Mem. leak
+        return false;
     }
 
     free_tree(root);
     free_tree(root_copy);
     free_tree(child_copy);
     free_tree(replacement);
-    return NULL;
+    return true;
 }
 
-Test get_node_test()
+Test get_tree_util_test()
 {
     return (Test){
-        node_test,
+        tree_util_test,
         NUM_CASES,
-        "Tree_Util"
+        "Tree Util"
     };
 }

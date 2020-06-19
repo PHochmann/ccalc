@@ -71,10 +71,10 @@ Summary:
     This test does not test them independently.
     Note that dynamic arity functions coexisting with fixed-arity function of same name cause false negatives
 */
-char *randomized_test()
+bool randomized_test(StringBuilder *error_builder)
 {
     init_core_ctx();
-    char *res = NULL;
+    bool error = false;
     srand(SEED);
 
     for (size_t i = 0; i < NUM_CASES; i++)
@@ -84,9 +84,7 @@ char *randomized_test()
         generate_tree(MAX_INNER_NODES, &random_tree);
 
         // Convert random tree to string
-        size_t buffer_len = tree_to_string(random_tree, NULL, 0, false) + 1;
-        char stringed_tree[buffer_len];
-        tree_to_string(random_tree, stringed_tree, buffer_len, false);
+        char *stringed_tree = tree_to_string(random_tree, false);
 
         // To test glue-op: replace some '*' by spaces
         while (rand() % 4 != 0)
@@ -109,7 +107,8 @@ char *randomized_test()
         // Check results
         if (result != PERR_SUCCESS)
         {
-            res = create_error("Parser error: %s.\n", perr_to_string(result));
+            append_stringbuilder(error_builder, "Parser error: %s.\n", perr_to_string(result));
+            error = true;
         }
         else
         {
@@ -119,16 +118,18 @@ char *randomized_test()
                 print_tree_visually(random_tree);
                 printf("Parsed tree tree:\n");
                 print_tree_visually(parsed_tree);
-                res = create_error("Parsed tree not equal to generated tree.\n");
+                append_stringbuilder(error_builder, "Parsed tree not equal to generated tree.\n");
+                error = true;
             }
         }
 
         free_tree(random_tree);
         free_tree(parsed_tree);
-        if (res != NULL) return res;
+        free(stringed_tree);
+        if (error) return false;
     }
 
-    return NULL;
+    return true;
 }
 
 Test get_randomized_test()

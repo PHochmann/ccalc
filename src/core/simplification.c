@@ -22,7 +22,7 @@ char *normal_form_strings[] = {
     "-(x*y)", "(-x)*y"
 };
 
-#define NUM_SIMPLIFICATION_RULES 26
+#define NUM_SIMPLIFICATION_RULES 28
 RewriteRule simplification_rules[NUM_SIMPLIFICATION_RULES];
 char *simplification_strings[] = {
 
@@ -44,11 +44,13 @@ char *simplification_strings[] = {
     "prod([xs])*x", "prod([xs], x)",
 
     /* Simplify sums */
+    "sum(x)", "x",
     "sum([xs], 0, [ys])", "sum([xs], [ys])",
     "sum([xs], x, [ys], -x, [zs])", "sum([xs], [ys], [zs])",
     "sum([xs], -x, [ys], x, [zs])", "sum([xs], [ys], [zs])",
 
     /* Simplify products */
+    "prod(x)", "x",
     "prod([xs], 0, [ys])", "0",
     "prod([xs], 1, [ys])", "prod([xs], [ys])",
     "prod([xs], -1, [ys])", "-prod([xs], [ys])",

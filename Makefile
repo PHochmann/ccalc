@@ -2,11 +2,11 @@ TARGET_EXEC := ccalc
 BUILD_DIR := ./bin/release
 SRC_DIRS := ./src
 
-ifeq ($(filter debug,$(MAKECMDGOALS)),debug)
+ifneq (,$(filter $(MAKECMDGOALS),debug tests))
     BUILD_DIR := ./bin/debug
 endif
 
-ifeq ($(filter tests,$(MAKECMDGOALS)),tests)
+ifneq (,$(filter $(MAKECMDGOALS),tests))
 	SRC_DIRS += ./tests
 	SRCS = $(shell find $(SRC_DIRS) -name *.c ! -wholename "./src/main.c")
 	TARGET_EXEC := test
@@ -23,12 +23,12 @@ INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 CFLAGS := -std=c99 -Wall -Wextra -Werror -pedantic
 LDFLAGS := -lm
 
-ifneq ($(filter noreadline,$(MAKECMDGOALS)),noreadline)
+ifneq (,$(filter $(MAKECMDGOALS),noreadline))
 	CFLAGS += -DUSE_READLINE
 	LDFLAGS += -lreadline
 endif
 
-ifeq ($(filter debug,$(MAKECMDGOALS)),debug)
+ifneq (,$(filter $(MAKECMDGOALS),debug tests))
 	CFLAGS += -Og -g3
 endif
 

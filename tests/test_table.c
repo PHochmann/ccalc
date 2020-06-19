@@ -20,7 +20,7 @@ char *arrayA[4][4] = {
     { " 3....... ", RED " 23.1132310 " COL_RESET, "c ", " 333" },
 };
 
-char *table_test()
+bool table_test(__attribute__((unused)) StringBuilder *error_builder)
 {
     // Case 1
     Table t1 = get_empty_table();
@@ -82,7 +82,7 @@ char *table_test()
     print_table(&t2);
     free_table(&t2);
     
-    return NULL;
+    return true;
 }
 
 Test get_table_test()

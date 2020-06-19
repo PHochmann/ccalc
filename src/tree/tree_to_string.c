@@ -8,119 +8,81 @@
 #define OPENING_P "("
 #define CLOSING_P ")"
 
-// Encapsulates printing settings and buffer state to be communicated to auxiliary functions (singleton)
-struct PrintingState
+void p_open(StringBuilder *builder)
 {
-    char *buf;
-    size_t buf_size;
-    bool color;
-    size_t num_written;
-};
-
-// Helper function to write to buffer and update state
-void to_buffer(struct PrintingState *state, const char *format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    int chars_written = vsnprintf(state->buf, state->buf_size, format, args);
-    va_end(args);
-
-    if (chars_written >= 0)
-    {
-        state->num_written += chars_written;
-    }
-    else
-    {
-        return; // vsnprintf returned error
-    }
-    
-    state->buf += chars_written; // Advance buffer
-
-    if ((size_t)chars_written <= state->buf_size)
-    {
-        state->buf_size -= chars_written;
-    }
-    else
-    {
-        state->buf_size = 0;
-    }
+    append_stringbuilder(builder, OPENING_P);
 }
 
-void p_open(struct PrintingState *state)
+void p_close(StringBuilder *builder)
 {
-    to_buffer(state, OPENING_P);
+    append_stringbuilder(builder, CLOSING_P);
 }
 
-void p_close(struct PrintingState *state)
-{
-    to_buffer(state, CLOSING_P);
-}
+void tree_to_string_internal(StringBuilder *builder, bool color, Node *node, bool l, bool r);
 
-void tree_to_string_internal(struct PrintingState *state, Node *node, bool l, bool r);
-
-void prefix_to_string(struct PrintingState *state, Node *node, bool l, bool r)
+void prefix_to_string(StringBuilder *builder, bool color, Node *node, bool l, bool r)
 {
-    if (l) p_open(state);
-    to_buffer(state, get_op(node)->name);
+    if (l) p_open(builder);
+    append_stringbuilder(builder, get_op(node)->name);
     
     if (get_type(get_child(node, 0)) == NTYPE_OPERATOR
         && get_op(get_child(node, 0))->precedence <= get_op(node)->precedence)
     {
-        p_open(state);
-        tree_to_string_internal(state, get_child(node, 0), false, false);
-        p_close(state);
+        p_open(builder);
+        tree_to_string_internal(builder, color, get_child(node, 0), false, false);
+        p_close(builder);
     }
     else
     {
         // Subexpression needs to be right-protected when expression of 'node' is not encapsulated in parentheses
         // (!l, otherwise redundant parentheses would be printed) and itself needs to be right-protected
-        tree_to_string_internal(state, get_child(node, 0), true, !l && r);
+        tree_to_string_internal(builder, color, get_child(node, 0), true, !l && r);
     }
     
-    if (l) p_close(state);
+    if (l) p_close(builder);
 }
 
-void postfix_to_string(struct PrintingState *state, Node *node, bool l, bool r)
+void postfix_to_string(StringBuilder *builder, bool color, Node *node, bool l, bool r)
 {
-    if (r) p_open(state);
+    if (r) p_open(builder);
 
     // It should be safe to dereference first child
     if (get_type(get_child(node, 0)) == NTYPE_OPERATOR
         && get_op(get_child(node, 0))->precedence < get_op(node)->precedence)
     {
-        p_open(state);
-        tree_to_string_internal(state, get_child(node, 0), false, false);
-        p_close(state);
+        p_open(builder);
+        tree_to_string_internal(builder, color, get_child(node, 0), false, false);
+        p_close(builder);
     }
     else
     {
         // See analog case of infix operator for conditions for left-protection
-        tree_to_string_internal(state, get_child(node, 0), l && !r, true);
+        tree_to_string_internal(builder, color, get_child(node, 0), l && !r, true);
     }
     
-    to_buffer(state, "%s", get_op(node)->name);
-    if (r) p_close(state);
+    append_stringbuilder(builder, "%s", get_op(node)->name);
+    if (r) p_close(builder);
 }
 
-void function_to_string(struct PrintingState *state, Node *node)
+void function_to_string(StringBuilder *builder, bool color, Node *node)
 {
     if (get_op(node)->arity != 0)
     {
-        to_buffer(state, "%s(", get_op(node)->name);
+        append_stringbuilder(builder, "%s(", get_op(node)->name);
         for (size_t i = 0; i < get_num_children(node); i++)
         {
-            tree_to_string_internal(state, get_child(node, i), false, false);
-            if (i < get_num_children(node) - 1) to_buffer(state, ",");
+            tree_to_string_internal(builder, color, get_child(node, i), false, false);
+            if (i < get_num_children(node) - 1) append_stringbuilder(builder, ",");
         }
-        p_close(state);
+        p_close(builder);
     }
     else
     {
-        to_buffer(state, "%s", get_op(node)->name);
+        append_stringbuilder(builder, "%s", get_op(node)->name);
     }
 }
 
-void infix_to_string(struct PrintingState *state, Node *node, bool l, bool r)
+void infix_to_string(StringBuilder *builder, bool color, Node *node, bool l, bool r)
 {
     Node *childL = get_child(node, 0);
     Node *childR = get_child(node, 1);
@@ -135,16 +97,16 @@ void infix_to_string(struct PrintingState *state, Node *node, bool l, bool r)
             || (get_op(childL)->precedence == get_op(node)->precedence
                 && get_op(node)->assoc == OP_ASSOC_RIGHT)))
     {
-        p_open(state);
-        tree_to_string_internal(state, childL, false, false);
-        p_close(state);
+        p_open(builder);
+        tree_to_string_internal(builder, color, childL, false, false);
+        p_close(builder);
     }
     else
     {
-        tree_to_string_internal(state, childL, l, true);
+        tree_to_string_internal(builder, color, childL, l, true);
     }
 
-    to_buffer(state, is_letter(get_op(node)->name[0]) ? " %s " : "%s", get_op(node)->name);
+    append_stringbuilder(builder, is_letter(get_op(node)->name[0]) ? " %s " : "%s", get_op(node)->name);
     
     // Checks if right operand of infix operator needs to be wrapped in parentheses (see analog case for left operand)
     if (get_type(childR) == NTYPE_OPERATOR
@@ -152,13 +114,13 @@ void infix_to_string(struct PrintingState *state, Node *node, bool l, bool r)
             || (get_op(childR)->precedence == get_op(node)->precedence
                 && get_op(node)->assoc == OP_ASSOC_LEFT)))
     {
-        p_open(state);
-        tree_to_string_internal(state, childR, false, false);
-        p_close(state);
+        p_open(builder);
+        tree_to_string_internal(builder, color, childR, false, false);
+        p_close(builder);
     }
     else
     {
-        tree_to_string_internal(state, childR, true, r);
+        tree_to_string_internal(builder, color, childR, true, r);
     }
 }
 
@@ -168,69 +130,48 @@ Params
         It needs to be protected when it is adjacent to an operator on this side.
         When the subexpression starts (ends) with an operator and needs to be protected to the left (right), a parenthesis is printed in between.
 */
-void tree_to_string_internal(struct PrintingState *state, Node *node, bool l, bool r)
+void tree_to_string_internal(StringBuilder *builder, bool color, Node *node, bool l, bool r)
 {
     switch (get_type(node))
     {
         case NTYPE_CONSTANT:
-            to_buffer(state, state->color ? CONST_COLOR CONSTANT_TYPE_FMT COL_RESET : CONSTANT_TYPE_FMT, get_const_value(node));
+            append_stringbuilder(builder, color ? CONST_COLOR CONSTANT_TYPE_FMT COL_RESET : CONSTANT_TYPE_FMT, get_const_value(node));
             break;
             
         case NTYPE_VARIABLE:
-            to_buffer(state, state->color ? VAR_COLOR "%s" COL_RESET : "%s", get_var_name(node));
+            append_stringbuilder(builder, color ? VAR_COLOR "%s" COL_RESET : "%s", get_var_name(node));
             break;
             
         case NTYPE_OPERATOR:
             switch (get_op(node)->placement)
             {
                 case OP_PLACE_PREFIX:
-                    prefix_to_string(state, node, l, r);
+                    prefix_to_string(builder, color, node, l, r);
                     break;
                 case OP_PLACE_POSTFIX:
-                    postfix_to_string(state, node, l, r);
+                    postfix_to_string(builder, color, node, l, r);
                     break;
                 case OP_PLACE_FUNCTION:
-                    function_to_string(state, node);
+                    function_to_string(builder, color, node);
                     break;
                 case OP_PLACE_INFIX:
-                    infix_to_string(state, node, l, r);
+                    infix_to_string(builder, color, node, l, r);
                     break;
             }
         }
 }
 
-// Summary: Fills buffer with representation of tree
-// Returns: Length of output, even if buffer was not sufficient (without \0)
-size_t tree_to_string(Node *node, char *buffer, size_t buffer_size, bool color)
+void tree_to_stringbuilder(StringBuilder *builder, Node *node, bool color)
 {
-    // In case nothing is printed, we still want to have a proper string
-    if (buffer_size != 0) *buffer = '\0';
-
-    struct PrintingState state = {
-        .buf = buffer,
-        .buf_size = buffer_size,
-        .color = color,
-        .num_written = 0
-    };
-
-    tree_to_string_internal(&state, node, false, false);
-    return state.num_written;
+    tree_to_string_internal(builder, color, node, false, false);
 }
 
-/*
-Summary: Only use it when you're sure the buffer is large enough (to check: sizeof_tree_to_string)
-*/
-void unsafe_tree_to_string(Node *node, char *buffer, bool color)
+// Summary: Returns string (on heap)
+char *tree_to_string(Node *node, bool color)
 {
-    tree_to_string(node, buffer, SSIZE_MAX, color);
-}
-
-/*
-Returns: Number of bytes needed to store string representation of node (including \0)
-*/
-size_t sizeof_tree_to_string(Node *node, bool color)
-{
-    return tree_to_string(node, NULL, 0, color) + 1;
+    StringBuilder builder = get_stringbuilder(100);
+    tree_to_stringbuilder(&builder, node, color);
+    return builder.buffer;
 }
 
 /*
@@ -238,9 +179,9 @@ Summary: Prints result of tree_to_string to stdout
 */
 void print_tree(Node *node, bool color)
 {
-    char buffer[sizeof_tree_to_string(node, color)];
-    unsafe_tree_to_string(node, buffer, color);
-    printf("%s", buffer);
+    char *str = tree_to_string(node, color);
+    printf("%s", str);
+    free(str);
 }
 
 /* Algorithm to put tree into single string ends here.

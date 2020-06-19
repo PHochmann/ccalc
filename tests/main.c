@@ -3,7 +3,7 @@
 #include <stdbool.h>
 
 #include "test.h"
-#include "test_node.h"
+#include "test_tree_util.h"
 #include "test_parser.h"
 #include "test_tree_to_string.h"
 #include "test_randomized.h"
@@ -14,7 +14,7 @@
 
 static const size_t NUM_TESTS = 6;
 static Test (*test_getters[])() = {
-    get_node_test,
+    get_tree_util_test,
     get_parser_test,
     get_tree_to_string_test,
     get_randomized_test,
@@ -38,7 +38,7 @@ int main()
     set_hline(&table, BORDER_SINGLE);
 
     bool error = false;
-    char *results[NUM_TESTS];
+    StringBuilder error_builder = get_stringbuilder(100);
     for (size_t i = 0; i < NUM_TESTS; i++)
     {
         Test test = test_getters[i]();
@@ -47,19 +47,21 @@ int main()
         add_cell_fmt(&table, " %s ", test.name);
         add_cell_fmt(&table, " %d ", test.num_cases);
 
-        results[i] = test.suite();
-
-        if (results[i] == NULL)
+        if (test.suite(&error_builder))
         {
             add_cell(&table, F_GREEN " passed " COL_RESET);
         }
         else
         {
+            printf("[" F_RED "%s" COL_RESET "] %s", test_getters[i]().name, error_builder.buffer);
             add_cell(&table, F_RED " failed " COL_RESET);
             error = true;
         }
         next_row(&table);
+
+
     }
+    free_stringbuilder(&error_builder);
 
     set_span(&table, 3, 1);
     override_alignment(&table, ALIGN_CENTER);
@@ -68,15 +70,6 @@ int main()
     add_cell(&table, error ? F_RED " failed " COL_RESET : F_GREEN " passed " COL_RESET);
     next_row(&table);
     make_boxed(&table, BORDER_SINGLE);
-
-    for (size_t i = 0; i < NUM_TESTS; i++)
-    {
-        if (results[i] != NULL)
-        {
-            printf("[" F_RED "%s" COL_RESET "] %s", test_getters[i]().name, results[i]);
-            free(results[i]);
-        }
-    }
     print_table(&table);
     free_table(&table);
 

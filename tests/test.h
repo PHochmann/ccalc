@@ -1,14 +1,14 @@
 #pragma once
 #include <stdbool.h>
 
+#include "../src/string_util.h"
+
 #define F_RED     "\x1B[1;31m"
 #define F_GREEN   "\x1B[1;32m"
 #define COL_RESET "\x1B[0m"
 
 typedef struct {
-    char *(*suite)(); // Returns NULL or error message
+    bool (*suite)(StringBuilder *error_builder);
     int num_cases;
     char *name;
 } Test;
-
-char *create_error(char *fmt, ...);

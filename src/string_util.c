@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 #include "string_util.h"
 
@@ -160,4 +161,54 @@ size_t console_strlen(char *str)
         res++;
     }
     return res;
+}
+
+StringBuilder get_stringbuilder(size_t start_size)
+{
+    if (start_size == 0) start_size = 10;
+    StringBuilder builder = {
+        .buffer = malloc(start_size * sizeof(char)),
+        .buffer_size = start_size,
+        .strlen = 0
+    };
+    builder.buffer[0] = '\0';
+    return builder;
+}
+
+void reset_stringbuilder(StringBuilder *builder)
+{
+    builder->buffer[0] = '\0';
+    builder->strlen = 0;
+}
+
+void free_stringbuilder(StringBuilder *builder)
+{
+    free(builder->buffer);
+}
+
+char *append_stringbuilder(StringBuilder *builder, char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    char *res = vappend_stringbuilder(builder, fmt, args);
+    va_end(args);
+    return res;
+}
+
+char *vappend_stringbuilder(StringBuilder *builder, char *fmt, va_list args)
+{
+    va_list args_copy;
+    va_copy(args_copy, args);
+    size_t needed = vsnprintf(NULL, 0, fmt, args) + 1;
+
+    while (builder->strlen + needed > builder->buffer_size)
+    {
+        builder->buffer_size <<= 1;
+    }
+
+    builder->buffer = realloc(builder->buffer, builder->buffer_size);
+    vsnprintf(builder->buffer + builder->strlen, needed, fmt, args_copy);
+    builder->strlen += needed - 1;
+    va_end(args_copy);
+    return builder->buffer;
 }

@@ -6,6 +6,7 @@
 #include "table.h"
 #include "printing.h"
 #include "constraint.h"
+#include "../string_util.h"
 
 void add_cell_internal(Table *table, char *text, bool needs_free)
 {
@@ -216,13 +217,9 @@ void add_cell_fmt(Table *table, char *fmt, ...)
 
 void add_cell_vfmt(Table *table, char *fmt, va_list args)
 {
-    va_list args_copy;
-    va_copy(args_copy, args);
-    size_t needed = vsnprintf(NULL, 0, fmt, args) + 1;
-    char *buffer = malloc(needed * sizeof(char));
-    vsnprintf(buffer, needed, fmt, args_copy);
-    add_cell_internal(table, buffer, true);
-    va_end(args_copy);
+    StringBuilder builder = get_stringbuilder(10);
+    vappend_stringbuilder(&builder, fmt, args);
+    add_cell_internal(table, builder.buffer, true);
 }
 
 /*

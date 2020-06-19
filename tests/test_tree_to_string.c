@@ -30,44 +30,32 @@ static struct TreeToStringTest tests[] = {
         "-sqrt(abs(((-(-a)!)!)*(-(-sum(-b+c-d+e,f^g^h-i,-sum(j,k),l+m)))*(-(-n)!)!))" },
 };
 
-char *tree_to_string_test()
+bool tree_to_string_test(StringBuilder *error_builder)
 {
     init_core_ctx();
-    char *res = NULL;
-    Node *node = NULL;
 
     for (size_t i = 0; i < NUM_CASES; i++)
     {
-        size_t expected_length = strlen(tests[i].expected_result);
-        char result[expected_length + 1];
-
+        Node *node = NULL;
         if (parse_input(g_ctx, tests[i].input, &node) != PERR_SUCCESS)
         {
-            return create_error("Parser Error in '%s'\n", tests[i].input);
+            append_stringbuilder(error_builder, "Parser Error in '%s'\n", tests[i].input);
+            return false;
         }
 
-        // Check if tree_to_string returns correct length with and without buffer
-        if (tree_to_string(node, NULL, 0, false) != expected_length
-            || tree_to_string(node, result, expected_length + 1, false) != expected_length)
-        {
-            res = create_error("Unexpected length in '%s'\n", tests[i].input);
-            goto error;
-        }
+        char *result = tree_to_string(node, false);
 
         if (strcmp(tests[i].expected_result, result) != 0)
         {
-            res = create_error("Unexpected result in '%s'\n", tests[i].input);
-            goto error;
+            append_stringbuilder(error_builder, "Unexpected result in '%s'\n", tests[i].input);
+            return false;
         }
 
+        free(result);
         free_tree(node);
     }
 
-    return NULL;
-
-    error:
-    free_tree(node);
-    return res;
+    return true;
 }
 
 Test get_tree_to_string_test()

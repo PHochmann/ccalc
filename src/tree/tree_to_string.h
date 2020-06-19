@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include "../string_util.h"
 #include "node.h"
 
 #define OP_COLOR    "\x1B[47m\x1B[22;30m" // White background, black foreground
@@ -8,8 +9,7 @@
 
 #define CONSTANT_TYPE_FMT "%-.10g"
 
-size_t tree_to_string(Node *node, char *buffer, size_t buffer_size, bool color);
-size_t sizeof_tree_to_string(Node *node, bool color);
-void unsafe_tree_to_string(Node *node, char *buffer, bool color);
+char *tree_to_string(Node *node, bool color);
+void tree_to_stringbuilder(StringBuilder *builder, Node *node, bool color);
 void print_tree(Node *node, bool color);
 void print_tree_visually(Node *node);

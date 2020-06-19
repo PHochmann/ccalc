@@ -273,17 +273,9 @@ void print_short_help()
         for (size_t i = 0; i < get_num_composite_functions(); i++)
         {
             RewriteRule *rule = get_composite_function(i);
-
-            char inlined_before[sizeof_tree_to_string(rule->before, true)];
-            unsafe_tree_to_string(rule->before, inlined_before, true);
-            add_cell_fmt(&table, "%s", inlined_before);
-
+            add_cell_gc(&table, tree_to_string(rule->before, true));
             add_cell(&table, " = ");
-
-            char inlined_after[sizeof_tree_to_string(rule->after, true)];
-            unsafe_tree_to_string(rule->after, inlined_after, true);
-            add_cell_fmt(&table, "%s", inlined_after);
-
+            add_cell_gc(&table, tree_to_string(rule->after, true));
             next_row(&table);
         }
         print_table(&table);
