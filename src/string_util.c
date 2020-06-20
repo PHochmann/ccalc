@@ -5,6 +5,9 @@
 
 #include "string_util.h"
 
+#define ESC_START  27
+#define ESC_END   109
+
 bool is_space(char c)
 {
     return c == ' ';
@@ -17,7 +20,11 @@ bool is_digit(char c)
 
 bool is_letter(char c)
 {
-    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_' || c == '[' || c == ']';
+    return (c >= 'A' && c <= 'Z')
+        || (c >= 'a' && c <= 'z')
+        || c == '_'
+        || c == '['
+        || c == ']';
 }
 
 bool is_opening_parenthesis(char *c)
@@ -44,7 +51,7 @@ bool begins_with(char *prefix, char *str)
 }
 
 /*
-Summary: Helper function to parse commands to extract strings between delimiters
+Summary: Helper function when parsing commands to extract strings between delimiters
     Currently only used in cmd_table_exec
 Example: split("abc x def ghi", out, 2, " x ", " g") = 3
     out = { "abc", "def", "hi" }
@@ -113,18 +120,6 @@ char *perr_to_string(ParserError perr)
             return "Unknown Error";
     }
 }
-
-// Currently not in use
-/*void strtrim(char *str)
-{
-    while (*str == ' ') str++;
-    char *end = str + strlen(str) - 1;
-    while (end > str && *end == ' ') end--;
-    end[1] = '\0';
-}*/
-
-#define ESC_START  27
-#define ESC_END   109
 
 StringIterator get_iterator(char *string)
 {
@@ -199,16 +194,27 @@ char *vappend_stringbuilder(StringBuilder *builder, char *fmt, va_list args)
 {
     va_list args_copy;
     va_copy(args_copy, args);
-    size_t needed = vsnprintf(NULL, 0, fmt, args) + 1;
 
-    while (builder->strlen + needed > builder->buffer_size)
+    size_t appended_length = vsnprintf(
+        builder->buffer + builder->strlen,
+        builder->buffer_size - builder->strlen,
+        fmt, args);
+
+    bool try_again = false;
+    while (builder->buffer_size < builder->strlen + appended_length + 1)
     {
+        // Double buffer size as long as size is not sufficient
         builder->buffer_size <<= 1;
+        try_again = true;
     }
 
-    builder->buffer = realloc(builder->buffer, builder->buffer_size);
-    vsnprintf(builder->buffer + builder->strlen, needed, fmt, args_copy);
-    builder->strlen += needed - 1;
+    if (try_again)
+    {
+        builder->buffer = realloc(builder->buffer, builder->buffer_size);
+        vsnprintf(builder->buffer + builder->strlen, appended_length + 1, fmt, args_copy);
+    }
+    
+    builder->strlen += appended_length;
     va_end(args_copy);
     return builder->buffer;
 }
