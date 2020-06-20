@@ -8,7 +8,7 @@
 Todo: protect against buffer overflows
 */
 
-#define MAX_MATCHINGS 5000
+#define MAX_MATCHINGS  500
 #define MAX_PARTITIONS 500
 
 typedef struct TrieNode {

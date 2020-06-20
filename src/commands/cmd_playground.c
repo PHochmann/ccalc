@@ -12,9 +12,6 @@ int cmd_playground_check(char *input)
     return strcmp("playground", input) == 0;
 }
 
-/*
-Summary: Opens file and processes its content as from stdin
-*/
 bool cmd_playground_exec(__attribute__((unused)) char *input, __attribute__((unused)) int code)
 {
     char *pattern_str = NULL;
@@ -22,14 +19,21 @@ bool cmd_playground_exec(__attribute__((unused)) char *input, __attribute__((unu
     char *tree_str = NULL;
     Node *tree = NULL;
 
-    do
+    while (true)
     {
-        free(pattern_str);
         if (!ask_input(stdin, &pattern_str, "pattern: "))
         {
             goto cleanup;
         }
-    } while (parse_input(g_ctx, pattern_str, &pattern) != PERR_SUCCESS && (printf("Syntax Error.\n") || true));
+
+        if (parse_input(g_ctx, pattern_str, &pattern) != PERR_SUCCESS)
+        {
+            printf("Syntax Error.\n");
+            free(pattern_str);
+            continue;
+        }
+        break;
+    }
 
     while (true)
     {
