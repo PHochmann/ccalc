@@ -81,8 +81,8 @@ bool apply_rule(Node **tree, RewriteRule *rule)
 Summary: Tries to apply rules (priorized by order) until no rule can be applied any more
     Possibly not terminating!
 */
-#include <stdio.h>
-#include "../tree/tree_to_string.h"
+//#include <stdio.h>
+//#include "../tree/tree_to_string.h"
 void apply_ruleset(Node **tree, size_t num_rules, RewriteRule *ruleset)
 {
     while (true)
@@ -92,16 +92,16 @@ void apply_ruleset(Node **tree, size_t num_rules, RewriteRule *ruleset)
         {
             if (apply_rule(tree, &ruleset[j]))
             {
-                printf("[%zu] ", j);
-                print_tree(*tree, true);
-                printf("\n");
+                //printf("[%zu] ", j);
+                //print_tree(*tree, true);
+                //printf("\n");
                 applied_flag = true;
                 break;
             }
         }
         if (!applied_flag)
         {
-            printf("END!\n");
+            //printf("END!\n");
             return;
         }
     }
