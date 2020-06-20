@@ -9,6 +9,7 @@
 #include "cmd_debug.h"
 #include "cmd_definition.h"
 #include "cmd_table.h"
+#include "cmd_playground.h"
 #include "../string_util.h"
 #include "../console_util.h"
 #include "../core/arith_context.h"
@@ -53,7 +54,7 @@ struct Command
     bool (*exec_handler)(char* input, int check_code);
 };
 
-static const size_t NUM_COMMANDS = 8;
+static const size_t NUM_COMMANDS = 9;
 static const struct Command commands[] = {
     { cmd_quit_check,       cmd_quit_exec },
     { cmd_help_check,       cmd_help_exec },
@@ -62,6 +63,7 @@ static const struct Command commands[] = {
     { cmd_clear_check,      cmd_clear_exec },
     { cmd_debug_check,      cmd_debug_exec },
     { cmd_load_check,       cmd_load_exec },
+    { cmd_playground_check, cmd_playground_exec },
     /* Evaluation is last command. Its check function always returns true. */
     { cmd_evaluation_check, cmd_evaluation_exec }
 };

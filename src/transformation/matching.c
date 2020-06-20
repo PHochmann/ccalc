@@ -4,24 +4,56 @@
 #include "matching.h"
 #include "../tree/tree_util.h"
 
-#include <stdio.h>
-
 /*
-Code in this file lacks buffer-overflow protection
-Todo: Add protection
+Todo: protect against buffer overflows
 */
 
-#define MAX_MATCHINGS 20
-#define MAX_PARTITIONS 50
+#define MAX_MATCHINGS 5000
+#define MAX_PARTITIONS 500
 
-bool nodelists_equal(NodeList *a, NodeList *b)
+typedef struct TrieNode {
+    Matching *matchings;
+    size_t num_matchings;
+    size_t label;         // Amount of tree-children of this node
+    size_t sum;           // Amount of tree-children until this node
+    size_t distance;      // Amount of pattern-children until this node
+    struct TrieNode *parent;
+} TrieNode;
+
+size_t fill_trie(TrieNode *curr,
+    Node **pattern_children,
+    Node **tree_children,
+    size_t buffer_size,
+    Matching *matchings_buffer)
 {
-    if (a->size != b->size) return false;
-    for (size_t i = 0; i < a->size; i++)
+    if (curr->matchings != NULL) return 0;
+
+    size_t buffer_change = fill_trie(
+        curr->parent,
+        pattern_children,
+        tree_children,
+        buffer_size,
+        matchings_buffer);
+
+    matchings_buffer += buffer_change;
+    buffer_size -= buffer_change;
+    curr->matchings = matchings_buffer;
+
+    for (size_t i = 0; i < curr->parent->num_matchings; i++)
     {
-        if (tree_compare(a->nodes[i], b->nodes[i]) != NULL) return false;
+        size_t new_num_matchings = extend_matching(
+            curr->parent->matchings[i],
+            pattern_children[curr->distance - 1],
+            (NodeList){ .size = curr->label, .nodes = tree_children + curr->sum },
+            buffer_size,
+            matchings_buffer);
+        
+        buffer_size -= new_num_matchings;
+        curr->num_matchings += new_num_matchings;
+        matchings_buffer += new_num_matchings;
     }
-    return true;
+
+    return buffer_change + curr->num_matchings;
 }
 
 NodeList *lookup_mapped_var(Matching *matching, char *var)
@@ -41,174 +73,131 @@ size_t match_parameter_lists(Matching matching,
     Node **pattern_children,
     size_t num_tree_children,
     Node **tree_children,
+    size_t buffer_size,
     Matching *out_matchings)
 {
-    size_t candidates[MAX_PARTITIONS][num_pattern_children];
-    size_t results[MAX_PARTITIONS][num_pattern_children];
-    size_t sizes[MAX_PARTITIONS];
-    size_t sums[MAX_PARTITIONS];
-    size_t num_candidates = 1;
-    size_t num_results = 0;
+    Matching *local_matchings = malloc(MAX_MATCHINGS * sizeof(Matching));
+    size_t num_local_matchings = 0;
+    size_t result = 0;
 
-    sizes[0] = 0;
-    sums[0] = 0;
+    TrieNode trie[MAX_PARTITIONS];
+    trie[0] = (TrieNode){
+        .matchings     = &matching,
+        .num_matchings = 1,
+        .sum           = 0,
+        .distance      = 0,
+        .label         = 0,
+        .parent        = NULL
+    };
 
-    while (num_candidates != 0)
+    size_t trie_size = 1;
+    size_t curr = 0;
+
+    while (curr < trie_size)
     {
-        num_candidates--;
-        size_t i = num_candidates;
+        size_t new_sum = trie[curr].sum + trie[curr].label;
 
-        if (sizes[i] == num_pattern_children && sums[i] == num_tree_children)
+        // We found a valid end node of trie
+        // Try to match
+        if (new_sum == num_tree_children && trie[curr].distance == num_pattern_children)
         {
-            // Candidate is finished and can be put into result list
-            memcpy(results[num_results++], candidates[i], sizeof(size_t) * num_pattern_children);
-            if (num_results == MAX_PARTITIONS) break;
-            continue;
-        }
-        
-        if (sizes[i] < num_pattern_children)
-        {
-            if (get_type(pattern_children[sizes[i]]) == NTYPE_VARIABLE
-                && get_var_name(pattern_children[sizes[i]])[0] == MATCHING_LIST_PREFIX)
+            size_t num = fill_trie(&trie[curr],
+                pattern_children,
+                tree_children,
+                MAX_MATCHINGS - num_local_matchings,
+                local_matchings + num_local_matchings);
+            num_local_matchings += num;
+
+            // Copy matchings to result-buffer
+            if (buffer_size >= trie[curr].num_matchings)
             {
-                NodeList *list = lookup_mapped_var(&matching, get_var_name(pattern_children[sizes[i]]));
-                if (list != NULL)
+                memcpy(out_matchings + result,
+                    trie[curr].matchings,
+                    trie[curr].num_matchings * sizeof(Matching));
+                result += trie[curr].num_matchings;
+                buffer_size -= trie[curr].num_matchings;
+            }
+        }
+
+        // Extend entry of trie
+        if (trie[curr].distance < num_pattern_children)
+        {
+            if (get_type(pattern_children[trie[curr].distance]) == NTYPE_VARIABLE
+                && get_var_name(pattern_children[trie[curr].distance])[0] == MATCHING_LIST_PREFIX)
+            {
+                NodeList *list = lookup_mapped_var(&matching, get_var_name(pattern_children[trie[curr].distance]));
+                if (list != NULL && new_sum + 1 <= num_tree_children)
                 {
                     // List is already bound, thus also its length is bound
-                    // Reactivate candidate with updated length
-                    num_candidates++;
-                    candidates[i][sizes[i]] = list->size;
-                    sums[i] += list->size;
-                    sizes[i] += 1;
+                    trie[trie_size++] = (TrieNode){
+                        .matchings     = NULL,
+                        .num_matchings = 0,
+                        .label         = list->size,
+                        .sum           = new_sum,
+                        .distance      = trie[curr].distance + 1,
+                        .parent        = &trie[curr]
+                    };
                 }
                 else
                 {
-                    size_t sum_temp = sums[i];
-                    size_t size_temp = sizes[i];
-
-                    // List is not bound, we need add a candidate for every possible list length
-                    for (size_t j = 0; j + sum_temp <= num_tree_children; j++)
+                    // List is not bound yet, trie needs to be extended with all possible lengths
+                    for (size_t i = 0; new_sum + i <= num_tree_children; i++)
                     {
-                        // We can copy over prefix because it is not overwritten
-                        // But don't copy to the same destination (memcpy pointers are restricted)
-                        if (j != 0)
-                        {
-                            memcpy(candidates[i + j], candidates[i], sizeof(size_t) * size_temp);
-                        }
-                        candidates[i + j][size_temp] = j;
-                        sums[i + j] = sum_temp + j;
-                        sizes[i + j] = size_temp + 1;
-                        num_candidates++;
-                        if (num_candidates == MAX_PARTITIONS) goto compute_results;
+                        trie[trie_size++] = (TrieNode){
+                            .matchings     = NULL,
+                            .num_matchings = 0,
+                            .label         = i,
+                            .sum           = new_sum,
+                            .distance      = trie[curr].distance + 1,
+                            .parent        = &trie[curr]
+                        };
                     }
                 }
             }
             else
             {
-                // Any non-list node in pattern corresponds to exactly one node in tree
-                if (sums[i] < num_tree_children)
+                if (new_sum < num_tree_children)
                 {
-                    num_candidates++;
-                    candidates[i][sizes[i]] = 1;
-                    sums[i] += 1;
-                    sizes[i] += 1;
+                    // Any non-list node in pattern corresponds to exactly one node in tree
+                    trie[trie_size++] = (TrieNode){
+                        .matchings     = NULL,
+                        .num_matchings = 0,
+                        .label         = 1,
+                        .sum           = new_sum,
+                        .distance      = trie[curr].distance + 1,
+                        .parent        = &trie[curr]
+                    };
                 }
             }
         }
+        curr++;
     }
+    
+    free(local_matchings);
+    return result;
+}
 
-
-    printf("NUM_RESULTS: %zu\n", num_results);
-    for (size_t x = 0; x < num_results; x++)
+bool nodelists_equal(NodeList *a, NodeList *b)
+{
+    if (a->size != b->size) return false;
+    for (size_t i = 0; i < a->size; i++)
     {
-        printf("[%zu] ", x);
-        for (size_t y = 0; y < num_pattern_children; y++)
-        {
-            printf("%zu ", results[x][y]);
-        }
-        printf("\n");
+        if (tree_compare(a->nodes[i], b->nodes[i]) != NULL) return false;
     }
-
-    compute_results:
-    {
-        // We successfully found all possible partitions of the parameter list of tree on all parameters in pattern
-        // Now, try to match them
-        Matching *additional_buffer = malloc(MAX_MATCHINGS * sizeof(Matching));
-        while (num_results != 0)
-        {
-            num_results--;
-            Matching *matchingsA = additional_buffer;
-            Matching *matchingsB = out_matchings;
-            size_t num_matchings = 1;
-            matchingsA[0] = matching;
-            size_t curr_child_start = 0;
-
-            // Try to match iteratively with all previously found matchings
-            for (size_t i = 0; i < num_pattern_children; i++)
-            {
-                size_t num_new_matchings = 0;
-                for (size_t j = 0; j < num_matchings; j++)
-                {
-                    num_new_matchings += extend_matching(matchingsA[j], pattern_children[i],
-                        (NodeList){ .nodes = tree_children + curr_child_start, .size = results[num_results][i] },
-                        matchingsB + num_new_matchings);
-                }
-
-                // Swap matchingsA and matchingsB to use new matchings as starting point in next iteration
-                curr_child_start += results[num_results][i];
-                Matching *temp = matchingsB;
-                matchingsB = matchingsA;
-                matchingsA = temp;
-                num_matchings = num_new_matchings;
-
-                // Fail when there are no matchings
-                if (num_matchings == 0)
-                {
-                    // Delete all partitions with same prefix since they will fail too
-                    while (num_results != 0)
-                    {
-                        // i is index of first child that could not be matched
-                        for (size_t j = 0; j <= i; j++)
-                        {
-                            if (results[num_results - 1][j] != results[i][j])
-                            {
-                                goto next_result;
-                            }
-                        }
-                        // Prefix is the same, delete:
-                        num_results--;
-                        printf("Skipped match-attempt :)\n");
-                    }
-                }
-            }
-
-            next_result:
-
-            if (num_matchings != 0)
-            {
-                // Partition works when there are matchings in the end
-                // Stop after first working partition
-                // Copy results of last iteration to output-buffer if last buffer wasn't already output-buffer
-                if (out_matchings != matchingsA)
-                {
-                    memcpy(out_matchings, matchingsA, sizeof(Matching) * num_matchings);
-                }
-                free(additional_buffer);
-                return num_matchings;
-            }
-        }
-
-        // No matchings found
-        free(additional_buffer);
-        return 0;
-    }
+    return true;
 }
 
 size_t extend_matching(Matching matching,
     Node *pattern,
     NodeList tree_list,
+    size_t buffer_size,
     Matching *out_matchings)
 {
+    if (buffer_size == 0)
+    {
+        return 0;
+    }
+
     switch (get_type(pattern))
     {
         // 1. Check if variable is bound, if it is, check occurrence. Otherwise, bind.
@@ -223,6 +212,7 @@ size_t extend_matching(Matching matching,
                 {
                     return 0;
                 }
+
                 out_matchings[0] = matching;
                 return 1;
             }
@@ -263,7 +253,6 @@ size_t extend_matching(Matching matching,
             {
                 return 0;
             }
-            
         }
             
         // 3. Check operator and arity for equality
@@ -277,24 +266,45 @@ size_t extend_matching(Matching matching,
                 return 0;
             }
 
-            return match_parameter_lists(matching, get_num_children(pattern), get_child_addr(pattern, 0),
-                get_num_children(tree_list.nodes[0]), get_child_addr(tree_list.nodes[0], 0), out_matchings);
+            return match_parameter_lists(matching,
+                get_num_children(pattern),
+                get_child_addr(pattern, 0),
+                get_num_children(tree_list.nodes[0]),
+                get_child_addr(tree_list.nodes[0], 0),
+                buffer_size,
+                out_matchings);
         }
     }
+
     return 0;
+}
+
+size_t get_all_matchings(Node **tree, Node *pattern, Matching **out_matchings)
+{
+    if (tree == NULL || pattern == NULL || out_matchings == NULL) return false;
+
+    // Due to exponential many partitions, a lot of states can occur. Use heap.
+    *out_matchings = malloc(MAX_MATCHINGS * sizeof(Matching));
+    size_t res = extend_matching(
+        (Matching){ .num_mapped = 0 },
+        pattern,
+        (NodeList){ .size = 1, .nodes = tree },
+        MAX_MATCHINGS,
+        *out_matchings);
+
+    return res;
 }
 
 /*
 Summary: Tries to match "tree" against "pattern" (only in root)
 Returns: True, if matching is found, false if NULL-pointers given in arguments or no matching found
 */
-bool get_matching(Node *tree, Node *pattern, Matching *out_matching)
+bool get_matching(Node **tree, Node *pattern, Matching *out_matching)
 {
     if (tree == NULL || pattern == NULL || out_matching == NULL) return false;
 
-    // Due to exponential many partitions, a lot of states can occur. Use heap.
-    Matching *matchings = malloc(MAX_MATCHINGS * sizeof(Matching));
-    size_t num_matchings = extend_matching((Matching){ .num_mapped = 0 }, pattern, (NodeList){ .size = 1, .nodes = &tree }, matchings);
+    Matching *matchings;
+    size_t num_matchings = get_all_matchings(tree, pattern, &matchings);
 
     // Return first matching if any
     if (num_matchings > 0)
@@ -315,7 +325,7 @@ Summary: Looks for matching in tree, i.e. tries to construct matching in each no
 */
 Node **find_matching(Node **tree, Node *pattern, Matching *out_matching)
 {
-    if (get_matching(*tree, pattern, out_matching)) return tree;
+    if (get_matching(tree, pattern, out_matching)) return tree;
     if (get_type(*tree) == NTYPE_OPERATOR)
     {
         for (size_t i = 0; i < get_num_children(*tree); i++)
