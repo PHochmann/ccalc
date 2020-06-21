@@ -2,7 +2,7 @@
 #include <string.h>
 
 #include "../transformation/matching.h"
-#include "../console_util.h"
+#include "../util/console_util.h"
 #include "../tree/tree_to_string.h"
 #include "../core/arith_context.h"
 #include "cmd_playground.h"

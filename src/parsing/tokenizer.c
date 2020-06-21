@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../string_util.h"
+#include "../util/string_util.h"
 #include "tokenizer.h"
 
 bool add_token(char **tokens, char *position, size_t max_tokens, size_t *num_tokens)

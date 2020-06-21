@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "tree_to_string.h"
-#include "../string_util.h"
+#include "../util/string_util.h"
 
 #define SSIZE_MAX 2147483647
 #define OPENING_P "("

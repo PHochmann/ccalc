@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "../string_util.h"
+#include "../util/string_util.h"
 #include "printing.h"
 #include "table.h"
 #include "constraint.h"

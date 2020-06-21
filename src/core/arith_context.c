@@ -4,8 +4,8 @@
 #include "arith_context.h"
 #include "simplification.h"
 #include "history.h"
-#include "../string_util.h"
-#include "../console_util.h"
+#include "../util/string_util.h"
+#include "../util/console_util.h"
 #include "../parsing/parser.h"
 
 #define NUM_OPS       54

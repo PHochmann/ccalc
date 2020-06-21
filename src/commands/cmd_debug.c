@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "cmd_debug.h"
-#include "../string_util.h"
+#include "../util/string_util.h"
 #include "../tree/tree_to_string.h"
 #include "../tree/tree_util.h"
 #include "../core/arith_context.h"

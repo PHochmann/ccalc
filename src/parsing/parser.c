@@ -3,7 +3,7 @@
 
 #include "tokenizer.h"
 #include "parser.h"
-#include "../string_util.h"
+#include "../util/string_util.h"
 
 // Do not use this macro in auxiliary functions!
 #define ERROR(type) { state.result = type; goto exit; }

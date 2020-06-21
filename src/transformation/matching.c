@@ -8,8 +8,9 @@
 Todo: protect against buffer overflows
 */
 
-#define MAX_MATCHINGS  50
-#define MAX_PARTITIONS 50
+#define MAX_MATCHINGS  500
+#define MAX_TRIE_SIZE 500
+#define MIN(X, Y) ((X) < (Y) ? (X) : (Y))
 
 typedef struct TrieNode {
     Matching *matchings;
@@ -68,6 +69,8 @@ NodeList *lookup_mapped_var(Matching *matching, char *var)
     return NULL;
 }
 
+
+
 /*
 Todo: Consider heuristic:
     - Sort pattern_children ascending on their count of list variables
@@ -83,10 +86,11 @@ size_t match_parameter_lists(Matching matching,
     Matching *out_matchings)
 {
     Matching *local_matchings = malloc(MAX_MATCHINGS * sizeof(Matching));
+    TrieNode *trie = malloc(MAX_TRIE_SIZE * sizeof(TrieNode));
+
     size_t num_local_matchings = 0;
     size_t result = 0;
 
-    TrieNode trie[MAX_PARTITIONS];
     trie[0] = (TrieNode){
         .matchings     = &matching,
         .num_matchings = 1,
@@ -126,11 +130,12 @@ size_t match_parameter_lists(Matching matching,
         }
 
         // Extend entry of trie
-        if (trie[curr].distance < num_pattern_children)
+        if (trie[curr].distance < num_pattern_children && trie_size != MAX_TRIE_SIZE)
         {
             if (get_type(pattern_children[trie[curr].distance]) == NTYPE_VARIABLE
                 && get_var_name(pattern_children[trie[curr].distance])[0] == MATCHING_LIST_PREFIX)
             {
+                // Current pattern-child is list-variable
                 NodeList *list = lookup_mapped_var(&matching, get_var_name(pattern_children[trie[curr].distance]));
                 if (list != NULL && new_sum + 1 <= num_tree_children)
                 {
@@ -146,17 +151,34 @@ size_t match_parameter_lists(Matching matching,
                 }
                 else
                 {
-                    // List is not bound yet, trie needs to be extended with all possible lengths
-                    for (size_t i = 0; new_sum + i <= num_tree_children; i++)
+                    if (trie[curr].distance == num_pattern_children - 1)
                     {
+                        // Special case: List is last pattern-child
+                        // We can avoid extending trie with lists that are too short
                         trie[trie_size++] = (TrieNode){
-                            .matchings     = NULL,
-                            .num_matchings = 0,
-                            .label         = i,
-                            .sum           = new_sum,
-                            .distance      = trie[curr].distance + 1,
-                            .parent        = &trie[curr]
-                        };
+                                .matchings     = NULL,
+                                .num_matchings = 0,
+                                .label         = num_tree_children - new_sum,
+                                .sum           = new_sum,
+                                .distance      = trie[curr].distance + 1,
+                                .parent        = &trie[curr]
+                            };
+                    }
+                    else
+                    {
+                        // List is not bound yet, trie needs to be extended with all possible lengths
+                        size_t num_insertions = MIN(MAX_TRIE_SIZE - trie_size, num_tree_children - new_sum + 1);
+                        for (size_t i = 0; i < num_insertions; i++)
+                        {
+                            trie[trie_size++] = (TrieNode){
+                                .matchings     = NULL,
+                                .num_matchings = 0,
+                                .label         = i,
+                                .sum           = new_sum,
+                                .distance      = trie[curr].distance + 1,
+                                .parent        = &trie[curr]
+                            };
+                        }
                     }
                 }
             }
@@ -180,6 +202,7 @@ size_t match_parameter_lists(Matching matching,
     }
     
     free(local_matchings);
+    free(trie);
     return result;
 }
 

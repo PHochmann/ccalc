@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "console_util.h"
+#include "util/console_util.h"
 #include "commands/commands.h"
 
 #include "string_util.h"

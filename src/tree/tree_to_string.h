@@ -1,5 +1,5 @@
 #include <stdbool.h>
-#include "../string_util.h"
+#include "../util/string_util.h"
 #include "node.h"
 
 #define OP_COLOR    "\x1B[47m\x1B[22;30m" // White background, black foreground

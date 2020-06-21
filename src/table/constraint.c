@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "constraint.h"
 #include "printing.h"
-#include "../string_util.h" // For is_digit
+#include "../util/string_util.h" // For is_digit
 
 struct Constraint
 {

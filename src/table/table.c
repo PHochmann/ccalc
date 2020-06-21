@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../util/string_util.h"
 #include "table.h"
 #include "printing.h"
 #include "constraint.h"
-#include "../string_util.h"
 
 void add_cell_internal(Table *table, char *text, bool needs_free)
 {
