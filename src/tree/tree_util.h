@@ -14,7 +14,7 @@ size_t count_variable_nodes(Node *tree, char *var_name);
 size_t list_variables(Node *tree, char **out_variables);
 size_t replace_variable_nodes(Node **tree, Node *tree_to_copy, char *var_name);
 bool reduce(Node *tree, Evaluation eval, ConstantType *out);
-ConstantType convenient_reduce(Node *tree, Evaluation eval);
+ConstantType tree_reduce(Node *tree, Evaluation eval);
 void replace_constant_subtrees(Node **tree, Evaluation eval);
 
 // Todo: refactor this

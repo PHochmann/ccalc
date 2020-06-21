@@ -271,7 +271,7 @@ bool reduce(Node *tree, Evaluation eval, ConstantType *out)
     return false;
 }
 
-ConstantType convenient_reduce(Node *tree, Evaluation eval)
+ConstantType tree_reduce(Node *tree, Evaluation eval)
 {
     ConstantType res = 0;
     reduce(tree, eval, &res);
@@ -282,7 +282,7 @@ void replace_constant_subtrees(Node **tree, Evaluation eval)
 {
     if (count_variables(*tree) == 0)
     {
-        ConstantType res = convenient_reduce(*tree, eval);
+        ConstantType res = tree_reduce(*tree, eval);
         tree_replace(tree, malloc_constant_node(res));
     }
     else

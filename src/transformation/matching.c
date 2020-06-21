@@ -8,8 +8,8 @@
 Todo: protect against buffer overflows
 */
 
-#define MAX_MATCHINGS  500
-#define MAX_PARTITIONS 500
+#define MAX_MATCHINGS  50
+#define MAX_PARTITIONS 50
 
 typedef struct TrieNode {
     Matching *matchings;
@@ -65,9 +65,15 @@ NodeList *lookup_mapped_var(Matching *matching, char *var)
             return &matching->mapped_nodes[i];
         }
     }
-    return false;
+    return NULL;
 }
 
+/*
+Todo: Consider heuristic:
+    - Sort pattern_children ascending on their count of list variables
+    - This should lead to less failed matching attempts
+        since variables are bounded earlier
+*/
 size_t match_parameter_lists(Matching matching,
     size_t num_pattern_children,
     Node **pattern_children,
@@ -285,14 +291,12 @@ size_t get_all_matchings(Node **tree, Node *pattern, Matching **out_matchings)
 
     // Due to exponential many partitions, a lot of states can occur. Use heap.
     *out_matchings = malloc(MAX_MATCHINGS * sizeof(Matching));
-    size_t res = extend_matching(
+    return extend_matching(
         (Matching){ .num_mapped = 0 },
         pattern,
         (NodeList){ .size = 1, .nodes = tree },
         MAX_MATCHINGS,
         *out_matchings);
-
-    return res;
 }
 
 /*

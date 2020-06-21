@@ -23,7 +23,7 @@ typedef struct {
 
 typedef struct {
     Node base;
-    char id;
+    char id; // Avoids sanitizing variables when replacing by list
     char var_name[];
 } VariableNode;
 

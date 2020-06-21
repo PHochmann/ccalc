@@ -296,5 +296,5 @@ bool op_evaluate(Operator *op, size_t num_args, double *args, double *out)
 
 double arith_evaluate(Node *tree)
 {
-    return convenient_reduce(tree, op_evaluate);
+    return tree_reduce(tree, op_evaluate);
 }
