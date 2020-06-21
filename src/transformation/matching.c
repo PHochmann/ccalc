@@ -2,59 +2,48 @@
 #include <string.h>
 
 #include "matching.h"
+#include "../util/vector.h"
 #include "../tree/tree_util.h"
 
-/*
-Todo: protect against buffer overflows
-*/
-
-#define MAX_MATCHINGS  500
-#define MAX_TRIE_SIZE 500
-#define MIN(X, Y) ((X) < (Y) ? (X) : (Y))
-
 typedef struct TrieNode {
-    Matching *matchings;
+    size_t first_match_index; // SIZE_MAX denotes pending computation
     size_t num_matchings;
-    size_t label;         // Amount of tree-children of this node
-    size_t sum;           // Amount of tree-children until this node
-    size_t distance;      // Amount of pattern-children until this node
-    struct TrieNode *parent;
+    size_t label;
+    size_t sum;
+    size_t distance;
+    size_t parent_index;
 } TrieNode;
 
-size_t fill_trie(TrieNode *curr,
+void fill_trie(size_t curr_index,
     Node **pattern_children,
     Node **tree_children,
-    size_t buffer_size,
-    Matching *matchings_buffer)
+    Vector *matchings,
+    Vector *trie)
 {
-    if (curr->matchings != NULL) return 0;
+    if (((TrieNode*)vec_get(trie, curr_index))->first_match_index != __SIZE_MAX__) return;
 
-    size_t buffer_change = fill_trie(
-        curr->parent,
+    fill_trie(((TrieNode*)vec_get(trie, curr_index))->parent_index,
         pattern_children,
         tree_children,
-        buffer_size,
-        matchings_buffer);
+        matchings,
+        trie);
 
-    matchings_buffer += buffer_change;
-    buffer_size -= buffer_change;
-    curr->matchings = matchings_buffer;
+    // We can save curr for readability and performance because we won't
+    // insert into the trie
+    TrieNode *curr = (TrieNode*)vec_get(trie, curr_index);
 
-    for (size_t i = 0; i < curr->parent->num_matchings; i++)
+    curr->first_match_index = vec_count(matchings);
+
+    for (size_t i = 0; i < ((TrieNode*)vec_get(trie, curr->parent_index))->num_matchings; i++)
     {
-        size_t new_num_matchings = extend_matching(
-            curr->parent->matchings[i],
+        extend_matching(
+            *(Matching*)vec_get(matchings, ((TrieNode*)vec_get(trie, curr->parent_index))->first_match_index + i),
             pattern_children[curr->distance - 1],
             (NodeList){ .size = curr->label, .nodes = tree_children + curr->sum },
-            buffer_size,
-            matchings_buffer);
-        
-        buffer_size -= new_num_matchings;
-        curr->num_matchings += new_num_matchings;
-        matchings_buffer += new_num_matchings;
+            matchings);
     }
 
-    return buffer_change + curr->num_matchings;
+    curr->num_matchings = vec_count(matchings) - curr->first_match_index;
 }
 
 NodeList *lookup_mapped_var(Matching *matching, char *var)
@@ -69,115 +58,105 @@ NodeList *lookup_mapped_var(Matching *matching, char *var)
     return NULL;
 }
 
-
-
 /*
 Todo: Consider heuristic:
     - Sort pattern_children ascending on their count of list variables
     - This should lead to less failed matching attempts
         since variables are bounded earlier
 */
-size_t match_parameter_lists(Matching matching,
+void match_parameter_lists(Matching matching,
     size_t num_pattern_children,
     Node **pattern_children,
     size_t num_tree_children,
     Node **tree_children,
-    size_t buffer_size,
-    Matching *out_matchings)
+    Vector *out_matchings)
 {
-    Matching *local_matchings = malloc(MAX_MATCHINGS * sizeof(Matching));
-    TrieNode *trie = malloc(MAX_TRIE_SIZE * sizeof(TrieNode));
+    Vector vec_local_matchings = vec_create(sizeof(Matching), 10);
+    Vector vec_trie = vec_create(sizeof(TrieNode), 10);
 
-    size_t num_local_matchings = 0;
-    size_t result = 0;
+    vec_push(&vec_local_matchings, &matching);
+    VEC_PUSH_LITERAL(&vec_trie, TrieNode, ((TrieNode){
+        .first_match_index = 0,
+        .num_matchings     = 1,
+        .sum               = 0,
+        .distance          = 0,
+        .label             = 0,
+        .parent_index      = 0  // Should never be used
+    }));
 
-    trie[0] = (TrieNode){
-        .matchings     = &matching,
-        .num_matchings = 1,
-        .sum           = 0,
-        .distance      = 0,
-        .label         = 0,
-        .parent        = NULL
-    };
-
-    size_t trie_size = 1;
-    size_t curr = 0;
-
-    while (curr < trie_size)
+    size_t curr_index = 0;
+    while (curr_index < vec_count(&vec_trie))
     {
-        size_t new_sum = trie[curr].sum + trie[curr].label;
+        TrieNode *curr = (TrieNode*)vec_get(&vec_trie, curr_index);
+        size_t new_sum = curr->sum + curr->label;
 
-        // We found a valid end node of trie
-        // Try to match
-        if (new_sum == num_tree_children && trie[curr].distance == num_pattern_children)
+        // We found a valid end node of trie. Try to match.
+        if (new_sum == num_tree_children && curr->distance == num_pattern_children)
         {
-            size_t num = fill_trie(&trie[curr],
+            fill_trie(curr_index,
                 pattern_children,
                 tree_children,
-                MAX_MATCHINGS - num_local_matchings,
-                local_matchings + num_local_matchings);
-            num_local_matchings += num;
+                &vec_local_matchings,
+                &vec_trie);
 
             // Copy matchings to result-buffer
-            if (buffer_size >= trie[curr].num_matchings)
-            {
-                memcpy(out_matchings + result,
-                    trie[curr].matchings,
-                    trie[curr].num_matchings * sizeof(Matching));
-                result += trie[curr].num_matchings;
-                buffer_size -= trie[curr].num_matchings;
-            }
+            vec_push_many(out_matchings,
+                vec_count(&vec_local_matchings) - curr->first_match_index,
+                vec_get(&vec_local_matchings, curr->first_match_index));
         }
 
         // Extend entry of trie
-        if (trie[curr].distance < num_pattern_children && trie_size != MAX_TRIE_SIZE)
+        if (curr->distance < num_pattern_children)
         {
-            if (get_type(pattern_children[trie[curr].distance]) == NTYPE_VARIABLE
-                && get_var_name(pattern_children[trie[curr].distance])[0] == MATCHING_LIST_PREFIX)
+            if (get_type(pattern_children[curr->distance]) == NTYPE_VARIABLE
+                && get_var_name(pattern_children[curr->distance])[0] == MATCHING_LIST_PREFIX)
             {
                 // Current pattern-child is list-variable
-                NodeList *list = lookup_mapped_var(&matching, get_var_name(pattern_children[trie[curr].distance]));
+                NodeList *list = lookup_mapped_var(&matching, get_var_name(pattern_children[curr->distance]));
                 if (list != NULL && new_sum + 1 <= num_tree_children)
                 {
                     // List is already bound, thus also its length is bound
-                    trie[trie_size++] = (TrieNode){
-                        .matchings     = NULL,
-                        .num_matchings = 0,
-                        .label         = list->size,
-                        .sum           = new_sum,
-                        .distance      = trie[curr].distance + 1,
-                        .parent        = &trie[curr]
-                    };
+                    VEC_PUSH_LITERAL(&vec_trie, TrieNode, ((TrieNode){
+                        .first_match_index = __SIZE_MAX__,
+                        .num_matchings     = 0,
+                        .label             = list->size,
+                        .sum               = new_sum,
+                        .distance          = curr->distance + 1,
+                        .parent_index      = curr_index
+                    }));
                 }
                 else
                 {
-                    if (trie[curr].distance == num_pattern_children - 1)
+                    if (curr->distance == num_pattern_children - 1)
                     {
                         // Special case: List is last pattern-child
                         // We can avoid extending trie with lists that are too short
-                        trie[trie_size++] = (TrieNode){
-                                .matchings     = NULL,
-                                .num_matchings = 0,
-                                .label         = num_tree_children - new_sum,
-                                .sum           = new_sum,
-                                .distance      = trie[curr].distance + 1,
-                                .parent        = &trie[curr]
-                            };
+                        VEC_PUSH_LITERAL(&vec_trie, TrieNode, ((TrieNode){
+                                .first_match_index = __SIZE_MAX__,
+                                .num_matchings     = 0,
+                                .label             = num_tree_children - new_sum,
+                                .sum               = new_sum,
+                                .distance          = curr->distance + 1,
+                                .parent_index      = curr_index
+                        }));
                     }
                     else
                     {
                         // List is not bound yet, trie needs to be extended with all possible lengths
-                        size_t num_insertions = MIN(MAX_TRIE_SIZE - trie_size, num_tree_children - new_sum + 1);
+                        size_t num_insertions = num_tree_children - new_sum + 1;
                         for (size_t i = 0; i < num_insertions; i++)
                         {
-                            trie[trie_size++] = (TrieNode){
-                                .matchings     = NULL,
-                                .num_matchings = 0,
-                                .label         = i,
-                                .sum           = new_sum,
-                                .distance      = trie[curr].distance + 1,
-                                .parent        = &trie[curr]
-                            };
+                            VEC_PUSH_LITERAL(&vec_trie, TrieNode, ((TrieNode){
+                                .first_match_index = __SIZE_MAX__,
+                                .num_matchings     = 0,
+                                .label             = i,
+                                .sum               = new_sum,
+                                .distance          = curr->distance + 1,
+                                .parent_index      = curr_index
+                            }));
+                            // Since vec_trie's buffer could be realloced by the insertion,
+                            // retrieve curr again because it points into the buffer
+                            curr = (TrieNode*)vec_get(&vec_trie, curr_index);
                         }
                     }
                 }
@@ -187,23 +166,22 @@ size_t match_parameter_lists(Matching matching,
                 if (new_sum < num_tree_children)
                 {
                     // Any non-list node in pattern corresponds to exactly one node in tree
-                    trie[trie_size++] = (TrieNode){
-                        .matchings     = NULL,
-                        .num_matchings = 0,
-                        .label         = 1,
-                        .sum           = new_sum,
-                        .distance      = trie[curr].distance + 1,
-                        .parent        = &trie[curr]
-                    };
+                    VEC_PUSH_LITERAL(&vec_trie, TrieNode, ((TrieNode){
+                        .first_match_index = __SIZE_MAX__,
+                        .num_matchings     = 0,
+                        .label             = 1,
+                        .sum               = new_sum,
+                        .distance          = curr->distance + 1,
+                        .parent_index      = curr_index
+                    }));
                 }
             }
         }
-        curr++;
+        curr_index++;
     }
     
-    free(local_matchings);
-    free(trie);
-    return result;
+    vec_destroy(&vec_local_matchings);
+    vec_destroy(&vec_trie);
 }
 
 bool nodelists_equal(NodeList *a, NodeList *b)
@@ -216,17 +194,11 @@ bool nodelists_equal(NodeList *a, NodeList *b)
     return true;
 }
 
-size_t extend_matching(Matching matching,
+void extend_matching(Matching matching,
     Node *pattern,
     NodeList tree_list,
-    size_t buffer_size,
-    Matching *out_matchings)
+    Vector *out_matchings)
 {
-    if (buffer_size == 0)
-    {
-        return 0;
-    }
-
     switch (get_type(pattern))
     {
         // 1. Check if variable is bound, if it is, check occurrence. Otherwise, bind.
@@ -236,14 +208,11 @@ size_t extend_matching(Matching matching,
             if (nodes != NULL) // Already bound
             {
                 // Is already bound variable equal to this occurrence?
-                // If not, fail here
-                if (!nodelists_equal(nodes, &tree_list))
+                if (nodelists_equal(nodes, &tree_list))
                 {
-                    return 0;
+                    vec_push(out_matchings, &matching);
                 }
-
-                out_matchings[0] = matching;
-                return 1;
+                return;
             }
             else
             {
@@ -251,61 +220,55 @@ size_t extend_matching(Matching matching,
                 switch (get_var_name(pattern)[0])
                 {
                     case MATCHING_CONST_PREFIX:
-                        if (tree_list.size != 1
-                            || get_type(tree_list.nodes[0]) != NTYPE_CONSTANT) return 0;
+                        if (tree_list.size != 1 || get_type(tree_list.nodes[0]) != NTYPE_CONSTANT)
+                        {
+                            return;
+                        }
                         break;
+
                     case MATCHING_NON_CONST_PREFIX:
-                        if (tree_list.size != 1
-                            || get_type(tree_list.nodes[0]) == NTYPE_CONSTANT) return 0;
+                        if (tree_list.size != 1 || get_type(tree_list.nodes[0]) == NTYPE_CONSTANT)
+                        {
+                            return;
+                        }
                 }
 
                 // Bind variable
-                out_matchings[0] = matching;
-                out_matchings[0].mapped_vars[matching.num_mapped]  = get_var_name(pattern);
-                out_matchings[0].mapped_nodes[matching.num_mapped] = tree_list;
-                out_matchings[0].num_mapped++;
-                return 1;
+                matching.mapped_vars[matching.num_mapped]  = get_var_name(pattern);
+                matching.mapped_nodes[matching.num_mapped] = tree_list;
+                matching.num_mapped++;
+                vec_push(out_matchings, &matching);
+                return;
             }
         }
             
         // 2. Check constants for equality
         case NTYPE_CONSTANT:
         {
-            if (tree_list.size != 1) return 0;
-            Node *comp = tree_compare(pattern, tree_list.nodes[0]);
-            if (comp == NULL)
+            if (tree_list.size == 1 && tree_compare(pattern, tree_list.nodes[0]) == NULL)
             {
-                out_matchings[0] = matching;
-                return 1;
+                vec_push(out_matchings, &matching);
             }
-            else
-            {
-                return 0;
-            }
+            return;
         }
             
         // 3. Check operator and arity for equality
         case NTYPE_OPERATOR:
         {
-            if (tree_list.size != 1) return 0;
-            if (get_type(tree_list.nodes[0]) != NTYPE_OPERATOR
-                || get_op(pattern) != get_op(tree_list.nodes[0])
-                /*|| get_num_children(curr_pattern) != get_num_children(curr_tree)*/)
+            if (tree_list.size == 1
+                && get_type(tree_list.nodes[0]) == NTYPE_OPERATOR
+                && get_op(pattern) == get_op(tree_list.nodes[0])
+                /*&& get_num_children(curr_pattern) == get_num_children(curr_tree)*/)
             {
-                return 0;
+                match_parameter_lists(matching,
+                    get_num_children(pattern),
+                    get_child_addr(pattern, 0),
+                    get_num_children(tree_list.nodes[0]),
+                    get_child_addr(tree_list.nodes[0], 0),
+                    out_matchings);
             }
-
-            return match_parameter_lists(matching,
-                get_num_children(pattern),
-                get_child_addr(pattern, 0),
-                get_num_children(tree_list.nodes[0]),
-                get_child_addr(tree_list.nodes[0], 0),
-                buffer_size,
-                out_matchings);
         }
     }
-
-    return 0;
 }
 
 size_t get_all_matchings(Node **tree, Node *pattern, Matching **out_matchings)
@@ -313,13 +276,16 @@ size_t get_all_matchings(Node **tree, Node *pattern, Matching **out_matchings)
     if (tree == NULL || pattern == NULL || out_matchings == NULL) return false;
 
     // Due to exponential many partitions, a lot of states can occur. Use heap.
-    *out_matchings = malloc(MAX_MATCHINGS * sizeof(Matching));
-    return extend_matching(
+    Vector result = vec_create(sizeof(Matching), 10);
+
+    extend_matching(
         (Matching){ .num_mapped = 0 },
         pattern,
         (NodeList){ .size = 1, .nodes = tree },
-        MAX_MATCHINGS,
-        *out_matchings);
+        &result);
+    *out_matchings = (Matching*)(result.buffer);
+
+    return result.elem_count;
 }
 
 /*

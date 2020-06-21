@@ -1,7 +1,8 @@
 #pragma once
+#include "../util/vector.h"
 #include "../tree/node.h"
 
-#define MAX_MAPPED_VARS 10
+#define MAX_MAPPED_VARS 5
 
 #define MATCHING_LIST_PREFIX        '['
 #define MATCHING_CONST_PREFIX       'c'
@@ -18,7 +19,7 @@ typedef struct
 } Matching;
 
 NodeList *lookup_mapped_var(Matching *matching, char *var);
-size_t extend_matching(Matching matching, Node *pattern, NodeList tree_list, size_t buffer_size, Matching *out_matchings);
+void extend_matching(Matching matching, Node *pattern, NodeList tree_list, Vector *out_matchings);
 size_t get_all_matchings(Node **tree, Node *pattern, Matching **out_matchings);
 bool get_matching(Node **tree, Node *pattern, Matching *out_matching);
 Node **find_matching(Node **tree, Node *pattern, Matching *out_matching);

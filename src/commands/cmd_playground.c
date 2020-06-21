@@ -9,7 +9,7 @@
 
 int cmd_playground_check(char *input)
 {
-    return strcmp("playground", input) == 0;
+    return strcmp("play", input) == 0;
 }
 
 bool cmd_playground_exec(__attribute__((unused)) char *input, __attribute__((unused)) int code)
