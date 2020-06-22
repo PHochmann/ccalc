@@ -7,8 +7,6 @@
 
 // Do not use this macro in auxiliary functions!
 #define ERROR(type) { state.result = type; goto exit; }
-// Maximum number of operator/node instances the parser can handle at once
-#define MAX_STACK_SIZE 150
 
 // Represents an operator (with metadata) while being parsed
 struct OpData
@@ -21,12 +19,10 @@ struct OpData
 // Encapsulates current state of shunting-yard algo. to be communicated to auxiliary functions
 struct ParserState
 {
-    ParsingContext *ctx;                    // Contains operators and glue-op
-    size_t num_nodes;                       // Size of node stack
-    Node *node_stack[MAX_STACK_SIZE];       // Constructed nodes
-    size_t num_ops;                         // Size of operator stack
-    struct OpData op_stack[MAX_STACK_SIZE]; // Parsed operators
-    ParserError result;                     // Success when no error occurred
+    ParsingContext *ctx; // Contains operators and glue-op
+    Vector vec_nodes;    // Constructed nodes
+    Vector vec_ops;      // Parsed operators
+    ParserError result;  // Success when no error occurred
 };
 
 // Attempts to parse a substring to a double
@@ -40,55 +36,48 @@ bool try_parse_constant(char *in, ConstantType *out)
 // Returns op_data on top of stack
 struct OpData *op_peek(struct ParserState *state)
 {
-    return &state->op_stack[state->num_ops - 1];
+    return vec_peek(&state->vec_ops);
 }
 
-bool node_push(struct ParserState *state, Node *node)
+void node_push(struct ParserState *state, Node *node)
 {
-    // Check if there is still space on stack
-    if (state->num_nodes == MAX_STACK_SIZE)
-    {
-        free(node);
-        state->result = PERR_STACK_EXCEEDED;
-        return false;
-    }
-
-    state->node_stack[state->num_nodes++] = node;
-    return true;
+    VEC_PUSH_ELEM(&state->vec_nodes, Node*, node);
 }
 
 bool node_pop(struct ParserState *state, Node **out)
 {
-    if (state->num_nodes == 0)
+    Node **popped = vec_pop(&state->vec_nodes);
+    if (popped == NULL)
     {
         state->result = PERR_MISSING_OPERAND;
         return false;
     }
-    
-    *out = state->node_stack[--state->num_nodes];
+    *out = *popped;
     return true;
 }
 
 bool op_pop_and_insert(struct ParserState *state)
 {
-    if (state->num_ops == 0)
+    struct OpData *op_data = (struct OpData*)vec_pop(&state->vec_ops);
+    if (op_data == NULL)
     {
         state->result = PERR_MISSING_OPERATOR;
         return false;
     }
-    
-    Operator *op = op_peek(state)->op;
+
+    Operator *op = op_data->op;
+
     if (op != NULL) // Construct operator-node and append children
     {
         // Function overloading: Find function with suitable arity
         // Actual function on op stack is only tentative with random arity (but same name)
         // Only do this for functions we count operands for
-        if (op_peek(state)->count_operands)
+        if (op_data->count_operands)
         {
-            if (op->arity != op_peek(state)->arity)
+            if (op->arity != op_data->arity)
             {
                 char *name = op->name; // Save name in case of making op NULL
-                op = ctx_lookup_function(state->ctx, name, op_peek(state)->arity);
+                op = ctx_lookup_function(state->ctx, name, op_data->arity);
                 
                 // Fallback: Find function of dynamic arity
                 if (op == NULL)
@@ -105,7 +94,7 @@ bool op_pop_and_insert(struct ParserState *state)
         }
 
         // We try to allocate a new node and pop its children from node stack
-        Node *op_node = malloc_operator_node(op, op_peek(state)->arity);
+        Node *op_node = malloc_operator_node(op, op_data->arity);
 
         // Check if malloc of children buffer in get_operator_node failed
         // (Could also be NULL on malformed arguments, but this should not happen)
@@ -126,14 +115,9 @@ bool op_pop_and_insert(struct ParserState *state)
             }
         }
         
-        if (!node_push(state, op_node))
-        {
-            free_tree(op_node);
-            return false;
-        }
+        node_push(state, op_node);
     }
-    
-    state->num_ops--;
+
     return true;
 }
 
@@ -146,7 +130,7 @@ bool op_push(struct ParserState *state, struct OpData op_d)
         // Shunting-yard algorithm: Pop until operator of higher precedence or '(' is on top of stack 
         if (op->placement == OP_PLACE_INFIX || op->placement == OP_PLACE_POSTFIX)
         {
-            while (state->num_ops > 0
+            while (op_peek(state) != NULL
                 && op_peek(state)->op != NULL
                 && (op->precedence < op_peek(state)->op->precedence
                     || (op->precedence == op_peek(state)->op->precedence && op->assoc == OP_ASSOC_LEFT)))
@@ -155,16 +139,8 @@ bool op_push(struct ParserState *state, struct OpData op_d)
             }
         }
     }
-    
-    // Check if there is still space on stack
-    if (state->num_ops == MAX_STACK_SIZE)
-    {
-        state->result = PERR_STACK_EXCEEDED;
-        return false;
-    }
 
-    state->op_stack[state->num_ops++] = op_d;
-
+    VEC_PUSH_ELEM(&state->vec_ops, struct OpData, op_d);
     return true;
 }
 
@@ -200,10 +176,10 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
 
     // 2. Initialize state
     struct ParserState state = {
-        .ctx = ctx,
-        .result = PERR_SUCCESS,
-        .num_ops = 0,
-        .num_nodes = 0,
+        .ctx       = ctx,
+        .result    = PERR_SUCCESS,
+        .vec_nodes = vec_create(sizeof(Node*), 10),
+        .vec_ops   = vec_create(sizeof(struct OpData), 10)
     };
 
     // 3. Process each token
@@ -243,7 +219,7 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
             await_infix = true;
 
             // Pop ops until opening parenthesis on op-stack
-            while (state.num_ops > 0 && op_peek(&state)->op != NULL)
+            while (op_peek(&state) != NULL && op_peek(&state)->op != NULL)
             {
                 if (!op_pop_and_insert(&state))
                 {
@@ -251,7 +227,7 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
                 }
             }
             
-            if (state.num_ops > 0)
+            if (op_peek(&state) != NULL)
             {
                 // Remove opening parenthesis on top of op-stack
                 op_pop_and_insert(&state);
@@ -267,9 +243,9 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
              * the closing parenthesis was actually the end of its parameter list.
              * Increment operand count one last time if it was not the empty parameter list.
              */
-            if (op_peek(&state)->count_operands)
+            if (op_peek(&state) != NULL && op_peek(&state)->count_operands)
             {
-                if (state.num_ops > 0 && i > 0 && !is_opening_parenthesis(tokens[i - 1]))
+                if (op_peek(&state) != NULL && i > 0 && !is_opening_parenthesis(tokens[i - 1]))
                 {
                     if (op_peek(&state)->arity == OP_MAX_ARITY)
                     {
@@ -288,7 +264,7 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
         if (is_delimiter(token))
         {
             // Pop ops until opening parenthesis on op-stack
-            while (state.num_ops > 0 && op_peek(&state)->op != NULL)
+            while (op_peek(&state) != NULL && op_peek(&state)->op != NULL)
             {
                 if (!op_pop_and_insert(&state))
                 {
@@ -297,23 +273,31 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
             }
 
             // Increment arity counter for function whose parameter list this delimiter is in
-            if (state.num_ops > 1 && state.op_stack[state.num_ops - 2].op->placement == OP_PLACE_FUNCTION)
+            if (vec_count(&state.vec_ops) > 1)
             {
-                if (state.op_stack[state.num_ops - 2].count_operands)
+                struct OpData *op_data = ((struct OpData*)vec_get(&state.vec_ops, vec_count(&state.vec_ops) - 2));
+                if (op_data->op->placement == OP_PLACE_FUNCTION)
                 {
-                    if (state.op_stack[state.num_ops - 2].arity == OP_MAX_ARITY)
+                    if (op_data->count_operands)
                     {
-                        ERROR(PERR_CHILDREN_EXCEEDED);
-                    }
-                    else
-                    {
-                        state.op_stack[state.num_ops - 2].arity++;
+                        if (op_data->arity == OP_MAX_ARITY)
+                        {
+                            ERROR(PERR_CHILDREN_EXCEEDED);
+                        }
+                        else
+                        {
+                            op_data->arity++;
+                        }
                     }
                 }
+                else
+                {
+                    ERROR(PERR_UNEXPECTED_DELIMITER);
+                }
+                
             }
             else
             {
-                // Not in "func("-construct
                 ERROR(PERR_UNEXPECTED_DELIMITER);
             }
               
@@ -417,11 +401,11 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
         }
 
         await_infix = true;
-        if (!node_push(&state, node)) goto exit;
+        node_push(&state, node);
     }
     
     // 4. Pop all remaining operators
-    while (state.num_ops > 0)
+    while (op_peek(&state) != NULL)
     {
         if (op_peek(&state)->op == NULL)
         {
@@ -434,7 +418,7 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
     }
     
     // 5. Build result and return value
-    switch (state.num_nodes)
+    switch (vec_count(&state.vec_nodes))
     {
         // We haven't constructed a single node
         case 0:
@@ -442,7 +426,7 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
             break;
         // We successfully constructed a single AST
         case 1:
-            if (out_res != NULL) *out_res = state.node_stack[0];
+            if (out_res != NULL) *out_res = *(Node**)vec_pop(&state.vec_nodes);
             break;
         // We have multiple ASTs (need glue-op)
         default:
@@ -453,13 +437,15 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
     // If parsing wasn't successful or result is discarded, free partial results
     if (state.result != PERR_SUCCESS || out_res == NULL)
     {
-        while (state.num_nodes > 0)
+        while (true)
         {
-            free_tree(state.node_stack[state.num_nodes - 1]);
-            state.num_nodes--;
+            Node **node = vec_pop(&state.vec_nodes);
+            if (node == NULL) break;
+            free_tree(*node);
         }
     }
-
+    vec_destroy(&state.vec_nodes);
+    vec_destroy(&state.vec_ops);
     return state.result;
 }
 

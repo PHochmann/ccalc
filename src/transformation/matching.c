@@ -75,7 +75,7 @@ void match_parameter_lists(Matching matching,
     Vector vec_trie = vec_create(sizeof(TrieNode), 10);
 
     vec_push(&vec_local_matchings, &matching);
-    VEC_PUSH_LITERAL(&vec_trie, TrieNode, ((TrieNode){
+    VEC_PUSH_ELEM(&vec_trie, TrieNode, ((TrieNode){
         .first_match_index = 0,
         .num_matchings     = 1,
         .sum               = 0,
@@ -116,7 +116,7 @@ void match_parameter_lists(Matching matching,
                 if (list != NULL && new_sum + 1 <= num_tree_children)
                 {
                     // List is already bound, thus also its length is bound
-                    VEC_PUSH_LITERAL(&vec_trie, TrieNode, ((TrieNode){
+                    VEC_PUSH_ELEM(&vec_trie, TrieNode, ((TrieNode){
                         .first_match_index = __SIZE_MAX__,
                         .num_matchings     = 0,
                         .label             = list->size,
@@ -131,7 +131,7 @@ void match_parameter_lists(Matching matching,
                     {
                         // Special case: List is last pattern-child
                         // We can avoid extending trie with lists that are too short
-                        VEC_PUSH_LITERAL(&vec_trie, TrieNode, ((TrieNode){
+                        VEC_PUSH_ELEM(&vec_trie, TrieNode, ((TrieNode){
                                 .first_match_index = __SIZE_MAX__,
                                 .num_matchings     = 0,
                                 .label             = num_tree_children - new_sum,
@@ -146,7 +146,7 @@ void match_parameter_lists(Matching matching,
                         size_t num_insertions = num_tree_children - new_sum + 1;
                         for (size_t i = 0; i < num_insertions; i++)
                         {
-                            VEC_PUSH_LITERAL(&vec_trie, TrieNode, ((TrieNode){
+                            VEC_PUSH_ELEM(&vec_trie, TrieNode, ((TrieNode){
                                 .first_match_index = __SIZE_MAX__,
                                 .num_matchings     = 0,
                                 .label             = i,
@@ -166,7 +166,7 @@ void match_parameter_lists(Matching matching,
                 if (new_sum < num_tree_children)
                 {
                     // Any non-list node in pattern corresponds to exactly one node in tree
-                    VEC_PUSH_LITERAL(&vec_trie, TrieNode, ((TrieNode){
+                    VEC_PUSH_ELEM(&vec_trie, TrieNode, ((TrieNode){
                         .first_match_index = __SIZE_MAX__,
                         .num_matchings     = 0,
                         .label             = 1,

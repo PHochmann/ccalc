@@ -10,7 +10,10 @@ bool vec_ensure_size(Vector *vec, size_t needed_size)
         res = true;
         vec->buffer_size <<= 1;
     }
-    vec->buffer = realloc(vec->buffer, vec->elem_size * vec->buffer_size);
+    if (res)
+    {
+        vec->buffer = realloc(vec->buffer, vec->elem_size * vec->buffer_size);
+    }
     return res;
 }
 
@@ -54,8 +57,8 @@ Summary: To push a literal fast, for convenience use VEC_PUSH_LITERAL-Macro
 */
 void *vec_push_empty(Vector *vec)
 {
-    vec_ensure_size(vec, ++vec->elem_count);
-    return vec_get(vec, vec->elem_count - 1);
+    vec_ensure_size(vec, vec->elem_count + 1);
+    return vec_get(vec, vec->elem_count++);
 }
 
 bool vec_push_many(Vector *vec, size_t num, void *elem)
@@ -68,12 +71,14 @@ bool vec_push_many(Vector *vec, size_t num, void *elem)
 
 void *vec_pop(Vector *vec)
 {
+    if (vec->elem_count == 0) return NULL;
     vec->elem_count--;
     return vec_get(vec, vec->elem_count);
 }
 
 void *vec_peek(Vector *vec)
 {
+    if (vec->elem_count == 0) return NULL;
     return vec_get(vec, vec->elem_count - 1);
 }
 

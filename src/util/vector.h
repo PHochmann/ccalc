@@ -3,10 +3,8 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-#define VEC_PUSH_LITERAL(vec,typ,expr) {\
-    typ z = (expr);\
-    vec_push(vec, &z);\
-}
+#define VEC_PUSH_ELEM(vec, type, expr) (*(type*)vec_push_empty(vec)) = expr
+#define VEC_POP_ELEM(vec, type) *(type*)vec_pop(vec)
 
 /*
 Never, never save pointers when there are elements
