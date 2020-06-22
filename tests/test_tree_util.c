@@ -9,11 +9,11 @@
 static const size_t NUM_CASES = 5;
 
 #define ERROR_RETURN_VAL(function) {\
-    append_stringbuilder(error_builder, "Unexpected return value of %s.\n", function);\
+    strbuilder_append(error_builder, "Unexpected return value of %s.\n", function);\
     return false;\
 }
 
-bool tree_util_test(StringBuilder *error_builder)
+bool tree_util_test(Vector *error_builder)
 {
     Operator op = op_get_function("test", OP_DYNAMIC_ARITY);
 
@@ -55,7 +55,7 @@ bool tree_util_test(StringBuilder *error_builder)
         || *vars_x[2] != get_child(root, 4))
     {
         free_tree(root);
-        append_stringbuilder(error_builder, "Unexpected out_instances of get_variable_nodes.\n");
+        strbuilder_append(error_builder, "Unexpected out_instances of get_variable_nodes.\n");
         return false;
     }
 
@@ -89,7 +89,7 @@ bool tree_util_test(StringBuilder *error_builder)
     // Check equality
     if (tree_compare(root_copy, root) != NULL)
     {
-        append_stringbuilder(error_builder, "Unexpected replacement by replace_variable_nodes (or tree_copy broken).\n"); // Mem. leak
+        strbuilder_append(error_builder, "Unexpected replacement by replace_variable_nodes (or tree_copy broken).\n"); // Mem. leak
         return false;
     }
 

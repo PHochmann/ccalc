@@ -38,7 +38,7 @@ int main()
     set_hline(&table, BORDER_SINGLE);
 
     bool error = false;
-    StringBuilder error_builder = get_stringbuilder(100);
+    Vector error_builder = strbuilder_create(100);
     for (size_t i = 0; i < NUM_TESTS; i++)
     {
         Test test = test_getters[i]();
@@ -53,7 +53,9 @@ int main()
         }
         else
         {
-            printf("[" F_RED "%s" COL_RESET "] %s", test_getters[i]().name, error_builder.buffer);
+            printf("[" F_RED "%s" COL_RESET "] %s",
+                test_getters[i]().name,
+                (char*)error_builder.buffer);
             add_cell(&table, F_RED " failed " COL_RESET);
             error = true;
         }
@@ -61,7 +63,7 @@ int main()
 
 
     }
-    free_stringbuilder(&error_builder);
+    vec_destroy(&error_builder);
 
     set_span(&table, 3, 1);
     override_alignment(&table, ALIGN_CENTER);

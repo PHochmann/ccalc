@@ -107,7 +107,7 @@ bool almost_equals(double a, double b)
     return (fabs(a - b) < EPSILON);
 }
 
-bool parser_test(StringBuilder *error_builder)
+bool parser_test(Vector *error_builder)
 {
     init_core_ctx();
     Node *node = NULL;
@@ -117,7 +117,7 @@ bool parser_test(StringBuilder *error_builder)
     {
         if (parse_input(g_ctx, valueTests[i].input, &node) != PERR_SUCCESS)
         {
-            append_stringbuilder(error_builder, "Parser Error for '%s'\n", valueTests[i].input);
+            strbuilder_append(error_builder, "Parser Error for '%s'\n", valueTests[i].input);
             return false;
         }
 
@@ -126,7 +126,7 @@ bool parser_test(StringBuilder *error_builder)
 
         if (!is_equal)
         {
-            append_stringbuilder(error_builder, "Unexpected result for '%s'\n", valueTests[i].input);
+            strbuilder_append(error_builder, "Unexpected result for '%s'\n", valueTests[i].input);
             return false;
         }
     }
@@ -136,7 +136,7 @@ bool parser_test(StringBuilder *error_builder)
     {
         if (parse_input(g_ctx, errorTests[i].input, NULL) != errorTests[i].result)
         {
-            append_stringbuilder(error_builder, "Unexpected error type for '%s'\n", errorTests[i].input);
+            strbuilder_append(error_builder, "Unexpected error type for '%s'\n", errorTests[i].input);
             return false;
         }
     }

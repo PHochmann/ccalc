@@ -131,10 +131,10 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
             add_empty_cell(&table);
         }
 
-        StringBuilder builder = get_stringbuilder(20);
-        append_stringbuilder(&builder, " ");
+        Vector builder = strbuilder_create(20);
+        strbuilder_append(&builder, " ");
         tree_to_stringbuilder(&builder, expr, true);
-        append_stringbuilder(&builder, " ");
+        strbuilder_append(&builder, " ");
         add_cell_gc(&table, builder.buffer);
         override_alignment_of_row(&table, ALIGN_CENTER);
         next_row(&table);

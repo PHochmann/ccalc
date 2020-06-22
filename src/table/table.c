@@ -217,8 +217,8 @@ void add_cell_fmt(Table *table, char *fmt, ...)
 
 void add_cell_vfmt(Table *table, char *fmt, va_list args)
 {
-    StringBuilder builder = get_stringbuilder(10);
-    vappend_stringbuilder(&builder, fmt, args);
+    Vector builder = strbuilder_create(10);
+    vstrbuilder_append(&builder, fmt, args);
     add_cell_internal(table, builder.buffer, true);
 }
 

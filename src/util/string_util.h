@@ -1,14 +1,9 @@
 #pragma once
 #include <stdbool.h>
 #include <stdarg.h>
-#include "parsing/parser.h"
 
-typedef struct
-{
-    char *buffer;
-    size_t buffer_size;
-    size_t strlen;
-} StringBuilder;
+#include "vector.h"
+#include "parsing/parser.h"
 
 typedef struct
 {
@@ -30,7 +25,7 @@ StringIterator get_iterator(char *string);
 char get_next_char(StringIterator *iterator);
 size_t console_strlen(char *str);
 
-StringBuilder get_stringbuilder(size_t start_size);
-void free_stringbuilder(StringBuilder *builder);
-char *append_stringbuilder(StringBuilder *builder, char *fmt, ...);
-char *vappend_stringbuilder(StringBuilder *builder, char *fmt, va_list args);
+Vector strbuilder_create(size_t start_size);
+void strbuilder_reset(Vector *builder);
+void strbuilder_append(Vector *builder, char *fmt, ...);
+void vstrbuilder_append(Vector *builder, char *fmt, va_list args);

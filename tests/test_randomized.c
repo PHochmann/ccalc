@@ -6,7 +6,6 @@
 #include "../src/tree/tree_util.h"
 #include "../src/parsing/parser.h"
 #include "../src/tree/tree_to_string.h"
-#include "../src/string_util.h"
 
 #define SEED                 21
 #define NUM_CASES            1000
@@ -71,7 +70,7 @@ Summary:
     This test does not test them independently.
     Note that dynamic arity functions coexisting with fixed-arity function of same name cause false negatives
 */
-bool randomized_test(StringBuilder *error_builder)
+bool randomized_test(Vector *error_builder)
 {
     init_core_ctx();
     bool error = false;
@@ -107,7 +106,7 @@ bool randomized_test(StringBuilder *error_builder)
         // Check results
         if (result != PERR_SUCCESS)
         {
-            append_stringbuilder(error_builder, "Parser error: %s.\n", perr_to_string(result));
+            strbuilder_append(error_builder, "Parser error: %s.\n", perr_to_string(result));
             error = true;
         }
         else
@@ -118,7 +117,7 @@ bool randomized_test(StringBuilder *error_builder)
                 print_tree_visually(random_tree);
                 printf("Parsed tree tree:\n");
                 print_tree_visually(parsed_tree);
-                append_stringbuilder(error_builder, "Parsed tree not equal to generated tree.\n");
+                strbuilder_append(error_builder, "Parsed tree not equal to generated tree.\n");
                 error = true;
             }
         }

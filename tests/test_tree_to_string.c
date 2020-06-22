@@ -30,7 +30,7 @@ static struct TreeToStringTest tests[] = {
         "-sqrt(abs(((-(-a)!)!)*(-(-sum(-b+c-d+e,f^g^h-i,-sum(j,k),l+m)))*(-(-n)!)!))" },
 };
 
-bool tree_to_string_test(StringBuilder *error_builder)
+bool tree_to_string_test(Vector *error_builder)
 {
     init_core_ctx();
 
@@ -39,7 +39,7 @@ bool tree_to_string_test(StringBuilder *error_builder)
         Node *node = NULL;
         if (parse_input(g_ctx, tests[i].input, &node) != PERR_SUCCESS)
         {
-            append_stringbuilder(error_builder, "Parser Error in '%s'\n", tests[i].input);
+            strbuilder_append(error_builder, "Parser Error in '%s'\n", tests[i].input);
             return false;
         }
 
@@ -47,7 +47,9 @@ bool tree_to_string_test(StringBuilder *error_builder)
 
         if (strcmp(tests[i].expected_result, result) != 0)
         {
-            append_stringbuilder(error_builder, "Unexpected result in '%s'\n", tests[i].input);
+            strbuilder_append(error_builder,
+                "Unexpected result in '%s'. Should be '%s', is '%s'\n",
+                tests[i].input, tests[i].expected_result, result);
             return false;
         }
 

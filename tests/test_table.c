@@ -2,7 +2,6 @@
 #include <stdio.h>
 
 #include "test_table.h"
-#include "../src/string_util.h"
 #include "../src/table/table.h"
 
 #define NUM_CASES 2
@@ -20,7 +19,7 @@ char *arrayA[4][4] = {
     { " 3....... ", RED " 23.1132310 " COL_RESET, "c ", " 333" },
 };
 
-bool table_test(__attribute__((unused)) StringBuilder *error_builder)
+bool table_test(__attribute__((unused)) Vector *error_builder)
 {
     // Case 1
     Table t1 = get_empty_table();

@@ -8,7 +8,7 @@
 
 static const size_t NUM_CASES = 0;
 
-bool transformation_test(__attribute__((unused)) StringBuilder *error_builder)
+bool transformation_test(__attribute__((unused)) Vector *error_builder)
 {
     return true;
 }

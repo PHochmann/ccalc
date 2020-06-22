@@ -4,26 +4,25 @@
 #include "tree_to_string.h"
 #include "../util/string_util.h"
 
-#define SSIZE_MAX 2147483647
 #define OPENING_P "("
 #define CLOSING_P ")"
 
-void p_open(StringBuilder *builder)
+void p_open(Vector *builder)
 {
-    append_stringbuilder(builder, OPENING_P);
+    strbuilder_append(builder, OPENING_P);
 }
 
-void p_close(StringBuilder *builder)
+void p_close(Vector *builder)
 {
-    append_stringbuilder(builder, CLOSING_P);
+    strbuilder_append(builder, CLOSING_P);
 }
 
-void tree_to_string_internal(StringBuilder *builder, bool color, Node *node, bool l, bool r);
+void tree_to_string_internal(Vector *builder, bool color, Node *node, bool l, bool r);
 
-void prefix_to_string(StringBuilder *builder, bool color, Node *node, bool l, bool r)
+void prefix_to_string(Vector *builder, bool color, Node *node, bool l, bool r)
 {
     if (l) p_open(builder);
-    append_stringbuilder(builder, get_op(node)->name);
+    strbuilder_append(builder, get_op(node)->name);
     
     if (get_type(get_child(node, 0)) == NTYPE_OPERATOR
         && get_op(get_child(node, 0))->precedence <= get_op(node)->precedence)
@@ -42,7 +41,7 @@ void prefix_to_string(StringBuilder *builder, bool color, Node *node, bool l, bo
     if (l) p_close(builder);
 }
 
-void postfix_to_string(StringBuilder *builder, bool color, Node *node, bool l, bool r)
+void postfix_to_string(Vector *builder, bool color, Node *node, bool l, bool r)
 {
     if (r) p_open(builder);
 
@@ -60,29 +59,29 @@ void postfix_to_string(StringBuilder *builder, bool color, Node *node, bool l, b
         tree_to_string_internal(builder, color, get_child(node, 0), l && !r, true);
     }
     
-    append_stringbuilder(builder, "%s", get_op(node)->name);
+    strbuilder_append(builder, "%s", get_op(node)->name);
     if (r) p_close(builder);
 }
 
-void function_to_string(StringBuilder *builder, bool color, Node *node)
+void function_to_string(Vector *builder, bool color, Node *node)
 {
     if (get_op(node)->arity != 0)
     {
-        append_stringbuilder(builder, "%s(", get_op(node)->name);
+        strbuilder_append(builder, "%s(", get_op(node)->name);
         for (size_t i = 0; i < get_num_children(node); i++)
         {
             tree_to_string_internal(builder, color, get_child(node, i), false, false);
-            if (i < get_num_children(node) - 1) append_stringbuilder(builder, ",");
+            if (i < get_num_children(node) - 1) strbuilder_append(builder, ",");
         }
         p_close(builder);
     }
     else
     {
-        append_stringbuilder(builder, "%s", get_op(node)->name);
+        strbuilder_append(builder, "%s", get_op(node)->name);
     }
 }
 
-void infix_to_string(StringBuilder *builder, bool color, Node *node, bool l, bool r)
+void infix_to_string(Vector *builder, bool color, Node *node, bool l, bool r)
 {
     Node *childL = get_child(node, 0);
     Node *childR = get_child(node, 1);
@@ -106,7 +105,7 @@ void infix_to_string(StringBuilder *builder, bool color, Node *node, bool l, boo
         tree_to_string_internal(builder, color, childL, l, true);
     }
 
-    append_stringbuilder(builder, is_letter(get_op(node)->name[0]) ? " %s " : "%s", get_op(node)->name);
+    strbuilder_append(builder, is_letter(get_op(node)->name[0]) ? " %s " : "%s", get_op(node)->name);
     
     // Checks if right operand of infix operator needs to be wrapped in parentheses (see analog case for left operand)
     if (get_type(childR) == NTYPE_OPERATOR
@@ -130,16 +129,16 @@ Params
         It needs to be protected when it is adjacent to an operator on this side.
         When the subexpression starts (ends) with an operator and needs to be protected to the left (right), a parenthesis is printed in between.
 */
-void tree_to_string_internal(StringBuilder *builder, bool color, Node *node, bool l, bool r)
+void tree_to_string_internal(Vector *builder, bool color, Node *node, bool l, bool r)
 {
     switch (get_type(node))
     {
         case NTYPE_CONSTANT:
-            append_stringbuilder(builder, color ? CONST_COLOR CONSTANT_TYPE_FMT COL_RESET : CONSTANT_TYPE_FMT, get_const_value(node));
+            strbuilder_append(builder, color ? CONST_COLOR CONSTANT_TYPE_FMT COL_RESET : CONSTANT_TYPE_FMT, get_const_value(node));
             break;
             
         case NTYPE_VARIABLE:
-            append_stringbuilder(builder, color ? VAR_COLOR "%s" COL_RESET : "%s", get_var_name(node));
+            strbuilder_append(builder, color ? VAR_COLOR "%s" COL_RESET : "%s", get_var_name(node));
             break;
             
         case NTYPE_OPERATOR:
@@ -161,7 +160,7 @@ void tree_to_string_internal(StringBuilder *builder, bool color, Node *node, boo
         }
 }
 
-void tree_to_stringbuilder(StringBuilder *builder, Node *node, bool color)
+void tree_to_stringbuilder(Vector *builder, Node *node, bool color)
 {
     tree_to_string_internal(builder, color, node, false, false);
 }
@@ -169,7 +168,7 @@ void tree_to_stringbuilder(StringBuilder *builder, Node *node, bool color)
 // Summary: Returns string (on heap)
 char *tree_to_string(Node *node, bool color)
 {
-    StringBuilder builder = get_stringbuilder(100);
+    Vector builder = strbuilder_create(100);
     tree_to_stringbuilder(&builder, node, color);
     return builder.buffer;
 }

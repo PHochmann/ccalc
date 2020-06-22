@@ -158,63 +158,44 @@ size_t console_strlen(char *str)
     return res;
 }
 
-StringBuilder get_stringbuilder(size_t start_size)
+// Stringbuilder follows ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+
+Vector strbuilder_create(size_t start_size)
 {
-    if (start_size == 0) start_size = 10;
-    StringBuilder builder = {
-        .buffer = malloc(start_size * sizeof(char)),
-        .buffer_size = start_size,
-        .strlen = 0
-    };
-    builder.buffer[0] = '\0';
+    Vector builder = vec_create(sizeof(char), start_size);
+    *(char*)vec_push_empty(&builder) = '\n';
     return builder;
 }
 
-void reset_stringbuilder(StringBuilder *builder)
+void strbuilder_reset(Vector *builder)
 {
-    builder->buffer[0] = '\0';
-    builder->strlen = 0;
+    vec_reset(builder),
+    *(char*)vec_push_empty(builder) = '\n';
 }
 
-void free_stringbuilder(StringBuilder *builder)
-{
-    free(builder->buffer);
-}
-
-char *append_stringbuilder(StringBuilder *builder, char *fmt, ...)
+void strbuilder_append(Vector *builder, char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    char *res = vappend_stringbuilder(builder, fmt, args);
+    vstrbuilder_append(builder, fmt, args);
     va_end(args);
-    return res;
 }
 
-char *vappend_stringbuilder(StringBuilder *builder, char *fmt, va_list args)
+void vstrbuilder_append(Vector *builder, char *fmt, va_list args)
 {
     va_list args_copy;
     va_copy(args_copy, args);
 
-    size_t appended_length = vsnprintf(
-        builder->buffer + builder->strlen,
-        builder->buffer_size - builder->strlen,
+    size_t appended_length = vsnprintf(vec_get(builder, vec_count(builder) - 1),
+        builder->buffer_size - builder->elem_count + 1,
         fmt, args);
 
-    bool try_again = false;
-    while (builder->buffer_size < builder->strlen + appended_length + 1)
+    if (vec_ensure_size(builder, vec_count(builder) + appended_length))
     {
-        // Double buffer size as long as size is not sufficient
-        builder->buffer_size <<= 1;
-        try_again = true;
+        vsnprintf(vec_get(builder, vec_count(builder) - 1),
+            builder->buffer_size - builder->elem_count + 1,
+            fmt, args_copy);
     }
-
-    if (try_again)
-    {
-        builder->buffer = realloc(builder->buffer, builder->buffer_size);
-        vsnprintf(builder->buffer + builder->strlen, appended_length + 1, fmt, args_copy);
-    }
-    
-    builder->strlen += appended_length;
+    builder->elem_count += appended_length;
     va_end(args_copy);
-    return builder->buffer;
 }
