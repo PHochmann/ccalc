@@ -235,11 +235,14 @@ void extend_matching(Matching matching,
                         }
                 }
 
-                // Bind variable
-                matching.mapped_vars[matching.num_mapped]  = get_var_name(pattern);
-                matching.mapped_nodes[matching.num_mapped] = tree_list;
-                matching.num_mapped++;
-                vec_push(out_matchings, &matching);
+                // Bind variable if there's still a free slot in matching
+                if (matching.num_mapped < MAX_MAPPED_VARS)
+                {
+                    matching.mapped_vars[matching.num_mapped]  = get_var_name(pattern);
+                    matching.mapped_nodes[matching.num_mapped] = tree_list;
+                    matching.num_mapped++;
+                    vec_push(out_matchings, &matching);
+                }
                 return;
             }
         }

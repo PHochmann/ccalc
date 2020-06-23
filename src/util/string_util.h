@@ -3,7 +3,7 @@
 #include <stdarg.h>
 
 #include "vector.h"
-#include "parsing/parser.h"
+#include "../parsing/parser.h"
 
 typedef struct
 {

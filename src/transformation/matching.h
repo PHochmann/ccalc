@@ -2,7 +2,7 @@
 #include "../util/vector.h"
 #include "../tree/node.h"
 
-#define MAX_MAPPED_VARS 5
+#define MAX_MAPPED_VARS 10
 
 #define MATCHING_LIST_PREFIX        '['
 #define MATCHING_CONST_PREFIX       'c'
