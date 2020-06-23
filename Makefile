@@ -20,7 +20,7 @@ DEPS := $(OBJS:.o=.d)
 INC_DIRS := $(shell find $(SRC_DIRS) -type d)
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
-CFLAGS := -std=c99 -Wall -Wextra -Werror -pedantic
+CFLAGS := -MMD -MP -std=c99 -Wall -Wextra -Werror -pedantic
 LDFLAGS := -lm
 
 ifeq (,$(filter $(MAKECMDGOALS),noreadline))
