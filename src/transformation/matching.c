@@ -87,11 +87,13 @@ void match_parameter_lists(Matching matching,
     size_t curr_index = 0;
     while (curr_index < vec_count(&vec_trie))
     {
-        TrieNode *curr = (TrieNode*)vec_get(&vec_trie, curr_index);
-        size_t new_sum = curr->sum + curr->label;
+        // Since vec_trie's buffer could be realloced by any insertion,
+        // we can't store a pointer into it
+        TrieNode curr = VEC_GET_ELEM(&vec_trie, TrieNode, curr_index);
+        size_t new_sum = curr.sum + curr.label;
 
         // We found a valid end node of trie. Try to match.
-        if (new_sum == num_tree_children && curr->distance == num_pattern_children)
+        if (new_sum == num_tree_children && curr.distance == num_pattern_children)
         {
             fill_trie(curr_index,
                 pattern_children,
@@ -99,20 +101,23 @@ void match_parameter_lists(Matching matching,
                 &vec_local_matchings,
                 &vec_trie);
 
+            // Update curr
+            curr = VEC_GET_ELEM(&vec_trie, TrieNode, curr_index);
+
             // Copy matchings to result-buffer
             vec_push_many(out_matchings,
-                vec_count(&vec_local_matchings) - curr->first_match_index,
-                vec_get(&vec_local_matchings, curr->first_match_index));
+                vec_count(&vec_local_matchings) - curr.first_match_index,
+                vec_get(&vec_local_matchings, curr.first_match_index));
         }
 
         // Extend entry of trie
-        if (curr->distance < num_pattern_children)
+        if (curr.distance < num_pattern_children)
         {
-            if (get_type(pattern_children[curr->distance]) == NTYPE_VARIABLE
-                && get_var_name(pattern_children[curr->distance])[0] == MATCHING_LIST_PREFIX)
+            if (get_type(pattern_children[curr.distance]) == NTYPE_VARIABLE
+                && get_var_name(pattern_children[curr.distance])[0] == MATCHING_LIST_PREFIX)
             {
                 // Current pattern-child is list-variable
-                NodeList *list = lookup_mapped_var(&matching, get_var_name(pattern_children[curr->distance]));
+                NodeList *list = lookup_mapped_var(&matching, get_var_name(pattern_children[curr.distance]));
                 if (list != NULL && new_sum + 1 <= num_tree_children)
                 {
                     // List is already bound, thus also its length is bound
@@ -121,13 +126,13 @@ void match_parameter_lists(Matching matching,
                         .num_matchings     = 0,
                         .label             = list->size,
                         .sum               = new_sum,
-                        .distance          = curr->distance + 1,
+                        .distance          = curr.distance + 1,
                         .parent_index      = curr_index
                     }));
                 }
                 else
                 {
-                    if (curr->distance == num_pattern_children - 1)
+                    if (curr.distance == num_pattern_children - 1)
                     {
                         // Special case: List is last pattern-child
                         // We can avoid extending trie with lists that are too short
@@ -136,7 +141,7 @@ void match_parameter_lists(Matching matching,
                                 .num_matchings     = 0,
                                 .label             = num_tree_children - new_sum,
                                 .sum               = new_sum,
-                                .distance          = curr->distance + 1,
+                                .distance          = curr.distance + 1,
                                 .parent_index      = curr_index
                         }));
                     }
@@ -151,12 +156,9 @@ void match_parameter_lists(Matching matching,
                                 .num_matchings     = 0,
                                 .label             = i,
                                 .sum               = new_sum,
-                                .distance          = curr->distance + 1,
+                                .distance          = curr.distance + 1,
                                 .parent_index      = curr_index
                             }));
-                            // Since vec_trie's buffer could be realloced by the insertion,
-                            // retrieve curr again because it points into the buffer
-                            curr = (TrieNode*)vec_get(&vec_trie, curr_index);
                         }
                     }
                 }
@@ -171,7 +173,7 @@ void match_parameter_lists(Matching matching,
                         .num_matchings     = 0,
                         .label             = 1,
                         .sum               = new_sum,
-                        .distance          = curr->distance + 1,
+                        .distance          = curr.distance + 1,
                         .parent_index      = curr_index
                     }));
                 }

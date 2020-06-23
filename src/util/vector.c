@@ -10,10 +10,7 @@ bool vec_ensure_size(Vector *vec, size_t needed_size)
         res = true;
         vec->buffer_size <<= 1;
     }
-    if (res)
-    {
-        vec->buffer = realloc(vec->buffer, vec->elem_size * vec->buffer_size);
-    }
+    vec->buffer = realloc(vec->buffer, vec->elem_size * vec->buffer_size);
     return res;
 }
 

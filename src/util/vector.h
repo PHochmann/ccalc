@@ -4,7 +4,9 @@
 #include <stdarg.h>
 
 #define VEC_PUSH_ELEM(vec, type, expr) (*(type*)vec_push_empty(vec)) = expr
+#define VEC_GET_ELEM(vec, type, index) (*(type*)vec_get(vec, index))
 #define VEC_POP_ELEM(vec, type) *(type*)vec_pop(vec)
+#define VEC_PEEK_ELEM(vec, type) *(type*)vec_peek(vec)
 
 /*
 Never, never save pointers when there are elements
