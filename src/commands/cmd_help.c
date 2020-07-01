@@ -86,11 +86,11 @@ static char *OP_DESCRIPTIONS[52] = {
     " Speed of sound in air at 20 °C [m/s] "
 };
 
-static const size_t BASIC_IND =  2; // Index of first basic operator ($x and x@y before, should no be shown)
-static const size_t TRIG_IND  = 20; // Index of first trigonometric function
-static const size_t MISC_IND  = 32; // Index of first misc. function
-static const size_t CONST_IND = 49; // Index of first constant
-static const size_t LAST_IND  = 54; // Index of last constant
+static const size_t BASIC_IND =  4; // Index of first basic operator ($x and x@y before, should no be shown)
+static const size_t TRIG_IND  = 22; // Index of first trigonometric function
+static const size_t MISC_IND  = 34; // Index of first misc. function
+static const size_t CONST_IND = 51; // Index of first constant
+static const size_t LAST_IND  = 56; // Index of last constant
 
 int cmd_help_check(char *input)
 {

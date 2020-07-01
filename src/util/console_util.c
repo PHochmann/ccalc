@@ -5,13 +5,12 @@
 #ifdef USE_READLINE
 #include <readline/readline.h>
 #include <readline/history.h>
-static const size_t PROMPT_BUFFER = 15;
 #endif
 
 #include "console_util.h"
 #include "string_util.h"
 
-static const size_t MAX_INPUT_LENGTH = 100;
+static const size_t GETLINE_MAX_INPUT_LENGTH = 100;
 
 bool g_interactive;
 
@@ -64,8 +63,8 @@ bool ask_input_getline(FILE *file, char **out_input, char *prompt_fmt, va_list a
     }
     
     // Would be no problem to put input on stack, but we want to have the same interface as readline, which puts input on heap
-    size_t size = MAX_INPUT_LENGTH;
-    *out_input = malloc(MAX_INPUT_LENGTH);
+    size_t size = GETLINE_MAX_INPUT_LENGTH;
+    *out_input = malloc(GETLINE_MAX_INPUT_LENGTH);
     if (getline(out_input, &size, file) == -1)
     {
         free(*out_input);
@@ -90,18 +89,9 @@ Params
 // File is stdin, g_interactive is true
 bool ask_input_readline(char **out_input, char *prompt_fmt, va_list args)
 {
-    if (strcmp(prompt_fmt, "%s") == 0)
-    {
-        // Save stack space in the most common case
-        *out_input = readline(va_arg(args, char*));
-    }
-    else
-    {
-        // Printing prompt beforehand causes overwrite when using arrow keys
-        char prompt[PROMPT_BUFFER];
-        vsnprintf(prompt, PROMPT_BUFFER, prompt_fmt, args);
-        *out_input = readline(prompt);
-    }
+    Vector strbuilder = strbuilder_create(3);
+    vstrbuilder_append(&strbuilder, prompt_fmt, args);
+    *out_input = readline(strbuilder.buffer);
 
     if (*out_input == NULL)
     {
@@ -155,18 +145,18 @@ bool ask_yes_no(bool default_val)
     }
     switch (selection)
     {
-            case '\n':
-                return default_val;
-            case 'Y':
-            case 'y':
-                return true;
-            case 'N':
-            case 'n':
-            case EOF:
-                return false;
-            default:
-                printf("Input not recognized.\n");
-                return false;
+        case '\n':
+            return default_val;
+        case 'Y':
+        case 'y':
+            return true;
+        case 'N':
+        case 'n':
+        case EOF:
+            return false;
+        default:
+            printf("Input not recognized.\n");
+            return false;
     }
 }
 

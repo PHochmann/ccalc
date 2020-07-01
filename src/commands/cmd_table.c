@@ -15,6 +15,8 @@
 #define FOLD_VAR_1 "x"
 #define FOLD_VAR_2 "y"
 
+#define STRBUILDER_STARTSIZE 10
+
 int cmd_table_check(char *input)
 {
     return begins_with(COMMAND, input);
@@ -131,7 +133,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
             add_empty_cell(&table);
         }
 
-        Vector builder = strbuilder_create(20);
+        Vector builder = strbuilder_create(STRBUILDER_STARTSIZE);
         strbuilder_append(&builder, " ");
         tree_to_stringbuilder(&builder, expr, true);
         strbuilder_append(&builder, " ");

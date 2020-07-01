@@ -8,7 +8,7 @@
 #include "../util/console_util.h"
 #include "../parsing/parser.h"
 
-#define NUM_OPS       54
+#define NUM_OPS       56
 #define NUM_COMP_FUNC 10
 #define MAX_OPS (NUM_OPS + NUM_COMP_FUNC)
 
@@ -28,6 +28,8 @@ void init_core_ctx()
     ctx_add_ops(g_ctx, NUM_OPS,
         op_get_prefix("$", 0),
         op_get_prefix("@", 7),
+        op_get_postfix("'", 6),
+        op_get_function("deriv", 2),
         op_get_infix("+", 2, OP_ASSOC_LEFT),
         op_get_infix("-", 2, OP_ASSOC_LEFT),
         op_get_infix("*", 3, OP_ASSOC_LEFT),
@@ -145,7 +147,7 @@ bool core_parse_input(char *input, char *error_fmt, bool replace_comp_funcs, Nod
         {
             apply_ruleset(out_res, num_comp_func, composite_functions);
         }
-        if (!core_simplify(out_res, false, false) || !core_replace_history(out_res))
+        if (/*!core_simplify(out_res) || */!core_replace_history(out_res))
         {
             free_tree(*out_res);
             return false;

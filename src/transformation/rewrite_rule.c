@@ -13,11 +13,11 @@ void mark_vars(Node *tree, char id)
     size_t num_vars = list_variables(tree, vars);
     for (size_t i = 0; i < num_vars; i++)
     {
-        Node **nodes[MAX_MAPPED_VARS];
+        Node **nodes[count_variables(tree)];
         size_t num_nodes = get_variable_nodes(&tree, vars[i], nodes);
         for (size_t j = 0; j < num_nodes; j++)
         {
-            set_id(*nodes[j], id);
+            set_id(*(nodes[j]), id);
         }
     }
 }
@@ -92,16 +92,16 @@ void apply_ruleset(Node **tree, size_t num_rules, RewriteRule *ruleset)
         {
             if (apply_rule(tree, &ruleset[j]))
             {
-                //printf("[%zu] ", j);
-                //print_tree(*tree, true);
-                //printf("\n");
+                /*printf("[%zu] ", j);
+                print_tree(*tree, true);
+                printf("\n");*/
                 applied_flag = true;
                 break;
             }
         }
         if (!applied_flag)
         {
-            //printf("END!\n");
+            //printf("No rule applicable. End.\n");
             return;
         }
     }

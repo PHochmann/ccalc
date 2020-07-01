@@ -3,13 +3,15 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+// May change the buffer location
 #define VEC_PUSH_ELEM(vec, type, expr) (*(type*)vec_push_empty(vec)) = expr
+// Unsafe on invalid index
 #define VEC_GET_ELEM(vec, type, index) (*(type*)vec_get(vec, index))
 #define VEC_POP_ELEM(vec, type) *(type*)vec_pop(vec)
 #define VEC_PEEK_ELEM(vec, type) *(type*)vec_peek(vec)
 
 /*
-Never, never save pointers when there are elements
+Never save pointers when there are elements
 inserted into the buffer! It can be realloc'ed!
 */
 
