@@ -43,7 +43,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     Node *fold_expr = NULL;
     Node *fold_init = NULL;
 
-    if (!core_parse_input(args[0], "Error in expression: %s.\n", true, &expr))
+    if (!core_parse_input(args[0], "Error in expression: %s.\n", true, &expr, false))
     {
         return false;
     }
@@ -56,9 +56,9 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
         goto exit;
     }
 
-    if (!core_parse_input(args[1], "Error in start: %s.\n", true, &start)
-        || !core_parse_input(args[2], "Error in end: %s.\n", true, &end)
-        || !core_parse_input(args[3], "Error in step: %s.\n", true, &step))
+    if (!core_parse_input(args[1], "Error in start: %s.\n", true, &start, false)
+        || !core_parse_input(args[2], "Error in end: %s.\n", true, &end, false)
+        || !core_parse_input(args[3], "Error in step: %s.\n", true, &step, false))
     {
         goto exit;
     }
@@ -86,8 +86,8 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     if (num_args == 6)
     {
         // Parse initial fold-value
-        if (!core_parse_input(args[4], "Error in fold expression: %s.\n", true, &fold_expr)
-            || !core_parse_input(args[5], "Error in initial fold value: %s.\n", true, &fold_init))
+        if (!core_parse_input(args[4], "Error in fold expression: %s.\n", true, &fold_expr, false)
+            || !core_parse_input(args[5], "Error in initial fold value: %s.\n", true, &fold_init, false))
         {
             goto exit;
         }

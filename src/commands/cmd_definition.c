@@ -95,7 +95,7 @@ bool add_function(char *name, char *left, char *right)
         // Add function operator to parse left input
         // Must be OP_DYNAMIC_ARITY because we do not know the actual arity yet
         ctx_add_op(g_ctx, op_get_function(name, OP_DYNAMIC_ARITY));
-        if (!core_parse_input(left, FMT_ERROR_LEFT, false, &left_n))
+        if (!core_parse_input(left, FMT_ERROR_LEFT, false, &left_n, false))
         {
             goto error;
         }
@@ -106,7 +106,7 @@ bool add_function(char *name, char *left, char *right)
     // Assign correct arity
     get_op(left_n)->arity = get_num_children(left_n);
 
-    if (!core_parse_input(right, FMT_ERROR_RIGHT, false, &right_n))
+    if (!core_parse_input(right, FMT_ERROR_RIGHT, false, &right_n, false))
     {
         goto error;
     }

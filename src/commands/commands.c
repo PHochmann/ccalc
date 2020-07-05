@@ -6,7 +6,7 @@
 #include "cmd_help.h"
 #include "cmd_clear.h"
 #include "cmd_load.h"
-#include "cmd_debug.h"
+#include "cmd_show.h"
 #include "cmd_definition.h"
 #include "cmd_table.h"
 #include "cmd_playground.h"
@@ -61,7 +61,7 @@ static const struct Command commands[] = {
     { cmd_table_check,      cmd_table_exec },
     { cmd_definition_check, cmd_definition_exec },
     { cmd_clear_check,      cmd_clear_exec },
-    { cmd_debug_check,      cmd_debug_exec },
+    { cmd_show_check,       cmd_show_exec },
     { cmd_load_check,       cmd_load_exec },
     { cmd_playground_check, cmd_playground_exec },
     /* Evaluation is last command. Its check function always returns true. */

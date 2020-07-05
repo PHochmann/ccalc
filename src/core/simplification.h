@@ -4,4 +4,4 @@
 
 void init_simplification();
 void unload_simplification();
-bool core_simplify(Node **tree);
+bool core_simplify(Node **tree, bool debug);

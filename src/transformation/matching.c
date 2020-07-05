@@ -223,20 +223,20 @@ void extend_matching(Matching matching,
                             return;
                         }
                         break;
-                    case MATCHING_NON_CONST_PREFIX:
+                    case MATCHING_CONST_OR_VAR_PREFIX:
+                        if (tree_list.size != 1 || get_type(tree_list.nodes[0]) == NTYPE_OPERATOR)
+                        {
+                            return;
+                        }
+                        break;
+                    case MATCHING_OP_PREFIX:
+                        if (tree_list.size != 1 || get_type(tree_list.nodes[0]) != NTYPE_OPERATOR)
+                        {
+                            return;
+                        }
+                        break;
+                   case MATCHING_OP_OR_VAR_PREFIX:
                         if (tree_list.size != 1 || get_type(tree_list.nodes[0]) == NTYPE_CONSTANT)
-                        {
-                            return;
-                        }
-                        break;
-                    case MATCHING_VAR_PREFIX:
-                        if (tree_list.size != 1 || get_type(tree_list.nodes[0]) != NTYPE_VARIABLE)
-                        {
-                            return;
-                        }
-                        break;
-                    case MATCHING_NON_VAR_PREFIX:
-                        if (tree_list.size != 1 || get_type(tree_list.nodes[0]) == NTYPE_VARIABLE)
                         {
                             return;
                         }

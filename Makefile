@@ -2,8 +2,17 @@ TARGET_EXEC := ccalc
 BUILD_DIR := ./bin/release
 SRC_DIRS := ./src
 
+CFLAGS := -MMD -MP -std=c99 -Wall -Wextra -Werror -pedantic
+LDFLAGS := -lm
+
 ifneq (,$(filter $(MAKECMDGOALS),debug tests))
     BUILD_DIR := ./bin/debug
+	CFLAGS += -DDEBUG -Og -g3
+endif
+
+ifeq (,$(filter $(MAKECMDGOALS),noreadline))
+	CFLAGS += -DUSE_READLINE
+	LDFLAGS += -lreadline
 endif
 
 ifneq (,$(filter $(MAKECMDGOALS),tests))
@@ -19,18 +28,6 @@ DEPS := $(OBJS:.o=.d)
 
 INC_DIRS := $(shell find $(SRC_DIRS) -type d)
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
-
-CFLAGS := -MMD -MP -std=c99 -Wall -Wextra -Werror -pedantic
-LDFLAGS := -lm
-
-ifeq (,$(filter $(MAKECMDGOALS),noreadline))
-	CFLAGS += -DUSE_READLINE
-	LDFLAGS += -lreadline
-endif
-
-ifneq (,$(filter $(MAKECMDGOALS),debug tests))
-	CFLAGS += -Og -g3
-endif
 
 all: $(BUILD_DIR)/$(TARGET_EXEC)
 

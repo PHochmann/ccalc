@@ -133,7 +133,7 @@ Summary:
 Returns:
     True when input was successfully parsed, false when syntax error in input or semantical error while transforming
 */
-bool core_parse_input(char *input, char *error_fmt, bool replace_comp_funcs, Node **out_res)
+bool core_parse_input(char *input, char *error_fmt, bool replace_comp_funcs, Node **out_res, bool debug)
 {
     ParserError perr = parse_input(g_ctx, input, out_res);
     if (perr != PERR_SUCCESS)
@@ -147,7 +147,7 @@ bool core_parse_input(char *input, char *error_fmt, bool replace_comp_funcs, Nod
         {
             apply_ruleset(out_res, num_comp_func, composite_functions);
         }
-        if (/*!core_simplify(out_res) || */!core_replace_history(out_res))
+        if (!core_simplify(out_res, debug) || !core_replace_history(out_res))
         {
             free_tree(*out_res);
             return false;

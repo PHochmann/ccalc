@@ -92,6 +92,7 @@ bool ask_input_readline(char **out_input, char *prompt_fmt, va_list args)
     Vector strbuilder = strbuilder_create(3);
     vstrbuilder_append(&strbuilder, prompt_fmt, args);
     *out_input = readline(strbuilder.buffer);
+    vec_destroy(&strbuilder);
 
     if (*out_input == NULL)
     {

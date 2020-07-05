@@ -24,7 +24,7 @@ Summary: The evaluation command is executed when input is no other command (henc
 bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
 {
     Node *res;
-    if (core_parse_input(input, ERROR_FMT, true, &res))
+    if (core_parse_input(input, ERROR_FMT, true, &res, false))
     {
         // Make expression constant by asking for values and binding them to variables
         char *vars[count_variables(res)];
@@ -43,7 +43,7 @@ bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
             if (ask_input(stdin, &input, ASK_VARIABLE_FMT, vars[i]))
             {
                 Node *res_var;
-                if (!core_parse_input(input, ERROR_FMT, true, &res_var))
+                if (!core_parse_input(input, ERROR_FMT, true, &res_var, false))
                 {
                     // Error while parsing - ask again
                     free(input);
