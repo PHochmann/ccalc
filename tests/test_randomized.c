@@ -86,7 +86,7 @@ bool randomized_test(Vector *error_builder)
         char *stringed_tree = tree_to_string(random_tree, false);
 
         // To test glue-op: replace some '*' by spaces
-        /*while (rand() % 4 != 0)
+        while (rand() % 4 != 0)
         {
             char *asterisk = strstr(stringed_tree, "*");
             if (asterisk != NULL)
@@ -97,7 +97,7 @@ bool randomized_test(Vector *error_builder)
             {
                 break;
             }
-        }*/
+        }
 
         // Parse stringed random tree
         Node *parsed_tree = NULL;

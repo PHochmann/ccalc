@@ -25,22 +25,22 @@ void init_core_ctx()
 {
     num_comp_func = 0;
     __g_ctx = get_context(MAX_OPS, operators);
-    ctx_add_ops(g_ctx, NUM_OPS,
+    if (!ctx_add_ops(g_ctx, NUM_OPS,
         op_get_prefix("$", 0),
-        op_get_prefix("@", 7),
-        op_get_postfix("'", 6),
+        op_get_prefix("@", 8),
+        op_get_postfix("'", 7),
         op_get_function("deriv", 2),
         op_get_infix("+", 2, OP_ASSOC_LEFT),
         op_get_infix("-", 2, OP_ASSOC_LEFT),
-        op_get_infix("*", 3, OP_ASSOC_LEFT),
+        op_get_infix("*", 4, OP_ASSOC_LEFT),
         op_get_infix("/", 3, OP_ASSOC_LEFT),
-        op_get_infix("^", 4, OP_ASSOC_RIGHT),
+        op_get_infix("^", 5, OP_ASSOC_RIGHT),
         op_get_infix("C", 1, OP_ASSOC_LEFT),
         op_get_infix("mod", 1, OP_ASSOC_LEFT),
-        op_get_prefix("+", 6),
-        op_get_prefix("-", 6),
-        op_get_postfix("!", 5),
-        op_get_postfix("%", 5),
+        op_get_prefix("+", 7),
+        op_get_prefix("-", 7),
+        op_get_postfix("!", 6),
+        op_get_postfix("%", 6),
         op_get_function("exp", 1),
         op_get_function("root", 2),
         op_get_function("sqrt", 1),
@@ -81,7 +81,10 @@ void init_core_ctx()
         op_get_constant("e"),
         op_get_constant("phi"),
         op_get_constant("clight"),
-        op_get_constant("csound"));
+        op_get_constant("csound")))
+    {
+        report_error("Software defect: Inconsistent operator set.\n");
+    }
     // Set multiplication as glue-op
     ctx_set_glue_op(g_ctx, ctx_lookup_op(g_ctx, "*", OP_PLACE_INFIX));
     srand(time(NULL));
