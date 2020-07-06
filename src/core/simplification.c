@@ -62,12 +62,6 @@ char *normal_form_strings[] = {
 RewriteRule simplification_rules[NUM_SIMPLIFICATION_RULES];
 char *simplification_strings[] = {
 
-    /* Move constants and variables to the left */
-    "sum([xs], dX, [ys], cY, [zs])", "sum(cY, [xs], dX, [ys], [zs])", // Constants left to variables or operators
-    "sum([xs], oX, [ys], bY, [zs])", "sum([xs], bY, [ys], oX, [zs])", // Variables left to operators
-    "prod([xs], dX, [ys], cY, [zs])", "prod(cY, [xs], dX, [ys], [zs])",
-    "prod([xs], oX, [ys], bY, [zs])", "prod([xs], bY, [ys], oX, [zs])",
-
     /* Get a nice sum */
     "x+y", "sum(x,y)",
     "sum([xs], sum([ys]), [zs])", "sum([xs], [ys], [zs])",
@@ -83,6 +77,12 @@ char *simplification_strings[] = {
     "x*prod([xs])", "prod(x, [xs])",
     "prod([xs])*x", "prod([xs], x)",
     //"prod([xs], dX, cY, [ys])", "prod([xs], cY, dX, [ys])", 
+
+    /* Move constants and variables to the left */
+    "sum([xs], dX, [ys], cY, [zs])", "sum(cY, [xs], dX, [ys], [zs])", // Constants left to variables or operators
+    "sum([xs], oX, [ys], bY, [zs])", "sum([xs], bY, [ys], oX, [zs])", // Variables left to operators
+    "prod([xs], dX, [ys], cY, [zs])", "prod(cY, [xs], dX, [ys], [zs])",
+    "prod([xs], oX, [ys], bY, [zs])", "prod([xs], bY, [ys], oX, [zs])",
 
     /* Simplify sums */
     "sum(x)", "x",
@@ -124,7 +124,7 @@ char *simplification_strings[] = {
     //"prod([xs], cos(x)^-1, [ys], sin(x), [zs])", "prod([xs], tan(x), [ys], [zs])"
 };
 
-#define NUM_PRETTY_RULES 17
+#define NUM_PRETTY_RULES 18
 RewriteRule pretty_rules[NUM_PRETTY_RULES];
 char *pretty_strings[] = 
 {
@@ -135,6 +135,7 @@ char *pretty_strings[] =
     "-sum([xs], x)", "-sum([xs])-x",
     "prod([xs], x)^cY", "prod([xs])^cY * x^cY",
 
+    "(x+y)^2", "x^2 + 2*x*y + y^2",
     "cX*(x+y)", "cX*x + cX*y",
     "x+(y+z)", "x+y+z",
     "x*(y*z)", "x*y*z",
@@ -147,7 +148,6 @@ char *pretty_strings[] =
     "--x", "x",
     "x+(-y)", "x-y",
     "x^1", "x",
-    "x^-y*x^y", 
 };
 
 bool parse_rule(char *before, char *after, RewriteRule *out_rule)

@@ -33,7 +33,7 @@ bool cmd_show_exec(char *input, int code)
     }
 
     Node *res;
-    if (core_parse_input(input, ERROR_FMT, true, &res, code == DEBUG_CODE))
+    if (arith_parse_input_extended(input, ERROR_FMT, true, true, code == DEBUG_CODE, &res))
     {
         printf("= ");
         print_tree(res, true);
