@@ -1,4 +1,5 @@
 #pragma once
+#include <stdbool.h>
 #include "../parsing/context.h"
 #include "../tree/node.h"
 #include "../transformation/rewrite_rule.h"

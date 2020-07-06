@@ -48,7 +48,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
         return false;
     }
 
-    char *variables[count_variables(expr)];
+    char *variables[count_variables(expr, false)];
     size_t num_vars = list_variables(expr, variables);
     if (num_vars > 1)
     {
@@ -63,9 +63,9 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
         goto exit;
     }
 
-    if (count_variables(start) > 0
-        || count_variables(end) > 0
-        || count_variables(step) > 0)
+    if (count_variables(start, false) > 0
+        || count_variables(end, false) > 0
+        || count_variables(step, false) > 0)
     {
         report_error("Error: Start, end and step must be constant.\n");
         goto exit;
@@ -92,7 +92,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
             goto exit;
         }
 
-        if (count_variables(fold_expr)
+        if (count_variables(fold_expr, false)
             - count_variable_nodes(fold_expr, FOLD_VAR_1)
             - count_variable_nodes(fold_expr, FOLD_VAR_2) != 0)
         {
@@ -101,7 +101,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
             goto exit;
         }
 
-        if (count_variables(fold_init) > 0)
+        if (count_variables(fold_init, false) > 0)
         {
             report_error("Error: Initial fold value must be constant.\n");
             goto exit;

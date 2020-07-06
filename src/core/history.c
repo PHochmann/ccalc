@@ -69,7 +69,7 @@ bool core_replace_history(Node **tree)
     Node **matched_subtree;
     while ((matched_subtree = find_matching(tree, ans_pattern, &ans_matching)) != NULL)
     {
-        if (count_variables(ans_matching.mapped_nodes[0].nodes[0]) > 0)
+        if (count_variables(ans_matching.mapped_nodes[0].nodes[0], false) > 0)
         {
             report_error(ERROR_NOT_CONSTANT);
             return false;

@@ -5,6 +5,8 @@
 #include "parser.h"
 #include "../util/string_util.h"
 
+#define GLUEOP_PRECEDENCE 200
+
 // Do not use this macro in auxiliary functions!
 #define ERROR(type) { state.result = type; goto exit; }
 
@@ -13,6 +15,7 @@ struct OpData
 {
     Operator *op;        // Pointer to operator in context, NULL denotes opening parenthesis
     bool count_operands; // Indicates whether to count operands
+    bool glue_op;
     size_t arity;        // Records number of operands to pop
 };
 
@@ -121,19 +124,26 @@ bool op_pop_and_insert(struct ParserState *state)
     return true;
 }
 
+Precedence get_precedence(struct OpData op_d)
+{
+    if (op_d.glue_op)
+    {
+        return GLUEOP_PRECEDENCE;
+    }
+    return op_d.op->precedence;
+}
+
 bool op_push(struct ParserState *state, struct OpData op_d)
 {
-    Operator *op = op_d.op;
-    
-    if (op != NULL)
+    if (op_d.op != NULL)
     {
         // Shunting-yard algorithm: Pop until operator of higher precedence or '(' is on top of stack 
-        if (op->placement == OP_PLACE_INFIX || op->placement == OP_PLACE_POSTFIX)
+        if (op_d.op->placement == OP_PLACE_INFIX || op_d.op->placement == OP_PLACE_POSTFIX)
         {
             while (op_peek(state) != NULL
                 && op_peek(state)->op != NULL
-                && (op->precedence < op_peek(state)->op->precedence
-                    || (op->precedence == op_peek(state)->op->precedence && op->assoc == OP_ASSOC_LEFT)))
+                && (get_precedence(op_d) < get_precedence(*op_peek(state))
+                    || (get_precedence(op_d) == get_precedence(*op_peek(state)) && op_d.op->assoc == OP_ASSOC_LEFT)))
             {
                 if (!op_pop_and_insert(state)) return false;
             }
@@ -145,18 +155,19 @@ bool op_push(struct ParserState *state, struct OpData op_d)
 }
 
 // Pushes actual operator on op_stack. op must not be NULL!
-bool push_operator(struct ParserState *state, Operator *op)
+bool push_operator(struct ParserState *state, bool glue_op, Operator *op)
 {
     // Set arity of functions to 0 and enable operand counting
     struct OpData opData;
+    opData.glue_op = false;
 
     if (op->placement == OP_PLACE_FUNCTION)
     {
-        opData = (struct OpData){ op, true, 0 };
+        opData = (struct OpData){ op, true, glue_op, 0 };
     }
     else
     {
-        opData = (struct OpData){ op, false, op->arity };
+        opData = (struct OpData){ op, false, glue_op, op->arity };
     }
 
     return op_push(state, opData);
@@ -165,7 +176,7 @@ bool push_operator(struct ParserState *state, Operator *op)
 // Pushes opening parenthesis on op_stack
 bool push_opening_parenthesis(struct ParserState *state)
 {
-    return op_push(state, (struct OpData){ NULL, false, OP_DYNAMIC_ARITY });
+    return op_push(state, (struct OpData){ NULL, false, false, OP_DYNAMIC_ARITY });
 }
 
 // out_res can be NULL if you only want to check if an error occurred
@@ -196,7 +207,7 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
                 && ctx_lookup_op(state.ctx, token, OP_PLACE_INFIX) == NULL
                 && ctx_lookup_op(state.ctx, token, OP_PLACE_POSTFIX) == NULL)
             {
-                if (!push_operator(&state, state.ctx->glue_op)) goto exit;
+                if (!push_operator(&state, true, state.ctx->glue_op)) goto exit;
 
                 // If glue-op was function, disable function overloading mechanism
                 // Arity of 2 needed for DYNAMIC_ARITY functions set as glue-op
@@ -316,7 +327,7 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
             op = ctx_lookup_op(state.ctx, token, OP_PLACE_FUNCTION);
             if (op != NULL) // Function operator found
             {
-                if (!push_operator(&state, op)) goto exit;
+                if (!push_operator(&state, false, op)) goto exit;
 
                 if (op->arity == 0 || op->arity == OP_DYNAMIC_ARITY)
                 {
@@ -355,7 +366,7 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
             op = ctx_lookup_op(state.ctx, token, OP_PLACE_PREFIX);
             if (op != NULL) // Prefix operator found
             {
-                if (!push_operator(&state, op)) goto exit;
+                if (!push_operator(&state, false, op)) goto exit;
                 await_infix = false;
                 continue;
             }
@@ -365,7 +376,7 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
             op = ctx_lookup_op(state.ctx, token, OP_PLACE_INFIX);
             if (op != NULL) // Infix operator found
             {
-                if (!push_operator(&state, op)) goto exit;
+                if (!push_operator(&state, false, op)) goto exit;
                 await_infix = false;
                 continue;
             }
@@ -373,7 +384,7 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
             op = ctx_lookup_op(state.ctx, token, OP_PLACE_POSTFIX);
             if (op != NULL) // Postfix operator found
             {
-                if (!push_operator(&state, op)) goto exit;
+                if (!push_operator(&state, false, op)) goto exit;
                 // Postfix operators are never on the op_stack, because their operands are directly available
                 op_pop_and_insert(&state);
                 await_infix = true;
