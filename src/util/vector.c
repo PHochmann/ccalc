@@ -1,6 +1,12 @@
 #include <string.h>
 #include "vector.h"
 
+void vec_trim(Vector *vec)
+{
+    vec->buffer_size = vec->elem_count + 1;
+    vec->buffer = realloc(vec->buffer, vec->elem_size * vec->buffer_size);
+}
+
 // Returns true if buffer needed to be extended.
 bool vec_ensure_size(Vector *vec, size_t needed_size)
 {
@@ -39,11 +45,6 @@ void vec_destroy(Vector *vec)
     free(vec->buffer);
 }
 
-void *vec_get(Vector *vec, size_t index)
-{
-    return (char*)vec->buffer + vec->elem_size * index;
-}
-
 bool vec_push(Vector *vec, void *elem)
 {
     return vec_push_many(vec, 1, elem);
@@ -66,6 +67,13 @@ bool vec_push_many(Vector *vec, size_t num, void *elem)
     return res;
 }
 
+// Very unsafe to store at caller site - buffer may realloc frequently
+void *vec_get(Vector *vec, size_t index)
+{
+    return (char*)vec->buffer + vec->elem_size * index;
+}
+
+// Very unsafe to store at caller site - buffer may realloc frequently
 void *vec_pop(Vector *vec)
 {
     if (vec->elem_count == 0) return NULL;
@@ -73,6 +81,7 @@ void *vec_pop(Vector *vec)
     return vec_get(vec, vec->elem_count);
 }
 
+// Very unsafe to store at caller site - buffer may realloc frequently
 void *vec_peek(Vector *vec)
 {
     if (vec->elem_count == 0) return NULL;
