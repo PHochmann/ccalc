@@ -8,6 +8,8 @@
 #include "printing.h"
 #include "constraint.h"
 
+#define STRBUILDER_STARTSIZE 5
+
 void add_cell_internal(Table *table, char *text, bool needs_free)
 {
     if (table->curr_col >= MAX_COLS) return;
@@ -43,20 +45,20 @@ struct Row *malloc_row(size_t y)
     for (size_t i = 0; i < MAX_COLS; i++)
     {
         res->cells[i] = (struct Cell){
-            .is_set = false,
-            .x = i,
-            .y = y,
-            .parent = NULL,
-            .text = NULL,
-            .override_align = false,
-            .override_border_left = false,
+            .is_set                = false,
+            .x                     = i,
+            .y                     = y,
+            .parent                = NULL,
+            .text                  = NULL,
+            .override_align        = false,
+            .override_border_left  = false,
             .override_border_above = false,
-            .span_x = 1,
-            .span_y = 1,
-            .text_needs_free = false,
-            .zeros_needed = 0,
-            .zero_position = 0,
-            .dot_needed = false
+            .span_x                = 1,
+            .span_y                = 1,
+            .text_needs_free       = false,
+            .zeros_needed          = 0,
+            .zero_position         = 0,
+            .dot_needed            = false
         };
     }
     return res;
@@ -107,13 +109,13 @@ Table get_empty_table()
 {
     struct Row *first_row = malloc_row(0);
     return (Table){
-        .num_cols = 0,
-        .curr_col = 0,
-        .first_row = first_row,
-        .curr_row = first_row,
-        .num_rows = 1,
-        .alignments = { ALIGN_LEFT },
-        .borders_left = { BORDER_NONE },
+        .num_cols             = 0,
+        .curr_col             = 0,
+        .first_row            = first_row,
+        .curr_row             = first_row,
+        .num_rows             = 1,
+        .alignments           = { ALIGN_LEFT },
+        .borders_left         = { BORDER_NONE },
         .border_left_counters = { 0 }
     };
 }
@@ -217,7 +219,7 @@ void add_cell_fmt(Table *table, char *fmt, ...)
 
 void add_cell_vfmt(Table *table, char *fmt, va_list args)
 {
-    Vector builder = strbuilder_create(10);
+    Vector builder = strbuilder_create(STRBUILDER_STARTSIZE);
     vstrbuilder_append(&builder, fmt, args);
     add_cell_internal(table, builder.buffer, true);
 }

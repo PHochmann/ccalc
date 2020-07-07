@@ -5,13 +5,16 @@
 #include "../util/vector.h"
 #include "../tree/tree_util.h"
 
+#define VECTOR_STARTSIZE 1
+
+/* A trie is used to lookup matchings of a common prefix */
 typedef struct TrieNode {
-    size_t first_match_index; // SIZE_MAX denotes pending computation
-    size_t num_matchings;
-    size_t label;
-    size_t sum;
-    size_t distance;
-    size_t parent_index;
+    size_t first_match_index; // Index of first matching within trie, SIZE_MAX denotes pending computation
+    size_t num_matchings;     // Amount of matchings of node
+    size_t label;             // Amount of tree_children mapped to
+    size_t sum;               // Amount of tree_children mapped to before
+    size_t distance;          // Number of trie nodes before
+    size_t parent_index;      // Index of parent node within trie vector
 } TrieNode;
 
 void fill_trie(size_t curr_index,
@@ -58,12 +61,6 @@ NodeList *lookup_mapped_var(Matching *matching, char *var)
     return NULL;
 }
 
-/*
-Todo: Consider heuristic:
-    - Sort pattern_children ascending on their count of list variables
-    - This should lead to less failed matching attempts
-        since variables are bounded earlier
-*/
 void match_parameter_lists(Matching matching,
     size_t num_pattern_children,
     Node **pattern_children,
@@ -71,8 +68,8 @@ void match_parameter_lists(Matching matching,
     Node **tree_children,
     Vector *out_matchings)
 {
-    Vector vec_local_matchings = vec_create(sizeof(Matching), 10);
-    Vector vec_trie = vec_create(sizeof(TrieNode), 10);
+    Vector vec_local_matchings = vec_create(sizeof(Matching), VECTOR_STARTSIZE);
+    Vector vec_trie = vec_create(sizeof(TrieNode), VECTOR_STARTSIZE);
 
     vec_push(&vec_local_matchings, &matching);
     VEC_PUSH_ELEM(&vec_trie, TrieNode, ((TrieNode){
@@ -87,8 +84,7 @@ void match_parameter_lists(Matching matching,
     size_t curr_index = 0;
     while (curr_index < vec_count(&vec_trie))
     {
-        // Since vec_trie's buffer could be realloced by any insertion,
-        // we can't store a pointer into it
+        // Since vec_trie's buffer could be realloced by any insertion, we can't store a pointer to it
         TrieNode curr = VEC_GET_ELEM(&vec_trie, TrieNode, curr_index);
         size_t new_sum = curr.sum + curr.label;
 
@@ -227,12 +223,31 @@ void extend_matching(Matching matching,
                             return;
                         }
                         break;
-
-                    case MATCHING_NON_CONST_PREFIX:
+                    case MATCHING_CONST_OR_VAR_PREFIX:
+                        if (tree_list.size != 1 || get_type(tree_list.nodes[0]) == NTYPE_OPERATOR)
+                        {
+                            return;
+                        }
+                        break;
+                    case MATCHING_OP_PREFIX:
+                        if (tree_list.size != 1 || get_type(tree_list.nodes[0]) != NTYPE_OPERATOR)
+                        {
+                            return;
+                        }
+                        break;
+                   case MATCHING_OP_OR_VAR_PREFIX:
                         if (tree_list.size != 1 || get_type(tree_list.nodes[0]) == NTYPE_CONSTANT)
                         {
                             return;
                         }
+                        break;
+                    case MATCHING_LITERAL_VAR_PREFIX:
+                        if (tree_list.size != 1 || get_type(tree_list.nodes[0]) != NTYPE_VARIABLE
+                            || strcmp(get_var_name(pattern) + 1, get_var_name(tree_list.nodes[0])) != 0)
+                        {
+                            return;
+                        }
+                        break;
                 }
 
                 // Bind variable if there's still a free slot in matching
@@ -281,7 +296,7 @@ size_t get_all_matchings(Node **tree, Node *pattern, Matching **out_matchings)
     if (tree == NULL || pattern == NULL || out_matchings == NULL) return false;
 
     // Due to exponential many partitions, a lot of states can occur. Use heap.
-    Vector result = vec_create(sizeof(Matching), 10);
+    Vector result = vec_create(sizeof(Matching), VECTOR_STARTSIZE);
 
     extend_matching(
         (Matching){ .num_mapped = 0 },

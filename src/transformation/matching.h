@@ -4,9 +4,13 @@
 
 #define MAX_MAPPED_VARS 10
 
-#define MATCHING_LIST_PREFIX        '['
-#define MATCHING_CONST_PREFIX       'c'
-#define MATCHING_NON_CONST_PREFIX   'v'
+// Special rule prefixes:
+#define MATCHING_LIST_PREFIX         '['
+#define MATCHING_CONST_PREFIX        'c'
+#define MATCHING_CONST_OR_VAR_PREFIX 'b'
+#define MATCHING_OP_OR_VAR_PREFIX    'd'
+#define MATCHING_OP_PREFIX           'o'
+#define MATCHING_LITERAL_VAR_PREFIX  '_'
 
 /*
 Summary: Contains successful or intermediate matching

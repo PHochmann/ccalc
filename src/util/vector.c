@@ -28,10 +28,10 @@ Vector vec_create(size_t elem_size, size_t start_size)
     }
 
     return (Vector){
-        .elem_size = elem_size,
-        .elem_count = 0,
+        .elem_size   = elem_size,
+        .elem_count  = 0,
         .buffer_size = start_size,
-        .buffer = malloc(elem_size * start_size)
+        .buffer      = malloc(elem_size * start_size)
     };
 }
 

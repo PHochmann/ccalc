@@ -4,8 +4,6 @@
 #include "util/console_util.h"
 #include "commands/commands.h"
 
-#include "string_util.h"
-
 /*
  * Scientific calculator in which you can define new functions and constants
  * https://github.com/PhilippHochmann/ccalc

@@ -50,7 +50,8 @@ bool cmd_playground_exec(__attribute__((unused)) char *input, __attribute__((unu
 
         Matching *matchings;
         size_t num_matchings = get_all_matchings(&tree, pattern, &matchings);
-        for (size_t k = 0; k < num_matchings; k++)
+        
+        /*for (size_t k = 0; k < num_matchings; k++)
         {
             printf("Matching Nr. %zu:\n", k + 1);
             for (size_t i = 0; i < matchings[k].num_mapped; i++)
@@ -63,13 +64,10 @@ bool cmd_playground_exec(__attribute__((unused)) char *input, __attribute__((unu
                 }
                 printf("\n");
             }
-        }
-        free(matchings);
+        }*/
 
-        if (num_matchings == 0)
-        {
-            printf("No matching found.\n");
-        }
+        free(matchings);
+        printf("%zu matchings found.\n", num_matchings);
 
         loop_cleanup:
         free(tree_str);

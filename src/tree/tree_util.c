@@ -82,7 +82,7 @@ void tree_replace(Node **tree_to_replace, Node *tree_to_insert)
 Returns: Total number of variable nodes in tree.
     Can be used as an upper bound for the needed size of a buffer to supply to get_variable_nodes
 */
-size_t count_variables(Node *tree)
+size_t count_variables(Node *tree, bool count_func_constants)
 {
     if (tree == NULL) return 0;
 
@@ -96,10 +96,18 @@ size_t count_variables(Node *tree)
 
         case NTYPE_OPERATOR:
         {
+            if (count_func_constants)
+            {
+                if (get_op(tree)->arity == 0)
+                {
+                    return 1;
+                }
+            }
+
             size_t sum = 0;
             for (size_t i = 0; i < get_num_children(tree); i++)
             {
-                sum += count_variables(get_child(tree, i));
+                sum += count_variables(get_child(tree, i), count_func_constants);
             }
             return sum;
         }
@@ -113,7 +121,7 @@ Returns: Number of different variables present in tree
 */
 size_t count_variables_distinct(Node *tree)
 {
-    char *vars[count_variables(tree)];
+    char *vars[count_variables(tree, false)];
     return list_variables(tree, vars);
 }
 
@@ -163,7 +171,7 @@ Summary: Variant of get_variable_nodes that discards 'out_instances'
 size_t count_variable_nodes(Node *tree, char *var_name)
 {
     // out-discard pattern
-    Node **instances[count_variables(tree)];
+    Node **instances[count_variables(tree, false)];
     return get_variable_nodes(&tree, var_name, instances);
 }
 
@@ -222,7 +230,7 @@ size_t replace_variable_nodes(Node **tree, Node *tree_to_copy, char *var_name)
 {
     if (tree == NULL || *tree == NULL || tree_to_copy == NULL || var_name == NULL) return 0;
 
-    Node **instances[count_variables(*tree)];
+    Node **instances[count_variables(*tree, false)];
     size_t num_instances = get_variable_nodes(tree, var_name, instances);
     for (size_t i = 0; i < num_instances; i++)
     {
@@ -278,9 +286,9 @@ ConstantType tree_reduce(Node *tree, Evaluation eval)
     return res;
 }
 
-void replace_constant_subtrees(Node **tree, Evaluation eval)
+void replace_constant_subtrees(Node **tree, bool replace_func_consts, Evaluation eval)
 {
-    if (count_variables(*tree) == 0)
+    if (count_variables(*tree, !replace_func_consts) == 0)
     {
         ConstantType res = tree_reduce(*tree, eval);
         tree_replace(tree, malloc_constant_node(res));
@@ -291,7 +299,7 @@ void replace_constant_subtrees(Node **tree, Evaluation eval)
         {
             for (size_t i = 0; i < get_num_children(*tree); i++)
             {
-                replace_constant_subtrees(get_child_addr(*tree, i), eval);
+                replace_constant_subtrees(get_child_addr(*tree, i), replace_func_consts, eval);
             }
         }
     }

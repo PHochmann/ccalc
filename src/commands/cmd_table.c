@@ -15,6 +15,8 @@
 #define FOLD_VAR_1 "x"
 #define FOLD_VAR_2 "y"
 
+#define STRBUILDER_STARTSIZE 10
+
 int cmd_table_check(char *input)
 {
     return begins_with(COMMAND, input);
@@ -41,12 +43,12 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     Node *fold_expr = NULL;
     Node *fold_init = NULL;
 
-    if (!core_parse_input(args[0], "Error in expression: %s.\n", true, &expr))
+    if (!arith_parse_input(args[0], "Error in expression: %s.\n", &expr))
     {
         return false;
     }
 
-    char *variables[count_variables(expr)];
+    char *variables[count_variables(expr, false)];
     size_t num_vars = list_variables(expr, variables);
     if (num_vars > 1)
     {
@@ -54,16 +56,16 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
         goto exit;
     }
 
-    if (!core_parse_input(args[1], "Error in start: %s.\n", true, &start)
-        || !core_parse_input(args[2], "Error in end: %s.\n", true, &end)
-        || !core_parse_input(args[3], "Error in step: %s.\n", true, &step))
+    if (!arith_parse_input(args[1], "Error in start: %s.\n", &start)
+        || !arith_parse_input(args[2], "Error in end: %s.\n", &end)
+        || !arith_parse_input(args[3], "Error in step: %s.\n", &step))
     {
         goto exit;
     }
 
-    if (count_variables(start) > 0
-        || count_variables(end) > 0
-        || count_variables(step) > 0)
+    if (count_variables(start, false) > 0
+        || count_variables(end, false) > 0
+        || count_variables(step, false) > 0)
     {
         report_error("Error: Start, end and step must be constant.\n");
         goto exit;
@@ -84,13 +86,13 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     if (num_args == 6)
     {
         // Parse initial fold-value
-        if (!core_parse_input(args[4], "Error in fold expression: %s.\n", true, &fold_expr)
-            || !core_parse_input(args[5], "Error in initial fold value: %s.\n", true, &fold_init))
+        if (!arith_parse_input(args[4], "Error in fold expression: %s.\n", &fold_expr)
+            || !arith_parse_input(args[5], "Error in initial fold value: %s.\n", &fold_init))
         {
             goto exit;
         }
 
-        if (count_variables(fold_expr)
+        if (count_variables(fold_expr, false)
             - count_variable_nodes(fold_expr, FOLD_VAR_1)
             - count_variable_nodes(fold_expr, FOLD_VAR_2) != 0)
         {
@@ -99,7 +101,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
             goto exit;
         }
 
-        if (count_variables(fold_init) > 0)
+        if (count_variables(fold_init, false) > 0)
         {
             report_error("Error: Initial fold value must be constant.\n");
             goto exit;
@@ -131,7 +133,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
             add_empty_cell(&table);
         }
 
-        Vector builder = strbuilder_create(20);
+        Vector builder = strbuilder_create(STRBUILDER_STARTSIZE);
         strbuilder_append(&builder, " ");
         tree_to_stringbuilder(&builder, expr, true);
         strbuilder_append(&builder, " ");

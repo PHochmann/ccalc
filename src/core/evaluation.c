@@ -96,34 +96,34 @@ bool op_evaluate(Operator *op, size_t num_args, double *args, double *out)
 {
     switch ((size_t)(op - g_ctx->operators))
     {
-        case 2: // x+y
+        case 4: // x+y
             *out = args[0] + args[1];
             return true;
-        case 3: // x-y
+        case 5: // x-y
             *out = args[0] - args[1];
             return true;
-        case 4: // x*y
+        case 6: // x*y
             *out = args[0] * args[1];
             return true;
-        case 5: // x/y
+        case 7: // x/y
             *out = args[0] / args[1];
             return true;
-        case 6: // x^y
+        case 8: // x^y
             *out = pow(args[0], args[1]);
             return true;
-        case 7: // x C y
+        case 9: // x C y
             *out = binomial(args[0], args[1]);
             return true;
-        case 8: // x mod y
+        case 10: // x mod y
             *out = fmod(args[0], args[1]);
             return true;
-        case 9: // +x
+        case 11: // +x
             *out = args[0];
             return true;
-        case 10: // -x
+        case 12: // -x
             *out = -args[0];
             return true;
-        case 11: // x!
+        case 13: // x!
         {
             double res = 1;
             for (double i = trunc(args[0]); i > 1; i--)
@@ -133,67 +133,67 @@ bool op_evaluate(Operator *op, size_t num_args, double *args, double *out)
             *out = res;
             return true;
         }
-        case 12: // x%
+        case 14: // x%
             *out = args[0] / 100;
             return true;
-        case 13: // exp(x)
+        case 15: // exp(x)
             *out = exp(args[0]);
             return true;
-        case 14: // root(x, n)
+        case 16: // root(x, n)
             *out = pow(args[0], 1 / args[1]);
             return true;
-        case 15: // sqrt(x)
+        case 17: // sqrt(x)
             *out = sqrt(args[0]);
             return true;
-        case 16: // log(x, n)
+        case 18: // log(x, n)
             *out = log(args[0]) / log(args[1]);
             return true;
-        case 17: // ln(x)
+        case 19: // ln(x)
             *out = log(args[0]);
             return true;
-        case 18: // ld(x)
+        case 20: // ld(x)
             *out = log2(args[0]);
             return true;
-        case 19: // log(x)
+        case 21: // log(x)
             *out = log10(args[0]);
             return true;
-        case 20: // sin(x)
+        case 22: // sin(x)
             *out = sin(args[0]);
             return true;
-        case 21: // cos(x)
+        case 23: // cos(x)
             *out = cos(args[0]);
             return true;
-        case 22: // tan(x)
+        case 24: // tan(x)
             *out = tan(args[0]);
             return true;
-        case 23: // asin(x)
+        case 25: // asin(x)
             *out = asin(args[0]);
             return true;
-        case 24: // acos(x)
+        case 26: // acos(x)
             *out = acos(args[0]);
             return true;
-        case 25: // atan(x)
+        case 27: // atan(x)
             *out = atan(args[0]);
             return true;
-        case 26: // sinh(x)
+        case 28: // sinh(x)
             *out = sinh(args[0]);
             return true;
-        case 27: // cosh(x)
+        case 29: // cosh(x)
             *out = cosh(args[0]);
             return true;
-        case 28: // tanh(x)
+        case 30: // tanh(x)
             *out = tanh(args[0]);
             return true;
-        case 29: // asinh(x)
+        case 31: // asinh(x)
             *out = asinh(args[0]);
             return true;
-        case 30: // acosh(x)
+        case 32: // acosh(x)
             *out = acosh(args[0]);
             return true;
-        case 31: // atanh(x)
+        case 33: // atanh(x)
             *out = atanh(args[0]);
             return true;
-        case 32: // max(x, y, ...)
+        case 34: // max(x, y, ...)
         {
             double res = -INFINITY;
             for (size_t i = 0; i < num_args; i++)
@@ -204,7 +204,7 @@ bool op_evaluate(Operator *op, size_t num_args, double *args, double *out)
             *out = res;
             return true;
         }
-        case 33: // min(x, y, ...)
+        case 35: // min(x, y, ...)
         {
             double res = INFINITY;
             for (size_t i = 0; i < num_args; i++)
@@ -215,42 +215,42 @@ bool op_evaluate(Operator *op, size_t num_args, double *args, double *out)
             *out = res;
             return true;
         }
-        case 34: // abs(x)
+        case 36: // abs(x)
             *out = fabs(args[0]);
             return true;
-        case 35: // ceil(x)
+        case 37: // ceil(x)
             *out = ceil(args[0]);
             return true;
-        case 36: // floor(x)
+        case 38: // floor(x)
             *out = floor(args[0]);
             return true;
-        case 37: // round(x)
+        case 39: // round(x)
             *out = round(args[0]);
             return true;
-        case 38: // trunc(x)
+        case 40: // trunc(x)
             *out = trunc(args[0]);
             return true;
-        case 39: // frac(x)
+        case 41: // frac(x)
             *out = args[0] - floor(args[0]);
             return true;
-        case 40: // sgn(x)
+        case 42: // sgn(x)
             *out = args[0] < 0 ? -1 : (args[0] > 0) ? 1 : 0;
             return true;
-        case 41: // sum(x, y, ...)
+        case 43: // sum(x, y, ...)
         {
             double res = 0;
             for (size_t i = 0; i < num_args; i++) res += args[i];
             *out = res;
             return true;
         }
-        case 42: // prod(x, y, ...)
+        case 44: // prod(x, y, ...)
         {
             double res = 1;
             for (size_t i = 0; i < num_args; i++) res *= args[i];
             *out = res;
             return true;
         }
-        case 43: // avg(x, y, ...)
+        case 45: // avg(x, y, ...)
         {
             if (num_args == 0) *out = 0;
             double res = 0;
@@ -258,34 +258,34 @@ bool op_evaluate(Operator *op, size_t num_args, double *args, double *out)
             *out = res / num_args;
             return true;
         }
-        case 44: // gcd(x, y)
+        case 46: // gcd(x, y)
             *out = euclid(args[0], args[1]);
             return true;
-        case 45: // lcm(x, y)
+        case 47: // lcm(x, y)
             *out = fabs(trunc(args[0]) * trunc(args[1])) / euclid(args[0], args[1]);
             return true;
-        case 46: // rand(x, y)
+        case 48: // rand(x, y)
             *out = random_between(args[0], args[1]);
             return true;
-        case 47: // fib(x)
+        case 49: // fib(x)
             *out = fibonacci(args[0]);
             return true;
-        case 48: // gamma(x)
+        case 50: // gamma(x)
             *out = tgamma(args[0]);
             return true;
-        case 49: // pi
+        case 51: // pi
             *out = 3.14159265359;
             return true;
-        case 50: // e
+        case 52: // e
             *out = 2.71828182846;
             return true;
-        case 51: // phi
+        case 53: // phi
             *out = 1.61803398874;
             return true;
-        case 52: // clight (m/s)
+        case 54: // clight (m/s)
             *out = 299792458;
             return true;
-        case 53: // csound (m/s)
+        case 55: // csound (m/s)
             *out = 343.2;
             return true;
     }

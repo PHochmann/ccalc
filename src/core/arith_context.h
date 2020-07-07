@@ -1,4 +1,5 @@
 #pragma once
+#include <stdbool.h>
 #include "../parsing/context.h"
 #include "../tree/node.h"
 #include "../transformation/rewrite_rule.h"
@@ -14,4 +15,5 @@ bool can_add_composite_function();
 void add_composite_function(RewriteRule rule);
 void pop_composite_function();
 void clear_composite_functions();
-bool core_parse_input(char *input, char *error_fmt, bool replace_comp_funcs, Node **out_res);
+bool arith_parse_input(char *input, char *error_fmt, Node **out_res);
+bool arith_parse_input_extended(char *input, char *error_fmt, bool replace_comp_funcs, bool simplify, bool debug, Node **out_res);

@@ -29,7 +29,7 @@ bool tree_util_test(Vector *error_builder)
     set_child(child, 1, malloc_variable_node("y"));
 
     // Case 1
-    if (count_variables(root) != 5)
+    if (count_variables(root, false) != 5)
     {
         free_tree(root);
         ERROR_RETURN_VAL("count_variables");

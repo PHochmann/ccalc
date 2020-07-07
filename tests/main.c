@@ -42,26 +42,27 @@ int main()
     for (size_t i = 0; i < NUM_TESTS; i++)
     {
         Test test = test_getters[i]();
-        if (i == 0) override_above_border(&table, BORDER_SINGLE);
-        add_cell_fmt(&table, " %zu ", i + 1);
-        add_cell_fmt(&table, " %s ", test.name);
-        add_cell_fmt(&table, " %d ", test.num_cases);
-
-        if (test.suite(&error_builder))
+        if (test.num_cases != 0)
         {
-            add_cell(&table, F_GREEN " passed " COL_RESET);
-        }
-        else
-        {
-            printf("[" F_RED "%s" COL_RESET "] %s",
-                test_getters[i]().name,
-                (char*)error_builder.buffer);
-            add_cell(&table, F_RED " failed " COL_RESET);
-            error = true;
-        }
-        next_row(&table);
+            if (i == 0) override_above_border(&table, BORDER_SINGLE);
+            add_cell_fmt(&table, " %zu ", i + 1);
+            add_cell_fmt(&table, " %s ", test.name);
+            add_cell_fmt(&table, " %d ", test.num_cases);
 
-
+            if (test.suite(&error_builder))
+            {
+                add_cell(&table, F_GREEN " passed " COL_RESET);
+            }
+            else
+            {
+                printf("[" F_RED "%s" COL_RESET "] %s",
+                    test_getters[i]().name,
+                    (char*)error_builder.buffer);
+                add_cell(&table, F_RED " failed " COL_RESET);
+                error = true;
+            }
+            next_row(&table);
+        }
     }
     vec_destroy(&error_builder);
 

@@ -7,7 +7,7 @@ Node *tree_copy(Node *node);
 void tree_replace(Node **tree_to_replace, Node *tree_to_insert);
 
 // Helper and convenience functions
-size_t count_variables(Node *tree);
+size_t count_variables(Node *tree, bool count_func_constants);
 size_t count_variables_distinct(Node *tree);
 size_t get_variable_nodes(Node **tree, char *var_name, Node ***out_instances);
 size_t count_variable_nodes(Node *tree, char *var_name);
@@ -15,7 +15,7 @@ size_t list_variables(Node *tree, char **out_variables);
 size_t replace_variable_nodes(Node **tree, Node *tree_to_copy, char *var_name);
 bool reduce(Node *tree, Evaluation eval, ConstantType *out);
 ConstantType tree_reduce(Node *tree, Evaluation eval);
-void replace_constant_subtrees(Node **tree, Evaluation eval);
+void replace_constant_subtrees(Node **tree, bool replace_func_consts, Evaluation eval);
 
 // Todo: refactor this
 size_t replace_variable_nodes_by_list(Node **tree, NodeList list_of_nodes_to_copy, char *var_name, char id);

@@ -14,13 +14,19 @@
 #define SHORT_HELP_CODE 1
 #define OPS_HELP_CODE   2
 
-#define VERSION   "1.5.3"
+#define VERSION "1.5.4"
+
+#ifdef DEBUG
+    #define RELEASE VERSION " DEBUG"
+#else
+    #define RELEASE VERSION
+#endif
+
 #define TTY_WIDTH 80
 
 static char *INFOBOX_FMT =
-    "ccalc %s (c) 2020 Philipp Hochmann, phil.hochmann[at]gmail[dot]com\n"
-    " Scientific calculator in which you can define new functions and constants \n"
-    "https://github.com/PhilippHochmann/ccalc";
+    "ccalc %s (c) 2020 Philipp Hochmann\n"
+    " Scientific calculator in which you can define new functions and constants \n";
 
 static char *COMMAND_TABLE[7][2] = {
     { "<func|const> = <after>",                  "Adds or redefines function or constant." },
@@ -86,11 +92,11 @@ static char *OP_DESCRIPTIONS[52] = {
     " Speed of sound in air at 20 °C [m/s] "
 };
 
-static const size_t BASIC_IND =  2; // Index of first basic operator ($x and x@y before, should no be shown)
-static const size_t TRIG_IND  = 20; // Index of first trigonometric function
-static const size_t MISC_IND  = 32; // Index of first misc. function
-static const size_t CONST_IND = 49; // Index of first constant
-static const size_t LAST_IND  = 54; // Index of last constant
+static const size_t BASIC_IND =  4; // Index of first basic operator ($x, x@y, deriv before, should no be shown)
+static const size_t TRIG_IND  = 22; // Index of first trigonometric function
+static const size_t MISC_IND  = 34; // Index of first misc. function
+static const size_t CONST_IND = 51; // Index of first constant
+static const size_t LAST_IND  = 56; // Index of last constant
 
 int cmd_help_check(char *input)
 {
@@ -243,7 +249,7 @@ void print_op_tables()
 void print_short_help()
 {
     Table table = get_empty_table();
-    add_cell_fmt(&table, INFOBOX_FMT, VERSION);
+    add_cell_fmt(&table, INFOBOX_FMT, RELEASE);
     next_row(&table);
     make_boxed(&table, BORDER_SINGLE);
     set_default_alignments(&table, 1, (TextAlignment[]){ ALIGN_CENTER });
