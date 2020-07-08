@@ -5,6 +5,7 @@
 
 // May change the buffer location
 #define VEC_PUSH_ELEM(vec, type, expr) (*(type*)vec_push_empty(vec)) = expr
+#define VEC_SET_ELEM(vec, type, index, expr) (*(type*)vec_get(vec, index)) = expr
 // The following macros will dereference a NULL pointer on invalid index or empty vector
 #define VEC_GET_ELEM(vec, type, index) (*(type*)vec_get(vec, index))
 #define VEC_POP_ELEM(vec, type) *(type*)vec_pop(vec)

@@ -163,14 +163,14 @@ size_t console_strlen(char *str)
 Vector strbuilder_create(size_t start_size)
 {
     Vector builder = vec_create(sizeof(char), start_size);
-    *(char*)vec_push_empty(&builder) = '\n';
+    *(char*)vec_push_empty(&builder) = '\0';
     return builder;
 }
 
 void strbuilder_reset(Vector *builder)
 {
     vec_reset(builder),
-    *(char*)vec_push_empty(builder) = '\n';
+    *(char*)vec_push_empty(builder) = '\0';
 }
 
 void strbuilder_append(Vector *builder, char *fmt, ...)
@@ -179,6 +179,23 @@ void strbuilder_append(Vector *builder, char *fmt, ...)
     va_start(args, fmt);
     vstrbuilder_append(builder, fmt, args);
     va_end(args);
+}
+
+void strbuilder_append_char(Vector *builder, char c)
+{
+    VEC_SET_ELEM(builder, char, builder->elem_count - 1, c);
+    VEC_PUSH_ELEM(builder, char, '\0');
+}
+
+void strbuilder_reverse(Vector *builder)
+{
+    for (size_t i = 0; i < (vec_count(builder) - 1) / 2; i++)
+    {
+        char temp = VEC_GET_ELEM(builder, char, i);
+        size_t partner = vec_count(builder) - 2 - i;
+        VEC_SET_ELEM(builder, char, i, VEC_GET_ELEM(builder, char, partner));
+        VEC_SET_ELEM(builder, char, partner, temp);
+    }
 }
 
 void vstrbuilder_append(Vector *builder, char *fmt, va_list args)

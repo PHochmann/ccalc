@@ -29,3 +29,5 @@ Vector strbuilder_create(size_t start_size);
 void strbuilder_reset(Vector *builder);
 void strbuilder_append(Vector *builder, char *fmt, ...);
 void vstrbuilder_append(Vector *builder, char *fmt, va_list args);
+void strbuilder_append_char(Vector *builder, char c);
+void strbuilder_reverse(Vector *builder);
