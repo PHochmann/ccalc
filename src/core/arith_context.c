@@ -130,18 +130,13 @@ void clear_composite_functions()
     }
 }
 
-bool arith_parse_input(char *input, char *error_fmt, Node **out_res)
-{
-    return arith_parse_input_extended(input, error_fmt, true, false, false, out_res);
-}
-
 /*
 Summary:
     Parses input, does post-processing of input, gives feedback on command line
 Returns:
     True when input was successfully parsed, false when syntax error in input or semantical error while transforming
 */
-bool arith_parse_input_extended(char *input, char *error_fmt, bool replace_comp_funcs, bool simplify, bool debug, Node **out_res)
+bool arith_parse_input(char *input, char *error_fmt, bool replace_comp_funcs, Node **out_res)
 {
     ParserError perr = parse_input(g_ctx, input, out_res);
     if (perr != PERR_SUCCESS)
@@ -156,7 +151,7 @@ bool arith_parse_input_extended(char *input, char *error_fmt, bool replace_comp_
             apply_ruleset(out_res, num_comp_func, composite_functions);
         }
 
-        if ((simplify && !core_simplify(out_res, debug)) || !core_replace_history(out_res))
+        if (!core_simplify(out_res) || !core_replace_history(out_res))
         {
             free_tree(*out_res);
             return false;

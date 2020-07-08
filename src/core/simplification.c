@@ -118,10 +118,6 @@ char *simplification_strings[] = {
     "prod([xs], x^y, [ys], x^z, [zs])", "prod([xs], x^(y+z), [ys], [zs])",
     "x^0", "1",
     "prod(cX, y)^z", "prod(cX^z, y^z)",
-    
-    /* Trigonometrics */
-    //"prod([xs], sin(x), [ys], cos(x)^-1, [zs])", "prod([xs], tan(x), [ys], [zs])",
-    //"prod([xs], cos(x)^-1, [ys], sin(x), [zs])", "prod([xs], tan(x), [ys], [zs])"
 };
 
 #define NUM_PRETTY_RULES 18
@@ -208,7 +204,7 @@ void replace_negative_consts(Node **tree)
 Summary: Tries to apply rules (priorized by order) until no rule can be applied any more
     Possibly not terminating!
 */
-void smart_apply_ruleset(Node **tree, size_t num_rules, RewriteRule *ruleset, bool allow_negative_consts, bool debug)
+void smart_apply_ruleset(Node **tree, size_t num_rules, RewriteRule *ruleset, bool allow_negative_consts)
 {
     if (!allow_negative_consts)
     {
@@ -222,12 +218,6 @@ void smart_apply_ruleset(Node **tree, size_t num_rules, RewriteRule *ruleset, bo
         {
             if (apply_rule(tree, &ruleset[j]))
             {
-                if (debug)
-                {
-                    printf("[%zu] ", j);
-                    print_tree(*tree, true);
-                    printf("\n");
-                }
                 applied_flag = true;
 
                 // Don't replace e and pi
@@ -245,10 +235,6 @@ void smart_apply_ruleset(Node **tree, size_t num_rules, RewriteRule *ruleset, bo
         }
         if (!applied_flag)
         {
-            if (debug)
-            {
-                printf("No rule applicable.\n");
-            }
             return;
         }
     }
@@ -300,7 +286,7 @@ void unload_simplification()
 Summary: Applies all pre-defined rewrite rules to tree
 Returns: True when transformations could be applied, False otherwise
 */
-bool core_simplify(Node **tree, bool debug)
+bool core_simplify(Node **tree)
 {
     Matching matching;
     Node **matched;
@@ -333,13 +319,11 @@ bool core_simplify(Node **tree, bool debug)
     }
 
     //replace_constant_subtrees(tree, op_evaluate);
-    smart_apply_ruleset(tree, NUM_OP_ELIMINATION_RULES, op_elimination_rules, false, debug);
+    smart_apply_ruleset(tree, NUM_OP_ELIMINATION_RULES, op_elimination_rules, true);
 
     Node *tree_before = NULL;
     do
     {
-        if (debug) printf("Start...\n");
-
         free_tree(tree_before);
         tree_before = tree_copy(*tree);
 
@@ -351,9 +335,9 @@ bool core_simplify(Node **tree, bool debug)
             }
         }
 
-        smart_apply_ruleset(tree, NUM_NORMAL_FORM_RULES, normal_form_rules, false, debug);
-        smart_apply_ruleset(tree, NUM_SIMPLIFICATION_RULES, simplification_rules, false, debug);
-        smart_apply_ruleset(tree, NUM_PRETTY_RULES, pretty_rules, false, debug);
+        smart_apply_ruleset(tree, NUM_NORMAL_FORM_RULES, normal_form_rules, true);
+        smart_apply_ruleset(tree, NUM_SIMPLIFICATION_RULES, simplification_rules, true);
+        smart_apply_ruleset(tree, NUM_PRETTY_RULES, pretty_rules, false);
     } while (tree_compare(tree_before, *tree) != NULL);
     free_tree(tree_before);
 
