@@ -58,7 +58,7 @@ char *normal_form_strings[] = {
     "dX*cY", "cY*dX",
 };
 
-#define NUM_SIMPLIFICATION_RULES 41
+#define NUM_SIMPLIFICATION_RULES 40
 RewriteRule simplification_rules[NUM_SIMPLIFICATION_RULES];
 char *simplification_strings[] = {
 
@@ -111,7 +111,7 @@ char *simplification_strings[] = {
     "sum([xs], x, [ys], prod(x, a), [zs])", "sum([xs], [ys], prod(x, a+1), [zs])",
     "sum([xs], x, [ys], x, [zs])", "sum(prod(2, x), [xs], [ys], [zs])",
     "sum([xs], prod([yy], x, [zz]), [ys], prod([y], x, [z]), [zs])", "sum([xs], x * (prod([yy],[zz]) + prod([y],[z])), [ys], [zs])",
-    "sum([a], prod([xs], y, x, [ys]), [b], -x, [c])", "sum([a], prod([xs], y - 1, x, [ys]), [b], [c])",
+    //"sum([a], prod([xs], y, x, [ys]), [b], -x, [c])", "sum([a], prod([xs], y - 1, x, [ys]), [b], [c])",
 
     /* Powers */
     "(x^y)^z", "x^prod(y, z)",
@@ -219,7 +219,6 @@ void smart_apply_ruleset(Node **tree, size_t num_rules, RewriteRule *ruleset, bo
             if (apply_rule(tree, &ruleset[j]))
             {
                 applied_flag = true;
-
                 // Don't replace e and pi
                 if (get_type(*tree) != NTYPE_OPERATOR || get_num_children(*tree) != 0)
                 {
