@@ -63,7 +63,7 @@ bool table_test(__attribute__((unused)) Vector *error_builder)
     set_position(&t1, 2, 6);
     override_left_border(&t1, BORDER_NONE);
     make_boxed(&t1, BORDER_SINGLE);
-    print_table(&t1);
+    //print_table(&t1);
     free_table(&t1);
 
     // Case 2
@@ -78,7 +78,7 @@ bool table_test(__attribute__((unused)) Vector *error_builder)
         next_row(&t2);
     }
     make_boxed(&t2, BORDER_DOUBLE);
-    print_table(&t2);
+    //print_table(&t2);
     free_table(&t2);
     
     return true;

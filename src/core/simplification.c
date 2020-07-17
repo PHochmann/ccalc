@@ -60,7 +60,7 @@ char *normal_form_strings[] = {
     "dX*cY", "cY*dX",
 };
 
-#define NUM_SIMPLIFICATION_RULES 43
+#define NUM_SIMPLIFICATION_RULES 44
 RewriteRule simplification_rules[NUM_SIMPLIFICATION_RULES];
 char *simplification_strings[] = {
     /* Get a nice sum */
@@ -118,6 +118,7 @@ char *simplification_strings[] = {
     "(x^y)^z", "x^prod(y, z)",
     "prod([xs], x^y, [ys], x^z, [zs])", "prod([xs], x^(y+z), [ys], [zs])",
     "x^0", "1",
+    "(-1)^prod([xs], 2, [ys])", "1",
     "prod(x, [xs])^z", "prod(x^z, prod([xs])^z)",
 };
 

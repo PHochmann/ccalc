@@ -28,7 +28,6 @@ int main()
     set_default_alignments(&table, 4,
         (TextAlignment[]){ ALIGN_RIGHT, ALIGN_LEFT, ALIGN_RIGHT, ALIGN_LEFT });
     add_empty_cell(&table);
-    set_vline(&table, 0, BORDER_SINGLE);
     override_left_border(&table, BORDER_NONE);
     add_cell(&table, " Test suite ");
     add_cell(&table, " #Cases ");
@@ -44,7 +43,6 @@ int main()
         Test test = test_getters[i]();
         if (test.num_cases != 0)
         {
-            if (i == 0) override_above_border(&table, BORDER_SINGLE);
             add_cell_fmt(&table, " %zu ", i + 1);
             add_cell_fmt(&table, " %s ", test.name);
             add_cell_fmt(&table, " %d ", test.num_cases);
@@ -68,7 +66,7 @@ int main()
 
     set_span(&table, 3, 1);
     override_alignment(&table, ALIGN_CENTER);
-    set_hline(&table, BORDER_DOUBLE);
+    set_hline(&table, BORDER_SINGLE);
     add_cell(&table, " End result ");
     add_cell(&table, error ? F_RED " failed " COL_RESET : F_GREEN " passed " COL_RESET);
     next_row(&table);

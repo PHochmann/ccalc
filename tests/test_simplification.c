@@ -13,13 +13,13 @@
     return false;\
 }
 
-static const size_t NUM_CASES = 4;
-
+static const size_t NUM_CASES = 5;
 char *cases[] = {
     "x-x",             "0",
     "x+x",             "2x",
     "2*(sqrt(2)*x)^2", "4x^2",
     "(-x)^2 - x^2",    "0",
+    "(-1)^((1+1)x)",   "1",
 };
 
 bool simplification_test(Vector *error_builder)
@@ -43,7 +43,7 @@ bool simplification_test(Vector *error_builder)
         }
         if (tree_compare(left, right) != NULL)
         {
-            char *wrong_result = tree_to_string(left, true);
+            char *wrong_result = tree_to_string(left, false);
             strbuilder_append(error_builder, "%s simplified to %s, should be %s.\n", cases[2 * i], wrong_result, cases[2 * i + 1]);
             free(wrong_result);
             free_tree(left);

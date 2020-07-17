@@ -1,9 +1,9 @@
 TARGET_EXEC := ccalc
-BUILD_DIR := ./bin/release
-SRC_DIRS := ./src
+BUILD_DIR   := ./bin/release
+SRC_DIRS    := ./src
 
-CFLAGS := -MMD -MP -std=c99 -Wall -Wextra -Werror -pedantic
-LDFLAGS := -lm
+CFLAGS      := -MMD -MP -std=c99 -Wall -Wextra -Werror -pedantic
+LDFLAGS     := -lm
 
 ifneq (,$(filter $(MAKECMDGOALS),debug tests))
     BUILD_DIR := ./bin/debug
