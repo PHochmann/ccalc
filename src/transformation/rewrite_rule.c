@@ -3,9 +3,10 @@
 #include "rewrite_rule.h"
 #include "matching.h"
 
-#define NEW_VAR_LENGTH 5
 #define NORMAL_VAR_ID  0
 #define RULE_VAR_ID    1
+
+#define MAX_RULESET_ITERATIONS 1000 // To protect against endless loops
 
 void mark_vars(Node *tree, char id)
 {
@@ -80,12 +81,13 @@ bool apply_rule(Node **tree, RewriteRule *rule)
 
 /*
 Summary: Tries to apply rules (priorized by order) until no rule can be applied any more
-    Possibly not terminating!
+    Guarantees to terminate after MAX_RULESET_ITERATIONS rule appliances
 */
-#include "../tree/tree_to_string.h"
-#include <stdio.h>
+//#include "../tree/tree_to_string.h"
+//#include <stdio.h>
 void apply_ruleset(Node **tree, size_t num_rules, RewriteRule *ruleset)
 {
+    size_t counter = 0;
     while (true)
     {
         bool applied_flag = false;
@@ -93,20 +95,21 @@ void apply_ruleset(Node **tree, size_t num_rules, RewriteRule *ruleset)
         {
             if (apply_rule(tree, &ruleset[j]))
             {
-                #ifdef DEBUG
+                /*#ifdef DEBUG
                 printf("[%zu] ", j);
                 print_tree(*tree, true);
                 printf("\n");
-                #endif
+                #endif*/
                 applied_flag = true;
+                counter++;
                 break;
             }
         }
-        if (!applied_flag)
+        if (!applied_flag || counter == MAX_RULESET_ITERATIONS)
         {
-            #ifdef DEBUG
+            /*#ifdef DEBUG
             printf("End.\n");
-            #endif
+            #endif*/
             return;
         }
     }

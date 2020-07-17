@@ -1,6 +1,5 @@
 #pragma once
 #include <stdbool.h>
-
 #include "../src/util/string_util.h"
 
 #define F_RED     "\x1B[1;31m"

@@ -60,17 +60,15 @@ char *normal_form_strings[] = {
     "dX*cY", "cY*dX",
 };
 
-#define NUM_SIMPLIFICATION_RULES 42
+#define NUM_SIMPLIFICATION_RULES 43
 RewriteRule simplification_rules[NUM_SIMPLIFICATION_RULES];
 char *simplification_strings[] = {
-
     /* Get a nice sum */
     "x+y", "sum(x,y)",
     "sum([xs], sum([ys]), [zs])", "sum([xs], [ys], [zs])",
     "sum([xs])+sum([ys])", "sum([xs], [ys])",
     "x+sum([xs])", "sum(x, [xs])",
     "sum([xs])+x", "sum([xs], x)",
-    //"sum([xs], dX, cY, [ys])", "sum([xs], cY, dX, [ys])", 
 
     /* Get a nice product */
     "x*y", "prod(x,y)",
@@ -78,7 +76,6 @@ char *simplification_strings[] = {
     "prod([xs])*prod([ys])", "prod([xs], [ys])",
     "x*prod([xs])", "prod(x, [xs])",
     "prod([xs])*x", "prod([xs], x)",
-    //"prod([xs], dX, cY, [ys])", "prod([xs], cY, dX, [ys])", 
 
     /* Move constants and variables to the left */
     "sum([xs], dX, [ys], cY, [zs])", "sum(cY, [xs], dX, [ys], [zs])", // Constants left to variables or operators
@@ -117,6 +114,7 @@ char *simplification_strings[] = {
     "sum([xs], prod([yy], x, [zz]), [ys], prod([y], x, [z]), [zs])", "sum([xs], x * (prod([yy],[zz]) + prod([y],[z])), [ys], [zs])",
 
     /* Powers */
+    "(-dX)^z", "(-1)^z*dX^z",
     "(x^y)^z", "x^prod(y, z)",
     "prod([xs], x^y, [ys], x^z, [zs])", "prod([xs], x^(y+z), [ys], [zs])",
     "x^0", "1",
@@ -125,8 +123,7 @@ char *simplification_strings[] = {
 
 #define NUM_PRETTY_RULES 20
 RewriteRule pretty_rules[NUM_PRETTY_RULES];
-char *pretty_strings[] = 
-{
+char *pretty_strings[] = {
     "prod([xs], sin(x), [ys], cos(x)^-1, [zs])", "prod([xs], tan(x), [ys], [zs])",
     "prod([xs], sin(x)^y, [ys], cos(x)^-y, [zs])", "prod([xs], tan(x)^y, [ys], [zs])",
 

@@ -8,7 +8,7 @@
 #include "test_tree_to_string.h"
 #include "test_randomized.h"
 #include "test_table.h"
-#include "test_transformation.h"
+#include "test_simplification.h"
 #include "../src/commands/commands.h"
 #include "../src/table/table.h"
 
@@ -19,7 +19,7 @@ static Test (*test_getters[])() = {
     get_tree_to_string_test,
     get_randomized_test,
     get_table_test,
-    get_transformation_test,
+    get_simplification_test,
 };
 
 int main()
