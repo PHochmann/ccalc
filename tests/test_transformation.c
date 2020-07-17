@@ -10,6 +10,7 @@ static const size_t NUM_CASES = 0;
 
 bool transformation_test(__attribute__((unused)) Vector *error_builder)
 {
+    // 2*(sqrt(2)*x)^2 -> 4x^2
     return true;
 }
 

@@ -16,7 +16,7 @@ Node *deriv_after;
 Node *malformed_derivA;
 Node *malformed_derivB;
 
-#define NUM_OP_ELIMINATION_RULES 7
+#define NUM_OP_ELIMINATION_RULES 9
 RewriteRule op_elimination_rules[NUM_OP_ELIMINATION_RULES];
 char *op_elimination_strings[] = {
     "+x", "x",
@@ -25,7 +25,9 @@ char *op_elimination_strings[] = {
     "x%", "x/100",
     "x/y", "x*y^(-1)",
     "log(x, e)", "ln(x)",
-    "tan(x)", "sin(x)/cos(x)"
+    "tan(x)", "sin(x)/cos(x)",
+    "sqrt(x)", "x^0.5",
+    "root(x, y)", "x^(1/y)",
 };
 
 #define NUM_DERIVATION_RULES 15
@@ -58,7 +60,7 @@ char *normal_form_strings[] = {
     "dX*cY", "cY*dX",
 };
 
-#define NUM_SIMPLIFICATION_RULES 40
+#define NUM_SIMPLIFICATION_RULES 42
 RewriteRule simplification_rules[NUM_SIMPLIFICATION_RULES];
 char *simplification_strings[] = {
 
@@ -85,12 +87,14 @@ char *simplification_strings[] = {
     "prod([xs], oX, [ys], bY, [zs])", "prod([xs], bY, [ys], oX, [zs])",
 
     /* Simplify sums */
+    "sum()", "0",
     "sum(x)", "x",
     "sum([xs], 0, [ys])", "sum([xs], [ys])",
     "sum([xs], x, [ys], -x, [zs])", "sum([xs], [ys], [zs])",
     "sum([xs], -x, [ys], x, [zs])", "sum([xs], [ys], [zs])",
 
     /* Simplify products */
+    "prod()", "1",
     "prod(x)", "x",
     "prod([xs], x, [ys], x, [zs])", "prod([xs], x^2, [ys], [zs])",
     "prod([xs], x, [ys], x^y, [zs])", "prod([xs], x^(y+1), [ys], [zs])",
@@ -111,16 +115,15 @@ char *simplification_strings[] = {
     "sum([xs], x, [ys], prod(x, a), [zs])", "sum([xs], [ys], prod(x, a+1), [zs])",
     "sum([xs], x, [ys], x, [zs])", "sum(prod(2, x), [xs], [ys], [zs])",
     "sum([xs], prod([yy], x, [zz]), [ys], prod([y], x, [z]), [zs])", "sum([xs], x * (prod([yy],[zz]) + prod([y],[z])), [ys], [zs])",
-    //"sum([a], prod([xs], y, x, [ys]), [b], -x, [c])", "sum([a], prod([xs], y - 1, x, [ys]), [b], [c])",
 
     /* Powers */
     "(x^y)^z", "x^prod(y, z)",
     "prod([xs], x^y, [ys], x^z, [zs])", "prod([xs], x^(y+z), [ys], [zs])",
     "x^0", "1",
-    "prod(cX, y)^z", "prod(cX^z, y^z)",
+    "prod(x, [xs])^z", "prod(x^z, prod([xs])^z)",
 };
 
-#define NUM_PRETTY_RULES 18
+#define NUM_PRETTY_RULES 20
 RewriteRule pretty_rules[NUM_PRETTY_RULES];
 char *pretty_strings[] = 
 {
@@ -144,6 +147,8 @@ char *pretty_strings[] =
     "--x", "x",
     "x+(-y)", "x-y",
     "x^1", "x",
+    "root(x, 2)", "sqrt(x)",
+    "x^(1/y)", "root(x, y)",
 };
 
 bool parse_rule(char *before, char *after, RewriteRule *out_rule)
@@ -196,45 +201,6 @@ void replace_negative_consts(Node **tree)
             {
                 replace_negative_consts(get_child_addr(*tree, i));
             }
-        }
-    }
-}
-
-/*
-Summary: Tries to apply rules (priorized by order) until no rule can be applied any more
-    Possibly not terminating!
-*/
-void smart_apply_ruleset(Node **tree, size_t num_rules, RewriteRule *ruleset, bool allow_negative_consts)
-{
-    if (!allow_negative_consts)
-    {
-        replace_negative_consts(tree);
-    }
-
-    while (true)
-    {
-        bool applied_flag = false;
-        for (size_t j = 0; j < num_rules; j++)
-        {
-            if (apply_rule(tree, &ruleset[j]))
-            {
-                applied_flag = true;
-                // Don't replace e and pi
-                if (get_type(*tree) != NTYPE_OPERATOR || get_num_children(*tree) != 0)
-                {
-                    replace_constant_subtrees(tree, false, op_evaluate);
-                }
-                if (!allow_negative_consts)
-                {
-                    replace_negative_consts(tree);
-                }
-
-                break;
-            }
-        }
-        if (!applied_flag)
-        {
-            return;
         }
     }
 }
@@ -317,8 +283,7 @@ bool core_simplify(Node **tree)
         return false;
     }
 
-    //replace_constant_subtrees(tree, op_evaluate);
-    smart_apply_ruleset(tree, NUM_OP_ELIMINATION_RULES, op_elimination_rules, true);
+    apply_ruleset(tree, NUM_OP_ELIMINATION_RULES, op_elimination_rules);
 
     Node *tree_before = NULL;
     do
@@ -334,9 +299,12 @@ bool core_simplify(Node **tree)
             }
         }
 
-        smart_apply_ruleset(tree, NUM_NORMAL_FORM_RULES, normal_form_rules, true);
-        smart_apply_ruleset(tree, NUM_SIMPLIFICATION_RULES, simplification_rules, true);
-        smart_apply_ruleset(tree, NUM_PRETTY_RULES, pretty_rules, false);
+        apply_ruleset(tree, NUM_NORMAL_FORM_RULES, normal_form_rules);
+        apply_ruleset(tree, NUM_SIMPLIFICATION_RULES, simplification_rules);
+        replace_constant_subtrees(tree, false, op_evaluate);
+        apply_ruleset(tree, NUM_PRETTY_RULES, pretty_rules);
+        replace_constant_subtrees(tree, false, op_evaluate);
+        replace_negative_consts(tree);
     } while (tree_compare(tree_before, *tree) != NULL);
     free_tree(tree_before);
 
