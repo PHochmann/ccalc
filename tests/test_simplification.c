@@ -19,7 +19,7 @@ char *cases[] = {
     "x+x",             "2x",
     "2*(sqrt(2)*x)^2", "4x^2",
     "(-x)^2 - x^2",    "0",
-    "(-1)^((1+1)x)",   "1",
+    "(-x)^(1+1)",      "x^2",
 };
 
 bool simplification_test(Vector *error_builder)

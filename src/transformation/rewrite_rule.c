@@ -14,6 +14,10 @@
 #define NORMAL_VAR_ID  0
 #define RULE_VAR_ID    1
 
+#define RULESET_KEYWORD "Ruleset"
+#define ARROW           " -> "
+#define COMMENT_PREFIX  '\''
+
 #define MAX_RULESET_ITERATIONS 1000 // To protect against endless loops
 
 void mark_vars(Node *tree, char id)
@@ -35,20 +39,15 @@ void mark_vars(Node *tree, char id)
 /*
 Summary: Constructs new rule. Warning: "before" and "after" are not copied, so don't free them!
 */
-RewriteRule get_rule(Node *before, Node *after)
+RewriteRule get_rule(Node *before, Node *after, MappingFilter filter)
 {
     mark_vars(before, RULE_VAR_ID);
     mark_vars(after, RULE_VAR_ID);
     return (RewriteRule){
         .before = before,
         .after  = after,
-        .filter = NULL
+        .filter = filter
     };
-}
-
-void set_filter(RewriteRule *rule, MappingFilter filter)
-{
-    rule->filter = filter;
 }
 
 /*
@@ -117,7 +116,7 @@ Summary: Tries to apply rules (priorized by order) until no rule can be applied 
     Guarantees to terminate after MAX_RULESET_ITERATIONS rule appliances
 */
 //#include "../tree/tree_to_string.h"
-void apply_ruleset(Node **tree, Vector *rules)
+int apply_ruleset(Node **tree, Vector *rules)
 {
     size_t counter = 0;
     while (true)
@@ -127,11 +126,7 @@ void apply_ruleset(Node **tree, Vector *rules)
         {
             if (apply_rule(tree, (RewriteRule*)vec_get(rules, j)))
             {
-                /*#ifdef DEBUG
-                printf("[%zu] ", j);
-                print_tree(*tree, true);
-                printf("\n");
-                #endif*/
+                //printf("Applied rule %zu: %s\n", j, tree_to_string(*tree, true));
                 applied_flag = true;
                 counter++;
                 break;
@@ -139,44 +134,37 @@ void apply_ruleset(Node **tree, Vector *rules)
         }
         if (!applied_flag || counter == MAX_RULESET_ITERATIONS)
         {
-            /*#ifdef DEBUG
-            printf("End.\n");
-            #endif*/
-            return;
+            return counter;
         }
     }
+    return 0; // To make compiler happy
 }
 
-#define RULESET_KEYWORD "Ruleset"
-#define ARROW           " -> "
-#define COMMENT_PREFIX  '\''
-bool parse_rulesets(char *path, ParsingContext *ctx, size_t buffer_size, size_t *out_num_rulesets, Vector *out_rulesets)
+bool parse_rulesets(FILE *file,
+    ParsingContext *ctx,
+    MappingFilter default_filter,
+    size_t buffer_size,
+    size_t *out_num_rulesets,
+    Vector *out_rulesets)
 {
-    FILE *file = fopen(path, "r");
+    ssize_t ruleset_index = -1;
 
-    if (file == NULL)
-    {
-        report_error("Error loading ruleset file: %s.\n", strerror(errno));
-        return false;
-    }
-    
-    size_t num_rulesets = 0;
-
-    char line[500];
+    char *line = malloc(30);
     size_t line_len = 0;
     size_t line_no = 0;
-    while (getline((char**)line, &line_len, file))
+    while (getline(&line, &line_len, file) != EOF)
     {
         line_no++;
+        line[strlen(line) - 1] = '\0';
 
         if (begins_with(RULESET_KEYWORD, line))
         {
-            num_rulesets++;
-            if (num_rulesets == buffer_size) break;
+            ruleset_index++;
+            if (ruleset_index == (ssize_t)buffer_size) break;
             continue;
         }
 
-        if (line[0] == COMMENT_PREFIX || line[0] == '\0')
+        if (line[0] == COMMENT_PREFIX || line[0] == '\0' || line[0] == EOF)
         {
             continue;
         }
@@ -188,6 +176,7 @@ bool parse_rulesets(char *path, ParsingContext *ctx, size_t buffer_size, size_t 
             goto error;
         }
 
+        right[0] = '\0';
         right += strlen(ARROW);
         Node *left_n = parse_conveniently(ctx, line);
         if (left_n == NULL)
@@ -203,17 +192,20 @@ bool parse_rulesets(char *path, ParsingContext *ctx, size_t buffer_size, size_t 
             goto error;
         }
 
-        add_to_ruleset(&out_rulesets[num_rulesets], get_rule(left_n, right_n));
-        printf("Next line...");
+        add_to_ruleset(&out_rulesets[ruleset_index], get_rule(left_n, right_n, default_filter));
     }
 
-    *out_num_rulesets = num_rulesets;
-    fclose(file);
+    for (ssize_t i = 0; i < ruleset_index; i++)
+    {
+        vec_trim(&out_rulesets[i]);
+    }    
+    *out_num_rulesets = ruleset_index + 1;
+    free(line);
     return true;
 
     error:
-    fclose(file);
-    for (size_t i = 0; i < num_rulesets; i++)
+    free(line);
+    for (ssize_t i = 0; i < ruleset_index; i++)
     {
         free_ruleset(&out_rulesets[i]);
     }

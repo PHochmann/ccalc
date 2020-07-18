@@ -189,7 +189,7 @@ bool add_function(char *name, char *left, char *right)
     }
 
     // Add rule to eliminate operator before evaluation
-    RewriteRule rule = get_rule(left_n, right_n);
+    RewriteRule rule = get_rule(left_n, right_n, NULL);
     if (redefined_rule == NULL)
     {
         add_composite_function(rule);

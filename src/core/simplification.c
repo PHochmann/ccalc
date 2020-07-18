@@ -1,4 +1,7 @@
+#define _GNU_SOURCE
 #include <math.h>
+#include <string.h>
+#include <stdio.h>
 
 #include "../tree/tree_util.h"
 #include "../tree/tree_to_string.h"
@@ -7,6 +10,7 @@
 #include "simplification.h"
 #include "arith_context.h"
 #include "evaluation.h"
+#include "rules.h"
 #include "../util/console_util.h"
 
 #define P(x) parse_conveniently(g_ctx, x)
@@ -16,9 +20,28 @@ Node *deriv_after;
 Node *malformed_derivA;
 Node *malformed_derivB;
 
-#define RULESETS_PATH "rulesets.rules"
 #define NUM_RULESETS 5
 Vector rulesets[NUM_RULESETS];
+
+bool exponent_even_filter(char *var, NodeList nodes)
+{
+    if (strcmp(var, "y") != 0) return true;
+
+    // The following should not be needed to the nature of the matching algorithm
+    // Be brave and dereference!
+    //if (nodes.size != 1) return false;
+
+    if (count_variables(nodes.nodes[0], false) == 0)
+    {
+        double res = arith_evaluate(nodes.nodes[0]);
+        if (res != (int)res) return false;
+        if ((int)res % 2 == 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
 
 void replace_negative_consts(Node **tree)
 {
@@ -49,8 +72,29 @@ void init_simplification()
     deriv_after = P("deriv(x, z)");
     malformed_derivA = P("deriv(x, cX)");
     malformed_derivB = P("deriv(x, oX)");
+
+    for (size_t i = 0; i < NUM_RULESETS; i++)
+    {
+        rulesets[i] = get_empty_ruleset();
+    }
+
     __attribute__((unused)) size_t num_rulesets;
-    parse_rulesets(RULESETS_PATH, g_ctx, NUM_RULESETS, &num_rulesets, rulesets);
+    FILE *stream = fmemopen(reduction_strings, strlen(reduction_strings), "r");
+    parse_rulesets(stream, g_ctx, prefix_filter, 1, &num_rulesets, rulesets);
+    fclose(stream);
+    stream = fmemopen(derivation_strings, strlen(derivation_strings), "r");
+    parse_rulesets(stream, g_ctx, prefix_filter, 1, &num_rulesets, rulesets + 1);
+    fclose(stream);
+    stream = fmemopen(normal_form_strings, strlen(normal_form_strings), "r");
+    parse_rulesets(stream, g_ctx, prefix_filter, 1, &num_rulesets, rulesets + 2);
+    fclose(stream);
+    stream = fmemopen(simplification_strings, strlen(simplification_strings), "r");
+    parse_rulesets(stream, g_ctx, prefix_filter, 1, &num_rulesets, rulesets + 3);
+    fclose(stream);
+    stream = fmemopen(pretty_strings, strlen(pretty_strings), "r");
+    parse_rulesets(stream, g_ctx, prefix_filter, 1, &num_rulesets, rulesets + 4);
+    fclose(stream);
+    add_to_ruleset(&rulesets[3], get_rule(P("(-x)^y"), P("x^y"), exponent_even_filter));
 }
 
 void unload_simplification()
