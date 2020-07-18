@@ -27,7 +27,7 @@ bool exponent_even_filter(char *var, NodeList nodes)
 {
     if (strcmp(var, "y") != 0) return true;
 
-    // The following should not be needed to the nature of the matching algorithm
+    // The following should not be needed due to the nature of the matching algorithm
     // Be brave and dereference!
     //if (nodes.size != 1) return false;
 
@@ -66,6 +66,13 @@ void replace_negative_consts(Node **tree)
     }
 }
 
+void parse_rulesets_from_string(char *string, size_t index)
+{
+    FILE *stream = fmemopen(string, strlen(string), "r");
+    parse_rulesets(stream, g_ctx, prefix_filter, 1, rulesets + index);
+    fclose(stream);
+}
+
 void init_simplification()
 {
     deriv_before = P("x'");
@@ -78,22 +85,12 @@ void init_simplification()
         rulesets[i] = get_empty_ruleset();
     }
 
-    __attribute__((unused)) size_t num_rulesets;
-    FILE *stream = fmemopen(reduction_strings, strlen(reduction_strings), "r");
-    parse_rulesets(stream, g_ctx, prefix_filter, 1, &num_rulesets, rulesets);
-    fclose(stream);
-    stream = fmemopen(derivation_strings, strlen(derivation_strings), "r");
-    parse_rulesets(stream, g_ctx, prefix_filter, 1, &num_rulesets, rulesets + 1);
-    fclose(stream);
-    stream = fmemopen(normal_form_strings, strlen(normal_form_strings), "r");
-    parse_rulesets(stream, g_ctx, prefix_filter, 1, &num_rulesets, rulesets + 2);
-    fclose(stream);
-    stream = fmemopen(simplification_strings, strlen(simplification_strings), "r");
-    parse_rulesets(stream, g_ctx, prefix_filter, 1, &num_rulesets, rulesets + 3);
-    fclose(stream);
-    stream = fmemopen(pretty_strings, strlen(pretty_strings), "r");
-    parse_rulesets(stream, g_ctx, prefix_filter, 1, &num_rulesets, rulesets + 4);
-    fclose(stream);
+    parse_rulesets_from_string(reduction_string, 0);
+    parse_rulesets_from_string(derivation_string, 1);
+    parse_rulesets_from_string(normal_form_string, 2);
+    parse_rulesets_from_string(simplification_string, 3);
+    parse_rulesets_from_string(pretty_string, 4);
+
     add_to_ruleset(&rulesets[3], get_rule(P("(-x)^y"), P("x^y"), exponent_even_filter));
 }
 
@@ -138,8 +135,8 @@ bool core_simplify(Node **tree)
         tree_replace(matched, replacement);
     }
 
-    if (find_matching_discarded(*tree, malformed_derivA, NULL) != NULL
-        || find_matching_discarded(*tree, malformed_derivA, NULL) != NULL)
+    if (find_matching_discarded(*tree, malformed_derivA, prefix_filter) != NULL
+        || find_matching_discarded(*tree, malformed_derivA, prefix_filter) != NULL)
     {
         report_error("Second operand of deriv must be variable.\n");
         return false;
@@ -154,13 +151,13 @@ bool core_simplify(Node **tree)
         free_tree(tree_before);
         tree_before = tree_copy(*tree);
 
-        /*for (size_t j = 0; j < rulesets[0].num_rules; j++)
+        for (size_t j = 0; j < vec_count(&rulesets[1]); j++)
         {
-            if (apply_rule(tree, &rulesets[0].rules[j]))
+            if (apply_rule(tree, (RewriteRule*)vec_get(&rulesets[1], j)))
             {
                 break;
             }
-        }*/
+        }
 
         apply_ruleset(tree, &rulesets[2]); // Normal form rules
         apply_ruleset(tree, &rulesets[3]); // Simplification rules

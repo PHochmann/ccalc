@@ -13,13 +13,14 @@
     return false;\
 }
 
-static const size_t NUM_CASES = 5;
+static const size_t NUM_CASES = 6;
 char *cases[] = {
     "x-x",             "0",
     "x+x",             "2x",
     "2*(sqrt(2)*x)^2", "4x^2",
     "(-x)^2 - x^2",    "0",
     "(-x)^(1+1)",      "x^2",
+    "x'",              "1"
 };
 
 bool simplification_test(Vector *error_builder)

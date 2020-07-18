@@ -1,4 +1,4 @@
-char *reduction_strings =
+char *reduction_string =
 "Ruleset Operator Reduction\n"
 "+x         -> x\n"
 "$x         -> x\n"
@@ -10,7 +10,7 @@ char *reduction_strings =
 "sqrt(x)    -> x^0.5\n"
 "root(x, y) -> x^(1/y)\n";
 
-char *derivation_strings =
+char *derivation_string =
 "Ruleset Derivation\n"
 "deriv(cX*z, z)    -> cX\n"
 "deriv(cX*z^cZ, z) -> cZ*cX*z^(cZ-1)\n"
@@ -28,7 +28,7 @@ char *derivation_strings =
 "deriv(x^y, z)     -> ((y*deriv(x, z))*x^-1 + deriv(y, z)*ln(x))*x^y\n"
 "deriv(ln(x), z)   -> deriv(x, z)*^-1\n";
 
-char *normal_form_strings =
+char *normal_form_string =
 "Ruleset Normal Form\n"
 "x-y    -> x+(-y)\n"
 "-(x+y) -> -x+(-y)\n"
@@ -36,7 +36,7 @@ char *normal_form_strings =
 "dX+cY  -> cY+dX\n"
 "dX*cY  -> cY*dX\n";
 
-char *simplification_strings =
+char *simplification_string =
 "Ruleset Simplification\n"
 "\' Get a nice sum\n"
 "x+y                        -> sum(x,y)\n"
@@ -101,7 +101,7 @@ char *simplification_strings =
 "sum([xs], cos(x)^2, [ys], sin(x)^2) -> sum(1, [xs], [ys], [zs])\n"
 "sum([xs], sin(x)^2, [ys], cos(x)^2) -> sum(1, [xs], [ys], [zs])\n";
 
-char *pretty_strings =
+char *pretty_string =
 "Ruleset Pretty\n"
 "prod([xs], sin(x), [ys], cos(x)^-1, [zs])   -> prod([xs], tan(x), [ys], [zs])\n"
 "prod([xs], sin(x)^y, [ys], cos(x)^-y, [zs]) -> prod([xs], tan(x)^y, [ys], [zs])\n"

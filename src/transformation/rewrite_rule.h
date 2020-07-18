@@ -24,5 +24,4 @@ bool parse_rulesets(FILE *file,
     ParsingContext *ctx,
     MappingFilter default_filter,
     size_t buffer_size,
-    size_t *out_num_rulesets,
     Vector *out_rulesets);

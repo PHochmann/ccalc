@@ -144,12 +144,10 @@ bool parse_rulesets(FILE *file,
     ParsingContext *ctx,
     MappingFilter default_filter,
     size_t buffer_size,
-    size_t *out_num_rulesets,
     Vector *out_rulesets)
 {
     ssize_t ruleset_index = -1;
-
-    char *line = malloc(30);
+    char *line = NULL;
     size_t line_len = 0;
     size_t line_no = 0;
     while (getline(&line, &line_len, file) != EOF)
@@ -198,8 +196,7 @@ bool parse_rulesets(FILE *file,
     for (ssize_t i = 0; i < ruleset_index; i++)
     {
         vec_trim(&out_rulesets[i]);
-    }    
-    *out_num_rulesets = ruleset_index + 1;
+    }
     free(line);
     return true;
 
