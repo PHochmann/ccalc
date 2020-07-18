@@ -16,169 +16,9 @@ Node *deriv_after;
 Node *malformed_derivA;
 Node *malformed_derivB;
 
-#define NUM_OP_ELIMINATION_RULES 9
-RewriteRule op_elimination_rules[NUM_OP_ELIMINATION_RULES];
-char *op_elimination_strings[] = {
-    "+x", "x",
-    "$x", "x",
-    "--x", "x",
-    "x%", "x/100",
-    "x/y", "x*y^(-1)",
-    "log(x, e)", "ln(x)",
-    "tan(x)", "sin(x)/cos(x)",
-    "sqrt(x)", "x^0.5",
-    "root(x, y)", "x^(1/y)",
-};
-
-#define NUM_DERIVATION_RULES 15
-RewriteRule derivation_rules[NUM_DERIVATION_RULES];
-char *derivation_rule_strings[] = {
-    "deriv(cX*z, z)", "cX",
-    "deriv(cX*z^cZ, z)", "cZ*cX*z^(cZ-1)",
-    "deriv(-x, z)", "-deriv(x, z)",
-    "deriv(x + y, z)", "deriv(x, z) + deriv(y, z)",
-    "deriv(x - y, z)", "deriv(x, z) - deriv(y, z)",
-    "deriv(x, x)", "1",
-    "deriv(bX, z)", "0",
-    "deriv(x*y, z)", "deriv(x, z)*y + x*deriv(y, z)",
-    "deriv(x/y, z)", "(deriv(x, z)*y - x*deriv(y, z)) / y^2",
-    "deriv(sin(x), z)", "cos(x) * deriv(x, z)",
-    "deriv(cos(x), z)", "-sin(x) * deriv(x, z)",
-    "deriv(tan(x), z)", "deriv(x, z) * cos(x)^-2",
-    "deriv(e^y, z)", "deriv(y, z)*e^y",
-    "deriv(x^y, z)", "((y*deriv(x, z))*x^-1 + deriv(y, z)*ln(x))*x^y",
-    "deriv(ln(x), z)", "deriv(x, z)*^-1",
-};
-
-#define NUM_NORMAL_FORM_RULES 5
-RewriteRule normal_form_rules[NUM_NORMAL_FORM_RULES];
-char *normal_form_strings[] = {
-    "x-y", "x+(-y)",
-    "-(x+y)", "-x+(-y)",
-    "-(x*y)", "(-x)*y",
-    "dX+cY", "cY+dX",
-    "dX*cY", "cY*dX",
-};
-
-#define NUM_SIMPLIFICATION_RULES 44
-RewriteRule simplification_rules[NUM_SIMPLIFICATION_RULES];
-char *simplification_strings[] = {
-    /* Get a nice sum */
-    "x+y", "sum(x,y)",
-    "sum([xs], sum([ys]), [zs])", "sum([xs], [ys], [zs])",
-    "sum([xs])+sum([ys])", "sum([xs], [ys])",
-    "x+sum([xs])", "sum(x, [xs])",
-    "sum([xs])+x", "sum([xs], x)",
-
-    /* Get a nice product */
-    "x*y", "prod(x,y)",
-    "prod([xs], prod([ys]), [zs])", "prod([xs], [ys], [zs])",
-    "prod([xs])*prod([ys])", "prod([xs], [ys])",
-    "x*prod([xs])", "prod(x, [xs])",
-    "prod([xs])*x", "prod([xs], x)",
-
-    /* Move constants and variables to the left */
-    "sum([xs], dX, [ys], cY, [zs])", "sum(cY, [xs], dX, [ys], [zs])", // Constants left to variables or operators
-    "sum([xs], oX, [ys], bY, [zs])", "sum([xs], bY, [ys], oX, [zs])", // Variables left to operators
-    "prod([xs], dX, [ys], cY, [zs])", "prod(cY, [xs], dX, [ys], [zs])",
-    "prod([xs], oX, [ys], bY, [zs])", "prod([xs], bY, [ys], oX, [zs])",
-
-    /* Simplify sums */
-    "sum()", "0",
-    "sum(x)", "x",
-    "sum([xs], 0, [ys])", "sum([xs], [ys])",
-    "sum([xs], x, [ys], -x, [zs])", "sum([xs], [ys], [zs])",
-    "sum([xs], -x, [ys], x, [zs])", "sum([xs], [ys], [zs])",
-
-    /* Simplify products */
-    "prod()", "1",
-    "prod(x)", "x",
-    "prod([xs], x, [ys], x, [zs])", "prod([xs], x^2, [ys], [zs])",
-    "prod([xs], x, [ys], x^y, [zs])", "prod([xs], x^(y+1), [ys], [zs])",
-    "prod([xs], x^y, [ys], x, [zs])", "prod([xs], x^(y+1), [ys], [zs])",
-    "prod([xs], x^z, [ys], x^y, [zs])", "prod([xs], x^(y+z), [ys], [zs])",
-    "prod([xs], 0, [ys])", "0",
-    "prod([xs], 1, [ys])", "prod([xs], [ys])",
-    "prod([xs], -x, [ys])", "-prod([xs], x, [ys])",
-
-    /* Products within sum */
-    "sum([xs], prod(a, x), [ys], x, [zs])", "sum([xs], prod(a+1, x), [ys], [zs])",
-    "sum([xs], prod(x, a), [ys], x, [zs])", "sum([xs], prod(x, a+1), [ys], [zs])",
-    "sum([xs], prod(b, x), [ys], prod(a, x), [zs])", "sum([xs], [ys], prod(a+b, x), [zs])",
-    "sum([xs], prod(x, b), [ys], prod(x, a), [zs])", "sum([xs], [ys], prod(a+b, x), [zs])",
-    "sum([xs], prod(b, x), [ys], prod(x, a), [zs])", "sum([xs], [ys], prod(a+b, x), [zs])",
-    "sum([xs], prod(x, b), [ys], prod(a, x), [zs])", "sum([xs], [ys], prod(a+b, x), [zs])",
-    "sum([xs], x, [ys], prod(a, x), [zs])", "sum([xs], [ys], prod(a+1, x), [zs])",
-    "sum([xs], x, [ys], prod(x, a), [zs])", "sum([xs], [ys], prod(x, a+1), [zs])",
-    "sum([xs], x, [ys], x, [zs])", "sum(prod(2, x), [xs], [ys], [zs])",
-    "sum([xs], prod([yy], x, [zz]), [ys], prod([y], x, [z]), [zs])", "sum([xs], x * (prod([yy],[zz]) + prod([y],[z])), [ys], [zs])",
-
-    /* Powers */
-    "(-dX)^z", "(-1)^z*dX^z",
-    "(x^y)^z", "x^prod(y, z)",
-    "prod([xs], x^y, [ys], x^z, [zs])", "prod([xs], x^(y+z), [ys], [zs])",
-    "x^0", "1",
-    "(-1)^prod([xs], 2, [ys])", "1",
-    "prod(x, [xs])^z", "prod(x^z, prod([xs])^z)",
-};
-
-#define NUM_PRETTY_RULES 20
-RewriteRule pretty_rules[NUM_PRETTY_RULES];
-char *pretty_strings[] = {
-    "prod([xs], sin(x), [ys], cos(x)^-1, [zs])", "prod([xs], tan(x), [ys], [zs])",
-    "prod([xs], sin(x)^y, [ys], cos(x)^-y, [zs])", "prod([xs], tan(x)^y, [ys], [zs])",
-
-    "-prod(x, [xs])", "prod(-x, [xs])",
-    "-sum([xs], x)", "-sum([xs])-x",
-    "prod([xs], x)^cY", "prod([xs])^cY * x^cY",
-
-    "(x+y)^2", "x^2 + 2*x*y + y^2",
-    "cX*(x+y)", "cX*x + cX*y",
-    "x+(y+z)", "x+y+z",
-    "x*(y*z)", "x*y*z",
-    "sum(x, y)", "x+y",
-    "sum([xs], x)", "sum([xs])+x",
-    "sum(x)", "x",
-    "prod(x)", "x",
-    "prod(x, y)", "x*y",
-    "prod([xs], x)", "prod([xs])*x",
-    "--x", "x",
-    "x+(-y)", "x-y",
-    "x^1", "x",
-    "root(x, 2)", "sqrt(x)",
-    "x^(1/y)", "root(x, y)",
-};
-
-bool parse_rule(char *before, char *after, RewriteRule *out_rule)
-{
-    Node *before_n = parse_conveniently(g_ctx, before);
-    if (before_n == NULL) 
-    {
-        printf("Syntax error in rulestring: %s\n", before);
-        return false;
-    }
-    Node *after_n = parse_conveniently(g_ctx, after);
-    if (after_n == NULL)
-    {
-        printf("Syntax error in rulestring: %s\n", after);
-        return false;
-    }
-    *out_rule = get_rule(&before_n, &after_n);
-    return true;
-}
-
-bool parse_rules(size_t num_rules, char **input, RewriteRule *out_rules)
-{
-    for (size_t i = 0; i < num_rules; i++)
-    {
-        if (!parse_rule(input[2 * i], input[2 * i + 1], &out_rules[i]))
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
+#define RULESETS_PATH "rulesets.rules"
+#define NUM_RULESETS 5
+Vector rulesets[NUM_RULESETS];
 
 void replace_negative_consts(Node **tree)
 {
@@ -209,11 +49,8 @@ void init_simplification()
     deriv_after = P("deriv(x, z)");
     malformed_derivA = P("deriv(x, cX)");
     malformed_derivB = P("deriv(x, oX)");
-    parse_rules(NUM_OP_ELIMINATION_RULES, op_elimination_strings, op_elimination_rules);
-    parse_rules(NUM_DERIVATION_RULES, derivation_rule_strings, derivation_rules);
-    parse_rules(NUM_NORMAL_FORM_RULES, normal_form_strings, normal_form_rules);
-    parse_rules(NUM_SIMPLIFICATION_RULES, simplification_strings, simplification_rules);
-    parse_rules(NUM_PRETTY_RULES, pretty_strings, pretty_rules);
+    __attribute__((unused)) size_t num_rulesets;
+    parse_rulesets(RULESETS_PATH, g_ctx, NUM_RULESETS, &num_rulesets, rulesets);
 }
 
 void unload_simplification()
@@ -222,26 +59,9 @@ void unload_simplification()
     free_tree(deriv_after);
     free_tree(malformed_derivA);
     free_tree(malformed_derivB);
-
-    for (size_t i = 0; i < NUM_OP_ELIMINATION_RULES; i++)
+    for (size_t i = 0; i < NUM_RULESETS; i++)
     {
-        free_rule(op_elimination_rules[i]);
-    }
-    for (size_t i = 0; i < NUM_DERIVATION_RULES; i++)
-    {
-        free_rule(derivation_rules[i]);
-    }
-    for (size_t i = 0; i < NUM_NORMAL_FORM_RULES; i++)
-    {
-        free_rule(normal_form_rules[i]);
-    }
-    for (size_t i = 0; i < NUM_SIMPLIFICATION_RULES; i++)
-    {
-        free_rule(simplification_rules[i]);
-    }
-    for (size_t i = 0; i < NUM_PRETTY_RULES; i++)
-    {
-        free_rule(pretty_rules[i]);
+        free_ruleset(&rulesets[i]);
     }
 }
 
@@ -253,7 +73,7 @@ bool core_simplify(Node **tree)
 {
     Matching matching;
     Node **matched;
-    while ((matched = find_matching(tree, deriv_before, &matching)) != NULL)
+    while ((matched = find_matching(tree, deriv_before, &matching, NULL)) != NULL)
     {
         char *var_name;
         size_t var_count = count_variables_distinct(*tree);
@@ -274,14 +94,15 @@ bool core_simplify(Node **tree)
         tree_replace(matched, replacement);
     }
 
-    if (find_matching_discarded(*tree, malformed_derivA) != NULL
-        || find_matching_discarded(*tree, malformed_derivA) != NULL)
+    if (find_matching_discarded(*tree, malformed_derivA, NULL) != NULL
+        || find_matching_discarded(*tree, malformed_derivA, NULL) != NULL)
     {
         report_error("Second operand of deriv must be variable.\n");
         return false;
     }
 
-    apply_ruleset(tree, NUM_OP_ELIMINATION_RULES, op_elimination_rules);
+    // Apply elimination rules
+    apply_ruleset(tree, &rulesets[0]);
 
     Node *tree_before = NULL;
     do
@@ -289,24 +110,24 @@ bool core_simplify(Node **tree)
         free_tree(tree_before);
         tree_before = tree_copy(*tree);
 
-        for (size_t j = 0; j < NUM_DERIVATION_RULES; j++)
+        /*for (size_t j = 0; j < rulesets[0].num_rules; j++)
         {
-            if (apply_rule(tree, &derivation_rules[j]))
+            if (apply_rule(tree, &rulesets[0].rules[j]))
             {
                 break;
             }
-        }
+        }*/
 
-        apply_ruleset(tree, NUM_NORMAL_FORM_RULES, normal_form_rules);
-        apply_ruleset(tree, NUM_SIMPLIFICATION_RULES, simplification_rules);
+        apply_ruleset(tree, &rulesets[2]); // Normal form rules
+        apply_ruleset(tree, &rulesets[3]); // Simplification rules
         replace_constant_subtrees(tree, false, op_evaluate);
-        apply_ruleset(tree, NUM_PRETTY_RULES, pretty_rules);
+        apply_ruleset(tree, &rulesets[4]); // Pretty rules
         replace_constant_subtrees(tree, false, op_evaluate);
         replace_negative_consts(tree);
     } while (tree_compare(tree_before, *tree) != NULL);
     free_tree(tree_before);
 
-    if (find_matching_discarded(*tree, deriv_after) != NULL)
+    if (find_matching_discarded(*tree, deriv_after, NULL) != NULL)
     {
         report_error("Could not derivate expression.\n");
         return false;

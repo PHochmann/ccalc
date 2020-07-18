@@ -111,7 +111,7 @@ bool add_function(char *name, char *left, char *right)
         goto error;
     }
 
-    if (find_matching_discarded(right_n, left_n))
+    if (find_matching_discarded(right_n, left_n, NULL))
     {
         report_error("Error: Recursive definition.\n");
         goto error;
@@ -124,7 +124,7 @@ bool add_function(char *name, char *left, char *right)
         for (size_t i = 0; i < get_num_composite_functions(); i++)
         {
             RewriteRule *rule = get_composite_function(i);
-            if (find_matching_discarded(rule->after, left_n))
+            if (find_matching_discarded(rule->after, left_n, NULL))
             {
                 printf("\nWarning: This will affect at least one other function or constant. ");
                 break;
@@ -189,7 +189,7 @@ bool add_function(char *name, char *left, char *right)
     }
 
     // Add rule to eliminate operator before evaluation
-    RewriteRule rule = get_rule(&left_n, &right_n);
+    RewriteRule rule = get_rule(left_n, right_n);
     if (redefined_rule == NULL)
     {
         add_composite_function(rule);

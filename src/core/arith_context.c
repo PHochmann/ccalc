@@ -15,15 +15,13 @@
 ParsingContext __g_ctx;
 Operator operators[MAX_OPS];
 
-size_t num_comp_func;
-RewriteRule composite_functions[NUM_COMP_FUNC];
+Vector composite_functions;
 
 /*
 Summary: Sets arithmetic context stored in global variable
 */
 void init_core_ctx()
 {
-    num_comp_func = 0;
     __g_ctx = get_context(MAX_OPS, operators);
     if (!ctx_add_ops(g_ctx, NUM_OPS,
         op_get_prefix("$", 0),
@@ -92,39 +90,37 @@ void init_core_ctx()
 
 size_t get_num_composite_functions()
 {
-    return num_comp_func;
+    return vec_count(&composite_functions);
 }
 
 RewriteRule *get_composite_function(size_t index)
 {
-    return &composite_functions[index];
+    return (RewriteRule*)vec_get(&composite_functions, index);
 }
 
 bool can_add_composite_function()
 {
-    return num_comp_func < NUM_COMP_FUNC;
+    return get_num_composite_functions() < NUM_COMP_FUNC;
 }
 
 void add_composite_function(RewriteRule rule)
 {
-    composite_functions[num_comp_func] = rule;
-    num_comp_func++;
+    add_to_ruleset(&composite_functions, rule);
 }
 
 void pop_composite_function()
 {
-    if (num_comp_func > 0)
+    if (get_num_composite_functions() > 0)
     {
-        num_comp_func--;
-        free_rule(composite_functions[num_comp_func]);
-        free(operators[NUM_OPS + num_comp_func].name);
+        free_rule(VEC_POP_ELEM(&composite_functions, RewriteRule));
+        free(operators[NUM_OPS + get_num_composite_functions()].name);
         g_ctx->num_ops--;
     }
 }
 
 void clear_composite_functions()
 {
-    while (num_comp_func > 0)
+    while (get_num_composite_functions() > 0)
     {
         pop_composite_function();
     }
@@ -148,7 +144,7 @@ bool arith_parse_input(char *input, char *error_fmt, bool replace_comp_funcs, No
     {
         if (replace_comp_funcs)
         {
-            apply_ruleset(out_res, num_comp_func, composite_functions);
+            apply_ruleset(out_res, &composite_functions);
         }
 
         if (!core_simplify(out_res) || !core_replace_history(out_res))

@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "matching.h"
 #include "../util/vector.h"
@@ -21,15 +22,17 @@ void fill_trie(size_t curr_index,
     Node **pattern_children,
     Node **tree_children,
     Vector *matchings,
-    Vector *trie)
+    Vector *trie,
+    MappingFilter filter)
 {
-    if (((TrieNode*)vec_get(trie, curr_index))->first_match_index != __SIZE_MAX__) return;
+    if (((TrieNode*)vec_get(trie, curr_index))->first_match_index != SIZE_MAX) return;
 
     fill_trie(((TrieNode*)vec_get(trie, curr_index))->parent_index,
         pattern_children,
         tree_children,
         matchings,
-        trie);
+        trie,
+        filter);
 
     // We can save curr for readability and performance because we won't
     // insert into the trie
@@ -43,7 +46,8 @@ void fill_trie(size_t curr_index,
             *(Matching*)vec_get(matchings, ((TrieNode*)vec_get(trie, curr->parent_index))->first_match_index + i),
             pattern_children[curr->distance - 1],
             (NodeList){ .size = curr->label, .nodes = tree_children + curr->sum },
-            matchings);
+            matchings,
+            filter);
     }
 
     curr->num_matchings = vec_count(matchings) - curr->first_match_index;
@@ -66,7 +70,8 @@ void match_parameter_lists(Matching matching,
     Node **pattern_children,
     size_t num_tree_children,
     Node **tree_children,
-    Vector *out_matchings)
+    Vector *out_matchings,
+    MappingFilter filter)
 {
     Vector vec_local_matchings = vec_create(sizeof(Matching), VECTOR_STARTSIZE);
     Vector vec_trie = vec_create(sizeof(TrieNode), VECTOR_STARTSIZE);
@@ -95,7 +100,8 @@ void match_parameter_lists(Matching matching,
                 pattern_children,
                 tree_children,
                 &vec_local_matchings,
-                &vec_trie);
+                &vec_trie,
+                filter);
 
             // Update curr
             curr = VEC_GET_ELEM(&vec_trie, TrieNode, curr_index);
@@ -118,7 +124,7 @@ void match_parameter_lists(Matching matching,
                 {
                     // List is already bound, thus also its length is bound
                     VEC_PUSH_ELEM(&vec_trie, TrieNode, ((TrieNode){
-                        .first_match_index = __SIZE_MAX__,
+                        .first_match_index = SIZE_MAX,
                         .num_matchings     = 0,
                         .label             = list->size,
                         .sum               = new_sum,
@@ -133,7 +139,7 @@ void match_parameter_lists(Matching matching,
                         // Special case: List is last pattern-child
                         // We can avoid extending trie with lists that are too short
                         VEC_PUSH_ELEM(&vec_trie, TrieNode, ((TrieNode){
-                                .first_match_index = __SIZE_MAX__,
+                                .first_match_index = SIZE_MAX,
                                 .num_matchings     = 0,
                                 .label             = num_tree_children - new_sum,
                                 .sum               = new_sum,
@@ -148,7 +154,7 @@ void match_parameter_lists(Matching matching,
                         for (size_t i = 0; i < num_insertions; i++)
                         {
                             VEC_PUSH_ELEM(&vec_trie, TrieNode, ((TrieNode){
-                                .first_match_index = __SIZE_MAX__,
+                                .first_match_index = SIZE_MAX,
                                 .num_matchings     = 0,
                                 .label             = i,
                                 .sum               = new_sum,
@@ -165,7 +171,7 @@ void match_parameter_lists(Matching matching,
                 {
                     // Any non-list node in pattern corresponds to exactly one node in tree
                     VEC_PUSH_ELEM(&vec_trie, TrieNode, ((TrieNode){
-                        .first_match_index = __SIZE_MAX__,
+                        .first_match_index = SIZE_MAX,
                         .num_matchings     = 0,
                         .label             = 1,
                         .sum               = new_sum,
@@ -195,7 +201,8 @@ bool nodelists_equal(NodeList *a, NodeList *b)
 void extend_matching(Matching matching,
     Node *pattern,
     NodeList tree_list,
-    Vector *out_matchings)
+    Vector *out_matchings,
+    MappingFilter filter)
 {
     switch (get_type(pattern))
     {
@@ -214,40 +221,10 @@ void extend_matching(Matching matching,
             }
             else
             {
-                // Check special rules
-                switch (get_var_name(pattern)[0])
+                // Check with filter if it's okay to bind
+                if (filter != NULL && !filter(get_var_name(pattern), tree_list))
                 {
-                    case MATCHING_CONST_PREFIX:
-                        if (tree_list.size != 1 || get_type(tree_list.nodes[0]) != NTYPE_CONSTANT)
-                        {
-                            return;
-                        }
-                        break;
-                    case MATCHING_CONST_OR_VAR_PREFIX:
-                        if (tree_list.size != 1 || get_type(tree_list.nodes[0]) == NTYPE_OPERATOR)
-                        {
-                            return;
-                        }
-                        break;
-                    case MATCHING_OP_PREFIX:
-                        if (tree_list.size != 1 || get_type(tree_list.nodes[0]) != NTYPE_OPERATOR)
-                        {
-                            return;
-                        }
-                        break;
-                   case MATCHING_OP_OR_VAR_PREFIX:
-                        if (tree_list.size != 1 || get_type(tree_list.nodes[0]) == NTYPE_CONSTANT)
-                        {
-                            return;
-                        }
-                        break;
-                    case MATCHING_LITERAL_VAR_PREFIX:
-                        if (tree_list.size != 1 || get_type(tree_list.nodes[0]) != NTYPE_VARIABLE
-                            || strcmp(get_var_name(pattern) + 1, get_var_name(tree_list.nodes[0])) != 0)
-                        {
-                            return;
-                        }
-                        break;
+                    return;
                 }
 
                 // Bind variable if there's still a free slot in matching
@@ -285,13 +262,14 @@ void extend_matching(Matching matching,
                     get_child_addr(pattern, 0),
                     get_num_children(tree_list.nodes[0]),
                     get_child_addr(tree_list.nodes[0], 0),
-                    out_matchings);
+                    out_matchings,
+                    filter);
             }
         }
     }
 }
 
-size_t get_all_matchings(Node **tree, Node *pattern, Matching **out_matchings)
+size_t get_all_matchings(Node **tree, Node *pattern, Matching **out_matchings, MappingFilter filter)
 {
     if (tree == NULL || pattern == NULL || out_matchings == NULL) return false;
 
@@ -302,7 +280,8 @@ size_t get_all_matchings(Node **tree, Node *pattern, Matching **out_matchings)
         (Matching){ .num_mapped = 0 },
         pattern,
         (NodeList){ .size = 1, .nodes = tree },
-        &result);
+        &result,
+        filter);
     *out_matchings = (Matching*)(result.buffer);
 
     return result.elem_count;
@@ -312,12 +291,12 @@ size_t get_all_matchings(Node **tree, Node *pattern, Matching **out_matchings)
 Summary: Tries to match "tree" against "pattern" (only in root)
 Returns: True, if matching is found, false if NULL-pointers given in arguments or no matching found
 */
-bool get_matching(Node **tree, Node *pattern, Matching *out_matching)
+bool get_matching(Node **tree, Node *pattern, Matching *out_matching, MappingFilter filter)
 {
     if (tree == NULL || pattern == NULL || out_matching == NULL) return false;
 
     Matching *matchings;
-    size_t num_matchings = get_all_matchings(tree, pattern, &matchings);
+    size_t num_matchings = get_all_matchings(tree, pattern, &matchings, filter);
 
     // Return first matching if any
     if (num_matchings > 0)
@@ -336,14 +315,14 @@ bool get_matching(Node **tree, Node *pattern, Matching *out_matching)
 /*
 Summary: Looks for matching in tree, i.e. tries to construct matching in each node until matching is found (Top-Down)
 */
-Node **find_matching(Node **tree, Node *pattern, Matching *out_matching)
+Node **find_matching(Node **tree, Node *pattern, Matching *out_matching, MappingFilter filter)
 {
-    if (get_matching(tree, pattern, out_matching)) return tree;
+    if (get_matching(tree, pattern, out_matching, filter)) return tree;
     if (get_type(*tree) == NTYPE_OPERATOR)
     {
         for (size_t i = 0; i < get_num_children(*tree); i++)
         {
-            Node **res = find_matching(get_child_addr(*tree, i), pattern, out_matching);
+            Node **res = find_matching(get_child_addr(*tree, i), pattern, out_matching, filter);
             if (res != NULL) return res;
         }
     }
@@ -353,8 +332,8 @@ Node **find_matching(Node **tree, Node *pattern, Matching *out_matching)
 /*
 Summary: Basically the same as find_matching, but discards matching
 */
-Node **find_matching_discarded(Node *tree, Node *pattern)
+Node **find_matching_discarded(Node *tree, Node *pattern, MappingFilter filter)
 {
     Matching matching;
-    return find_matching(&tree, pattern, &matching);
+    return find_matching(&tree, pattern, &matching, filter);
 }

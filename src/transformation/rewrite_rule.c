@@ -1,3 +1,11 @@
+#define _GNU_SOURCE
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <errno.h>
+
+#include "../util/string_util.h"
+#include "../util/console_util.h"
 #include "../tree/tree_util.h"
 #include "../core/evaluation.h"
 #include "rewrite_rule.h"
@@ -27,14 +35,20 @@ void mark_vars(Node *tree, char id)
 /*
 Summary: Constructs new rule. Warning: "before" and "after" are not copied, so don't free them!
 */
-RewriteRule get_rule(Node **before, Node **after)
+RewriteRule get_rule(Node *before, Node *after)
 {
-    mark_vars(*before, RULE_VAR_ID);
-    mark_vars(*after, RULE_VAR_ID);
+    mark_vars(before, RULE_VAR_ID);
+    mark_vars(after, RULE_VAR_ID);
     return (RewriteRule){
-        .before = *before,
-        .after  = *after
+        .before = before,
+        .after  = after,
+        .filter = NULL
     };
+}
+
+void set_filter(RewriteRule *rule, MappingFilter filter)
+{
+    rule->filter = filter;
 }
 
 /*
@@ -71,7 +85,7 @@ bool apply_rule(Node **tree, RewriteRule *rule)
     Matching matching;
     
     // Try to find matching in tree with pattern specified in rule
-    Node **res = find_matching(tree, rule->before, &matching);
+    Node **res = find_matching(tree, rule->before, &matching, rule->filter);
     if (res == NULL) return false;
     // If matching is found, transform tree with it
     transform_matched_by_rule(rule->after, &matching, res);
@@ -79,21 +93,39 @@ bool apply_rule(Node **tree, RewriteRule *rule)
     return true;
 }
 
+Vector get_empty_ruleset()
+{
+    return vec_create(sizeof(RewriteRule), 1);
+}
+
+void add_to_ruleset(Vector *rules, RewriteRule rule)
+{
+    VEC_PUSH_ELEM(rules, RewriteRule, rule);
+}
+
+void free_ruleset(Vector *rules)
+{
+    for (size_t i = 0; i < vec_count(rules); i++)
+    {
+        free_rule(VEC_GET_ELEM(rules, RewriteRule, i));
+    }
+    vec_destroy(rules);
+}
+
 /*
 Summary: Tries to apply rules (priorized by order) until no rule can be applied any more
     Guarantees to terminate after MAX_RULESET_ITERATIONS rule appliances
 */
 //#include "../tree/tree_to_string.h"
-//#include <stdio.h>
-void apply_ruleset(Node **tree, size_t num_rules, RewriteRule *ruleset)
+void apply_ruleset(Node **tree, Vector *rules)
 {
     size_t counter = 0;
     while (true)
     {
         bool applied_flag = false;
-        for (size_t j = 0; j < num_rules; j++)
+        for (size_t j = 0; j < vec_count(rules); j++)
         {
-            if (apply_rule(tree, &ruleset[j]))
+            if (apply_rule(tree, (RewriteRule*)vec_get(rules, j)))
             {
                 /*#ifdef DEBUG
                 printf("[%zu] ", j);
@@ -113,4 +145,77 @@ void apply_ruleset(Node **tree, size_t num_rules, RewriteRule *ruleset)
             return;
         }
     }
+}
+
+#define RULESET_KEYWORD "Ruleset"
+#define ARROW           " -> "
+#define COMMENT_PREFIX  '\''
+bool parse_rulesets(char *path, ParsingContext *ctx, size_t buffer_size, size_t *out_num_rulesets, Vector *out_rulesets)
+{
+    FILE *file = fopen(path, "r");
+
+    if (file == NULL)
+    {
+        report_error("Error loading ruleset file: %s.\n", strerror(errno));
+        return false;
+    }
+    
+    size_t num_rulesets = 0;
+
+    char line[500];
+    size_t line_len = 0;
+    size_t line_no = 0;
+    while (getline((char**)line, &line_len, file))
+    {
+        line_no++;
+
+        if (begins_with(RULESET_KEYWORD, line))
+        {
+            num_rulesets++;
+            if (num_rulesets == buffer_size) break;
+            continue;
+        }
+
+        if (line[0] == COMMENT_PREFIX || line[0] == '\0')
+        {
+            continue;
+        }
+
+        char *right = strstr(line, ARROW);
+        if (right == NULL)
+        {
+            report_error("Ruleset file syntax error in line %zu.\n", line_no);
+            goto error;
+        }
+
+        right += strlen(ARROW);
+        Node *left_n = parse_conveniently(ctx, line);
+        if (left_n == NULL)
+        {
+            report_error("Ruleset file syntax error in left side of rule in line %zu.\n", line_no);
+            goto error;
+        }
+        Node *right_n = parse_conveniently(ctx, right);
+        if (right_n == NULL)
+        {
+            report_error("Ruleset file syntax error in right side of rule in line %zu.\n", line_no);
+            free_tree(left_n);
+            goto error;
+        }
+
+        add_to_ruleset(&out_rulesets[num_rulesets], get_rule(left_n, right_n));
+        printf("Next line...");
+    }
+
+    *out_num_rulesets = num_rulesets;
+    fclose(file);
+    return true;
+
+    error:
+    fclose(file);
+    for (size_t i = 0; i < num_rulesets; i++)
+    {
+        free_ruleset(&out_rulesets[i]);
+    }
+    return false;
 }

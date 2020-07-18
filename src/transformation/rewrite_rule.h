@@ -1,15 +1,24 @@
 #pragma once
 #include "matching.h"
+#include "../util/vector.h"
 #include "../tree/node.h"
+
+#define MAX_RULES 100
 
 typedef struct
 {
     Node *before;
     Node *after;
+    MappingFilter filter;
 } RewriteRule;
 
-RewriteRule get_rule(Node **before, Node **after);
+RewriteRule get_rule(Node *before, Node *after);
+void set_filter(RewriteRule *rule, MappingFilter filter);
 void free_rule(RewriteRule rule);
-void transform_matched_by_rule(Node *rule_after, Matching *matching, Node **matched_subtree);
 bool apply_rule(Node **tree, RewriteRule *rule);
-void apply_ruleset(Node **tree, size_t num_rules, RewriteRule *ruleset);
+
+Vector get_empty_ruleset();
+void add_to_ruleset(Vector *rules, RewriteRule rule);
+void free_ruleset(Vector *rules);
+void apply_ruleset(Node **tree, Vector *rules);
+bool parse_rulesets(char *path, ParsingContext *ctx, size_t buffer_size, size_t *out_num_rulesets, Vector *out_rulesets);

@@ -1,0 +1,123 @@
+Ruleset Operator Reduction
++x         -> x
+$x         -> x
+--x        -> x
+x%         -> x/100
+x/y        -> x*y^(-1)
+log(x, e)  -> ln(x)
+tan(x)     -> sin(x)/cos(x)
+sqrt(x)    -> x^0.5
+root(x, y) -> x^(1/y)
+
+Ruleset Derivation
+deriv(cX*z, z)    -> cX
+deriv(cX*z^cZ, z) -> cZ*cX*z^(cZ-1)
+deriv(-x, z)      -> -deriv(x, z)
+deriv(x + y, z)   -> deriv(x, z) + deriv(y, z)
+deriv(x - y, z)   -> deriv(x, z) - deriv(y, z)
+deriv(x, x)       -> 1
+deriv(bX, z)      -> 0
+deriv(x*y, z)     -> deriv(x, z)*y + x*deriv(y, z)
+deriv(x/y, z)     -> (deriv(x, z)*y - x*deriv(y, z)) / y^2
+deriv(sin(x), z)  -> cos(x) * deriv(x, z)
+deriv(cos(x), z)  -> -sin(x) * deriv(x, z)
+deriv(tan(x), z)  -> deriv(x, z) * cos(x)^-2
+deriv(e^y, z)     -> deriv(y, z)*e^y
+deriv(x^y, z)     -> ((y*deriv(x, z))*x^-1 + deriv(y, z)*ln(x))*x^y
+deriv(ln(x), z)   -> deriv(x, z)*^-1
+
+Ruleset Normal Form
+x-y    -> x+(-y)
+-(x+y) -> -x+(-y)
+-(x*y) -> (-x)*y
+dX+cY  -> cY+dX
+dX*cY  -> cY*dX
+
+Ruleset Simplification
+' Get a nice sum
+x+y                        -> sum(x,y)
+sum([xs], sum([ys]), [zs]) -> sum([xs], [ys], [zs])
+sum([xs])+sum([ys])        -> sum([xs], [ys])
+x+sum([xs])                -> sum(x, [xs])
+sum([xs])+x                -> sum([xs], x)
+
+' Get a nice product
+x*y                          -> prod(x,y)
+prod([xs], prod([ys]), [zs]) -> prod([xs], [ys], [zs])
+prod([xs])*prod([ys])        -> prod([xs], [ys])
+x*prod([xs])                 -> prod(x, [xs])
+prod([xs])*x                 -> prod([xs], x)
+
+' Move constants and variables to the left
+' Constants left to variables or operators
+sum([xs], dX, [ys], cY, [zs])  -> sum(cY, [xs], dX, [ys], [zs])
+' Variables left to operators
+sum([xs], oX, [ys], bY, [zs])  -> sum([xs], bY, [ys], oX, [zs])
+prod([xs], dX, [ys], cY, [zs]) -> prod(cY, [xs], dX, [ys], [zs])
+prod([xs], oX, [ys], bY, [zs]) -> prod([xs], bY, [ys], oX, [zs])
+
+' Simplify sums
+sum()                        -> 0
+sum(x)                       -> x
+sum([xs], 0, [ys])           -> sum([xs], [ys])
+sum([xs], x, [ys], -x, [zs]) -> sum([xs], [ys], [zs])
+sum([xs], -x, [ys], x, [zs]) -> sum([xs], [ys], [zs])
+
+' Simplify products
+prod()                           -> 1
+prod(x)                          -> x
+prod([xs], x, [ys], x, [zs])     -> prod([xs], x^2, [ys], [zs])
+prod([xs], x, [ys], x^y, [zs])   -> prod([xs], x^(y+1), [ys], [zs])
+prod([xs], x^y, [ys], x, [zs])   -> prod([xs], x^(y+1), [ys], [zs])
+prod([xs], x^z, [ys], x^y, [zs]) -> prod([xs], x^(y+z), [ys], [zs])
+prod([xs], 0, [ys])              -> 0
+prod([xs], 1, [ys])              -> prod([xs], [ys])
+prod([xs], -x, [ys])             -> -prod([xs], x, [ys])
+
+' Products within sum
+sum([xs], prod(a, x), [ys], x, [zs])                          -> sum([xs], prod(a+1, x), [ys], [zs])
+sum([xs], prod(x, a), [ys], x, [zs])                          -> sum([xs], prod(x, a+1), [ys], [zs])
+sum([xs], prod(b, x), [ys], prod(a, x), [zs])                 -> sum([xs], [ys], prod(a+b, x), [zs])
+sum([xs], prod(x, b), [ys], prod(x, a), [zs])                 -> sum([xs], [ys], prod(a+b, x), [zs])
+sum([xs], prod(b, x), [ys], prod(x, a), [zs])                 -> sum([xs], [ys], prod(a+b, x), [zs])
+sum([xs], prod(x, b), [ys], prod(a, x), [zs])                 -> sum([xs], [ys], prod(a+b, x), [zs])
+sum([xs], x, [ys], prod(a, x), [zs])                          -> sum([xs], [ys], prod(a+1, x), [zs])
+sum([xs], x, [ys], prod(x, a), [zs])                          -> sum([xs], [ys], prod(x, a+1), [zs])
+sum([xs], x, [ys], x, [zs])                                   -> sum(prod(2, x), [xs], [ys], [zs])
+sum([xs], prod([yy], x, [zz]), [ys], prod([y], x, [z]), [zs]) -> sum([xs], x * (prod([yy],[zz]) + prod([y],[z])), [ys], [zs])
+
+' Powers
+(-dX)^z                          -> (-1)^z*dX^z
+(x^y)^z                          -> x^prod(y, z)
+prod([xs], x^y, [ys], x^z, [zs]) -> prod([xs], x^(y+z), [ys], [zs])
+x^0                              -> 1
+(-x)^y                           -> x^y
+prod(x, [xs])^z                  -> prod(x^z, prod([xs])^z)
+
+' Trigonometrics
+sum([xs], cos(x)^2, [ys], sin(x)^2) -> sum(1, [xs], [ys], [zs])
+sum([xs], sin(x)^2, [ys], cos(x)^2) -> sum(1, [xs], [ys], [zs])
+
+Ruleset Pretty
+prod([xs], sin(x), [ys], cos(x)^-1, [zs])   -> prod([xs], tan(x), [ys], [zs])
+prod([xs], sin(x)^y, [ys], cos(x)^-y, [zs]) -> prod([xs], tan(x)^y, [ys], [zs])
+
+-prod(x, [xs])   -> prod(-x, [xs])
+-sum([xs], x)    -> -sum([xs])-x
+prod([xs], x)^cY -> prod([xs])^cY * x^cY
+
+(x+y)^2       -> x^2 + 2*x*y + y^2
+cX*(x+y)      -> cX*x + cX*y
+x+(y+z)       -> x+y+z
+x*(y*z)       -> x*y*z
+sum(x, y)     -> x+y
+sum([xs], x)  -> sum([xs])+x
+sum(x)        -> x
+prod(x)       -> x
+prod(x, y)    -> x*y
+prod([xs], x) -> prod([xs])*x
+--x           -> x
+x+(-y)        -> x-y
+x^1           -> x
+root(x, 2)    -> sqrt(x)
+x^(1/y)       -> root(x, y)

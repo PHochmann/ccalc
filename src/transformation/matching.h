@@ -3,14 +3,9 @@
 #include "../tree/node.h"
 
 #define MAX_MAPPED_VARS 10
+#define MATCHING_LIST_PREFIX '['
 
-// Special rule prefixes:
-#define MATCHING_LIST_PREFIX         '['
-#define MATCHING_CONST_PREFIX        'c'
-#define MATCHING_CONST_OR_VAR_PREFIX 'b'
-#define MATCHING_OP_OR_VAR_PREFIX    'd'
-#define MATCHING_OP_PREFIX           'o'
-#define MATCHING_LITERAL_VAR_PREFIX  '_'
+typedef bool (*MappingFilter)(char *var, NodeList nodes);
 
 /*
 Summary: Contains successful or intermediate matching
@@ -23,8 +18,9 @@ typedef struct
 } Matching;
 
 NodeList *lookup_mapped_var(Matching *matching, char *var);
-void extend_matching(Matching matching, Node *pattern, NodeList tree_list, Vector *out_matchings);
-size_t get_all_matchings(Node **tree, Node *pattern, Matching **out_matchings);
-bool get_matching(Node **tree, Node *pattern, Matching *out_matching);
-Node **find_matching(Node **tree, Node *pattern, Matching *out_matching);
-Node **find_matching_discarded(Node *tree, Node *pattern);
+void extend_matching(Matching matching, Node *pattern, NodeList tree_list, Vector *out_matchings, MappingFilter filter);
+size_t get_all_matchings(Node **tree, Node *pattern, Matching **out_matchings, MappingFilter filter);
+bool get_matching(Node **tree, Node *pattern, Matching *out_matching, MappingFilter filter);
+Node **find_matching(Node **tree, Node *pattern, Matching *out_matching, MappingFilter filter);
+Node **find_matching_discarded(Node *tree, Node *pattern, MappingFilter filter);
+bool prefix_filter(char *var, NodeList nodes);

@@ -25,7 +25,7 @@ bool cmd_load_exec(char *input, __attribute__((unused)) int code)
 
     if (file == NULL)
     {
-        printf("Error loading file: %s.\n", strerror(errno));
+        report_error("Error loading file: %s.\n", strerror(errno));
         return false;
     }
     
