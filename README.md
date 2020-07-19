@@ -1,3 +1,6 @@
+![C/C++ CI](https://github.com/PhilippHochmann/ccalc/workflows/C/C++%20CI/badge.svg)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
+
 # ccalc
 Scientific calculator in which you can define new functions and constants
 
