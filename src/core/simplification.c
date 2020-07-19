@@ -66,13 +66,6 @@ void replace_negative_consts(Node **tree)
     }
 }
 
-void parse_rulesets_from_string(char *string, size_t index)
-{
-    FILE *stream = fmemopen(string, strlen(string), "r");
-    parse_rulesets(stream, g_ctx, prefix_filter, 1, rulesets + index);
-    fclose(stream);
-}
-
 void init_simplification()
 {
     deriv_before = P("x'");
@@ -80,16 +73,11 @@ void init_simplification()
     malformed_derivA = P("deriv(x, cX)");
     malformed_derivB = P("deriv(x, oX)");
 
-    for (size_t i = 0; i < NUM_RULESETS; i++)
-    {
-        rulesets[i] = get_empty_ruleset();
-    }
-
-    parse_rulesets_from_string(reduction_string, 0);
-    parse_rulesets_from_string(derivation_string, 1);
-    parse_rulesets_from_string(normal_form_string, 2);
-    parse_rulesets_from_string(simplification_string, 3);
-    parse_rulesets_from_string(pretty_string, 4);
+    parse_ruleset_from_string(reduction_string, g_ctx, prefix_filter, rulesets);
+    parse_ruleset_from_string(derivation_string, g_ctx, prefix_filter, rulesets + 1);
+    parse_ruleset_from_string(normal_form_string, g_ctx, prefix_filter, rulesets + 2);
+    parse_ruleset_from_string(simplification_string, g_ctx, prefix_filter, rulesets + 3);
+    parse_ruleset_from_string(pretty_string, g_ctx, prefix_filter, rulesets + 4);
 
     add_to_ruleset(&rulesets[3], get_rule(P("(-x)^y"), P("x^y"), exponent_even_filter));
 }

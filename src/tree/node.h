@@ -9,7 +9,6 @@ Constants and variables are leaf nodes.
 */
 
 typedef double ConstantType;
-typedef bool (*Evaluation)(Operator *op, size_t num_children, ConstantType *children, ConstantType *out);
 
 typedef enum {
     NTYPE_OPERATOR,

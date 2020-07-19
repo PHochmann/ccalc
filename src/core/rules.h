@@ -1,5 +1,4 @@
 char *reduction_string =
-"Ruleset Operator Reduction\n"
 "+x         -> x\n"
 "$x         -> x\n"
 "--x        -> x\n"
@@ -11,7 +10,6 @@ char *reduction_string =
 "root(x, y) -> x^(1/y)\n";
 
 char *derivation_string =
-"Ruleset Derivation\n"
 "deriv(cX*z, z)    -> cX\n"
 "deriv(cX*z^cZ, z) -> cZ*cX*z^(cZ-1)\n"
 "deriv(-x, z)      -> -deriv(x, z)\n"
@@ -29,7 +27,6 @@ char *derivation_string =
 "deriv(ln(x), z)   -> deriv(x, z)*^-1\n";
 
 char *normal_form_string =
-"Ruleset Normal Form\n"
 "x-y    -> x+(-y)\n"
 "-(x+y) -> -x+(-y)\n"
 "-(x*y) -> (-x)*y\n"
@@ -37,37 +34,36 @@ char *normal_form_string =
 "dX*cY  -> cY*dX\n";
 
 char *simplification_string =
-"Ruleset Simplification\n"
-"\' Get a nice sum\n"
+// Get a nice sum
 "x+y                        -> sum(x,y)\n"
 "sum([xs], sum([ys]), [zs]) -> sum([xs], [ys], [zs])\n"
 "sum([xs])+sum([ys])        -> sum([xs], [ys])\n"
 "x+sum([xs])                -> sum(x, [xs])\n"
 "sum([xs])+x                -> sum([xs], x)\n"
 
-"\' Get a nice product\n"
+// Get a nice product
 "x*y                          -> prod(x,y)\n"
 "prod([xs], prod([ys]), [zs]) -> prod([xs], [ys], [zs])\n"
 "prod([xs])*prod([ys])        -> prod([xs], [ys])\n"
 "x*prod([xs])                 -> prod(x, [xs])\n"
 "prod([xs])*x                 -> prod([xs], x)\n"
 
-"\' Move constants and variables to the left\n"
-"\' Constants left to variables or operators\n"
+// Move constants and variables to the left
+// Constants left to variables or operators
 "sum([xs], dX, [ys], cY, [zs])  -> sum(cY, [xs], dX, [ys], [zs])\n"
-"\' Variables left to operators\n"
+// Variables left to operators
 "sum([xs], oX, [ys], bY, [zs])  -> sum([xs], bY, [ys], oX, [zs])\n"
 "prod([xs], dX, [ys], cY, [zs]) -> prod(cY, [xs], dX, [ys], [zs])\n"
 "prod([xs], oX, [ys], bY, [zs]) -> prod([xs], bY, [ys], oX, [zs])\n"
 
-"\' Simplify sums\n"
+// Simplify sums
 "sum()                        -> 0\n"
 "sum(x)                       -> x\n"
 "sum([xs], 0, [ys])           -> sum([xs], [ys])\n"
 "sum([xs], x, [ys], -x, [zs]) -> sum([xs], [ys], [zs])\n"
 "sum([xs], -x, [ys], x, [zs]) -> sum([xs], [ys], [zs])\n"
 
-"\' Simplify products\n"
+// Simplify products
 "prod()                           -> 1\n"
 "prod(x)                          -> x\n"
 "prod([xs], x, [ys], x, [zs])     -> prod([xs], x^2, [ys], [zs])\n"
@@ -78,7 +74,7 @@ char *simplification_string =
 "prod([xs], 1, [ys])              -> prod([xs], [ys])\n"
 "prod([xs], -x, [ys])             -> -prod([xs], x, [ys])\n"
 
-"\' Products within sum\n"
+// Products within sum
 "sum([xs], prod(a, x), [ys], x, [zs])                          -> sum([xs], prod(a+1, x), [ys], [zs])\n"
 "sum([xs], prod(x, a), [ys], x, [zs])                          -> sum([xs], prod(x, a+1), [ys], [zs])\n"
 "sum([xs], prod(b, x), [ys], prod(a, x), [zs])                 -> sum([xs], [ys], prod(a+b, x), [zs])\n"
@@ -90,19 +86,18 @@ char *simplification_string =
 "sum([xs], x, [ys], x, [zs])                                   -> sum(prod(2, x), [xs], [ys], [zs])\n"
 "sum([xs], prod([yy], x, [zz]), [ys], prod([y], x, [z]), [zs]) -> sum([xs], x * (prod([yy],[zz]) + prod([y],[z])), [ys], [zs])\n"
 
-"\' Powers\n"
+// Powers
 "(-dX)^z                          -> (-1)^z*dX^z\n"
 "(x^y)^z                          -> x^prod(y, z)\n"
 "prod([xs], x^y, [ys], x^z, [zs]) -> prod([xs], x^(y+z), [ys], [zs])\n"
 "x^0                              -> 1\n"
 "prod(x, [xs])^z                  -> prod(x^z, prod([xs])^z)\n"
 
-"\' Trigonometrics\n"
+// Trigonometrics
 "sum([xs], cos(x)^2, [ys], sin(x)^2) -> sum(1, [xs], [ys], [zs])\n"
 "sum([xs], sin(x)^2, [ys], cos(x)^2) -> sum(1, [xs], [ys], [zs])\n";
 
 char *pretty_string =
-"Ruleset Pretty\n"
 "prod([xs], sin(x), [ys], cos(x)^-1, [zs])   -> prod([xs], tan(x), [ys], [zs])\n"
 "prod([xs], sin(x)^y, [ys], cos(x)^-y, [zs]) -> prod([xs], tan(x)^y, [ys], [zs])\n"
 

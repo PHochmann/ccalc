@@ -18,8 +18,5 @@ Vector get_empty_ruleset();
 void add_to_ruleset(Vector *rules, RewriteRule rule);
 void free_ruleset(Vector *rules);
 int apply_ruleset(Node **tree, Vector *rules);
-bool parse_rulesets(FILE *file,
-    ParsingContext *ctx,
-    MappingFilter default_filter,
-    size_t buffer_size,
-    Vector *out_rulesets);
+bool parse_ruleset_from_string(char *string, ParsingContext *ctx, MappingFilter default_filter, Vector *out_ruleset);
+bool parse_ruleset(FILE *file, ParsingContext *ctx, MappingFilter default_filter, Vector *out_rulesets);

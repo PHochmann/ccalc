@@ -14,7 +14,6 @@
 #define NORMAL_VAR_ID  0
 #define RULE_VAR_ID    1
 
-#define RULESET_KEYWORD "Ruleset"
 #define ARROW           " -> "
 #define COMMENT_PREFIX  '\''
 
@@ -140,71 +139,106 @@ int apply_ruleset(Node **tree, Vector *rules)
     return 0; // To make compiler happy
 }
 
-bool parse_rulesets(FILE *file,
+bool parse_rule(char *string, ParsingContext *ctx, MappingFilter default_filter, Vector *out_ruleset)
+{
+    if (string[0] == COMMENT_PREFIX || string[0] == '\0')
+    {
+        return true;
+    }
+
+    char *right = strstr(string, ARROW);
+    if (right == NULL)
+    {
+        return false;
+    }
+
+    right[0] = '\0';
+    right += strlen(ARROW);
+    Node *left_n = parse_conveniently(ctx, string);
+    if (left_n == NULL)
+    {
+        return false;
+    }
+
+    Node *right_n = parse_conveniently(ctx, right);
+    if (right_n == NULL)
+    {
+        free_tree(left_n);
+        return false;
+    }
+
+    add_to_ruleset(out_ruleset, get_rule(left_n, right_n, default_filter));
+    return true;
+}
+
+bool parse_ruleset_from_string(char *string, ParsingContext *ctx, MappingFilter default_filter, Vector *out_ruleset)
+{
+    // String is likely to be readonly - copy it
+    char *copy = malloc(strlen(string) + 1);
+    strcpy(copy, string);
+
+    *out_ruleset = get_empty_ruleset();
+    size_t line_no = 0;
+    char *line = copy;
+    while (line != NULL)
+    {
+        line_no++;
+        char *next_line = strstr(line, "\n");
+        if (next_line != NULL)
+        {
+            next_line[0] = '\0';
+        }
+
+        if (!parse_rule(line, ctx, default_filter, out_ruleset))
+        {
+            report_error("Failed parsing ruleset in line %zu.\n", line_no);
+            goto error;
+        }
+
+        line = next_line;
+        if (next_line != NULL)
+        {
+            line++;
+        }
+    }
+
+    vec_trim(out_ruleset);
+    free(copy);
+    return true;
+
+    error:
+    free(copy);
+    free_ruleset(out_ruleset);
+    return false;
+}
+
+bool parse_ruleset(FILE *file,
     ParsingContext *ctx,
     MappingFilter default_filter,
-    size_t buffer_size,
-    Vector *out_rulesets)
+    Vector *out_ruleset)
 {
-    ssize_t ruleset_index = -1;
     char *line = NULL;
     size_t line_len = 0;
     size_t line_no = 0;
+    *out_ruleset = get_empty_ruleset();
+
     while (getline(&line, &line_len, file) != EOF)
     {
         line_no++;
         line[strlen(line) - 1] = '\0';
-
-        if (begins_with(RULESET_KEYWORD, line))
+        if (!parse_rule(line, ctx, default_filter, out_ruleset))
         {
-            ruleset_index++;
-            if (ruleset_index == (ssize_t)buffer_size) break;
-            continue;
-        }
-
-        if (line[0] == COMMENT_PREFIX || line[0] == '\0' || line[0] == EOF)
-        {
-            continue;
-        }
-
-        char *right = strstr(line, ARROW);
-        if (right == NULL)
-        {
-            report_error("Ruleset file syntax error in line %zu.\n", line_no);
+            report_error("Failed parsing ruleset in line %zu.\n", line_no);
             goto error;
         }
-
-        right[0] = '\0';
-        right += strlen(ARROW);
-        Node *left_n = parse_conveniently(ctx, line);
-        if (left_n == NULL)
-        {
-            report_error("Ruleset file syntax error in left side of rule in line %zu.\n", line_no);
-            goto error;
-        }
-        Node *right_n = parse_conveniently(ctx, right);
-        if (right_n == NULL)
-        {
-            report_error("Ruleset file syntax error in right side of rule in line %zu.\n", line_no);
-            free_tree(left_n);
-            goto error;
-        }
-
-        add_to_ruleset(&out_rulesets[ruleset_index], get_rule(left_n, right_n, default_filter));
     }
 
-    for (ssize_t i = 0; i < ruleset_index; i++)
-    {
-        vec_trim(&out_rulesets[i]);
-    }
+    vec_trim(out_ruleset);
     free(line);
     return true;
 
     error:
     free(line);
-    for (ssize_t i = 0; i < ruleset_index; i++)
-    {
-        free_ruleset(&out_rulesets[i]);
-    }
+    free_ruleset(out_ruleset);
     return false;
 }

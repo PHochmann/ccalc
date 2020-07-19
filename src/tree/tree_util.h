@@ -1,6 +1,8 @@
 #pragma once
 #include "node.h"
 
+typedef bool (*Evaluation)(Operator *op, size_t num_children, ConstantType *children, ConstantType *out);
+
 // Data handling
 Node *tree_compare(Node *a, Node *b);
 Node *tree_copy(Node *node);

@@ -3,8 +3,8 @@
 #include <stdint.h>
 #include <limits.h>
 
-#define OP_DYNAMIC_ARITY  SIZE_MAX // Used to indicate arbitrary number of operands
-#define OP_MAX_PRECEDENCE CHAR_MAX // Since precedence is a char
+#define OP_DYNAMIC_ARITY  SIZE_MAX  // Used to indicate arbitrary number of operands
+#define OP_MAX_PRECEDENCE UCHAR_MAX // Since precedence is an unsigned char
 
 typedef unsigned char Precedence;
 
