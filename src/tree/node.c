@@ -26,11 +26,6 @@ Node *malloc_constant_node(ConstantType value)
 
 Node *malloc_operator_node(Operator *op, size_t num_children)
 {
-    if (num_children > OP_MAX_ARITY)
-    {
-        return NULL;
-    }
-
     OperatorNode *res = malloc(sizeof(OperatorNode) + num_children * sizeof(Node*));
     if (res == NULL) return NULL;
     

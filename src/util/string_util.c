@@ -92,12 +92,8 @@ char *perr_to_string(ParserError perr)
     {
         case PERR_SUCCESS:
             return "Success";
-        case PERR_MAX_TOKENS_EXCEEDED:
-            return "Max. Tokens exceeded";
-        case PERR_STACK_EXCEEDED:
-            return "Stack exceeded";
         case PERR_UNEXPECTED_SUBEXPRESSION:
-            return "Unexpected Subexpression";
+            return "Unexpected subexpression";
         case PERR_EXCESS_OPENING_PARENTHESIS:
             return "Missing closing parenthesis";
         case PERR_EXCESS_CLOSING_PARENTHESIS:

@@ -12,9 +12,9 @@
 #define VEC_PEEK_ELEM(vec, type) *(type*)vec_peek(vec)
 
 /*
-Never save pointers when there are elements
-inserted into the buffer! It can be realloc'ed!
-*/
+ * Never save pointers when there are elements
+ * inserted into the buffer! It can be realloc'ed!
+ */
 
 typedef struct
 {

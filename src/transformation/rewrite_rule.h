@@ -3,8 +3,6 @@
 #include "../util/vector.h"
 #include "../tree/node.h"
 
-#define MAX_RULES 100
-
 typedef struct
 {
     Node *before;

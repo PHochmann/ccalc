@@ -1,13 +1,10 @@
 #pragma once
 #include <stdlib.h>
+#include <stdint.h>
 
-// Used to indicate arbitrary number of operands (0 up to MAX_ARITY)
-// Arities are encoded as size_t, so it could be much higher
-#define OP_DYNAMIC_ARITY 101
-// One less than DYNAMIC_ARITY
-#define OP_MAX_ARITY 100
-// Since precendece is a char
-#define OP_MAX_PRECEDENCE 255
+// Used to indicate arbitrary number of operands
+// Arities are encoded as size_t
+#define OP_DYNAMIC_ARITY SIZE_MAX
 
 typedef unsigned char Precedence;
 

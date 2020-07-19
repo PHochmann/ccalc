@@ -22,7 +22,7 @@
 
 void mark_vars(Node *tree, char id)
 {
-    char *vars[MAX_MAPPED_VARS];
+    char *vars[count_variables_distinct(tree)];
     size_t num_vars = list_variables(tree, vars);
     size_t safe_var_count = count_variables(tree, false);
     for (size_t i = 0; i < num_vars; i++)

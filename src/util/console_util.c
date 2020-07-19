@@ -10,8 +10,6 @@
 #include "console_util.h"
 #include "string_util.h"
 
-static const size_t GETLINE_MAX_INPUT_LENGTH = 100;
-
 bool g_interactive;
 
 void unload_console_util()
@@ -62,8 +60,7 @@ bool ask_input_getline(FILE *file, char **out_input, char *prompt_fmt, va_list a
         vprintf(prompt_fmt, args);
     }
     
-    // Would be no problem to put input on stack, but we want to have the same interface as readline, which puts input on heap
-    size_t size = GETLINE_MAX_INPUT_LENGTH;
+    size_t size;
     *out_input = NULL;
     if (getline(out_input, &size, file) == -1)
     {

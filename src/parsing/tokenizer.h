@@ -1,4 +1,6 @@
 #include <stdbool.h>
 #include "context.h"
+#include "../util/vector.h"
 
-bool tokenize(ParsingContext *ctx, char *input, size_t max_tokens, size_t *out_num_tokens, char **out_tokens);
+void tokenize(ParsingContext *ctx, char *input, Vector *out_tokens);
+void free_tokens(Vector *tokens);

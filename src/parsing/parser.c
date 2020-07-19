@@ -5,8 +5,13 @@
 #include "parser.h"
 #include "../util/string_util.h"
 
+#define VECTOR_STARTSIZE 5
+
 // Do not use this macro in auxiliary functions!
-#define ERROR(type) { state.result = type; goto exit; }
+#define ERROR(type) {\
+    state.result = type;\
+    goto exit;\
+}
 
 // Represents an operator (with metadata) while being parsed
 struct OpData
@@ -178,8 +183,8 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
     struct ParserState state = {
         .ctx       = ctx,
         .result    = PERR_SUCCESS,
-        .vec_nodes = vec_create(sizeof(Node*), 10),
-        .vec_ops   = vec_create(sizeof(struct OpData), 10)
+        .vec_nodes = vec_create(sizeof(Node*), VECTOR_STARTSIZE),
+        .vec_ops   = vec_create(sizeof(struct OpData), VECTOR_STARTSIZE)
     };
 
     // 3. Process each token
@@ -247,14 +252,7 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
             {
                 if (op_peek(&state) != NULL && i > 0 && !is_opening_parenthesis(tokens[i - 1]))
                 {
-                    if (op_peek(&state)->arity == OP_MAX_ARITY)
-                    {
-                        ERROR(PERR_CHILDREN_EXCEEDED);
-                    }
-                    else
-                    {
-                        op_peek(&state)->arity++;
-                    }
+                    op_peek(&state)->arity++;
                 }
             }
             
@@ -280,14 +278,7 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
                 {
                     if (op_data->count_operands)
                     {
-                        if (op_data->arity == OP_MAX_ARITY)
-                        {
-                            ERROR(PERR_CHILDREN_EXCEEDED);
-                        }
-                        else
-                        {
-                            op_data->arity++;
-                        }
+                        op_data->arity++;
                     }
                 }
                 else
@@ -451,23 +442,16 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
 
 /* Parsing algorithm ends here. The following functions can be used to invoke parsing conveniently. */
 
-static const size_t MAX_TOKENS = 200;
-
 /*
 Summary: Parses string, tokenized with default tokenizer, to abstract syntax tree
 Returns: Result code to indicate whether string was parsed successfully or which error occurred
 */
 ParserError parse_input(ParsingContext *ctx, char *input, Node **out_res)
 {
-    size_t num_tokens;
-    char *tokens[MAX_TOKENS];
-
-    // Parsing
-    if (!tokenize(ctx, input, MAX_TOKENS, &num_tokens, tokens)) return PERR_MAX_TOKENS_EXCEEDED;
-    ParserError result = parse_tokens(ctx, num_tokens, tokens, out_res);
-    // Cleanup
-    for (size_t i = 0; i < num_tokens; i++) free(tokens[i]);
-    
+    Vector tokens;
+    tokenize(ctx, input, &tokens);
+    ParserError result = parse_tokens(ctx, vec_count(&tokens), tokens.buffer, out_res);
+    free_tokens(&tokens);
     return result;
 }
 

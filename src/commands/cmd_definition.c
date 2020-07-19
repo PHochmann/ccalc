@@ -14,8 +14,6 @@
 #define FMT_ERROR_LEFT  "Error in left expression: %s\n"
 #define FMT_ERROR_RIGHT "Error in right expression: %s\n"
 
-static const size_t MAX_TOKENS = 50;
-
 int cmd_definition_check(char *input)
 {
     return strstr(input, DEFINITION_OP) != NULL;
@@ -225,22 +223,19 @@ bool cmd_definition_exec(char *input, __attribute__((unused)) int code)
     right_input += strlen(DEFINITION_OP);
     
     // Tokenize function definition to get its name. Name is first token.
-    char *tokens[MAX_TOKENS];
-    size_t num_tokens = 0;
-
-    if (!tokenize(g_ctx, input, MAX_TOKENS, &num_tokens, tokens))
-    {
-        // Only reason for tokenize to fail is max. number of tokens exceeded
-        report_error(FMT_ERROR_LEFT, perr_to_string(PERR_MAX_TOKENS_EXCEEDED));
-        return false;
-    }
+    Vector tokens;
+    tokenize(g_ctx, input, &tokens);
     
-    if (num_tokens > 0)
+    if (vec_count(&tokens) > 0)
     {
         // Function name is first token
-        char *name = tokens[0];
+        char *name = VEC_GET_ELEM(&tokens, char*, 0);
         // All other tokens can be freed
-        for (size_t i = 1; i < num_tokens; i++) free(tokens[i]);
+        for (size_t i = 1; i < vec_count(&tokens); i++)
+        {
+            free(VEC_GET_ELEM(&tokens, char*, i));
+        }
+        vec_destroy(&tokens);
 
         if (!is_letter(name[0]))
         {
@@ -255,6 +250,7 @@ bool cmd_definition_exec(char *input, __attribute__((unused)) int code)
     {
         // Zero tokens: expression is empty
         report_error(FMT_ERROR_LEFT, perr_to_string(PERR_EMPTY));
+        vec_destroy(&tokens);
         return false;
     }
 }
