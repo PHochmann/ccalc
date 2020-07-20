@@ -10,12 +10,13 @@ ifneq (,$(filter $(MAKECMDGOALS),debug tests))
 	CFLAGS += -DDEBUG -Og -g3
 endif
 
-ifeq (,$(filter $(MAKECMDGOALS),noreadline))
+ifeq (,$(filter $(MAKECMDGOALS),noreadline tests))
 	CFLAGS += -DUSE_READLINE
 	LDFLAGS += -lreadline
 endif
 
 ifneq (,$(filter $(MAKECMDGOALS),tests))
+	BUILD_DIR := ./bin/tests
 	SRC_DIRS += ./tests
 	SRCS = $(shell find $(SRC_DIRS) -name *.c ! -wholename "./src/main.c")
 	TARGET_EXEC := test
