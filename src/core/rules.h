@@ -1,3 +1,5 @@
+#pragma once
+
 char *reduction_string =
 "+x         -> x\n"
 "$x         -> x\n"

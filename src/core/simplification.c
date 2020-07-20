@@ -15,6 +15,8 @@
 
 #define P(x) parse_conveniently(g_ctx, x)
 
+#define NUM_DONT_REDUCE 3
+Operator *dont_reduce[NUM_DONT_REDUCE];
 Node *deriv_before;
 Node *deriv_after;
 Node *malformed_derivA;
@@ -31,7 +33,7 @@ bool exponent_even_filter(char *var, NodeList nodes)
     // Be brave and dereference!
     //if (nodes.size != 1) return false;
 
-    if (count_variables(nodes.nodes[0], false) == 0)
+    if (count_variables(nodes.nodes[0]) == 0)
     {
         double res = arith_evaluate(nodes.nodes[0]);
         if (res != (int)res) return false;
@@ -73,12 +75,15 @@ void init_simplification()
     malformed_derivA = P("deriv(x, cX)");
     malformed_derivB = P("deriv(x, oX)");
 
+    dont_reduce[0] = ctx_lookup_op(g_ctx, "pi", OP_PLACE_FUNCTION);
+    dont_reduce[1] = ctx_lookup_op(g_ctx, "e", OP_PLACE_FUNCTION);
+    dont_reduce[2] = ctx_lookup_op(g_ctx, "rand", OP_PLACE_FUNCTION);
+
     parse_ruleset_from_string(reduction_string, g_ctx, prefix_filter, rulesets);
     parse_ruleset_from_string(derivation_string, g_ctx, prefix_filter, rulesets + 1);
     parse_ruleset_from_string(normal_form_string, g_ctx, prefix_filter, rulesets + 2);
     parse_ruleset_from_string(simplification_string, g_ctx, prefix_filter, rulesets + 3);
     parse_ruleset_from_string(pretty_string, g_ctx, prefix_filter, rulesets + 4);
-
     add_to_ruleset(&rulesets[3], get_rule(P("(-x)^y"), P("x^y"), exponent_even_filter));
 }
 
@@ -149,9 +154,9 @@ bool core_simplify(Node **tree)
 
         apply_ruleset(tree, &rulesets[2]); // Normal form rules
         apply_ruleset(tree, &rulesets[3]); // Simplification rules
-        replace_constant_subtrees(tree, false, op_evaluate);
+        replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
         apply_ruleset(tree, &rulesets[4]); // Pretty rules
-        replace_constant_subtrees(tree, false, op_evaluate);
+        replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
         replace_negative_consts(tree);
     } while (tree_compare(tree_before, *tree) != NULL);
     free_tree(tree_before);

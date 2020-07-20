@@ -7,7 +7,7 @@
 /*
  * Scientific calculator in which you can define new functions and constants
  * https://github.com/PhilippHochmann/ccalc
- * (c) 2020 Philipp Hochmann, phil.hochmann[ät]gmail[dot]com
+ * (c) 2020 Philipp Hochmann, phil.hochmann[at]gmail[dot]com
  */
 int main(int argc, char **argv)
 {

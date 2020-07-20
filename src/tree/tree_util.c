@@ -82,7 +82,7 @@ void tree_replace(Node **tree_to_replace, Node *tree_to_insert)
 Returns: Total number of variable nodes in tree.
     Can be used as an upper bound for the needed size of a buffer to supply to get_variable_nodes
 */
-size_t count_variables(Node *tree, bool count_func_constants)
+size_t count_variables(Node *tree)
 {
     if (tree == NULL) return 0;
 
@@ -96,18 +96,10 @@ size_t count_variables(Node *tree, bool count_func_constants)
 
         case NTYPE_OPERATOR:
         {
-            if (count_func_constants)
-            {
-                if (get_op(tree)->arity == 0)
-                {
-                    return 1;
-                }
-            }
-
             size_t sum = 0;
             for (size_t i = 0; i < get_num_children(tree); i++)
             {
-                sum += count_variables(get_child(tree, i), count_func_constants);
+                sum += count_variables(get_child(tree, i));
             }
             return sum;
         }
@@ -121,7 +113,7 @@ Returns: Number of different variables present in tree
 */
 size_t count_variables_distinct(Node *tree)
 {
-    char *vars[count_variables(tree, false)];
+    char *vars[count_variables(tree)];
     return list_variables(tree, vars);
 }
 
@@ -171,7 +163,7 @@ Summary: Variant of get_variable_nodes that discards 'out_instances'
 size_t count_variable_nodes(Node *tree, char *var_name)
 {
     // out-discard pattern
-    Node **instances[count_variables(tree, false)];
+    Node **instances[count_variables(tree)];
     return get_variable_nodes(&tree, var_name, instances);
 }
 
@@ -206,6 +198,29 @@ size_t list_variables_rec(Node *tree, size_t num_found, char **out_variables)
 }
 
 /*
+Returns: Address of first operator node that has given operator, NULL when no such node in tree
+*/
+Node **find_op(Node **tree, Operator *op)
+{
+    if (get_type(*tree) == NTYPE_OPERATOR)
+    {
+        if (get_op(*tree) == op)
+        {
+            return tree;
+        }
+        else
+        {
+            for (size_t i = 0; i < get_num_children(*tree); i++)
+            {
+                Node **child_res = find_op(get_child_addr(*tree, i), op);
+                if (child_res != NULL) return child_res;
+            }
+        }
+    }
+    return NULL;
+}
+
+/*
 Summary: Lists all variable names occurring in tree. Strings are not copied!
 Params
     tree:          Tree to search for variables
@@ -230,7 +245,7 @@ size_t replace_variable_nodes(Node **tree, Node *tree_to_copy, char *var_name)
 {
     if (tree == NULL || *tree == NULL || tree_to_copy == NULL || var_name == NULL) return 0;
 
-    Node **instances[count_variables(*tree, false)];
+    Node **instances[count_variables(*tree)];
     size_t num_instances = get_variable_nodes(tree, var_name, instances);
     for (size_t i = 0; i < num_instances; i++)
     {
@@ -247,7 +262,7 @@ Params
     reduction: Function that takes an operator, number of children, and pointer to number of children many child values
     out:       Reduction result
 */
-bool reduce(Node *tree, Evaluation eval, ConstantType *out)
+bool tree_reduce(Node *tree, Evaluation eval, ConstantType *out)
 {
     switch (get_type(tree))
     {
@@ -261,7 +276,7 @@ bool reduce(Node *tree, Evaluation eval, ConstantType *out)
             ConstantType args[num_args];
             for (size_t i = 0; i < num_args; i++)
             {
-                if (!reduce(get_child(tree, i), eval, &args[i]))
+                if (!tree_reduce(get_child(tree, i), eval, &args[i]))
                 {
                     return false;
                 }
@@ -279,18 +294,27 @@ bool reduce(Node *tree, Evaluation eval, ConstantType *out)
     return false;
 }
 
-ConstantType tree_reduce(Node *tree, Evaluation eval)
+void replace_constant_subtrees(Node **tree, Evaluation eval, size_t num_dont_reduce, Operator **dont_reduce)
 {
-    ConstantType res = 0;
-    reduce(tree, eval, &res);
-    return res;
-}
+    bool is_constant = count_variables(*tree) == 0;
+    bool no_dont_reduce = true;
 
-void replace_constant_subtrees(Node **tree, bool replace_func_consts, Evaluation eval)
-{
-    if (count_variables(*tree, !replace_func_consts) == 0)
+    if (is_constant)
     {
-        ConstantType res = tree_reduce(*tree, eval);
+        for (size_t i = 0; i < num_dont_reduce; i++)
+        {
+            if (find_op(tree, dont_reduce[i]) != NULL)
+            {
+                no_dont_reduce = false;
+                break;
+            }
+        }
+    }
+
+    if (is_constant && no_dont_reduce)
+    {
+        ConstantType res;
+        tree_reduce(*tree, eval, &res);
         tree_replace(tree, malloc_constant_node(res));
     }
     else
@@ -299,22 +323,11 @@ void replace_constant_subtrees(Node **tree, bool replace_func_consts, Evaluation
         {
             for (size_t i = 0; i < get_num_children(*tree); i++)
             {
-                replace_constant_subtrees(get_child_addr(*tree, i), replace_func_consts, eval);
+                replace_constant_subtrees(get_child_addr(*tree, i), eval, num_dont_reduce, dont_reduce);
             }
         }
     }
 }
-
-// Unschöne Methoden folgen
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Todo: Refactor or replace this:
 
 /*
 Nodes from list are copied, the others are not

@@ -27,7 +27,7 @@ bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
     if (arith_parse_input(input, ERROR_FMT, true, &res))
     {
         // Make expression constant by asking for values and binding them to variables
-        char *vars[count_variables(res, false)];
+        char *vars[count_variables(res)];
         size_t num_vars = list_variables(res, vars);
 
         /*
@@ -52,7 +52,7 @@ bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
                 }
                 free(input);
                 
-                if (count_variables(res_var, false) > 0)
+                if (count_variables(res_var) > 0)
                 {
                     // Not a constant given - ask again
                     report_error("Not a constant expression.\n");

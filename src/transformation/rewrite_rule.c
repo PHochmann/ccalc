@@ -1,8 +1,6 @@
 #define _GNU_SOURCE
-#include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
-#include <errno.h>
+#include <stdio.h>
 
 #include "../util/string_util.h"
 #include "../util/console_util.h"
@@ -23,7 +21,7 @@ void mark_vars(Node *tree, char id)
 {
     char *vars[count_variables_distinct(tree)];
     size_t num_vars = list_variables(tree, vars);
-    size_t safe_var_count = count_variables(tree, false);
+    size_t safe_var_count = count_variables(tree);
     for (size_t i = 0; i < num_vars; i++)
     {
         Node **nodes[safe_var_count];
@@ -115,7 +113,7 @@ Summary: Tries to apply rules (priorized by order) until no rule can be applied 
     Guarantees to terminate after MAX_RULESET_ITERATIONS rule appliances
 */
 //#include "../tree/tree_to_string.h"
-int apply_ruleset(Node **tree, Vector *rules)
+size_t apply_ruleset(Node **tree, Vector *rules)
 {
     size_t counter = 0;
     while (true)
@@ -212,7 +210,7 @@ bool parse_ruleset_from_string(char *string, ParsingContext *ctx, MappingFilter 
     return false;
 }
 
-bool parse_ruleset(FILE *file,
+bool parse_ruleset_from_file(FILE *file,
     ParsingContext *ctx,
     MappingFilter default_filter,
     Vector *out_ruleset)
