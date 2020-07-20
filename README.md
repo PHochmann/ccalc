@@ -1,4 +1,4 @@
-![C/C++ CI](https://github.com/PhilippHochmann/ccalc/workflows/C/C++%20CI/badge.svg)
+![build](https://github.com/PhilippHochmann/ccalc/workflows/build/badge.svg)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
 
 # ccalc
@@ -31,8 +31,6 @@ When starting the calculator normally, you can enter expressions and commands in
 | ```<func\|const> = <after>``` | Adds or redefines function or constant.                                   |
 | ```table <expr> ; <from> ; <to> ; <step> [fold <expr> ; <init>]``` | Prints table of values and optionally folds them. In fold expression, ```x``` is replaced with the intermediate result (init in first step), ```y``` is replaced with the current value. Result of fold is stored in history. |
 | ```load <path>```             | Loads file as if its content had been typed in.                           |
-| ```show <expr>```             | Substitutes functions and prints expression.                              |
-| ```debug <expr>```            | Same as show, but additionally prints abstract syntax tree of expression. |
 | ```help [operators]```        | Lists available commands and operators.                                   |
 | ```clear [last]```            | Clears all or last user-defined functions and constants.                  |
 | ```quit```                    | Closes application.                                                       |

@@ -6,7 +6,7 @@ CFLAGS      := -MMD -MP -std=c99 -Wall -Wextra -Werror -pedantic
 LDFLAGS     := -lm
 
 ifneq (,$(filter $(MAKECMDGOALS),debug tests))
-    BUILD_DIR := ./bin/debug
+	BUILD_DIR := ./bin/debug
 	CFLAGS += -DDEBUG -Og -g3
 endif
 
