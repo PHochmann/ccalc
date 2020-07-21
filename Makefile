@@ -5,14 +5,18 @@ SRC_DIRS    := ./src
 CFLAGS      := -MMD -MP -std=c99 -Wall -Wextra -Werror -pedantic
 LDFLAGS     := -lm
 
+ifeq (,$(filter $(MAKECMDGOALS),noreadline tests))
+	CFLAGS += -DUSE_READLINE
+	LDFLAGS += -lreadline
+endif
+
 ifneq (,$(filter $(MAKECMDGOALS),debug tests))
 	BUILD_DIR := ./bin/debug
 	CFLAGS += -DDEBUG -Og -g3
 endif
 
-ifeq (,$(filter $(MAKECMDGOALS),noreadline tests))
-	CFLAGS += -DUSE_READLINE
-	LDFLAGS += -lreadline
+ifneq (,$(filter $(MAKECMDGOALS),noreadline))
+	BUILD_DIR := ./bin/noreadline
 endif
 
 ifneq (,$(filter $(MAKECMDGOALS),tests))
