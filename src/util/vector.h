@@ -32,8 +32,8 @@ void vec_reset(Vector *vec);
 void vec_destroy(Vector *vec);
 
 // Insertion
-bool vec_push(Vector *vec, void *elem);
-bool vec_push_many(Vector *vec, size_t num, void *elem);
+void *vec_push(Vector *vec, void *elem);
+void *vec_push_many(Vector *vec, size_t num, void *elem);
 void *vec_push_empty(Vector *vec);
 
 // Retrieval

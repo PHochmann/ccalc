@@ -13,6 +13,7 @@
 #include "../core/arith_context.h"
 #include "../core/history.h"
 #include "../core/simplification.h"
+#include "../parsing/tokenizer.h"
 
 #include "../tree/tree_to_string.h"
 
@@ -74,6 +75,7 @@ void unload_commands()
     unload_simplification();
     unload_console_util();
     unload_history();
+    unload_tokenizer();
 }
 
 /*
@@ -82,6 +84,7 @@ Summary: Sets parsing context and initializes commands
 void init_commands()
 {
     init_core_ctx();
+    init_tokenizer(g_ctx);
     init_simplification();
     init_console_util();
     init_history();

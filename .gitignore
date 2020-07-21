@@ -6,3 +6,5 @@ bin/
 
 # Valgrind files
 vgcore*
+massif*
+callgrind*

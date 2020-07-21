@@ -72,7 +72,6 @@ Summary:
 */
 bool randomized_test(Vector *error_builder)
 {
-    init_core_ctx();
     bool error = false;
     srand(SEED);
 

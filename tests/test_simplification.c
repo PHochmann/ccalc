@@ -26,7 +26,6 @@ char *cases[] = {
 
 bool simplification_test(Vector *error_builder)
 {
-    init_simplification();
     for (size_t i = 0; i < NUM_CASES; i++)
     {
         Node *left = NULL;
@@ -55,7 +54,6 @@ bool simplification_test(Vector *error_builder)
         free_tree(left);
         free_tree(right);
     }
-    unload_simplification();
     return true;
 }
 

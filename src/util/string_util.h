@@ -31,3 +31,8 @@ void strbuilder_append(Vector *builder, char *fmt, ...);
 void vstrbuilder_append(Vector *builder, char *fmt, va_list args);
 void strbuilder_append_char(Vector *builder, char c);
 void strbuilder_reverse(Vector *builder);
+
+Vector trie_create();
+void trie_add_str(Vector *trie, char *string);
+bool trie_contains(Vector *trie, char *string);
+size_t trie_longest_prefix(Vector *trie, char *string);

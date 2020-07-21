@@ -24,6 +24,7 @@ static Test (*test_getters[])() = {
 
 int main()
 {
+    init_commands();
     Table table = get_empty_table();
     set_default_alignments(&table, 4,
         (TextAlignment[]){ ALIGN_RIGHT, ALIGN_LEFT, ALIGN_RIGHT, ALIGN_LEFT });
@@ -73,6 +74,7 @@ int main()
     make_boxed(&table, BORDER_SINGLE);
     print_table(&table);
     free_table(&table);
+    unload_commands();
 
     return error ? EXIT_FAILURE : EXIT_SUCCESS;
 }

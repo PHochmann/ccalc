@@ -45,7 +45,7 @@ void vec_destroy(Vector *vec)
     free(vec->buffer);
 }
 
-bool vec_push(Vector *vec, void *elem)
+void *vec_push(Vector *vec, void *elem)
 {
     return vec_push_many(vec, 1, elem);
 }
@@ -59,12 +59,13 @@ void *vec_push_empty(Vector *vec)
     return vec_get(vec, vec->elem_count++);
 }
 
-bool vec_push_many(Vector *vec, size_t num, void *elem)
+void *vec_push_many(Vector *vec, size_t num, void *elem)
 {
-    bool res = vec_ensure_size(vec, vec->elem_count + num);
-    memcpy((char*)vec->buffer + vec->elem_size * vec->elem_count, elem, num * vec->elem_size);
+    vec_ensure_size(vec, vec->elem_count + num);
+    void *first = (char*)vec->buffer + vec->elem_size * vec->elem_count;
+    memcpy(first, elem, num * vec->elem_size);
     vec->elem_count += num;
-    return res;
+    return first;
 }
 
 // Very unsafe to store at caller site - buffer may realloc frequently

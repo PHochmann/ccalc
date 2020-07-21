@@ -109,7 +109,6 @@ bool almost_equals(double a, double b)
 
 bool parser_test(Vector *error_builder)
 {
-    init_core_ctx();
     Node *node = NULL;
 
     // Perform value tests

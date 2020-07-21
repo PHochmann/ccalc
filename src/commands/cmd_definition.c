@@ -224,7 +224,7 @@ bool cmd_definition_exec(char *input, __attribute__((unused)) int code)
     
     // Tokenize function definition to get its name. Name is first token.
     Vector tokens;
-    tokenize(g_ctx, input, &tokens);
+    tokenize(input, &tokens);
     
     if (vec_count(&tokens) > 0)
     {

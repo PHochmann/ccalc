@@ -32,8 +32,6 @@ static struct TreeToStringTest tests[] = {
 
 bool tree_to_string_test(Vector *error_builder)
 {
-    init_core_ctx();
-
     for (size_t i = 0; i < NUM_CASES; i++)
     {
         Node *node = NULL;
