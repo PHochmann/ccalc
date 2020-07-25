@@ -86,6 +86,7 @@ void init_core_ctx()
     // Set multiplication as glue-op
     ctx_set_glue_op(g_ctx, ctx_lookup_op(g_ctx, "*", OP_PLACE_INFIX));
     srand(time(NULL));
+    composite_functions = get_empty_ruleset();
 }
 
 size_t get_num_composite_functions()
