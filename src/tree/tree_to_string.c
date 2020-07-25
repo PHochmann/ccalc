@@ -17,9 +17,9 @@ void p_close(Vector *builder)
     strbuilder_append(builder, CLOSING_P);
 }
 
-void tree_to_string_internal(Vector *builder, bool color, Node *node, bool l, bool r);
+void to_str(Vector *builder, bool color, Node *node, bool l, bool r);
 
-void prefix_to_string(Vector *builder, bool color, Node *node, bool l, bool r)
+void prefix_to_str(Vector *builder, bool color, Node *node, bool l, bool r)
 {
     if (l) p_open(builder);
     strbuilder_append(builder, get_op(node)->name);
@@ -28,20 +28,20 @@ void prefix_to_string(Vector *builder, bool color, Node *node, bool l, bool r)
         && get_op(get_child(node, 0))->precedence <= get_op(node)->precedence)
     {
         p_open(builder);
-        tree_to_string_internal(builder, color, get_child(node, 0), false, false);
+        to_str(builder, color, get_child(node, 0), false, false);
         p_close(builder);
     }
     else
     {
         // Subexpression needs to be right-protected when expression of 'node' is not encapsulated in parentheses
         // (!l, otherwise redundant parentheses would be printed) and itself needs to be right-protected
-        tree_to_string_internal(builder, color, get_child(node, 0), true, !l && r);
+        to_str(builder, color, get_child(node, 0), true, !l && r);
     }
     
     if (l) p_close(builder);
 }
 
-void postfix_to_string(Vector *builder, bool color, Node *node, bool l, bool r)
+void postfix_to_str(Vector *builder, bool color, Node *node, bool l, bool r)
 {
     if (r) p_open(builder);
 
@@ -50,27 +50,27 @@ void postfix_to_string(Vector *builder, bool color, Node *node, bool l, bool r)
         && get_op(get_child(node, 0))->precedence < get_op(node)->precedence)
     {
         p_open(builder);
-        tree_to_string_internal(builder, color, get_child(node, 0), false, false);
+        to_str(builder, color, get_child(node, 0), false, false);
         p_close(builder);
     }
     else
     {
         // See analog case of infix operator for conditions for left-protection
-        tree_to_string_internal(builder, color, get_child(node, 0), l && !r, true);
+        to_str(builder, color, get_child(node, 0), l && !r, true);
     }
     
     strbuilder_append(builder, "%s", get_op(node)->name);
     if (r) p_close(builder);
 }
 
-void function_to_string(Vector *builder, bool color, Node *node)
+void function_to_str(Vector *builder, bool color, Node *node)
 {
     if (get_op(node)->arity != 0)
     {
         strbuilder_append(builder, "%s(", get_op(node)->name);
         for (size_t i = 0; i < get_num_children(node); i++)
         {
-            tree_to_string_internal(builder, color, get_child(node, i), false, false);
+            to_str(builder, color, get_child(node, i), false, false);
             if (i < get_num_children(node) - 1) strbuilder_append(builder, ",");
         }
         p_close(builder);
@@ -81,7 +81,7 @@ void function_to_string(Vector *builder, bool color, Node *node)
     }
 }
 
-void infix_to_string(Vector *builder, bool color, Node *node, bool l, bool r)
+void infix_to_str(Vector *builder, bool color, Node *node, bool l, bool r)
 {
     Node *childL = get_child(node, 0);
     Node *childR = get_child(node, 1);
@@ -97,12 +97,12 @@ void infix_to_string(Vector *builder, bool color, Node *node, bool l, bool r)
                 && get_op(node)->assoc == OP_ASSOC_RIGHT)))
     {
         p_open(builder);
-        tree_to_string_internal(builder, color, childL, false, false);
+        to_str(builder, color, childL, false, false);
         p_close(builder);
     }
     else
     {
-        tree_to_string_internal(builder, color, childL, l, true);
+        to_str(builder, color, childL, l, true);
     }
 
     strbuilder_append(builder, is_letter(get_op(node)->name[0]) ? " %s " : "%s", get_op(node)->name);
@@ -114,12 +114,12 @@ void infix_to_string(Vector *builder, bool color, Node *node, bool l, bool r)
                 && get_op(node)->assoc == OP_ASSOC_LEFT)))
     {
         p_open(builder);
-        tree_to_string_internal(builder, color, childR, false, false);
+        to_str(builder, color, childR, false, false);
         p_close(builder);
     }
     else
     {
-        tree_to_string_internal(builder, color, childR, true, r);
+        to_str(builder, color, childR, true, r);
     }
 }
 
@@ -129,7 +129,7 @@ Params
         It needs to be protected when it is adjacent to an operator on this side.
         When the subexpression starts (ends) with an operator and needs to be protected to the left (right), a parenthesis is printed in between.
 */
-void tree_to_string_internal(Vector *builder, bool color, Node *node, bool l, bool r)
+void to_str(Vector *builder, bool color, Node *node, bool l, bool r)
 {
     switch (get_type(node))
     {
@@ -145,40 +145,40 @@ void tree_to_string_internal(Vector *builder, bool color, Node *node, bool l, bo
             switch (get_op(node)->placement)
             {
                 case OP_PLACE_PREFIX:
-                    prefix_to_string(builder, color, node, l, r);
+                    prefix_to_str(builder, color, node, l, r);
                     break;
                 case OP_PLACE_POSTFIX:
-                    postfix_to_string(builder, color, node, l, r);
+                    postfix_to_str(builder, color, node, l, r);
                     break;
                 case OP_PLACE_FUNCTION:
-                    function_to_string(builder, color, node);
+                    function_to_str(builder, color, node);
                     break;
                 case OP_PLACE_INFIX:
-                    infix_to_string(builder, color, node, l, r);
+                    infix_to_str(builder, color, node, l, r);
                     break;
             }
         }
 }
 
-void tree_to_stringbuilder(Vector *builder, Node *node, bool color)
+void tree_to_strbuilder(Vector *builder, Node *node, bool color)
 {
-    tree_to_string_internal(builder, color, node, false, false);
+    to_str(builder, color, node, false, false);
 }
 
 // Summary: Returns string (on heap)
-char *tree_to_string(Node *node, bool color)
+char *tree_to_str(Node *node, bool color)
 {
     Vector builder = strbuilder_create(100);
-    tree_to_stringbuilder(&builder, node, color);
+    tree_to_strbuilder(&builder, node, color);
     return builder.buffer;
 }
 
 /*
-Summary: Prints result of tree_to_string to stdout
+Summary: Prints result of tree_to_str to stdout
 */
 void print_tree(Node *node, bool color)
 {
-    char *str = tree_to_string(node, color);
+    char *str = tree_to_str(node, color);
     printf("%s", str);
     free(str);
 }

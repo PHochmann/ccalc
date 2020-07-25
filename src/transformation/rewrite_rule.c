@@ -123,7 +123,7 @@ size_t apply_ruleset(Node **tree, Vector *rules)
         {
             if (apply_rule(tree, (RewriteRule*)vec_get(rules, j)))
             {
-                //printf("Applied rule %zu: %s\n", j, tree_to_string(*tree, true));
+                //printf("Applied rule %zu: %s\n", j, tree_to_str(*tree, true));
                 applied_flag = true;
                 counter++;
                 break;

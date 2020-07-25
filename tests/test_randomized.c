@@ -82,7 +82,7 @@ bool randomized_test(Vector *error_builder)
         generate_tree(MAX_INNER_NODES, &random_tree);
 
         // Convert random tree to string
-        char *stringed_tree = tree_to_string(random_tree, false);
+        char *stringed_tree = tree_to_str(random_tree, false);
 
         // To test glue-op: replace some '*' by spaces
         while (rand() % 4 != 0)

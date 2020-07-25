@@ -135,7 +135,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
 
         Vector builder = strbuilder_create(STRBUILDER_STARTSIZE);
         strbuilder_append(&builder, " ");
-        tree_to_stringbuilder(&builder, expr, true);
+        tree_to_strbuilder(&builder, expr, true);
         strbuilder_append(&builder, " ");
         add_cell_gc(&table, builder.buffer);
         override_alignment_of_row(&table, ALIGN_CENTER);

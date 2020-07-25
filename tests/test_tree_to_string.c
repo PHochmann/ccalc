@@ -41,7 +41,7 @@ bool tree_to_string_test(Vector *error_builder)
             return false;
         }
 
-        char *result = tree_to_string(node, false);
+        char *result = tree_to_str(node, false);
 
         if (strcmp(tests[i].expected_result, result) != 0)
         {

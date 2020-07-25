@@ -44,7 +44,7 @@ bool simplification_test(Vector *error_builder)
         }
         if (tree_compare(left, right) != NULL)
         {
-            char *wrong_result = tree_to_string(left, false);
+            char *wrong_result = tree_to_str(left, false);
             strbuilder_append(error_builder, "%s simplified to %s, should be %s.\n", cases[2 * i], wrong_result, cases[2 * i + 1]);
             free(wrong_result);
             free_tree(left);

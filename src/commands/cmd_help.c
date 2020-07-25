@@ -279,9 +279,9 @@ void print_short_help()
         for (size_t i = 0; i < get_num_composite_functions(); i++)
         {
             RewriteRule *rule = get_composite_function(i);
-            add_cell_gc(&table, tree_to_string(rule->before, true));
+            add_cell_gc(&table, tree_to_str(rule->before, true));
             add_cell(&table, " = ");
-            add_cell_gc(&table, tree_to_string(rule->after, true));
+            add_cell_gc(&table, tree_to_str(rule->after, true));
             next_row(&table);
         }
         print_table(&table);
