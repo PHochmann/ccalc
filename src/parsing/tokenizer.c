@@ -6,7 +6,7 @@
 #include "../util/string_util.h"
 #include "tokenizer.h"
 
-#define VECTOR_STARTSIZE 5
+#define VECTOR_STARTSIZE 10
 
 typedef enum
 {

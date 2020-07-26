@@ -5,7 +5,7 @@
 #include "parser.h"
 #include "../util/string_util.h"
 
-#define VECTOR_STARTSIZE 5
+#define VECTOR_STARTSIZE 10
 
 // Do not use this macro in auxiliary functions!
 #define ERROR(type) {\

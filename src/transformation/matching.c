@@ -9,7 +9,7 @@
 #define VECTOR_STARTSIZE 1
 
 /* A trie is used to lookup matchings of a common prefix */
-typedef struct TrieNode {
+typedef struct {
     size_t first_match_index; // Index of first matching within trie, SIZE_MAX denotes pending computation
     size_t num_matchings;     // Amount of matchings of node
     size_t label;             // Amount of tree_children mapped to
