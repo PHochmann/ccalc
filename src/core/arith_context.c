@@ -136,13 +136,7 @@ void clear_composite_functions()
     }
 }
 
-/*
-Summary:
-    Parses input, does post-processing of input, gives feedback on command line
-Returns:
-    True when input was successfully parsed, false when syntax error in input or semantical error while transforming
-*/
-bool arith_parse_input(char *input, char *error_fmt, bool replace_comp_funcs, Node **out_res)
+bool arith_parse_input_raw(char *input, char *error_fmt, Node **out_res)
 {
     ParserError perr = parse_input(g_ctx, input, out_res);
     if (perr != PERR_SUCCESS)
@@ -151,6 +145,20 @@ bool arith_parse_input(char *input, char *error_fmt, bool replace_comp_funcs, No
         return false;
     }
     else
+    {
+        return true;
+    }
+}
+
+/*
+Summary:
+    Parses input, does post-processing of input, gives feedback on command line
+Returns:
+    True when input was successfully parsed, false when syntax error in input or semantical error while transforming
+*/
+bool arith_parse_input(char *input, char *error_fmt, bool replace_comp_funcs, Node **out_res)
+{
+    if (arith_parse_input_raw(input, error_fmt, out_res))
     {
         if (replace_comp_funcs)
         {
@@ -164,5 +172,9 @@ bool arith_parse_input(char *input, char *error_fmt, bool replace_comp_funcs, No
         }
 
         return true;
+    }
+    else
+    {
+        return false;
     }
 }
