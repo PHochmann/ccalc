@@ -14,7 +14,7 @@
 #define SHORT_HELP_CODE 1
 #define OPS_HELP_CODE   2
 
-#define VERSION "1.5.4"
+#define VERSION "1.5.5"
 
 #ifdef DEBUG
     #define RELEASE VERSION " DEBUG"
@@ -33,7 +33,7 @@ static char *COMMAND_TABLE[7][2] = {
     { "table <expr> ; <from> ; <to> ; <step>  \n"
       "   [fold <expr> ; <init>]",               "Prints table of values." },
     { "load <path>",                             "Executes commands in file." },
-    { "clear [last]",                            "Clears functions and constants." },
+    { "clear [<func>]",                          "Clears all or one function or constant." },
     { "quit",                                    "Closes application." }
 };
 
@@ -278,19 +278,21 @@ void print_short_help()
     print_ops_between(MISC_IND, CONST_IND);
     printf("\nConstants:\n");
     print_ops_between(CONST_IND, LAST_IND);
-    printf("\n");
+
     // Print user-defined functions if there are any
-    /*if (get_num_composite_functions() > 0)
+    if (list_count(&g_composite_functions) > 0)
     {
         printf("\nUser-defined functions and constants:\n");
         table = get_empty_table();
-        for (size_t i = 0; i < get_num_composite_functions(); i++)
+        ListNode *curr = g_composite_functions.first;
+        while (curr != NULL)
         {
-            RewriteRule *rule = get_composite_function(i);
+            RewriteRule *rule = (RewriteRule*)curr->data;
             add_cell_gc(&table, tree_to_str(rule->before, true));
             add_cell(&table, " = ");
             add_cell_gc(&table, tree_to_str(rule->after, true));
             next_row(&table);
+            curr = curr->next;
         }
         print_table(&table);
         free_table(&table);
@@ -299,7 +301,7 @@ void print_short_help()
     else
     {
         printf("\n\n");
-    }*/
+    }
 }
 
 bool cmd_help_exec(__attribute__((unused)) char *input, int code)

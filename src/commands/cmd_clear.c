@@ -9,7 +9,7 @@
 #define UNDEF_CODE 2
 
 #define CLEAR_COMMAND "clear"
-#define UNDEF_COMMAND "undef "
+#define UNDEF_COMMAND "clear "
 
 int cmd_clear_check(char *input)
 {
@@ -26,7 +26,7 @@ bool cmd_clear_exec(char *input, int code)
     if (code == CLEAR_CODE)
     {
         clear_composite_functions();
-        whisper("Functions and constants cleared.\n");
+        whisper("All functions and constants cleared.\n");
         return true;
     }
     else
