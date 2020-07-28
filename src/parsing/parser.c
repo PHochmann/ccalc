@@ -449,7 +449,7 @@ Returns: Result code to indicate whether string was parsed successfully or which
 ParserError parse_input(ParsingContext *ctx, char *input, Node **out_res)
 {
     Vector tokens;
-    tokenize(input, &tokens);
+    tokenize(input, &ctx->keywords_trie, &tokens);
     ParserError result = parse_tokens(ctx, vec_count(&tokens), tokens.buffer, out_res);
     free_tokens(&tokens);
     return result;

@@ -9,17 +9,6 @@ ListNode *malloc_node(size_t elem_size, void *data)
     return new;
 }
 
-ListNode *list_get_node(LinkedList *list, size_t index)
-{
-    ListNode *curr = list->first;
-    while (curr != NULL && index > 0)
-    {
-        curr = curr->next;
-        index--;
-    }
-    return curr;
-}
-
 LinkedList list_create(size_t elem_size)
 {
     return (LinkedList){
@@ -41,63 +30,32 @@ void list_destroy(LinkedList *list)
     list->count = 0;
 }
 
-void list_append(LinkedList *list, void *data)
+ListNode *list_get_node(LinkedList *list, size_t index)
 {
-    ListNode *new = malloc_node(list->elem_size, data);
-    if (list->last != NULL)
+    ListNode *curr;
+    if (index < list->count / 2)
     {
-        list->last->next = new;
+        // Search forward
+        curr = list->first;
+        while (curr != NULL && index > 0)
+        {
+            curr = curr->next;
+            index--;
+        }
     }
     else
     {
-        list->first = new;
+        // Search backward
+        curr = list->last;
+        index = list->count - index - 1;
+        while (curr != NULL && index > 0)
+        {
+            curr = curr->previous;
+            index--;
+        }
     }
-    list->last = new;
-    list->count++;
-}
-
-void *list_append_empty(LinkedList *list)
-{
-    ListNode *new = malloc_node(list->elem_size, NULL);
-    if (list->last != NULL)
-    {
-        list->last->next = new;
-    }
-    else
-    {
-        list->first = new;
-    }
-    list->last = new;
-    list->count++;
-    return new->data;
-}
-
-void list_insert(LinkedList *list, size_t index, void *data)
-{
-    ListNode *before = NULL;
-    ListNode *after = NULL;
-    ListNode *new = malloc_node(list->elem_size, data);
-
-    if (index != 0)
-    {
-        before = list_get_node(list, index - 1);
-        if (before != NULL) after = before->next;
-    }
-    else
-    {
-        before = NULL;
-        after = list->first;
-        list->first = new;
-    }
-
-    new->next = after;
-
-    if (after == NULL)
-    {
-        list->last = new;
-    }
-
-    list->count++;
+    
+    return curr;
 }
 
 void *list_get(LinkedList *list, size_t index)
@@ -107,54 +65,39 @@ void *list_get(LinkedList *list, size_t index)
     return (void*)node->data;
 }
 
+ListNode *list_append(LinkedList *list, void *data)
+{
+    return list_insert(list, list->count - 1, data);
+}
+
+ListNode *list_insert(LinkedList *list, size_t index, void *data)
+{
+    ListNode *after = list_get_node(list, index);
+    ListNode *before = after->previous;
+    ListNode *new = malloc_node(list->elem_size, data);
+    new->previous = before;
+    new->next = after;
+    if (before == NULL) list->first = new;
+    if (after == NULL) list->last = new;
+    list->count++;
+    return new;
+}
+
+void list_delete_node(LinkedList *list, ListNode *node)
+{
+    ListNode *after = node->next;
+    ListNode *before = node->previous;
+    free(node);
+    before->next = after;
+    after->previous = before;
+    if (before == NULL) list->first = after;
+    if (after == NULL) list->last = before;
+    list->count--;
+}
+
 void list_delete(LinkedList *list, size_t index)
 {
-    ListNode *before = NULL;
-    ListNode *to_delete = NULL;
-    ListNode *after = NULL;
-
-    if (index != 0)
-    {
-        before = list_get_node(list, index - 1);
-        if (before != NULL)
-        {
-            to_delete = before->next;
-            if (to_delete != NULL)
-            {
-                after = to_delete->next;
-            }
-        }
-    }
-    else
-    {
-        before = NULL;
-        to_delete = list->first;
-        if (to_delete != NULL)
-        {
-            after = to_delete->next;
-        }
-    }
-
-    if (to_delete != NULL)
-    {
-        free(to_delete);
-    }
-
-    if (before == NULL)
-    {
-        list->first = after;
-    }
-    else
-    {
-        before->next = after;
-    }
-    
-    if (after == NULL)
-    {
-        list->last = before;
-    }
-
-    list->count--;
+    list_delete_node(list, list_get_node(list, index));
 }
 
 size_t list_count(LinkedList *list)

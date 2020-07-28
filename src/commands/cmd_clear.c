@@ -5,20 +5,23 @@
 #include "../util/string_util.h"
 #include "../core/arith_context.h"
 
-#define CLEAR_CODE      1
-#define CLEAR_LAST_CODE 2
+#define CLEAR_CODE 1
+#define UNDEF_CODE 2
+
+#define CLEAR_COMMAND "clear"
+#define UNDEF_COMMAND "undef "
 
 int cmd_clear_check(char *input)
 {
-    if (strcmp("clear", input) == 0) return CLEAR_CODE;
-    if (strcmp("clear last", input) == 0) return CLEAR_LAST_CODE;
+    if (strcmp(CLEAR_COMMAND, input) == 0) return CLEAR_CODE;
+    if (begins_with(UNDEF_COMMAND, input) == 0) return UNDEF_CODE;
     return false;
 }
 
 /*
 Summary: Removes user-defined functions and constants from context
 */
-bool cmd_clear_exec(__attribute__((unused)) char *input, int code)
+bool cmd_clear_exec(char *input, int code)
 {
     if (code == CLEAR_CODE)
     {
@@ -28,14 +31,26 @@ bool cmd_clear_exec(__attribute__((unused)) char *input, int code)
     }
     else
     {
-        if (get_num_composite_functions() == 0)
+        input += strlen(UNDEF_COMMAND);
+        
+        Operator *function = ctx_lookup_op(g_ctx, input, OP_PLACE_FUNCTION);
+        if (function != NULL)
         {
-            report_error("No functions or constants defined.\n");
+            if (remove_composite_function(function))
+            {
+                whisper("Function or constant removed.\n");
+                return true;
+            }
+            else
+            {
+                report_error("Predefined operators can not be removed.\n");
+                return false;
+            }
+        }
+        else
+        {
+            report_error("Unknown function.\n");
             return false;
         }
-
-        pop_composite_function();
-        whisper("Removed last function or constant.\n");
-        return true;
     }
 }

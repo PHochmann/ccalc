@@ -3,7 +3,7 @@
 #include <stddef.h>
 #include <stdio.h>
 
-#include "../util/string_util.h"
+#include "../util/trie.h"
 #include "tokenizer.h"
 
 #define VECTOR_STARTSIZE 10
@@ -15,22 +15,6 @@ typedef enum
     TOKSTATE_DIGIT,
     TOKSTATE_OTHER,
 } TokState;
-
-Vector keywords_trie;
-
-void init_tokenizer(ParsingContext *ctx)
-{
-    keywords_trie = trie_create();
-    for (size_t i = 0; i < ctx->num_ops; i++)
-    {
-        trie_add_str(&keywords_trie, ctx->operators[i].name);
-    }
-}
-
-void unload_tokenizer()
-{
-    vec_destroy(&keywords_trie);
-}
 
 void push_token(char *input, size_t start, size_t length, Vector *tokens)
 {
@@ -46,8 +30,12 @@ void push_token(char *input, size_t start, size_t length, Vector *tokens)
 
 /*
 Summary: Splits input string into several tokens to be parsed
+Params:
+    input:         Input string to tokenize
+    keywords_trie: Allowed to be NULL
+    out_tokens:    Vector of pointers to malloced tokens (free with free_tokens)
 */
-void tokenize(char *input, Vector *out_tokens)
+void tokenize(char *input, Trie *keywords_trie, Vector *out_tokens)
 {
     if (input == NULL) return;
 
@@ -87,9 +75,9 @@ void tokenize(char *input, Vector *out_tokens)
         }
 
         // Did we find a keyword?
-        if (next_state != TOKSTATE_LETTER) // We don't want to find keywords in strings
+        if (next_state != TOKSTATE_LETTER && keywords_trie != NULL) // We don't want to find keywords in strings
         {
-            size_t keyword_len = trie_longest_prefix(&keywords_trie, input + i);
+            size_t keyword_len = trie_longest_prefix(keywords_trie, input + i, NULL);
             if (keyword_len > 0)
             {
                 push_token(input, i, keyword_len, out_tokens);

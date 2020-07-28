@@ -1,21 +1,23 @@
 #pragma once
 #include <stdbool.h>
 #include "../tree/operator.h"
+#include "../util/list.h"
+#include "../util/trie.h"
 
-struct ParsingContext;
+#define OP_NUM_PLACEMENTS 4
 
-typedef struct ParsingContext
+typedef struct
 {
-    size_t num_ops;      // Current count of operators 
-    size_t max_ops;      // Maximum count of operators (limited by buffer size)
-    Operator *glue_op;   // Points to op in operators
-    Operator *operators; // Buffer of operators
+    Operator *glue_op;    // Points to op in operators
+    LinkedList op_list; // Buffer of operators
+    Trie op_tries[OP_NUM_PLACEMENTS];     // Tries for fast operator lookup
+    Trie keywords_trie;   // Contains all operators for keyword lookup in tokenizer
 } ParsingContext;
 
-ParsingContext get_context(size_t max_ops, Operator *op_buffer);
+ParsingContext context_create();
+void context_destroy(ParsingContext *ctx);
 bool ctx_add_ops(ParsingContext *ctx, size_t count, ...);
 Operator *ctx_add_op(ParsingContext *ctx, Operator op);
+void ctx_remove_op(ParsingContext *ctx, char *name, OpPlacement placement);
 bool ctx_set_glue_op(ParsingContext *ctx, Operator *op);
 Operator *ctx_lookup_op(ParsingContext *ctx, char *name, OpPlacement placement);
-Operator *ctx_lookup_function(ParsingContext *ctx, char *name, size_t arity);
-bool ctx_is_function_overloaded(ParsingContext *ctx, char *name);

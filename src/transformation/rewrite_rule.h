@@ -3,6 +3,8 @@
 #include "../util/vector.h"
 #include "../tree/node.h"
 
+typedef Vector Ruleset;
+
 typedef struct
 {
     Node *before;
@@ -16,7 +18,7 @@ bool apply_rule(Node **tree, RewriteRule *rule);
 
 Vector get_empty_ruleset();
 void add_to_ruleset(Vector *rules, RewriteRule rule);
-void free_ruleset(Vector *rules);
-size_t apply_ruleset(Node **tree, Vector *rules);
-bool parse_ruleset_from_string(char *string, ParsingContext *ctx, MappingFilter default_filter, Vector *out_ruleset);
-bool parse_ruleset_from_file(FILE *file, ParsingContext *ctx, MappingFilter default_filter, Vector *out_rulesets);
+void free_ruleset(Ruleset *rules);
+size_t apply_ruleset(Node **tree, Ruleset *rules);
+bool parse_ruleset_from_string(char *string, ParsingContext *ctx, MappingFilter default_filter, Ruleset *out_ruleset);
+bool parse_ruleset_from_file(FILE *file, ParsingContext *ctx, MappingFilter default_filter, Ruleset *out_rulesets);

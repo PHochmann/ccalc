@@ -8,22 +8,18 @@
 #include "../util/console_util.h"
 #include "../parsing/parser.h"
 
-#define NUM_OPS       56
-#define NUM_COMP_FUNC 10
-#define MAX_OPS (NUM_OPS + NUM_COMP_FUNC)
+#define NUM_PREDEFINED_OPS 56
 
 ParsingContext __g_ctx;
-Operator operators[MAX_OPS];
-
-Vector composite_functions;
+LinkedList composite_functions;
 
 /*
 Summary: Sets arithmetic context stored in global variable
 */
-void init_core_ctx()
+void init_arith_ctx()
 {
-    __g_ctx = get_context(MAX_OPS, operators);
-    if (!ctx_add_ops(g_ctx, NUM_OPS,
+    __g_ctx = context_create();
+    if (!ctx_add_ops(g_ctx, NUM_PREDEFINED_OPS,
         op_get_prefix("$", 0),
         op_get_prefix("@", 8),
         op_get_postfix("'", 7),
@@ -86,22 +82,14 @@ void init_core_ctx()
     // Set multiplication as glue-op
     ctx_set_glue_op(g_ctx, ctx_lookup_op(g_ctx, "*", OP_PLACE_INFIX));
     srand(time(NULL));
-    composite_functions = get_empty_ruleset();
+    composite_functions = list_create(sizeof(RewriteRule));
 }
 
-size_t get_num_composite_functions()
+void unload_arith_ctx()
 {
-    return vec_count(&composite_functions);
-}
-
-RewriteRule *get_composite_function(size_t index)
-{
-    return (RewriteRule*)vec_get(&composite_functions, index);
-}
-
-bool can_add_composite_function()
-{
-    return get_num_composite_functions() < NUM_COMP_FUNC;
+    clear_composite_functions();
+    list_destroy(&composite_functions);
+    context_destroy(g_ctx);
 }
 
 void add_composite_function(RewriteRule rule)
@@ -109,21 +97,39 @@ void add_composite_function(RewriteRule rule)
     add_to_ruleset(&composite_functions, rule);
 }
 
-void pop_composite_function()
+// Removes node from composite_functions
+void remove_node(ListNode *node)
 {
-    if (get_num_composite_functions() > 0)
+    RewriteRule *rule = (RewriteRule*)node->data;
+    // Remove function operator from context
+    ctx_remove_op(g_ctx, get_op(rule->before)->placement, OP_PLACE_FUNCTION);
+    // Free elimination rule
+    free_rule(*(RewriteRule*)node->data);
+    // Remove from linked list
+    list_delete_node(&composite_functions, node);
+}
+
+bool remove_composite_function(Operator *function)
+{
+    ListNode *curr = composite_functions.first;
+    while (curr != NULL)
     {
-        free_rule(VEC_POP_ELEM(&composite_functions, RewriteRule));
-        free(operators[NUM_OPS + get_num_composite_functions()].name);
-        g_ctx->num_ops--;
+        RewriteRule *rule = (RewriteRule*)curr->data;
+        if (get_op(rule->before) == function)
+        {
+            remove_node(curr);
+            return true;
+        }
     }
+    return false;
 }
 
 void clear_composite_functions()
 {
-    while (get_num_composite_functions() > 0)
+    ListNode *curr = composite_functions.first;
+    while (curr != NULL)
     {
-        pop_composite_function();
+        remove_node(curr);
     }
 }
 

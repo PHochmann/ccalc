@@ -5,6 +5,8 @@
 #include "vector.h"
 #include "../parsing/parser.h"
 
+typedef Vector StringBuilder;
+
 typedef struct
 {
     char *string;
@@ -25,14 +27,9 @@ StringIterator get_iterator(char *string);
 char get_next_char(StringIterator *iterator);
 size_t console_strlen(char *str);
 
-Vector strbuilder_create(size_t start_size);
-void strbuilder_reset(Vector *builder);
-void strbuilder_append(Vector *builder, char *fmt, ...);
-void vstrbuilder_append(Vector *builder, char *fmt, va_list args);
-void strbuilder_append_char(Vector *builder, char c);
-void strbuilder_reverse(Vector *builder);
-
-Vector trie_create();
-void trie_add_str(Vector *trie, char *string);
-bool trie_contains(Vector *trie, char *string);
-size_t trie_longest_prefix(Vector *trie, char *string);
+StringBuilder strbuilder_create(size_t start_size);
+void strbuilder_reset(StringBuilder *builder);
+void strbuilder_append(StringBuilder *builder, char *fmt, ...);
+void vstrbuilder_append(StringBuilder *builder, char *fmt, va_list args);
+void strbuilder_append_char(StringBuilder *builder, char c);
+void strbuilder_reverse(StringBuilder *builder);

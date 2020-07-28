@@ -158,16 +158,15 @@ int print_op(Operator *op)
 void print_ops_between(size_t start, size_t end)
 {
     int remaining_width = TTY_WIDTH;
-    for (size_t i = start; i < end; i++)
+    ListNode *curr = list_get_node(&g_ctx->op_list, start);
+    while (curr != NULL && start++ != end)
     {
-        remaining_width -= print_op(&g_ctx->operators[i]);
-        if (i + 1 < end)
+        Operator *op = (Operator*)curr->data;
+        remaining_width -= print_op(op);
+        if (remaining_width <= 0)
         {
-            if (remaining_width - (int)strlen(g_ctx->operators[i + 1].name) - 4 < 0)
-            {
-                printf("\n");
-                remaining_width = TTY_WIDTH;
-            }
+            printf("\n");
+            remaining_width = TTY_WIDTH;
         }
     }
 }
@@ -184,21 +183,26 @@ void print_op_table(OpPlacement place, bool assoc, bool precedence, bool arity, 
     if (value) add_cell(&table, " Value ");
     add_cell(&table, " Description ");
     next_row(&table);
-    for (size_t i = BASIC_IND; i < LAST_IND; i++)
+
+    ListNode *curr = list_get_node(&g_ctx->op_list, BASIC_IND);
+    size_t index = BASIC_IND;
+    while (curr != NULL && index < LAST_IND)
     {
-        if (g_ctx->operators[i].placement == place &&
-            (place != OP_PLACE_FUNCTION || (value == (g_ctx->operators[i].arity == 0))))
+        Operator *op = (Operator*)curr->data;
+
+        if (op->placement == place &&
+            (place != OP_PLACE_FUNCTION || (value == (op->arity == 0))))
         {
-            add_cell_fmt(&table, " %s ", g_ctx->operators[i].name);
+            add_cell_fmt(&table, " %s ", op->name);
 
             if (precedence)
             {
-                add_cell_fmt(&table, " %d ", g_ctx->operators[i].precedence);
+                add_cell_fmt(&table, " %d ", op->precedence);
             }
 
             if (assoc)
             {
-                switch (g_ctx->operators[i].assoc)
+                switch (op->assoc)
                 {
                     case OP_ASSOC_LEFT:
                         add_cell(&table, " Left ");
@@ -210,9 +214,9 @@ void print_op_table(OpPlacement place, bool assoc, bool precedence, bool arity, 
 
             if (arity)
             {
-                if (g_ctx->operators[i].arity != OP_DYNAMIC_ARITY)
+                if (op->arity != OP_DYNAMIC_ARITY)
                 {
-                    add_cell_fmt(&table, " %d ", g_ctx->operators[i].arity);
+                    add_cell_fmt(&table, " %d ", op->arity);
                 }
                 else
                 {
@@ -223,15 +227,17 @@ void print_op_table(OpPlacement place, bool assoc, bool precedence, bool arity, 
             if (value)
             {
                 double const_val;
-                op_evaluate(&g_ctx->operators[i], 0, NULL, &const_val);
+                op_evaluate(op, 0, NULL, &const_val);
                 override_alignment(&table, ALIGN_NUMBERS);
                 add_cell_fmt(&table, " " CONSTANT_TYPE_FMT " ", const_val);
             }
             
-            add_cell(&table, OP_DESCRIPTIONS[i - BASIC_IND]);
+            add_cell(&table, OP_DESCRIPTIONS[index - BASIC_IND]);
             next_row(&table);
         }
+        index++;
     }
+
     print_table(&table);
     free_table(&table);
     printf("\n");
@@ -272,7 +278,7 @@ void print_short_help()
     print_ops_between(CONST_IND, LAST_IND);
 
     // Print user-defined functions if there are any
-    if (get_num_composite_functions() > 0)
+    /*if (get_num_composite_functions() > 0)
     {
         printf("\nUser-defined functions and constants:\n");
         table = get_empty_table();
@@ -291,7 +297,7 @@ void print_short_help()
     else
     {
         printf("\n\n");
-    }
+    }*/
 }
 
 bool cmd_help_exec(__attribute__((unused)) char *input, int code)

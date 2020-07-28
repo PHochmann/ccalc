@@ -71,11 +71,10 @@ Summary: Frees all resources so that heap is empty after exit,
 */
 void unload_commands()
 {
-    clear_composite_functions();
     unload_simplification();
     unload_console_util();
     unload_history();
-    unload_tokenizer();
+    unload_arith_ctx();
 }
 
 /*
@@ -83,8 +82,7 @@ Summary: Sets parsing context and initializes commands
 */
 void init_commands()
 {
-    init_core_ctx();
-    init_tokenizer(g_ctx);
+    init_arith_ctx();
     init_simplification();
     init_console_util();
     init_history();

@@ -7,19 +7,19 @@
 #define OPENING_P "("
 #define CLOSING_P ")"
 
-void p_open(Vector *builder)
+void p_open(StringBuilder *builder)
 {
     strbuilder_append(builder, OPENING_P);
 }
 
-void p_close(Vector *builder)
+void p_close(StringBuilder *builder)
 {
     strbuilder_append(builder, CLOSING_P);
 }
 
-void to_str(Vector *builder, bool color, Node *node, bool l, bool r);
+void to_str(StringBuilder *builder, bool color, Node *node, bool l, bool r);
 
-void prefix_to_str(Vector *builder, bool color, Node *node, bool l, bool r)
+void prefix_to_str(StringBuilder *builder, bool color, Node *node, bool l, bool r)
 {
     if (l) p_open(builder);
     strbuilder_append(builder, get_op(node)->name);
@@ -41,7 +41,7 @@ void prefix_to_str(Vector *builder, bool color, Node *node, bool l, bool r)
     if (l) p_close(builder);
 }
 
-void postfix_to_str(Vector *builder, bool color, Node *node, bool l, bool r)
+void postfix_to_str(StringBuilder *builder, bool color, Node *node, bool l, bool r)
 {
     if (r) p_open(builder);
 
@@ -63,7 +63,7 @@ void postfix_to_str(Vector *builder, bool color, Node *node, bool l, bool r)
     if (r) p_close(builder);
 }
 
-void function_to_str(Vector *builder, bool color, Node *node)
+void function_to_str(StringBuilder *builder, bool color, Node *node)
 {
     if (get_op(node)->arity != 0)
     {
@@ -81,7 +81,7 @@ void function_to_str(Vector *builder, bool color, Node *node)
     }
 }
 
-void infix_to_str(Vector *builder, bool color, Node *node, bool l, bool r)
+void infix_to_str(StringBuilder *builder, bool color, Node *node, bool l, bool r)
 {
     Node *childL = get_child(node, 0);
     Node *childR = get_child(node, 1);
@@ -129,7 +129,7 @@ Params
         It needs to be protected when it is adjacent to an operator on this side.
         When the subexpression starts (ends) with an operator and needs to be protected to the left (right), a parenthesis is printed in between.
 */
-void to_str(Vector *builder, bool color, Node *node, bool l, bool r)
+void to_str(StringBuilder *builder, bool color, Node *node, bool l, bool r)
 {
     switch (get_type(node))
     {
@@ -160,7 +160,7 @@ void to_str(Vector *builder, bool color, Node *node, bool l, bool r)
         }
 }
 
-void tree_to_strbuilder(Vector *builder, Node *node, bool color)
+void tree_to_strbuilder(StringBuilder *builder, Node *node, bool color)
 {
     to_str(builder, color, node, false, false);
 }
@@ -168,7 +168,7 @@ void tree_to_strbuilder(Vector *builder, Node *node, bool color)
 // Summary: Returns string (on heap)
 char *tree_to_str(Node *node, bool color)
 {
-    Vector builder = strbuilder_create(100);
+    StringBuilder builder = strbuilder_create(100);
     tree_to_strbuilder(&builder, node, color);
     return builder.buffer;
 }
