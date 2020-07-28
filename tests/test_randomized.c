@@ -43,7 +43,7 @@ void generate_tree(size_t max_inner_nodes, Node **out)
     else
     {
         // Choose random operator
-        Operator *op = &g_ctx->operators[op_indices[rand() % NUM_OP_INDICES]];
+        Operator *op = list_get(&g_ctx->op_list, op_indices[rand() % NUM_OP_INDICES]);
         size_t num_children;
 
         if (op->arity == OP_DYNAMIC_ARITY)

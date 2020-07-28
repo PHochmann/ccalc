@@ -20,8 +20,7 @@ When starting the calculator normally, you can enter expressions and commands in
 * Just type in a mathematical expression to evaluate it.
 * Use ```ans``` or ```@<index>``` to reference previous results.
 * Two subexpressions next to each other without an infix operator will be multiplied (e.g. ```2a``` or ```(x-1)(y+1)```).
-* You can define functions (and even overload them by arity) and constants (e.g. ```myFunc(x) = x^2```, ```myConst = 42```).
-* When applying unary functions to a literal, you can omit parentheses (e.g. ```sin2```).
+* You can define functions and constants (e.g. ```myFunc(x) = x^2```, ```myConst = 42```).
 * Any line starting with ```'``` will be ignored (useful for comments in files to be loaded).
 * Use ```$``` to parse the rest of the expression as if it was put in parentheses, like in Haskell.
 

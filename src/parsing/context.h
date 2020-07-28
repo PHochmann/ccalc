@@ -18,6 +18,6 @@ ParsingContext context_create();
 void context_destroy(ParsingContext *ctx);
 bool ctx_add_ops(ParsingContext *ctx, size_t count, ...);
 Operator *ctx_add_op(ParsingContext *ctx, Operator op);
-void ctx_remove_op(ParsingContext *ctx, char *name, OpPlacement placement);
+bool ctx_remove_op(ParsingContext *ctx, char *name, OpPlacement placement);
 bool ctx_set_glue_op(ParsingContext *ctx, Operator *op);
 Operator *ctx_lookup_op(ParsingContext *ctx, char *name, OpPlacement placement);

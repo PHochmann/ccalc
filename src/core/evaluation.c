@@ -94,7 +94,7 @@ double random_between(double min, double max)
 
 bool op_evaluate(Operator *op, size_t num_args, double *args, double *out)
 {
-    switch ((size_t)(op - g_ctx->operators))
+    switch (op->id)
     {
         case 4: // x+y
             *out = args[0] + args[1];

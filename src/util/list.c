@@ -5,7 +5,7 @@ ListNode *malloc_node(size_t elem_size, void *data)
 {
     ListNode *new = malloc(sizeof(ListNode) + elem_size);
     new->next = NULL;
-    if (data != NULL) memcpy(data, (void*)new->data, elem_size);
+    if (data != NULL) memcpy((void*)new->data, data, elem_size);
     return new;
 }
 
@@ -32,6 +32,8 @@ void list_destroy(LinkedList *list)
 
 ListNode *list_get_node(LinkedList *list, size_t index)
 {
+    if (index >= list->count) return NULL;
+
     ListNode *curr;
     if (index < list->count / 2)
     {
@@ -46,8 +48,8 @@ ListNode *list_get_node(LinkedList *list, size_t index)
     else
     {
         // Search backward
-        curr = list->last;
         index = list->count - index - 1;
+        curr = list->last;
         while (curr != NULL && index > 0)
         {
             curr = curr->previous;
@@ -61,7 +63,10 @@ ListNode *list_get_node(LinkedList *list, size_t index)
 void *list_get(LinkedList *list, size_t index)
 {
     ListNode *node = list_get_node(list, index);
-    if (node == NULL) return NULL;
+    if (node == NULL)
+    {
+        return NULL;
+    }
     return (void*)node->data;
 }
 
@@ -73,12 +78,29 @@ ListNode *list_append(LinkedList *list, void *data)
 ListNode *list_insert(LinkedList *list, size_t index, void *data)
 {
     ListNode *after = list_get_node(list, index);
-    ListNode *before = after->previous;
+    ListNode *before = after != NULL ? after->previous : list_get_node(list, index - 1);
     ListNode *new = malloc_node(list->elem_size, data);
     new->previous = before;
     new->next = after;
-    if (before == NULL) list->first = new;
-    if (after == NULL) list->last = new;
+
+    if (before == NULL)
+    {
+        list->first = new;
+    }
+    else
+    {
+        before->next = new;
+    }
+    
+    if (after == NULL)
+    {
+        list->last = new;
+    }
+    else
+    {
+        after->previous = new;
+    }
+    
     list->count++;
     return new;
 }

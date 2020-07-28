@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <stdio.h>
 
+#include "../util/string_util.h"
 #include "../util/trie.h"
 #include "tokenizer.h"
 

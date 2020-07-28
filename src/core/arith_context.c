@@ -11,7 +11,7 @@
 #define NUM_PREDEFINED_OPS 56
 
 ParsingContext __g_ctx;
-LinkedList composite_functions;
+LinkedList g_composite_functions;
 
 /*
 Summary: Sets arithmetic context stored in global variable
@@ -82,36 +82,36 @@ void init_arith_ctx()
     // Set multiplication as glue-op
     ctx_set_glue_op(g_ctx, ctx_lookup_op(g_ctx, "*", OP_PLACE_INFIX));
     srand(time(NULL));
-    composite_functions = list_create(sizeof(RewriteRule));
+    g_composite_functions = list_create(sizeof(RewriteRule));
 }
 
 void unload_arith_ctx()
 {
     clear_composite_functions();
-    list_destroy(&composite_functions);
+    list_destroy(&g_composite_functions);
     context_destroy(g_ctx);
 }
 
 void add_composite_function(RewriteRule rule)
 {
-    add_to_ruleset(&composite_functions, rule);
+    list_append(&g_composite_functions, (void*)(&rule));
 }
 
-// Removes node from composite_functions
+// Removes node from g_composite_functions
 void remove_node(ListNode *node)
 {
     RewriteRule *rule = (RewriteRule*)node->data;
     // Remove function operator from context
-    ctx_remove_op(g_ctx, get_op(rule->before)->placement, OP_PLACE_FUNCTION);
+    ctx_remove_op(g_ctx, get_op(rule->before)->name, OP_PLACE_FUNCTION);
     // Free elimination rule
     free_rule(*(RewriteRule*)node->data);
     // Remove from linked list
-    list_delete_node(&composite_functions, node);
+    list_delete_node(&g_composite_functions, node);
 }
 
 bool remove_composite_function(Operator *function)
 {
-    ListNode *curr = composite_functions.first;
+    ListNode *curr = g_composite_functions.first;
     while (curr != NULL)
     {
         RewriteRule *rule = (RewriteRule*)curr->data;
@@ -126,7 +126,7 @@ bool remove_composite_function(Operator *function)
 
 void clear_composite_functions()
 {
-    ListNode *curr = composite_functions.first;
+    ListNode *curr = g_composite_functions.first;
     while (curr != NULL)
     {
         remove_node(curr);
@@ -151,7 +151,7 @@ bool arith_parse_input(char *input, char *error_fmt, bool replace_comp_funcs, No
     {
         if (replace_comp_funcs)
         {
-            apply_ruleset(out_res, &composite_functions);
+            apply_rule_list(out_res, &g_composite_functions);
         }
 
         if (!core_simplify(out_res) || !core_replace_history(out_res))

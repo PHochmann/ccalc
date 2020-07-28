@@ -17,7 +17,6 @@
 struct OpData
 {
     Operator *op;        // Pointer to operator in context, NULL denotes opening parenthesis
-    bool count_operands; // Indicates whether to count operands
     size_t arity;        // Records number of operands to pop
 };
 
@@ -74,40 +73,14 @@ bool op_pop_and_insert(struct ParserState *state)
 
     if (op != NULL) // Construct operator-node and append children
     {
-        // Function overloading: Find function with suitable arity
-        // Actual function on op stack is only tentative with random arity (but same name)
-        // Only do this for functions we count operands for
-        if (op_data->count_operands)
+        if (op->arity != OP_DYNAMIC_ARITY && op->arity != op_data->arity)
         {
-            if (op->arity != op_data->arity)
-            {
-                char *name = op->name; // Save name in case of making op NULL
-                op = ctx_lookup_function(state->ctx, name, op_data->arity);
-                
-                // Fallback: Find function of dynamic arity
-                if (op == NULL)
-                {
-                    op = ctx_lookup_function(state->ctx, name, OP_DYNAMIC_ARITY);
-                }
-                
-                if (op == NULL)
-                {
-                    state->result = PERR_FUNCTION_WRONG_ARITY;
-                    return false;
-                }
-            }
+            state->result = PERR_FUNCTION_WRONG_ARITY;
+            return false;
         }
 
         // We try to allocate a new node and pop its children from node stack
         Node *op_node = malloc_operator_node(op, op_data->arity);
-
-        // Check if malloc of children buffer in get_operator_node failed
-        // (Could also be NULL on malformed arguments, but this should not happen)
-        if (op_node == NULL)
-        {
-            state->result = PERR_OUT_OF_MEMORY;
-            return false;
-        }
         
         for (size_t i = 0; i < get_num_children(op_node); i++)
         {
@@ -157,11 +130,11 @@ bool push_operator(struct ParserState *state, Operator *op)
 
     if (op->placement == OP_PLACE_FUNCTION)
     {
-        opData = (struct OpData){ op, true, 0 };
+        opData = (struct OpData){ op, 0 };
     }
     else
     {
-        opData = (struct OpData){ op, false, op->arity };
+        opData = (struct OpData){ op, op->arity };
     }
 
     return op_push(state, opData);
@@ -170,7 +143,7 @@ bool push_operator(struct ParserState *state, Operator *op)
 // Pushes opening parenthesis on op_stack
 bool push_opening_parenthesis(struct ParserState *state)
 {
-    return op_push(state, (struct OpData){ NULL, false, OP_DYNAMIC_ARITY });
+    return op_push(state, (struct OpData){ NULL, OP_DYNAMIC_ARITY });
 }
 
 // out_res can be NULL if you only want to check if an error occurred
@@ -202,10 +175,7 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
                 && ctx_lookup_op(state.ctx, token, OP_PLACE_POSTFIX) == NULL)
             {
                 if (!push_operator(&state, state.ctx->glue_op)) goto exit;
-
-                // If glue-op was function, disable function overloading mechanism
                 // Arity of 2 needed for DYNAMIC_ARITY functions set as glue-op
-                op_peek(&state)->count_operands = false;
                 op_peek(&state)->arity = 2;
                 await_infix = false;
             }
@@ -243,17 +213,14 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
                 ERROR(PERR_EXCESS_CLOSING_PARENTHESIS);
             }
             
-            /*
-             * When count_operands is true for the operator on top of the stack,
-             * the closing parenthesis was actually the end of its parameter list.
-             * Increment operand count one last time if it was not the empty parameter list.
-             */
-            if (op_peek(&state) != NULL && op_peek(&state)->count_operands)
+            // Increment operand count one last time if it was not the empty parameter list.
+            if (op_peek(&state) != NULL
+                && op_peek(&state)->op != NULL
+                && op_peek(&state)->op->placement == OP_PLACE_FUNCTION
+                && i > 0
+                && !is_opening_parenthesis(tokens[i - 1]))
             {
-                if (op_peek(&state) != NULL && i > 0 && !is_opening_parenthesis(tokens[i - 1]))
-                {
-                    op_peek(&state)->arity++;
-                }
+                op_peek(&state)->arity++;
             }
             
             continue;
@@ -266,7 +233,7 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
             {
                 if (!op_pop_and_insert(&state))
                 {
-                    ERROR(PERR_UNEXPECTED_DELIMITER);
+                    goto exit;
                 }
             }
 
@@ -276,16 +243,12 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
                 struct OpData *op_data = ((struct OpData*)vec_get(&state.vec_ops, vec_count(&state.vec_ops) - 2));
                 if (op_data->op->placement == OP_PLACE_FUNCTION)
                 {
-                    if (op_data->count_operands)
-                    {
-                        op_data->arity++;
-                    }
+                    op_data->arity++;
                 }
                 else
                 {
                     ERROR(PERR_UNEXPECTED_DELIMITER);
                 }
-                
             }
             else
             {
@@ -309,34 +272,19 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
             {
                 if (!push_operator(&state, op)) goto exit;
 
-                if (op->arity == 0 || op->arity == OP_DYNAMIC_ARITY)
+                // Directly pop constants that are not followed by an opening parenthesis
+                if (op->arity == 0)
                 {
-                    /*
-                     * Directly pop constants that are not overloaded or not followed by an opening parenthesis
-                     * OP_DYNAMIC_ARITY functions are overloaded, treat them as a constant when no opening 
-                     * parenthesis follows.
-                     */
-                    if (!ctx_is_function_overloaded(state.ctx, op->name)
-                        || i == num_tokens - 1
-                        || !is_opening_parenthesis(tokens[i + 1]))
+                    // Skip parsing of empty parameter list
+                    if (i < num_tokens - 2 && is_opening_parenthesis(tokens[i + 1])
+                        && is_closing_parenthesis(tokens[i + 2]))
                     {
-                        // Skip parsing of empty parameter list
-                        if (i < num_tokens - 2 && is_opening_parenthesis(tokens[i + 1])
-                            && is_closing_parenthesis(tokens[i + 2]))
-                        {
-                            i += 2;
-                        }
-
-                        op_pop_and_insert(&state);
-                        await_infix = true;
-                        continue;
+                        i += 2;
                     }
-                }
-                
-                // Handle omitted parenthesis after unary function (e.g. sin2)
-                if (i < num_tokens - 1 && !is_opening_parenthesis(tokens[i + 1]))
-                {
-                    op_peek(&state)->arity = 1;
+
+                    op_pop_and_insert(&state);
+                    await_infix = true;
+                    continue;
                 }
 
                 await_infix = false;
@@ -383,12 +331,10 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
         if (try_parse_constant(token, &const_val))
         {
             node = malloc_constant_node(const_val);
-            if (node == NULL) ERROR(PERR_OUT_OF_MEMORY);
         }
         else // Token must be variable
         {
             node = malloc_variable_node(token);
-            if (node == NULL) ERROR(PERR_OUT_OF_MEMORY);
         }
 
         await_infix = true;
@@ -459,9 +405,14 @@ ParserError parse_input(ParsingContext *ctx, char *input, Node **out_res)
 Summary: Calls parse_input, omits ParserError
 Returns: Operator tree or NULL when error occurred
 */
+#include "../util/console_util.h"
 Node *parse_conveniently(ParsingContext *ctx, char *input)
 {
     Node *result = NULL;
-    parse_input(ctx, input, &result);
+    ParserError error = parse_input(ctx, input, &result);
+    if (result == NULL)
+    {
+        report_error("FAIL: %s\n", perr_to_string(error));
+    }
     return result;
 }

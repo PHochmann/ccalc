@@ -7,6 +7,7 @@
 #define g_ctx (&__g_ctx)
 
 extern ParsingContext __g_ctx;
+extern LinkedList g_composite_functions;
 
 void init_arith_ctx();
 void unload_arith_ctx();

@@ -13,7 +13,7 @@ struct TreeToStringTest {
     char *expected_result;
 };
 
-static const size_t NUM_CASES = 12;
+static const size_t NUM_CASES = 11;
 static struct TreeToStringTest tests[] = {
     { "--a",      "-(-a)"},
     { "--b!!",    "(-(-b)!)!"},
@@ -24,8 +24,7 @@ static struct TreeToStringTest tests[] = {
     { "pi",       "pi" },
     { "log(1,2)", "log(1,2)"},
     { "sum",      "sum()" },
-    { "sin--1" ,  "sin(-(-1))" },
-    { "sum--1",   "sum()-(-1)" },
+    { "sum(--1)",   "sum(-(-1))" },
     { "-sqrt(abs(--a!!*--sum(-b+c-d+e, f^(g^h)-i, -sum(j, k), l+m)*--n!!))",
         "-sqrt(abs(((-(-a)!)!)*(-(-sum(-b+c-d+e,f^g^h-i,-sum(j,k),l+m)))*(-(-n)!)!))" },
 };

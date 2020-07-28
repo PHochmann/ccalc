@@ -7,9 +7,6 @@
 /*
 Summary: This method is used to create a new ParsingContext without glue-op and operators
     Use ctx_add_op and ctx_add_glue_op to add them to new context
-Parameters:
-    max_ops:   Number of operators that should fit into reserved buffer
-    operators: Buffer to operators. Should hold max_ops operators.
 */
 ParsingContext context_create()
 {
@@ -96,20 +93,26 @@ Operator *ctx_add_op(ParsingContext *ctx, Operator op)
     }
     
     // Successfully passed the checks
+    op.id = list_count(&ctx->op_list);
     ListNode *list_node = list_append(&ctx->op_list, &op);
     trie_add_str(&ctx->op_tries[op.placement], op.name, &list_node);
     return (Operator*)list_node->data;
 }
 
-void ctx_remove_op(ParsingContext *ctx, char *name, OpPlacement placement)
+bool ctx_remove_op(ParsingContext *ctx, char *name, OpPlacement placement)
 {
     ListNode *node = NULL;
     if (trie_contains(&ctx->op_tries[placement], name, &node))
     {
         list_delete_node(&ctx->op_list, node);
         trie_remove_str(&ctx->keywords_trie, name);
-        trie_remove_str(&ctx->op_tries, name);
+        trie_remove_str(&ctx->op_tries[placement], name);
+        return true;
     }
+    else
+    {
+        return false;
+    }    
 }
 
 /*
@@ -141,5 +144,9 @@ Operator *ctx_lookup_op(ParsingContext *ctx, char *name, OpPlacement placement)
     if (trie_contains(&ctx->op_tries[placement], name, &node))
     {
         return (Operator*)node->data;
+    }
+    else
+    {
+        return NULL;
     }
 }

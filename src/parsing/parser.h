@@ -11,7 +11,6 @@ typedef enum {
     PERR_UNEXPECTED_DELIMITER,       // Delimiter too soon (e.g. 1+,) or not within parameter list of a function
     PERR_MISSING_OPERATOR,           // Too many children
     PERR_MISSING_OPERAND,            // Could not pop 'arity' amount of nodes
-    PERR_OUT_OF_MEMORY,              // Malloc failed
     PERR_FUNCTION_WRONG_ARITY,       // Function of wrong arity
     PERR_CHILDREN_EXCEEDED,          // Too many operands for function
     PERR_EMPTY,                      // No node has been created

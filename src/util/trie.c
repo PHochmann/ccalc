@@ -1,3 +1,4 @@
+#include <string.h>
 #include "trie.h"
 
 TrieNode *malloc_trienode(size_t elem_size)
@@ -17,7 +18,7 @@ void destroy_rec(TrieNode *node)
 {
     for (unsigned char i = 0; i < END_CHAR - START_CHAR; i++)
     {
-        if (node->next[i] != NULL) (node->next[i]);
+        if (node->next[i] != NULL) destroy_rec(node->next[i]);
     }
     free(node);
 }
@@ -61,8 +62,6 @@ bool is_node_empty(TrieNode *node)
 
 bool remove_rec(TrieNode *node, size_t depth, char *string)
 {
-    bool needs_free;
-
     if (depth == strlen(string))
     {
         node->is_leaf = false;
@@ -130,5 +129,5 @@ size_t trie_longest_prefix(Trie *trie, char *string, void *out_data)
         }
     }
 
-    return 0;
+    return res;
 }

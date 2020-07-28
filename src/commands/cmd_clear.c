@@ -14,7 +14,7 @@
 int cmd_clear_check(char *input)
 {
     if (strcmp(CLEAR_COMMAND, input) == 0) return CLEAR_CODE;
-    if (begins_with(UNDEF_COMMAND, input) == 0) return UNDEF_CODE;
+    if (begins_with(UNDEF_COMMAND, input)) return UNDEF_CODE;
     return false;
 }
 

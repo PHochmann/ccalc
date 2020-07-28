@@ -104,8 +104,6 @@ char *perr_to_string(ParserError perr)
             return "Unexpected operand";
         case PERR_MISSING_OPERAND:
             return "Missing operand";
-        case PERR_OUT_OF_MEMORY:
-            return "Out of memory";
         case PERR_FUNCTION_WRONG_ARITY:
             return "Wrong number of operands of function";
         case PERR_CHILDREN_EXCEEDED:

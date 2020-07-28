@@ -113,7 +113,7 @@ Summary: Tries to apply rules (priorized by order) until no rule can be applied 
     Guarantees to terminate after MAX_RULESET_ITERATIONS rule appliances
 */
 //#include "../tree/tree_to_string.h"
-size_t apply_ruleset(Node **tree, Vector *rules)
+size_t apply_ruleset(Node **tree, Ruleset *rules)
 {
     size_t counter = 0;
     while (true)
@@ -128,6 +128,34 @@ size_t apply_ruleset(Node **tree, Vector *rules)
                 counter++;
                 break;
             }
+        }
+        if (!applied_flag || counter == MAX_RULESET_ITERATIONS)
+        {
+            return counter;
+        }
+    }
+    return 0; // To make compiler happy
+}
+
+// Same as apply_rulset, but rules are within a LinkedList instead of a Vector
+// Todo: Can this be refactored?
+size_t apply_rule_list(Node **tree, LinkedList *rules)
+{
+    size_t counter = 0;
+    while (true)
+    {
+        bool applied_flag = false;
+        ListNode *curr = rules->first;
+        while (curr != NULL)
+        {
+            if (apply_rule(tree, (RewriteRule*)curr->data))
+            {
+                //printf("Applied rule %zu: %s\n", j, tree_to_str(*tree, true));
+                applied_flag = true;
+                counter++;
+                break;
+            }
+            curr = curr->next;
         }
         if (!applied_flag || counter == MAX_RULESET_ITERATIONS)
         {

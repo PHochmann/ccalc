@@ -1,3 +1,4 @@
+#pragma once
 #include <stdlib.h>
 
 #define LIST_APPEND_ELEM(list, type, expr) (*(type*)list_append(list, NULL)->data) = expr

@@ -59,14 +59,19 @@ bool add_function(char *name, char *left, char *right)
         {
             // Name is not needed since no new function will be added
             free(name);
+
             // Check if found function is a composite function...
-            for (size_t i = 0; i < get_num_composite_functions(); i++)
+            ListNode *curr = g_composite_functions.first;
+            while (curr != NULL)
             {
-                if (get_op(get_composite_function(i)->before) == get_op(left_n))
+                if (get_op(((RewriteRule*)curr->data)->before) == get_op(left_n))
                 {
-                    redefined_rule = get_composite_function(i);
+                    redefined_rule = (RewriteRule*)curr->data;
+                    break;
                 }
+                curr = curr->next;
             }
+            
             // ...if not, the function is built-in. Fail here.
             if (redefined_rule == NULL)
             {
@@ -83,13 +88,6 @@ bool add_function(char *name, char *left, char *right)
     
     if (redefined_rule == NULL)
     {
-        if (!can_add_composite_function())
-        {
-            report_error("Error: Can not add any more functions or constants.\n");
-            free(name);
-            return false;
-        }
-
         // Add function operator to parse left input
         // Must be OP_DYNAMIC_ARITY because we do not know the actual arity yet
         ctx_add_op(g_ctx, op_get_function(name, OP_DYNAMIC_ARITY));
@@ -119,14 +117,17 @@ bool add_function(char *name, char *left, char *right)
     {
         printf("Function or constant already exists. Redefine it [y/N]? ");
         
-        for (size_t i = 0; i < get_num_composite_functions(); i++)
+        ListNode *curr = g_composite_functions.first;
+        while (curr != NULL)
         {
-            RewriteRule *rule = get_composite_function(i);
+            RewriteRule *rule = (RewriteRule*)curr->data;
             if (find_matching_discarded(rule->after, left_n, NULL))
             {
                 printf("\nWarning: This will affect at least one other function or constant. ");
                 break;
             }
+
+            curr = curr->next;
         }
 
         if (!ask_yes_no(false))
@@ -146,9 +147,10 @@ bool add_function(char *name, char *left, char *right)
          * => Replace unbounded variables of the same name with this new constant.
          */
         bool replaced_variable = false;
-        for (size_t i = 0; i < get_num_composite_functions(); i++)
+        ListNode *curr = g_composite_functions.first;
+        while (curr != NULL)
         {
-            RewriteRule *rule = get_composite_function(i);
+            RewriteRule *rule = (RewriteRule*)curr->data;
             // Check if variables are unbounded...
             if (count_variable_nodes(rule->before, name) == 0)
             {
@@ -158,6 +160,8 @@ bool add_function(char *name, char *left, char *right)
                     replaced_variable = true;
                 }
             }
+            
+            curr = curr->next;
         }
 
         if (replaced_variable)
@@ -206,7 +210,7 @@ bool add_function(char *name, char *left, char *right)
     free_tree(right_n);
     if (redefined_rule == NULL)
     {
-        g_ctx->num_ops--;
+        ctx_remove_op(g_ctx, name, OP_PLACE_FUNCTION);
         free(name);
     }
     return false;

@@ -20,7 +20,7 @@ struct ErrorTest {
     ParserError result;
 };
 
-static const size_t NUM_VALUE_CASES = 53;
+static const size_t NUM_VALUE_CASES = 47;
 static struct ValueTest valueTests[] = {
     // 1. Basic prefix, infix, postfix
     { "2+3",  5 },
@@ -59,10 +59,7 @@ static struct ValueTest valueTests[] = {
     { "pi()2" ,    6.283185307 },
     { "pi()(2)",   6.283185307 },
     { "pi()e",     8.539734222 },
-    { "sum",       0 },
-    { "sum + 2",   2 },
     { "3+sum",     3 },
-    { "sum2" ,     0 },
     { "sum(2)",    2 },
     { "sum()",     0 },
     { "sum() + 2", 2 },
@@ -73,29 +70,28 @@ static struct ValueTest valueTests[] = {
     { "sin(2)",      0.909297426 },
     { "sin(2)*3",    2.727892280 },
     { "sin(-2)%*3", -0.027278922 },
-    { "sin2",        0.909297426 },
-    { "sin2*3",      2.727892280 },
-    { "sin-2%*3",   -0.027278922 },
     // 5.3. Binary functions and dynamic arity
     { "log(2 64, 1+1)", 7 },
     { "sum(1,2,3)",     6 },
     { "prod(2,3,4)-4!", 0 },
     // 6. Going wild
-    { "5 .5sin2+5pi5", 80.81305990681 },
-    { "--(1+sum(ld--8, --1%+--1%, 2 .2))%+1", 1.0442 },
+    { "5 .5sin(2)+5pi5", 80.81305990681 },
+    { "--(1+sum(ld(--8), --1%+--1%, 2 .2))%+1", 1.0442 },
     { "-sqrt(abs(--2!!*--sum(-1+.2-.2+2, 2^2^3-255, -sum(.1, .9), 1+2)*--2!!))", -4 },
 };
 
-static const size_t NUM_ERROR_CASES = 11;
+static const size_t NUM_ERROR_CASES = 13;
 static struct ErrorTest errorTests[] = {
     { "",          PERR_EMPTY },
     { "()",        PERR_EMPTY },
     { "x+",        PERR_MISSING_OPERAND },
     { "root(x,)",  PERR_MISSING_OPERAND },
     { "sin",       PERR_FUNCTION_WRONG_ARITY },
+    { "sin 2",     PERR_FUNCTION_WRONG_ARITY },
+    { "sum + 1",   PERR_MISSING_OPERATOR },
     { "sin(x, y)", PERR_FUNCTION_WRONG_ARITY },
     { "root(x)",   PERR_FUNCTION_WRONG_ARITY },
-    { "sin,",      PERR_UNEXPECTED_DELIMITER },
+    { "sin,",      PERR_FUNCTION_WRONG_ARITY },
     { "-(1,2)",    PERR_UNEXPECTED_DELIMITER },
     { "(x",        PERR_EXCESS_OPENING_PARENTHESIS },
     { "x)",        PERR_EXCESS_CLOSING_PARENTHESIS }

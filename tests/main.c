@@ -60,6 +60,7 @@ int main()
                 add_cell(&table, F_RED " failed " COL_RESET);
                 error = true;
             }
+            strbuilder_reset(&error_builder);
             next_row(&table);
         }
     }
