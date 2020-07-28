@@ -159,7 +159,7 @@ void print_ops_between(size_t start, size_t end)
 {
     int remaining_width = TTY_WIDTH;
     ListNode *curr = list_get_node(&g_ctx->op_list, start);
-    while (curr != NULL && start++ != end)
+    while (curr != NULL && start != end)
     {
         Operator *op = (Operator*)curr->data;
         remaining_width -= print_op(op);
@@ -168,6 +168,8 @@ void print_ops_between(size_t start, size_t end)
             printf("\n");
             remaining_width = TTY_WIDTH;
         }
+        start++;
+        curr = curr->next;
     }
 }
 
@@ -190,8 +192,7 @@ void print_op_table(OpPlacement place, bool assoc, bool precedence, bool arity, 
     {
         Operator *op = (Operator*)curr->data;
 
-        if (op->placement == place &&
-            (place != OP_PLACE_FUNCTION || (value == (op->arity == 0))))
+        if (op->placement == place && (place != OP_PLACE_FUNCTION || (value == (op->arity == 0))))
         {
             add_cell_fmt(&table, " %s ", op->name);
 
@@ -236,6 +237,7 @@ void print_op_table(OpPlacement place, bool assoc, bool precedence, bool arity, 
             next_row(&table);
         }
         index++;
+        curr = curr->next;
     }
 
     print_table(&table);
@@ -276,7 +278,7 @@ void print_short_help()
     print_ops_between(MISC_IND, CONST_IND);
     printf("\nConstants:\n");
     print_ops_between(CONST_IND, LAST_IND);
-
+    printf("\n");
     // Print user-defined functions if there are any
     /*if (get_num_composite_functions() > 0)
     {

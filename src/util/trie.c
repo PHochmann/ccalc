@@ -72,7 +72,7 @@ bool remove_rec(TrieNode *node, size_t depth, char *string)
         unsigned char index = string[depth] - START_CHAR;
         if (node->next[index] != NULL)
         {
-            if (remove_rec(node, depth + 1, string))
+            if (remove_rec(node->next[index], depth + 1, string))
             {
                 node->next[index] = NULL;
             }

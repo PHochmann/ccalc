@@ -72,7 +72,7 @@ void *list_get(LinkedList *list, size_t index)
 
 ListNode *list_append(LinkedList *list, void *data)
 {
-    return list_insert(list, list->count - 1, data);
+    return list_insert(list, list->count, data);
 }
 
 ListNode *list_insert(LinkedList *list, size_t index, void *data)
@@ -110,10 +110,25 @@ void list_delete_node(LinkedList *list, ListNode *node)
     ListNode *after = node->next;
     ListNode *before = node->previous;
     free(node);
-    before->next = after;
-    after->previous = before;
-    if (before == NULL) list->first = after;
-    if (after == NULL) list->last = before;
+
+    if (before == NULL)
+    {
+        list->first = after;
+    }
+    else
+    {
+        before->next = after;
+    }
+    
+    if (after == NULL)
+    {
+        list->last = before;
+    }
+    else
+    {
+        after->previous = before;
+    }
+    
     list->count--;
 }
 

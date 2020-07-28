@@ -101,8 +101,11 @@ void add_composite_function(RewriteRule rule)
 void remove_node(ListNode *node)
 {
     RewriteRule *rule = (RewriteRule*)node->data;
+    char *temp = get_op(rule->before)->name;
     // Remove function operator from context
     ctx_remove_op(g_ctx, get_op(rule->before)->name, OP_PLACE_FUNCTION);
+    // Free its name since its malloced by the tokenizer in definition-command
+    free(temp);
     // Free elimination rule
     free_rule(*(RewriteRule*)node->data);
     // Remove from linked list
@@ -120,16 +123,16 @@ bool remove_composite_function(Operator *function)
             remove_node(curr);
             return true;
         }
+        curr = curr->next;
     }
     return false;
 }
 
 void clear_composite_functions()
 {
-    ListNode *curr = g_composite_functions.first;
-    while (curr != NULL)
+    while (g_composite_functions.first != NULL)
     {
-        remove_node(curr);
+        remove_node(g_composite_functions.first);
     }
 }
 
