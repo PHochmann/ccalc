@@ -57,8 +57,10 @@ bool add_function(char *name, char *left, char *right)
         }
         else
         {
-            report_error("Function or constant already defined. Please use clear-command before redefinition.\n");
+            report_error("Function or constant already defined. Please use clear command before re-definition.\n");
         }
+        
+        // Don't goto error since no new operator has been added to context
         free(name);
         return false;
     }
@@ -80,12 +82,12 @@ bool add_function(char *name, char *left, char *right)
     // Assign correct arity
     get_op(left_n)->arity = get_num_children(left_n);
 
-    if (!arith_parse_input(right, FMT_ERROR_RIGHT, false, &right_n))
+    if (!arith_parse_input_raw(right, FMT_ERROR_RIGHT, &right_n))
     {
         goto error;
     }
 
-    if (find_matching_discarded(right_n, left_n, NULL))
+    if (find_matching_discarded(right_n, left_n, NULL) != NULL)
     {
         report_error("Error: Recursive definition.\n");
         goto error;

@@ -103,8 +103,12 @@ void unload_simplification()
 Summary: Applies all pre-defined rewrite rules to tree
 Returns: True when transformations could be applied, False otherwise
 */
-bool core_simplify(Node **tree)
+bool core_simplify(Node **tree, bool full_simplification)
 {
+    // Apply elimination rules
+    apply_ruleset(tree, &rulesets[0]);
+    if (!full_simplification) return true;
+
     Matching matching;
     Node **matched;
     while ((matched = find_matching(tree, deriv_before, &matching, NULL)) != NULL)
@@ -134,9 +138,6 @@ bool core_simplify(Node **tree)
         report_error("Second operand of deriv must be variable.\n");
         return false;
     }
-
-    // Apply elimination rules
-    apply_ruleset(tree, &rulesets[0]);
 
     Node *tree_before = NULL;
     do

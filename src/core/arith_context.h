@@ -18,4 +18,4 @@ bool remove_composite_function(Operator *function);
 void clear_composite_functions();
 RewriteRule *get_composite_function(Operator *op);
 bool arith_parse_input_raw(char *input, char *error_fmt, Node **out_res);
-bool arith_parse_input(char *input, char *error_fmt, bool replace_comp_funcs, Node **out_res);
+bool arith_parse_input(char *input, char *error_fmt, bool replace_comp_funcs, bool simplify, Node **out_res);

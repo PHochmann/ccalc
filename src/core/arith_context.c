@@ -167,16 +167,7 @@ RewriteRule *get_composite_function(Operator *op)
 
 bool arith_parse_input_raw(char *input, char *error_fmt, Node **out_res)
 {
-    ParserError perr = parse_input(g_ctx, input, out_res);
-    if (perr != PERR_SUCCESS)
-    {
-        report_error(error_fmt, perr_to_string(perr));
-        return false;
-    }
-    else
-    {
-        return true;
-    }
+    return arith_parse_input(input, error_fmt, false, false, out_res);
 }
 
 /*
@@ -185,25 +176,27 @@ Summary:
 Returns:
     True when input was successfully parsed, false when syntax error in input or semantical error while transforming
 */
-bool arith_parse_input(char *input, char *error_fmt, bool replace_comp_funcs, Node **out_res)
+bool arith_parse_input(char *input, char *error_fmt, bool replace_comp_funcs, bool simplify, Node **out_res)
 {
-    if (arith_parse_input_raw(input, error_fmt, out_res))
+    ParserError perr = parse_input(g_ctx, input, out_res);
+    if (perr != PERR_SUCCESS)
+    {
+        report_error(error_fmt, perr_to_string(perr));
+        return false;
+    }
+    else
     {
         if (replace_comp_funcs)
         {
             apply_rule_list(out_res, &g_composite_functions);
         }
 
-        if (!core_simplify(out_res) || !core_replace_history(out_res))
+        if (!core_simplify(out_res, simplify) || !core_replace_history(out_res))
         {
             free_tree(*out_res);
             return false;
         }
 
         return true;
-    }
-    else
-    {
-        return false;
     }
 }
