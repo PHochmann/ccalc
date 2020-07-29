@@ -5,6 +5,9 @@
 #define START_CHAR '!'
 #define END_CHAR   'z'
 
+/*
+A TrieNode directly contains the data and is always on heap
+*/
 typedef struct TrieNode
 {
     bool is_leaf;

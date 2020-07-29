@@ -5,6 +5,7 @@
 
 #define OP_DYNAMIC_ARITY  SIZE_MAX  // Used to indicate arbitrary number of operands
 #define OP_MAX_PRECEDENCE UCHAR_MAX // Since precedence is an unsigned char
+#define OP_NUM_PLACEMENTS 4
 
 typedef unsigned char Precedence;
 

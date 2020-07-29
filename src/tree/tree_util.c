@@ -222,10 +222,10 @@ Node **find_op(Node **tree, Operator *op)
 
 /*
 Summary: Lists all variable names occurring in tree. Strings are not copied!
+Returns: Length of out_variables (i.e. count of variables in tree without duplicates)
 Params
     tree:          Tree to search for variables
-    out_variables: Contains result. Function unsafe when too small.
-Returns: Length of out_variables (i.e. count of variables in tree without duplicates)
+    out_variables: Contains result. Function unsafe when too small
 */
 size_t list_variables(Node *tree, char **out_variables)
 {
@@ -235,11 +235,11 @@ size_t list_variables(Node *tree, char **out_variables)
 
 /*
 Summary: Replaces every occurrence of a variable with a certain name by a given subtree
+Returns: Number of nodes that have been replaced
 Params
     tree:         Tree to search for variable occurrences
     tree_to_copy: Tree, the variables are replaced by
     var_name:     Name of variable to search for
-Returns: Number of nodes that have been replaced
 */
 size_t replace_variable_nodes(Node **tree, Node *tree_to_copy, char *var_name)
 {
@@ -294,9 +294,18 @@ bool tree_reduce(Node *tree, Evaluation eval, ConstantType *out)
     return false;
 }
 
+/*
+Summary: Replaces reducible subtrees by a ConstantNode
+Params:
+    tree:            Tree that will be changed
+    eval:            Evaluation function to evaluate value of constants
+    num_dont_reduce: Length of dont_reduce
+    dont_reduce:     Array of operators that will not be reduced.
+                     NULL can be passed if num_dont_reduce is 0
+*/
 void replace_constant_subtrees(Node **tree, Evaluation eval, size_t num_dont_reduce, Operator **dont_reduce)
 {
-    bool is_constant = count_variables(*tree) == 0;
+    bool is_constant = (count_variables(*tree) == 0);
     bool no_dont_reduce = true;
 
     if (is_constant)

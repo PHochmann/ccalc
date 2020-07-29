@@ -8,42 +8,42 @@
 
 #define VECTOR_STARTSIZE 1
 
-/* A trie is used to lookup matchings of a common prefix */
+// A suffix-tree is used to lookup common prefixes of matchings
 typedef struct {
-    size_t first_match_index; // Index of first matching within trie, SIZE_MAX denotes pending computation
+    size_t first_match_index; // Index of first matching within suffixes, SIZE_MAX denotes pending computation
     size_t num_matchings;     // Amount of matchings of node
     size_t label;             // Amount of tree_children mapped to
     size_t sum;               // Amount of tree_children mapped to before
-    size_t distance;          // Number of trie nodes before
-    size_t parent_index;      // Index of parent node within trie vector
-} TrieNode;
+    size_t distance;          // Number of suffix nodes before
+    size_t parent_index;      // Index of parent node within suffix-vector
+} SuffixNode;
 
-void fill_trie(size_t curr_index,
+void fill_suffix(size_t curr_index,
     Node **pattern_children,
     Node **tree_children,
     Vector *matchings,
-    Vector *trie,
+    Vector *suffixes,
     MappingFilter filter)
 {
-    if (((TrieNode*)vec_get(trie, curr_index))->first_match_index != SIZE_MAX) return;
+    if (((SuffixNode*)vec_get(suffixes, curr_index))->first_match_index != SIZE_MAX) return;
 
-    fill_trie(((TrieNode*)vec_get(trie, curr_index))->parent_index,
+    // Recursively fill all suffix nodes before
+    fill_suffix(((SuffixNode*)vec_get(suffixes, curr_index))->parent_index,
         pattern_children,
         tree_children,
         matchings,
-        trie,
+        suffixes,
         filter);
 
-    // We can save curr for readability and performance because we won't
-    // insert into the trie
-    TrieNode *curr = (TrieNode*)vec_get(trie, curr_index);
-
+    // We can save curr for readability and performance because we won't insert into the vector
+    SuffixNode *curr = (SuffixNode*)vec_get(suffixes, curr_index);
     curr->first_match_index = vec_count(matchings);
 
-    for (size_t i = 0; i < ((TrieNode*)vec_get(trie, curr->parent_index))->num_matchings; i++)
+    for (size_t i = 0; i < ((SuffixNode*)vec_get(suffixes, curr->parent_index))->num_matchings; i++)
     {
+        // Extend every single matching in parent with additional parameters of this node
         extend_matching(
-            *(Matching*)vec_get(matchings, ((TrieNode*)vec_get(trie, curr->parent_index))->first_match_index + i),
+            *(Matching*)vec_get(matchings, ((SuffixNode*)vec_get(suffixes, curr->parent_index))->first_match_index + i),
             pattern_children[curr->distance - 1],
             (NodeList){ .size = curr->label, .nodes = tree_children + curr->sum },
             matchings,
@@ -74,10 +74,10 @@ void match_parameter_lists(Matching matching,
     MappingFilter filter)
 {
     Vector vec_local_matchings = vec_create(sizeof(Matching), VECTOR_STARTSIZE);
-    Vector vec_trie = vec_create(sizeof(TrieNode), VECTOR_STARTSIZE);
+    Vector vec_suffixes = vec_create(sizeof(SuffixNode), VECTOR_STARTSIZE);
 
     vec_push(&vec_local_matchings, &matching);
-    VEC_PUSH_ELEM(&vec_trie, TrieNode, ((TrieNode){
+    VEC_PUSH_ELEM(&vec_suffixes, SuffixNode, ((SuffixNode){
         .first_match_index = 0,
         .num_matchings     = 1,
         .sum               = 0,
@@ -87,24 +87,24 @@ void match_parameter_lists(Matching matching,
     }));
 
     size_t curr_index = 0;
-    while (curr_index < vec_count(&vec_trie))
+    while (curr_index < vec_count(&vec_suffixes))
     {
-        // Since vec_trie's buffer could be realloced by any insertion, we can't store a pointer to it
-        TrieNode curr = VEC_GET_ELEM(&vec_trie, TrieNode, curr_index);
+        // Since vec_suffixes's buffer could be realloced by any insertion, we can't store a pointer to it
+        SuffixNode curr = VEC_GET_ELEM(&vec_suffixes, SuffixNode, curr_index);
         size_t new_sum = curr.sum + curr.label;
 
-        // We found a valid end node of trie. Try to match.
+        // We found a valid end node of suffixes. Try to match.
         if (new_sum == num_tree_children && curr.distance == num_pattern_children)
         {
-            fill_trie(curr_index,
+            fill_suffix(curr_index,
                 pattern_children,
                 tree_children,
                 &vec_local_matchings,
-                &vec_trie,
+                &vec_suffixes,
                 filter);
 
             // Update curr
-            curr = VEC_GET_ELEM(&vec_trie, TrieNode, curr_index);
+            curr = VEC_GET_ELEM(&vec_suffixes, SuffixNode, curr_index);
 
             // Copy matchings to result-buffer
             vec_push_many(out_matchings,
@@ -112,7 +112,7 @@ void match_parameter_lists(Matching matching,
                 vec_get(&vec_local_matchings, curr.first_match_index));
         }
 
-        // Extend entry of trie
+        // Extend entry of suffixes
         if (curr.distance < num_pattern_children)
         {
             if (get_type(pattern_children[curr.distance]) == NTYPE_VARIABLE
@@ -123,7 +123,7 @@ void match_parameter_lists(Matching matching,
                 if (list != NULL && new_sum + 1 <= num_tree_children)
                 {
                     // List is already bound, thus also its length is bound
-                    VEC_PUSH_ELEM(&vec_trie, TrieNode, ((TrieNode){
+                    VEC_PUSH_ELEM(&vec_suffixes, SuffixNode, ((SuffixNode){
                         .first_match_index = SIZE_MAX,
                         .num_matchings     = 0,
                         .label             = list->size,
@@ -137,8 +137,8 @@ void match_parameter_lists(Matching matching,
                     if (curr.distance == num_pattern_children - 1)
                     {
                         // Special case: List is last pattern-child
-                        // We can avoid extending trie with lists that are too short
-                        VEC_PUSH_ELEM(&vec_trie, TrieNode, ((TrieNode){
+                        // We can avoid extending suffixes with lists that are too short
+                        VEC_PUSH_ELEM(&vec_suffixes, SuffixNode, ((SuffixNode){
                                 .first_match_index = SIZE_MAX,
                                 .num_matchings     = 0,
                                 .label             = num_tree_children - new_sum,
@@ -149,11 +149,11 @@ void match_parameter_lists(Matching matching,
                     }
                     else
                     {
-                        // List is not bound yet, trie needs to be extended with all possible lengths
+                        // List is not bound yet, suffixes needs to be extended with all possible lengths
                         size_t num_insertions = num_tree_children - new_sum + 1;
                         for (size_t i = 0; i < num_insertions; i++)
                         {
-                            VEC_PUSH_ELEM(&vec_trie, TrieNode, ((TrieNode){
+                            VEC_PUSH_ELEM(&vec_suffixes, SuffixNode, ((SuffixNode){
                                 .first_match_index = SIZE_MAX,
                                 .num_matchings     = 0,
                                 .label             = i,
@@ -170,7 +170,7 @@ void match_parameter_lists(Matching matching,
                 if (new_sum < num_tree_children)
                 {
                     // Any non-list node in pattern corresponds to exactly one node in tree
-                    VEC_PUSH_ELEM(&vec_trie, TrieNode, ((TrieNode){
+                    VEC_PUSH_ELEM(&vec_suffixes, SuffixNode, ((SuffixNode){
                         .first_match_index = SIZE_MAX,
                         .num_matchings     = 0,
                         .label             = 1,
@@ -185,7 +185,7 @@ void match_parameter_lists(Matching matching,
     }
     
     vec_destroy(&vec_local_matchings);
-    vec_destroy(&vec_trie);
+    vec_destroy(&vec_suffixes);
 }
 
 bool nodelists_equal(NodeList *a, NodeList *b)
@@ -273,7 +273,7 @@ size_t get_all_matchings(Node **tree, Node *pattern, Matching **out_matchings, M
 {
     if (tree == NULL || pattern == NULL || out_matchings == NULL) return false;
 
-    // Due to exponential many partitions, a lot of states can occur. Use heap.
+    // Due to exponentially many partitions, a lot of states can occur. Use heap.
     Vector result = vec_create(sizeof(Matching), VECTOR_STARTSIZE);
 
     extend_matching(
@@ -282,13 +282,13 @@ size_t get_all_matchings(Node **tree, Node *pattern, Matching **out_matchings, M
         (NodeList){ .size = 1, .nodes = tree },
         &result,
         filter);
-    *out_matchings = (Matching*)(result.buffer);
+    *out_matchings = (Matching*)result.buffer;
 
     return result.elem_count;
 }
 
 /*
-Summary: Tries to match "tree" against "pattern" (only in root)
+Summary: suffixess to match "tree" against "pattern" (only in root)
 Returns: True, if matching is found, false if NULL-pointers given in arguments or no matching found
 */
 bool get_matching(Node **tree, Node *pattern, Matching *out_matching, MappingFilter filter)
@@ -313,7 +313,7 @@ bool get_matching(Node **tree, Node *pattern, Matching *out_matching, MappingFil
 }
 
 /*
-Summary: Looks for matching in tree, i.e. tries to construct matching in each node until matching is found (Top-Down)
+Summary: Looks for matching in tree, i.e. suffixess to construct matching in each node until matching is found (Top-Down)
 */
 Node **find_matching(Node **tree, Node *pattern, Matching *out_matching, MappingFilter filter)
 {

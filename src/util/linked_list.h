@@ -4,6 +4,9 @@
 #define LIST_APPEND_ELEM(list, type, expr) (*(type*)list_append(list, NULL)->data) = expr
 #define LIST_GET_ELEM(list, type, index) (*(type*)list_get(list, index))
 
+/*
+A ListNode directly contains the payload and is always on heap
+*/
 typedef struct ListNode {
     struct ListNode *next;
     struct ListNode *previous;

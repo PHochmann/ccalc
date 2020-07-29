@@ -5,6 +5,7 @@
 #include "vector.h"
 #include "../parsing/parser.h"
 
+// A StringBuilder is just a Vector of chars
 typedef Vector StringBuilder;
 
 typedef struct

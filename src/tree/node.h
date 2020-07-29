@@ -38,8 +38,8 @@ typedef struct {
     Node *children[];
 } OperatorNode;
 
-typedef struct
-{
+// Not to be confused with struct ListNode ;)
+typedef struct {
     size_t size;
     Node **nodes;
 } NodeList;

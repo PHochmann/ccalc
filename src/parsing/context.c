@@ -59,7 +59,7 @@ bool ctx_add_ops(ParsingContext *ctx, size_t count, ...)
 Summary: Adds operator to context
     To associate every operand with exactly one operator in a unique manner,
     infix operators with the same precedence must have the same associativity.
-Returns: pointer to operator within context, NULL if one of the following:
+Returns: Pointer to operator within context, NULL if one of the following:
     * ctx is NULL
     * infix operator with inconsistent associativity is given
           (another infix operator with same precedence has different associativity)
@@ -98,6 +98,9 @@ Operator *ctx_add_op(ParsingContext *ctx, Operator op)
     return (Operator*)list_node->data;
 }
 
+/*
+
+*/
 bool ctx_delete_op(ParsingContext *ctx, char *name, OpPlacement placement)
 {
     ListNode *node = NULL;
