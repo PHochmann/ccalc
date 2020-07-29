@@ -20,18 +20,19 @@ struct ErrorTest {
     ParserError result;
 };
 
-static const size_t NUM_VALUE_CASES = 47;
+static const size_t NUM_VALUE_CASES = 51;
 static struct ValueTest valueTests[] = {
     // 1. Basic prefix, infix, postfix
-    { "2+3",  5 },
-    { "2-3", -1 },
-    { "2*3",  6 },
-    { "4/2",  2 },
-    { "2^3",  8 },
-    { "-3",  -3 },
-    { "+99", 99 },
-    { "4!",  24 },
-    { "3%",   0.03 },
+    { "2+3",         5 },
+    { "2-3",        -1 },
+    { "2*3",         6 },
+    { "4/2",         2 },
+    { "2^3",         8 },
+    { "-3",         -3 },
+    { "+99",        99 },
+    { "4!",         24 },
+    { "3%",          0.03 },
+    { "1 2 3 4 5", 120 },
     // 2. Correct implementation of evaluation (ToDo: extend)
     { "fib(7)",         13 },
     { "fib(-8)",       -21 },
@@ -59,10 +60,13 @@ static struct ValueTest valueTests[] = {
     { "pi()2" ,    6.283185307 },
     { "pi()(2)",   6.283185307 },
     { "pi()e",     8.539734222 },
+    { "pi e",      8.539734222 },
     { "3+sum",     3 },
     { "sum(2)",    2 },
     { "sum()",     0 },
+    { "sum",       0 },
     { "sum() + 2", 2 },
+    { "sum + 2",   2 },
     { "3+sum()",   3 },
     { "sum()2" ,   0 },
     { "sum()(2)",  0 },
@@ -80,7 +84,7 @@ static struct ValueTest valueTests[] = {
     { "-sqrt(abs(--2!!*--sum(-1+.2-.2+2, 2^2^3-255, -sum(.1, .9), 1+2)*--2!!))", -4 },
 };
 
-static const size_t NUM_ERROR_CASES = 13;
+static const size_t NUM_ERROR_CASES = 12;
 static struct ErrorTest errorTests[] = {
     { "",          PERR_EMPTY },
     { "()",        PERR_EMPTY },
@@ -88,7 +92,6 @@ static struct ErrorTest errorTests[] = {
     { "root(x,)",  PERR_MISSING_OPERAND },
     { "sin",       PERR_FUNCTION_WRONG_ARITY },
     { "sin 2",     PERR_FUNCTION_WRONG_ARITY },
-    { "sum + 1",   PERR_MISSING_OPERATOR },
     { "sin(x, y)", PERR_FUNCTION_WRONG_ARITY },
     { "root(x)",   PERR_FUNCTION_WRONG_ARITY },
     { "sin,",      PERR_FUNCTION_WRONG_ARITY },

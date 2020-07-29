@@ -272,8 +272,8 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
             {
                 if (!push_operator(&state, op)) goto exit;
 
-                // Directly pop constants that are not followed by an opening parenthesis
-                if (op->arity == 0)
+                // Directly pop constant functions or functions with no parameter list
+                if (op->arity == 0 || (i < num_tokens - 1 && !is_opening_parenthesis(tokens[i + 1])))
                 {
                     // Skip parsing of empty parameter list
                     if (i < num_tokens - 2 && is_opening_parenthesis(tokens[i + 1])
@@ -282,7 +282,7 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
                         i += 2;
                     }
 
-                    op_pop_and_insert(&state);
+                    if (!op_pop_and_insert(&state)) goto exit;
                     await_infix = true;
                     continue;
                 }
