@@ -43,7 +43,7 @@ bool cmd_clear_exec(char *input, int code)
             }
             else
             {
-                report_error("Predefined operators can not be removed.\n");
+                // Error message is given by remove_composite_function
                 return false;
             }
         }

@@ -47,56 +47,34 @@ bool do_left_checks(Node *left_n)
 
 bool add_function(char *name, char *left, char *right)
 {
-    // Check if left side can be parsed without adding tentative operator
-    // If it succeeds, we are redefining an already existing function
-    Node *left_n = NULL;
-    Node *right_n = NULL;
-    RewriteRule *redefined_rule = NULL;
-
-    if (parse_input(g_ctx, left, &left_n) == PERR_SUCCESS)
+    // First check if function already exists
+    Operator *op = ctx_lookup_op(g_ctx, name, OP_PLACE_FUNCTION);
+    if (op != NULL)
     {
-        if (get_type(left_n) == NTYPE_OPERATOR && get_op(left_n)->placement == OP_PLACE_FUNCTION)
+        if (op->id < NUM_PREDEFINED_OPS)
         {
-            // Name is not needed since no new function will be added
-            free(name);
-
-            // Check if found function is a composite function...
-            ListNode *curr = g_composite_functions.first;
-            while (curr != NULL)
-            {
-                if (get_op(((RewriteRule*)curr->data)->before) == get_op(left_n))
-                {
-                    redefined_rule = (RewriteRule*)curr->data;
-                    break;
-                }
-                curr = curr->next;
-            }
-            
-            // ...if not, the function is built-in. Fail here.
-            if (redefined_rule == NULL)
-            {
-                report_error("Error: Built-in functions can not be redefined.\n");
-                free_tree(left_n);
-                return false;
-            }
+            report_error("Built-in functions can not be redefined.\n");
         }
         else
         {
-            free_tree(left_n);
+            report_error("Function or constant already defined. Please use clear-command before redefinition.\n");
         }
-    }
-    
-    if (redefined_rule == NULL)
-    {
-        // Add function operator to parse left input
-        // Must be OP_DYNAMIC_ARITY because we do not know the actual arity yet
-        ctx_add_op(g_ctx, op_get_function(name, OP_DYNAMIC_ARITY));
-        if (!arith_parse_input_raw(left, FMT_ERROR_LEFT, &left_n))
-        {
-            goto error;
-        }
+        free(name);
+        return false;
     }
 
+    Node *left_n = NULL;
+    Node *right_n = NULL;
+
+    // Add function operator to parse left input
+    // Must be OP_DYNAMIC_ARITY because we do not know the actual arity yet
+    ctx_add_op(g_ctx, op_get_function(name, OP_DYNAMIC_ARITY));
+    if (!arith_parse_input_raw(left, FMT_ERROR_LEFT, &left_n))
+    {
+        goto error;
+    }
+
+    // Check if left side is "function(var_1, ..., var_n)"
     if (!do_left_checks(left_n)) goto error;
 
     // Assign correct arity
@@ -111,30 +89,6 @@ bool add_function(char *name, char *left, char *right)
     {
         report_error("Error: Recursive definition.\n");
         goto error;
-    }
-
-    if (redefined_rule != NULL)
-    {
-        printf("Function or constant already exists. Redefine it [y/N]? ");
-        
-        ListNode *curr = g_composite_functions.first;
-        while (curr != NULL)
-        {
-            RewriteRule *rule = (RewriteRule*)curr->data;
-            if (find_matching_discarded(rule->after, left_n, NULL))
-            {
-                printf("\nWarning: This will affect at least one other function or constant. ");
-                break;
-            }
-
-            curr = curr->next;
-        }
-
-        if (!ask_yes_no(false))
-        {
-            printf("Aborted.\n");
-            goto error;
-        }
     }
 
     if (get_op(left_n)->arity == 0)
@@ -169,50 +123,23 @@ bool add_function(char *name, char *left, char *right)
             whisper("Note: Unbounded variables in previously defined functions or constants are now bounded.\n");
         }
 
-        if (redefined_rule == NULL)
-        {
-            whisper("Added constant.\n");
-        }
-        else
-        {
-            whisper("Redefined constant.\n");
-        }
+        whisper("Added constant.\n");
     }
     else
     {
-        if (redefined_rule == NULL)
-        {
-            whisper("Added function.\n");
-        }
-        else
-        {
-            whisper("Redefined function.\n");
-        }
+        whisper("Added function.\n");
     }
 
     // Add rule to eliminate operator before evaluation
     RewriteRule rule = get_rule(left_n, right_n, NULL);
-    if (redefined_rule == NULL)
-    {
-        add_composite_function(rule);
-    }
-    else
-    {
-        free_tree(redefined_rule->before);
-        free_tree(redefined_rule->after);
-        redefined_rule->before = left_n;
-        redefined_rule->after = right_n;
-    }
+    add_composite_function(rule);
     return true;
 
     error:
     free_tree(left_n);
     free_tree(right_n);
-    if (redefined_rule == NULL)
-    {
-        ctx_remove_op(g_ctx, name, OP_PLACE_FUNCTION);
-        free(name);
-    }
+    ctx_delete_op(g_ctx, name, OP_PLACE_FUNCTION);
+    free(name);
     return false;
 }
 

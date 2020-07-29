@@ -4,11 +4,10 @@
 #include "arith_context.h"
 #include "simplification.h"
 #include "history.h"
+#include "../tree/tree_util.h"
 #include "../util/string_util.h"
 #include "../util/console_util.h"
 #include "../parsing/parser.h"
-
-#define NUM_PREDEFINED_OPS 56
 
 ParsingContext __g_ctx;
 LinkedList g_composite_functions;
@@ -103,7 +102,7 @@ void remove_node(ListNode *node)
     RewriteRule *rule = (RewriteRule*)node->data;
     char *temp = get_op(rule->before)->name;
     // Remove function operator from context
-    ctx_remove_op(g_ctx, get_op(rule->before)->name, OP_PLACE_FUNCTION);
+    ctx_delete_op(g_ctx, get_op(rule->before)->name, OP_PLACE_FUNCTION);
     // Free its name since its malloced by the tokenizer in definition-command
     free(temp);
     // Free elimination rule
@@ -114,7 +113,21 @@ void remove_node(ListNode *node)
 
 bool remove_composite_function(Operator *function)
 {
+    // First check if another composite function depends on the operator
     ListNode *curr = g_composite_functions.first;
+    while (curr != NULL)
+    {
+        RewriteRule *rule = (RewriteRule*)curr->data;
+        if (find_op(&rule->after, function) != NULL)
+        {
+            report_error("This function can not be removed as it is used in another function's definition.\n");
+            return false;
+        }
+        curr = curr->next;
+    }
+
+    // Search for node in linked list to remove
+    curr = g_composite_functions.first;
     while (curr != NULL)
     {
         RewriteRule *rule = (RewriteRule*)curr->data;
@@ -125,15 +138,31 @@ bool remove_composite_function(Operator *function)
         }
         curr = curr->next;
     }
+
+    report_error("Built-in functions can not be removed.\n");
     return false;
 }
 
 void clear_composite_functions()
 {
-    while (g_composite_functions.first != NULL)
+    while (list_count(&g_composite_functions) != 0)
     {
         remove_node(g_composite_functions.first);
     }
+}
+
+RewriteRule *get_composite_function(Operator *op)
+{
+    ListNode *curr = g_composite_functions.first;
+    while (curr != NULL)
+    {
+        RewriteRule *rule = (RewriteRule*)curr->data;
+        if (get_op(rule->before) == op)
+        {
+            return rule;
+        }
+    }
+    return NULL;
 }
 
 bool arith_parse_input_raw(char *input, char *error_fmt, Node **out_res)
