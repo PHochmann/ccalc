@@ -7,10 +7,10 @@
 #include "../src/parsing/parser.h"
 #include "../src/tree/tree_to_string.h"
 
-#define SEED                 21
-#define NUM_CASES            1000
+#define SEED                  21
+#define NUM_CASES            100
 #define MAX_INNER_NODES      250
-#define MAX_DYNAMIC_CHILDREN 5
+#define MAX_DYNAMIC_CHILDREN   5
 
 #define NUM_VARIABLE_NAMES 5
 static char *variable_names[] = { "x", "y", "z", "abc", "def" };

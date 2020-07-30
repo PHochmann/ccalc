@@ -103,7 +103,7 @@ void remove_node(ListNode *node)
     char *temp = get_op(rule->before)->name;
     // Remove function operator from context
     ctx_delete_op(g_ctx, get_op(rule->before)->name, OP_PLACE_FUNCTION);
-    // Free its name since its malloced by the tokenizer in definition-command
+    // Free its name since it is malloced by the tokenizer in definition-command
     free(temp);
     // Free elimination rule
     free_rule(*(RewriteRule*)node->data);

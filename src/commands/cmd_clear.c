@@ -9,12 +9,11 @@
 #define UNDEF_CODE 2
 
 #define CLEAR_COMMAND "clear"
-#define UNDEF_COMMAND "clear "
 
 int cmd_clear_check(char *input)
 {
     if (strcmp(CLEAR_COMMAND, input) == 0) return CLEAR_CODE;
-    if (begins_with(UNDEF_COMMAND, input)) return UNDEF_CODE;
+    if (begins_with(CLEAR_COMMAND, input)) return UNDEF_CODE;
     return false;
 }
 
@@ -31,7 +30,7 @@ bool cmd_clear_exec(char *input, int code)
     }
     else
     {
-        input += strlen(UNDEF_COMMAND);
+        input += strlen(CLEAR_COMMAND);
         
         Operator *function = ctx_lookup_op(g_ctx, input, OP_PLACE_FUNCTION);
         if (function != NULL)

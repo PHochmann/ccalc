@@ -31,7 +31,7 @@ When starting the calculator normally, you can enter expressions and commands in
 | ```table <expr> ; <from> ; <to> ; <step> [fold <expr> ; <init>]``` | Prints table of values and optionally folds them. In fold expression, ```x``` is replaced with the intermediate result (init in first step), ```y``` is replaced with the current value. Result of fold is stored in history. |
 | ```load <path>```             | Loads file as if its content had been typed in.                           |
 | ```help [operators]```        | Lists available commands and operators.                                   |
-| ```clear [last]```            | Clears all or last user-defined functions and constants.                  |
+| ```clear [<func>]```          | Clears all or one function or constant.                                   |
 | ```quit```                    | Closes application.                                                       |
 
 ### Infix operators
