@@ -9,37 +9,17 @@
 #include "rewrite_rule.h"
 #include "matching.h"
 
-#define NORMAL_VAR_ID  0
-#define RULE_VAR_ID    1
-
 #define ARROW           " -> "
 #define COMMENT_PREFIX  '\''
 
 #define MAX_RULESET_ITERATIONS 1000 // To protect against endless loops
-
-void mark_vars(Node *tree, char id)
-{
-    char *vars[count_variables_distinct(tree)];
-    size_t num_vars = list_variables(tree, vars);
-    size_t safe_var_count = count_variables(tree);
-    for (size_t i = 0; i < num_vars; i++)
-    {
-        Node **nodes[safe_var_count];
-        size_t num_nodes = get_variable_nodes(&tree, vars[i], nodes);
-        for (size_t j = 0; j < num_nodes; j++)
-        {
-            set_id(*(nodes[j]), id);
-        }
-    }
-}
 
 /*
 Summary: Constructs new rule. Warning: "before" and "after" are not copied, so don't free them!
 */
 RewriteRule get_rule(Node *before, Node *after, MappingFilter filter)
 {
-    mark_vars(before, RULE_VAR_ID);
-    mark_vars(after, RULE_VAR_ID);
+    preprocess_pattern(before);
     return (RewriteRule){
         .before = before,
         .after  = after,
@@ -59,16 +39,14 @@ void free_rule(RewriteRule rule)
 /*
 Summary: Substitutes subtree in which matching was found according to rule
 */
-void transform_matched_by_rule(Node *rule_after, Matching *matching, Node **matched_subtree)
+void transform_matched(Node *rule_after, Matching *matching, Node **matched_subtree)
 {
     if (rule_after == NULL || matching == NULL) return;
     
     Node *transformed = tree_copy(rule_after);
-    for (size_t i = 0; i < matching->num_mapped; i++)
-    {
-        replace_variable_nodes_by_list(&transformed, matching->mapped_nodes[i], matching->mapped_vars[i], RULE_VAR_ID);
-    }
-    mark_vars(transformed, NORMAL_VAR_ID);
+
+    // Todo: Safe instaces to replace in transformed, replace them
+
     tree_replace(matched_subtree, transformed);
 }
 
@@ -150,7 +128,6 @@ size_t apply_rule_list(Node **tree, LinkedList *rules)
         {
             if (apply_rule(tree, (RewriteRule*)curr->data))
             {
-                //printf("Applied rule %zu: %s\n", j, tree_to_str(*tree, true));
                 applied_flag = true;
                 counter++;
                 break;
@@ -183,6 +160,14 @@ bool parse_rule(char *string, ParsingContext *ctx, MappingFilter default_filter,
     Node *left_n = parse_conveniently(ctx, string);
     if (left_n == NULL)
     {
+        return false;
+    }
+
+    // Check for too many variables
+    if (count_variables_distinct(left_n) > MAX_MAPPED_VARS)
+    {
+        free_tree(left_n);
+        report_error("parse_rule: Too many variables in left-hand side. Increase MAX_MAPPED_VARS.\n");
         return false;
     }
 
@@ -222,10 +207,7 @@ bool parse_ruleset_from_string(char *string, ParsingContext *ctx, MappingFilter 
         }
 
         line = next_line;
-        if (next_line != NULL)
-        {
-            line++;
-        }
+        if (line != NULL) line++; // Skip newline char
     }
 
     vec_trim(out_ruleset);
@@ -234,37 +216,6 @@ bool parse_ruleset_from_string(char *string, ParsingContext *ctx, MappingFilter 
 
     error:
     free(copy);
-    free_ruleset(out_ruleset);
-    return false;
-}
-
-bool parse_ruleset_from_file(FILE *file,
-    ParsingContext *ctx,
-    MappingFilter default_filter,
-    Vector *out_ruleset)
-{
-    char *line = NULL;
-    size_t line_len = 0;
-    size_t line_no = 0;
-    *out_ruleset = get_empty_ruleset();
-
-    while (getline(&line, &line_len, file) != EOF)
-    {
-        line_no++;
-        line[strlen(line) - 1] = '\0';
-        if (!parse_rule(line, ctx, default_filter, out_ruleset))
-        {
-            report_error("Failed parsing ruleset in line %zu.\n", line_no);
-            goto error;
-        }
-    }
-
-    vec_trim(out_ruleset);
-    free(line);
-    return true;
-
-    error:
-    free(line);
     free_ruleset(out_ruleset);
     return false;
 }

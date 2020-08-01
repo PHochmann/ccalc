@@ -36,10 +36,10 @@ bool tree_util_test(Vector *error_builder)
     }
 
     // Case 2
-    if (count_variables_distinct(root) != 2)
+    if (list_variables(root, 0, NULL) != 2)
     {
         free_tree(root);
-        ERROR_RETURN_VAL("count_variables_distinct");
+        ERROR_RETURN_VAL("list_variables without buffer");
     }
 
     // Case 3

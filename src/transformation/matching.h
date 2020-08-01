@@ -23,4 +23,4 @@ size_t get_all_matchings(Node **tree, Node *pattern, Matching **out_matchings, M
 bool get_matching(Node **tree, Node *pattern, Matching *out_matching, MappingFilter filter);
 Node **find_matching(Node **tree, Node *pattern, Matching *out_matching, MappingFilter filter);
 Node **find_matching_discarded(Node *tree, Node *pattern, MappingFilter filter);
-bool prefix_filter(char *var, NodeList nodes);
+void preprocess_pattern(Node *tree);

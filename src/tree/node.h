@@ -22,7 +22,7 @@ typedef struct {
 
 typedef struct {
     Node base;
-    char id; // Avoids sanitizing variables when replacing by list
+    size_t id; // For easier lookup
     char var_name[];
 } VariableNode;
 
@@ -45,7 +45,7 @@ typedef struct {
 } NodeList;
 
 // Memory
-Node *malloc_variable_node(char *var_name);
+Node *malloc_variable_node(char *var_name, size_t id);
 Node *malloc_constant_node(ConstantType value);
 Node *malloc_operator_node(Operator *op, size_t num_children);
 void free_tree(Node *tree);
@@ -59,5 +59,5 @@ Node **get_child_addr(Node *node, size_t index);
 void set_child(Node *node, size_t index, Node *child);
 char *get_var_name(Node *node);
 char get_id(Node *node);
-void set_id(Node *node, char id);
+void set_id(Node *node, size_t id);
 ConstantType get_const_value(Node *node);

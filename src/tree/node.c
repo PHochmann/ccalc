@@ -5,12 +5,12 @@
 The following functions are used for polymorphism of different Node types
 */
 
-Node *malloc_variable_node(char *var_name)
+Node *malloc_variable_node(char *var_name, size_t id)
 {
     VariableNode *res = malloc(sizeof(VariableNode) + (strlen(var_name) + 1) * sizeof(char));
     if (res == NULL) return NULL;
     res->base.type = NTYPE_VARIABLE;
-    res->id = 0;
+    res->id = id;
     strcpy(res->var_name, var_name);
     return (Node*)res;
 }
@@ -93,7 +93,7 @@ char get_id(Node *node)
     return ((VariableNode*)node)->id;
 }
 
-void set_id(Node *node, char id)
+void set_id(Node *node, size_t id)
 {
     ((VariableNode*)node)->id = id;
 }

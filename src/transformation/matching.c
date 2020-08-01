@@ -53,18 +53,6 @@ void fill_suffix(size_t curr_index,
     curr->num_matchings = vec_count(matchings) - curr->first_match_index;
 }
 
-NodeList *lookup_mapped_var(Matching *matching, char *var)
-{
-    for (size_t i = 0; i < matching->num_mapped; i++)
-    {
-        if (strcmp(matching->mapped_vars[i], var) == 0)
-        {
-            return &matching->mapped_nodes[i];
-        }
-    }
-    return NULL;
-}
-
 void match_parameter_lists(Matching matching,
     size_t num_pattern_children,
     Node **pattern_children,
@@ -119,7 +107,7 @@ void match_parameter_lists(Matching matching,
                 && get_var_name(pattern_children[curr.distance])[0] == MATCHING_LIST_PREFIX)
             {
                 // Current pattern-child is list-variable
-                NodeList *list = lookup_mapped_var(&matching, get_var_name(pattern_children[curr.distance]));
+                NodeList *list = matching.mapped_vars[get_id(pattern_children[curr.distance])];
                 if (list != NULL && new_sum + 1 <= num_tree_children)
                 {
                     // List is already bound, thus also its length is bound
@@ -209,7 +197,7 @@ void extend_matching(Matching matching,
         // 1. Check if variable is bound, if it is, check occurrence. Otherwise, bind.
         case NTYPE_VARIABLE:
         {
-            NodeList *nodes = lookup_mapped_var(&matching, get_var_name(pattern));
+            NodeList *nodes = matching.mapped_vars[get_id(pattern)];
             if (nodes != NULL) // Already bound
             {
                 // Is already bound variable equal to this occurrence?
@@ -336,4 +324,29 @@ Node **find_matching_discarded(Node *tree, Node *pattern, MappingFilter filter)
 {
     Matching matching;
     return find_matching(&tree, pattern, &matching, filter);
+}
+
+/*
+Summary: Sets ids of variable nodes for faster lookup while matching
+*/
+void preprocess_pattern(Node *tree)
+{
+    char *var_names[MAX_MAPPED_VARS];
+    size_t num_vars_distinct = list_variables(tree, MAX_MAPPED_VARS, var_names);
+    size_t num_vars = count_variables(tree);
+
+    if (num_vars_distinct > MAX_MAPPED_VARS)
+    {
+        report_error("Trying to preprocess a pattern with too many distinct variables. Increase MAX_MAPPED_VARS.\n");
+    }
+
+    for (size_t i = 0; i < num_vars_distinct; i++)
+    {
+        Node **nodes[num_vars];
+        size_t num_nodes = get_variable_nodes(&tree, var_names[i], nodes);
+        for (size_t j = 0; j < num_nodes; j++)
+        {
+            set_id(*(nodes[j]), i);
+        }
+    }
 }

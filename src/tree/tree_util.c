@@ -27,8 +27,7 @@ Node *tree_copy(Node *tree)
             
         case NTYPE_VARIABLE:
         {
-            Node *res = malloc_variable_node(get_var_name(tree));
-            set_id(res, get_id(tree));
+            Node *res = malloc_variable_node(get_var_name(tree), get_id(tree));
             return res;
         }
     }
@@ -108,16 +107,6 @@ size_t count_variables(Node *tree)
 }
 
 /*
-Summary: Variant of list_variables that discards 'out_variables'
-Returns: Number of different variables present in tree
-*/
-size_t count_variables_distinct(Node *tree)
-{
-    char *vars[count_variables(tree)];
-    return list_variables(tree, vars);
-}
-
-/*
 Summary: Lists all pointers to variable nodes of given name
 Params
     out_instances: Contains result. Function unsafe when too small.
@@ -167,7 +156,7 @@ size_t count_variable_nodes(Node *tree, char *var_name)
     return get_variable_nodes(&tree, var_name, instances);
 }
 
-size_t list_variables_rec(Node *tree, size_t num_found, char **out_variables)
+size_t list_variables_rec(Node *tree, size_t buffer_size, size_t num_found, char **out_variables)
 {
     switch (get_type(tree))
     {
@@ -183,13 +172,13 @@ size_t list_variables_rec(Node *tree, size_t num_found, char **out_variables)
                     return num_found;
                 }
             }
-            out_variables[num_found] = get_var_name(tree);
+            if (num_found < buffer_size) out_variables[num_found] = get_var_name(tree);
             return num_found + 1;
 
         case NTYPE_OPERATOR:
             for (size_t i = 0; i < get_num_children(tree); i++)
             {
-                num_found = list_variables_rec(get_child(tree, i), num_found, out_variables);
+                num_found = list_variables_rec(get_child(tree, i), buffer_size, num_found, out_variables);
             }
             return num_found;
     }
@@ -227,10 +216,10 @@ Params
     tree:          Tree to search for variables
     out_variables: Contains result. Function unsafe when too small
 */
-size_t list_variables(Node *tree, char **out_variables)
+size_t list_variables(Node *tree, size_t buffer_size, char **out_variables)
 {
     if (tree == NULL || out_variables == NULL) return 0;
-    return list_variables_rec(tree, 0, out_variables);
+    return list_variables_rec(tree, buffer_size, 0, out_variables);
 }
 
 /*
@@ -370,11 +359,11 @@ void tree_replace_by_list(Node **parent, size_t child_to_replace, NodeList list)
     }
 }
 
-size_t replace_variable_nodes_by_list(Node **tree, NodeList list_of_nodes_to_copy, char *var_name, char id)
+size_t replace_variable_nodes_by_list(Node **tree, NodeList nodes_to_copy, char *var_name)
 {
     if (get_type(*tree) != NTYPE_OPERATOR)
     {
-        if (list_of_nodes_to_copy.size != 1)
+        if (nodes_to_copy.size != 1)
         {
             //Software defect: Can't substitute a tree that consists of a single node with a list with more than one node
             return 0;
@@ -383,9 +372,9 @@ size_t replace_variable_nodes_by_list(Node **tree, NodeList list_of_nodes_to_cop
         if (get_type(*tree) == NTYPE_CONSTANT) return 0;
         if (get_type(*tree) == NTYPE_VARIABLE)
         {
-            if (strcmp(get_var_name(*tree), var_name) == 0 && get_id(*tree) == id)
+            if (strcmp(get_var_name(*tree), var_name) == 0)
             {
-                tree_replace(tree, tree_copy(list_of_nodes_to_copy.nodes[0]));
+                tree_replace(tree, tree_copy(nodes_to_copy.nodes[0]));
                 return 1;
             }
         }
@@ -398,16 +387,15 @@ size_t replace_variable_nodes_by_list(Node **tree, NodeList list_of_nodes_to_cop
         {
             if (get_type(get_child(*tree, i)) == NTYPE_VARIABLE)
             {
-                if (strcmp(get_var_name(get_child(*tree, i)), var_name) == 0 && get_id(get_child(*tree, i)) == id)
+                if (strcmp(get_var_name(get_child(*tree, i)), var_name) == 0)
                 {
-                    tree_replace_by_list(tree, i, list_of_nodes_to_copy);
+                    tree_replace_by_list(tree, i, nodes_to_copy);
                     replacement_counter++;
                 }
             }
             else
             {
-                replacement_counter +=
-                    replace_variable_nodes_by_list(get_child_addr(*tree, i), list_of_nodes_to_copy, var_name, id);
+                replacement_counter += replace_variable_nodes_by_list(get_child_addr(*tree, i), nodes_to_copy, var_name);
             }
         }
         return replacement_counter;

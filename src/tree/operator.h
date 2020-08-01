@@ -23,7 +23,7 @@ typedef enum {
 
 typedef struct {
     char *name;
-    size_t id;
+    size_t id; // For easier lookup
     size_t arity;
     Precedence precedence;
     OpAssociativity assoc;

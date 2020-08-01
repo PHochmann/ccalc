@@ -23,10 +23,10 @@ struct OpData
 // Encapsulates current state of shunting-yard algo. to be communicated to auxiliary functions
 struct ParserState
 {
-    ParsingContext *ctx; // Contains operators and glue-op
-    Vector vec_nodes;    // Constructed nodes
-    Vector vec_ops;      // Parsed operators
-    ParserError result;  // Success when no error occurred
+    ParsingContext *ctx;       // Contains operators and glue-op
+    Vector vec_nodes;          // Constructed nodes
+    Vector vec_ops;            // Parsed operators
+    ParserError result;        // Success when no error occurred
 };
 
 // Attempts to parse a substring to a double
@@ -334,7 +334,7 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
         }
         else // Token must be variable
         {
-            node = malloc_variable_node(token);
+            node = malloc_variable_node(token, 0);
         }
 
         await_infix = true;
