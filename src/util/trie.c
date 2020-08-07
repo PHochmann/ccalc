@@ -98,7 +98,15 @@ void trie_remove_str(Trie *trie, char *string)
 
 bool trie_contains(Trie *trie, char *string, void *out_data)
 {
-    return trie_longest_prefix(trie, string, out_data) == strlen(string);
+    if (string[0] == '\0')
+    {
+        if (out_data != NULL) memcpy(out_data, trie->first_node->data, trie->elem_size);
+        return trie->first_node->is_leaf;
+    }
+    else
+    {
+        return trie_longest_prefix(trie, string, out_data) == strlen(string);
+    }
 }
 
 size_t trie_longest_prefix(Trie *trie, char *string, void *out_data)

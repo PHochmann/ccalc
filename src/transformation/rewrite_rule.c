@@ -87,7 +87,7 @@ void transform_matched(Node *rule_after, Matching *matching, Node **matched_subt
                 if (strcmp(get_var_name(transformed), matching->mapped_vars[j]) == 0)
                 {
                     if (matching->mapped_nodes[j].size != 1) report_error("Software defect: trying to replace root with a list > 1.\n");
-                    tree_replace(&transformed, matching->mapped_nodes[j].nodes[0]);
+                    tree_replace(&transformed, tree_copy(matching->mapped_nodes[j].nodes[0]));
                 }
             }
         }
@@ -136,7 +136,7 @@ void free_ruleset(Vector *rules)
 Summary: Tries to apply rules (priorized by order) until no rule can be applied any more
     Guarantees to terminate after MAX_RULESET_ITERATIONS rule appliances
 */
-#include "../tree/tree_to_string.h"
+//#include "../tree/tree_to_string.h"
 size_t apply_ruleset(Node **tree, Ruleset *rules)
 {
     size_t counter = 0;
@@ -147,15 +147,16 @@ size_t apply_ruleset(Node **tree, Ruleset *rules)
         {
             if (apply_rule(tree, (RewriteRule*)vec_get(rules, j)))
             {
-                printf("Applied rule %zu: %s\n", j, tree_to_str(*tree, true));
+                //printf("Applied rule %zu: %s\n", j, tree_to_str(*tree, true));
                 applied_flag = true;
                 counter++;
                 break;
             }
         }
+
         if (!applied_flag || counter == MAX_RULESET_ITERATIONS)
         {
-            printf("End.\n");
+            //printf("End.\n");
             return counter;
         }
     }
@@ -207,14 +208,6 @@ bool parse_rule(char *string, ParsingContext *ctx, MappingFilter default_filter,
     Node *left_n = parse_conveniently(ctx, string);
     if (left_n == NULL)
     {
-        return false;
-    }
-
-    // Check for too many variables
-    if (list_variables(left_n, 0, NULL) > MAX_MAPPED_VARS)
-    {
-        free_tree(left_n);
-        report_error("parse_rule: Too many variables in left-hand side. Increase MAX_MAPPED_VARS.\n");
         return false;
     }
 

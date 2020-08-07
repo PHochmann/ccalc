@@ -16,8 +16,8 @@
 // Represents an operator (with metadata) while being parsed
 struct OpData
 {
-    Operator *op;        // Pointer to operator in context, NULL denotes opening parenthesis
-    size_t arity;        // Records number of operands to pop
+    Operator *op; // Pointer to operator in context, NULL denotes opening parenthesis
+    size_t arity; // Records number of operands to pop
 };
 
 // Encapsulates current state of shunting-yard algo. to be communicated to auxiliary functions

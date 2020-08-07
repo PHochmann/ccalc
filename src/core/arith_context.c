@@ -191,7 +191,7 @@ bool arith_parse_input(char *input, char *error_fmt, bool replace_comp_funcs, bo
             apply_rule_list(out_res, &g_composite_functions);
         }
 
-        if (!core_simplify(out_res, simplify) || !core_replace_history(out_res))
+        if (!core_replace_history(out_res) || !core_simplify(out_res, simplify))
         {
             free_tree(*out_res);
             return false;

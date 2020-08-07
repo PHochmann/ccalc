@@ -340,9 +340,9 @@ Summary: Sets ids of variable nodes for faster lookup while matching
 */
 void preprocess_pattern(Node *tree)
 {
-    char *var_names[MAX_MAPPED_VARS];
-    size_t num_vars_distinct = list_variables(tree, MAX_MAPPED_VARS, var_names);
     size_t num_vars = count_variables(tree);
+    char *var_names[num_vars];
+    size_t num_vars_distinct = list_variables(tree, num_vars, var_names);
 
     if (num_vars_distinct > MAX_MAPPED_VARS)
     {

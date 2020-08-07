@@ -20,6 +20,7 @@ Node *ans_pattern;
 void init_history()
 {
     ans_pattern = parse_conveniently(g_ctx, "@x");
+    preprocess_pattern(ans_pattern);
     for (size_t i = 0; i < ANS_HISTORY_SIZE; i++)
     {
         ans[i] = NULL;

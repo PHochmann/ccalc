@@ -16,7 +16,7 @@
 
 #define P(x) parse_conveniently(g_ctx, x)
 
-#define NUM_DONT_REDUCE 3
+#define NUM_DONT_REDUCE 4
 Operator *dont_reduce[NUM_DONT_REDUCE];
 Node *deriv_before;
 Node *deriv_after;
@@ -75,15 +75,14 @@ void init_simplification()
     deriv_after = P("deriv(x, z)");
     malformed_derivA = P("deriv(x, cX)");
     malformed_derivB = P("deriv(x, oX)");
-    preprocess_pattern(deriv_after);
+    preprocess_pattern(deriv_before);
     preprocess_pattern(deriv_after);
     preprocess_pattern(malformed_derivA);
     preprocess_pattern(malformed_derivB);
-
     dont_reduce[0] = ctx_lookup_op(g_ctx, "pi", OP_PLACE_FUNCTION);
     dont_reduce[1] = ctx_lookup_op(g_ctx, "e", OP_PLACE_FUNCTION);
     dont_reduce[2] = ctx_lookup_op(g_ctx, "rand", OP_PLACE_FUNCTION);
-
+    dont_reduce[3] = ctx_lookup_op(g_ctx, "$", OP_PLACE_PREFIX);
     parse_ruleset_from_string(reduction_string, g_ctx, prefix_filter, rulesets);
     parse_ruleset_from_string(derivation_string, g_ctx, prefix_filter, rulesets + 1);
     parse_ruleset_from_string(normal_form_string, g_ctx, prefix_filter, rulesets + 2);
@@ -118,8 +117,8 @@ bool core_simplify(Node **tree, bool full_simplification)
     Node **matched;
     while ((matched = find_matching(tree, deriv_before, &matching, NULL)) != NULL)
     {
-        char *var_name;
-        size_t var_count = list_variables(*tree, 0, NULL);
+        char *var_names[2];
+        size_t var_count = list_variables(*tree, 2, var_names);
 
         if (var_count > 1)
         {
@@ -130,8 +129,7 @@ bool core_simplify(Node **tree, bool full_simplification)
         Node *replacement = tree_copy(deriv_after);
         if (var_count == 1)
         {
-            list_variables(*tree, __SIZE_MAX__, &var_name);
-            tree_replace(get_child_addr(replacement, 1), P(var_name));
+            tree_replace(get_child_addr(replacement, 1), P(var_names[0]));
         }
         tree_replace(get_child_addr(replacement, 0), tree_copy(matching.mapped_nodes[0].nodes[0]));
         tree_replace(matched, replacement);
