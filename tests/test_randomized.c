@@ -37,7 +37,7 @@ void generate_tree(size_t max_inner_nodes, Node **out)
         else
         {
             // Variable with random name
-            *out = malloc_variable_node(variable_names[rand() % NUM_VARIABLE_NAMES]);
+            *out = malloc_variable_node(variable_names[rand() % NUM_VARIABLE_NAMES], 0);
         }
     }
     else

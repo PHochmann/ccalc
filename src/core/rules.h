@@ -72,7 +72,7 @@ char *simplification_string =
 "prod([xs], x, [ys], x^y, [zs])   -> prod([xs], x^(y+1), [ys], [zs])\n"
 "prod([xs], x^y, [ys], x, [zs])   -> prod([xs], x^(y+1), [ys], [zs])\n"
 "prod([xs], x^z, [ys], x^y, [zs]) -> prod([xs], x^(y+z), [ys], [zs])\n"
-"prod([xs], 0, [ys])              -> 0\n"
+"prod([_], 0, [_])                -> 0\n"
 "prod([xs], 1, [ys])              -> prod([xs], [ys])\n"
 "prod([xs], -x, [ys])             -> -prod([xs], x, [ys])\n"
 

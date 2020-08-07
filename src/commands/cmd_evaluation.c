@@ -28,7 +28,7 @@ bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
     {
         // Make expression constant by asking for values and binding them to variables
         char *vars[count_variables(res)];
-        size_t num_vars = list_variables(res, vars);
+        size_t num_vars = list_variables(res, __SIZE_MAX__, vars);
 
         /*
         * Ask for variables interactively when we are connected to a terminal

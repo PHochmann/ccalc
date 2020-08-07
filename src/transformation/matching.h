@@ -4,6 +4,7 @@
 
 #define MAX_MAPPED_VARS 10
 #define MATCHING_LIST_PREFIX '['
+#define MATCHING_WILDCARD    '_'
 
 typedef bool (*MappingFilter)(char *var, NodeList nodes);
 

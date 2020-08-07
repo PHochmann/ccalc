@@ -12,6 +12,7 @@
 #include "evaluation.h"
 #include "rules.h"
 #include "../util/console_util.h"
+#include "../transformation/filters.h"
 
 #define P(x) parse_conveniently(g_ctx, x)
 
@@ -74,6 +75,10 @@ void init_simplification()
     deriv_after = P("deriv(x, z)");
     malformed_derivA = P("deriv(x, cX)");
     malformed_derivB = P("deriv(x, oX)");
+    preprocess_pattern(deriv_after);
+    preprocess_pattern(deriv_after);
+    preprocess_pattern(malformed_derivA);
+    preprocess_pattern(malformed_derivB);
 
     dont_reduce[0] = ctx_lookup_op(g_ctx, "pi", OP_PLACE_FUNCTION);
     dont_reduce[1] = ctx_lookup_op(g_ctx, "e", OP_PLACE_FUNCTION);
@@ -114,7 +119,7 @@ bool core_simplify(Node **tree, bool full_simplification)
     while ((matched = find_matching(tree, deriv_before, &matching, NULL)) != NULL)
     {
         char *var_name;
-        size_t var_count = count_variables_distinct(*tree);
+        size_t var_count = list_variables(*tree, 0, NULL);
 
         if (var_count > 1)
         {
@@ -125,7 +130,7 @@ bool core_simplify(Node **tree, bool full_simplification)
         Node *replacement = tree_copy(deriv_after);
         if (var_count == 1)
         {
-            list_variables(*tree, &var_name);
+            list_variables(*tree, __SIZE_MAX__, &var_name);
             tree_replace(get_child_addr(replacement, 1), P(var_name));
         }
         tree_replace(get_child_addr(replacement, 0), tree_copy(matching.mapped_nodes[0].nodes[0]));

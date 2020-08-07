@@ -49,7 +49,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     }
 
     char *variables[count_variables(expr)];
-    size_t num_vars = list_variables(expr, variables);
+    size_t num_vars = list_variables(expr, __SIZE_MAX__, variables);
     if (num_vars > 1)
     {
         report_error("Error: Expression contains more than one variable.\n");

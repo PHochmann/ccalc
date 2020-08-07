@@ -68,13 +68,11 @@ void *vec_push_many(Vector *vec, size_t num, void *elem)
     return first;
 }
 
-// Very unsafe to store at caller site - buffer may realloc frequently
 void *vec_get(Vector *vec, size_t index)
 {
     return (char*)vec->buffer + vec->elem_size * index;
 }
 
-// Very unsafe to store at caller site - buffer may realloc frequently
 void *vec_pop(Vector *vec)
 {
     if (vec->elem_count == 0) return NULL;
@@ -82,7 +80,6 @@ void *vec_pop(Vector *vec)
     return vec_get(vec, vec->elem_count);
 }
 
-// Very unsafe to store at caller site - buffer may realloc frequently
 void *vec_peek(Vector *vec)
 {
     if (vec->elem_count == 0) return NULL;

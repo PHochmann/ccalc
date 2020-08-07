@@ -20,13 +20,13 @@ bool tree_util_test(Vector *error_builder)
     // Manually construct tree: test(x, test(x, y), y, 42, x)
     Node *root = malloc_operator_node(&op, 5);
     Node *child = malloc_operator_node(&op, 2);
-    set_child(root, 0, malloc_variable_node("x"));
+    set_child(root, 0, malloc_variable_node("x", 0));
     set_child(root, 1, child);
-    set_child(root, 2, malloc_variable_node("y"));
+    set_child(root, 2, malloc_variable_node("y", 0));
     set_child(root, 3, malloc_constant_node(42));
-    set_child(root, 4, malloc_variable_node("x"));
-    set_child(child, 0, malloc_variable_node("x"));
-    set_child(child, 1, malloc_variable_node("y"));
+    set_child(root, 4, malloc_variable_node("x", 0));
+    set_child(child, 0, malloc_variable_node("x", 0));
+    set_child(child, 1, malloc_variable_node("y", 0));
 
     // Case 1
     if (count_variables(root) != 5)
@@ -36,7 +36,8 @@ bool tree_util_test(Vector *error_builder)
     }
 
     // Case 2
-    if (list_variables(root, 0, NULL) != 2)
+    char *nodes[2];
+    if (list_variables(root, 2, nodes) != 2)
     {
         free_tree(root);
         ERROR_RETURN_VAL("list_variables without buffer");

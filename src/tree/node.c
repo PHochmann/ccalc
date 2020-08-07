@@ -88,7 +88,7 @@ char *get_var_name(Node *node)
     return ((VariableNode*)node)->var_name;
 }
 
-char get_id(Node *node)
+size_t get_id(Node *node)
 {
     return ((VariableNode*)node)->id;
 }

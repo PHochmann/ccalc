@@ -58,6 +58,6 @@ Node *get_child(Node *node, size_t index);
 Node **get_child_addr(Node *node, size_t index);
 void set_child(Node *node, size_t index, Node *child);
 char *get_var_name(Node *node);
-char get_id(Node *node);
+size_t get_id(Node *node);
 void set_id(Node *node, size_t id);
 ConstantType get_const_value(Node *node);

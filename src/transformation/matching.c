@@ -5,6 +5,8 @@
 #include "matching.h"
 #include "../util/vector.h"
 #include "../tree/tree_util.h"
+#include "../util/console_util.h"
+#include "../util/string_util.h"
 
 #define VECTOR_STARTSIZE 1
 
@@ -107,8 +109,8 @@ void match_parameter_lists(Matching matching,
                 && get_var_name(pattern_children[curr.distance])[0] == MATCHING_LIST_PREFIX)
             {
                 // Current pattern-child is list-variable
-                NodeList *list = matching.mapped_vars[get_id(pattern_children[curr.distance])];
-                if (list != NULL && new_sum + 1 <= num_tree_children)
+                NodeList *list = &matching.mapped_nodes[get_id(pattern_children[curr.distance])];
+                if (list->nodes != NULL && new_sum + 1 <= num_tree_children)
                 {
                     // List is already bound, thus also its length is bound
                     VEC_PUSH_ELEM(&vec_suffixes, SuffixNode, ((SuffixNode){
@@ -197,8 +199,19 @@ void extend_matching(Matching matching,
         // 1. Check if variable is bound, if it is, check occurrence. Otherwise, bind.
         case NTYPE_VARIABLE:
         {
-            NodeList *nodes = matching.mapped_vars[get_id(pattern)];
-            if (nodes != NULL) // Already bound
+            char *var_name = get_var_name(pattern);
+
+            // Check for wildcard
+            if (var_name[0] == MATCHING_WILDCARD
+                || (var_name[0] == MATCHING_LIST_PREFIX && var_name[1] == MATCHING_WILDCARD))
+            {
+                vec_push(out_matchings, &matching);
+                return;
+            }
+
+            size_t id = get_id(pattern);
+            NodeList *nodes = &matching.mapped_nodes[id];
+            if (nodes->nodes != NULL) // Already bound
             {
                 // Is already bound variable equal to this occurrence?
                 if (nodelists_equal(nodes, &tree_list))
@@ -210,19 +223,15 @@ void extend_matching(Matching matching,
             else
             {
                 // Check with filter if it's okay to bind
-                if (filter != NULL && !filter(get_var_name(pattern), tree_list))
+                if (filter != NULL && !filter(var_name, tree_list))
                 {
                     return;
                 }
 
-                // Bind variable if there's still a free slot in matching
-                if (matching.num_mapped < MAX_MAPPED_VARS)
-                {
-                    matching.mapped_vars[matching.num_mapped]  = get_var_name(pattern);
-                    matching.mapped_nodes[matching.num_mapped] = tree_list;
-                    matching.num_mapped++;
-                    vec_push(out_matchings, &matching);
-                }
+                matching.mapped_vars[id]  = var_name;
+                matching.mapped_nodes[id] = tree_list;
+                matching.num_mapped++;
+                vec_push(out_matchings, &matching);
                 return;
             }
         }
@@ -338,15 +347,22 @@ void preprocess_pattern(Node *tree)
     if (num_vars_distinct > MAX_MAPPED_VARS)
     {
         report_error("Trying to preprocess a pattern with too many distinct variables. Increase MAX_MAPPED_VARS.\n");
+        return;
     }
 
+    size_t counter = 0;
     for (size_t i = 0; i < num_vars_distinct; i++)
     {
-        Node **nodes[num_vars];
-        size_t num_nodes = get_variable_nodes(&tree, var_names[i], nodes);
-        for (size_t j = 0; j < num_nodes; j++)
+        if (var_names[i][0] != MATCHING_WILDCARD
+            && (var_names[i][0] != MATCHING_LIST_PREFIX || var_names[i][1] != MATCHING_WILDCARD))
         {
-            set_id(*(nodes[j]), i);
+            Node **nodes[num_vars];
+            size_t num_nodes = get_variable_nodes(&tree, var_names[i], nodes);
+            for (size_t j = 0; j < num_nodes; j++)
+            {
+                set_id(*(nodes[j]), counter);
+            }
+            counter++;
         }
     }
 }

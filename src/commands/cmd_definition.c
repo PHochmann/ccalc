@@ -36,7 +36,7 @@ bool do_left_checks(Node *left_n)
         }
     }
 
-    if (get_num_children(left_n) != count_variables_distinct(left_n))
+    if (get_num_children(left_n) != list_variables(left_n, 0, NULL))
     {
         report_error(FMT_ERROR_LEFT, "Function arguments must be distinct variables.");
         return false;

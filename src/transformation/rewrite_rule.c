@@ -36,6 +36,35 @@ void free_rule(RewriteRule rule)
     free_tree(rule.after);
 }
 
+void transform_matched_recursive(Node **parent, Matching *matching)
+{
+    size_t i = 0;
+    while (i < get_num_children(*parent))
+    {
+        if (get_type(get_child(*parent, i)) == NTYPE_VARIABLE)
+        {
+            for (size_t j = 0; j < matching->num_mapped; j++)
+            {
+                if (strcmp(get_var_name(get_child(*parent, i)), matching->mapped_vars[j]) == 0)
+                {
+                    tree_replace_by_list(parent, i, matching->mapped_nodes[j]);
+                    i += matching->mapped_nodes[j].size - 1;
+                    break;
+                }
+            }
+            i++;
+        }
+        else
+        {
+            if (get_type(get_child(*parent, i)) == NTYPE_OPERATOR)
+            {
+                transform_matched_recursive(get_child_addr(*parent, i), matching);
+            }
+            i++;
+        }
+    }
+}
+
 /*
 Summary: Substitutes subtree in which matching was found according to rule
 */
@@ -45,8 +74,25 @@ void transform_matched(Node *rule_after, Matching *matching, Node **matched_subt
     
     Node *transformed = tree_copy(rule_after);
 
-    // Todo: Safe instaces to replace in transformed, replace them
-
+    if (get_type(transformed) == NTYPE_OPERATOR)
+    {
+        transform_matched_recursive(&transformed, matching);
+    }
+    else
+    {
+        if (get_type(transformed) == NTYPE_VARIABLE)
+        {
+            for (size_t j = 0; j < matching->num_mapped; j++)
+            {
+                if (strcmp(get_var_name(transformed), matching->mapped_vars[j]) == 0)
+                {
+                    if (matching->mapped_nodes[j].size != 1) report_error("Software defect: trying to replace root with a list > 1.\n");
+                    tree_replace(&transformed, matching->mapped_nodes[j].nodes[0]);
+                }
+            }
+        }
+    }
+    
     tree_replace(matched_subtree, transformed);
 }
 
@@ -62,7 +108,7 @@ bool apply_rule(Node **tree, RewriteRule *rule)
     Node **res = find_matching(tree, rule->before, &matching, rule->filter);
     if (res == NULL) return false;
     // If matching is found, transform tree with it
-    transform_matched_by_rule(rule->after, &matching, res);
+    transform_matched(rule->after, &matching, res);
 
     return true;
 }
@@ -90,7 +136,7 @@ void free_ruleset(Vector *rules)
 Summary: Tries to apply rules (priorized by order) until no rule can be applied any more
     Guarantees to terminate after MAX_RULESET_ITERATIONS rule appliances
 */
-//#include "../tree/tree_to_string.h"
+#include "../tree/tree_to_string.h"
 size_t apply_ruleset(Node **tree, Ruleset *rules)
 {
     size_t counter = 0;
@@ -101,7 +147,7 @@ size_t apply_ruleset(Node **tree, Ruleset *rules)
         {
             if (apply_rule(tree, (RewriteRule*)vec_get(rules, j)))
             {
-                //printf("Applied rule %zu: %s\n", j, tree_to_str(*tree, true));
+                printf("Applied rule %zu: %s\n", j, tree_to_str(*tree, true));
                 applied_flag = true;
                 counter++;
                 break;
@@ -109,6 +155,7 @@ size_t apply_ruleset(Node **tree, Ruleset *rules)
         }
         if (!applied_flag || counter == MAX_RULESET_ITERATIONS)
         {
+            printf("End.\n");
             return counter;
         }
     }
@@ -164,7 +211,7 @@ bool parse_rule(char *string, ParsingContext *ctx, MappingFilter default_filter,
     }
 
     // Check for too many variables
-    if (count_variables_distinct(left_n) > MAX_MAPPED_VARS)
+    if (list_variables(left_n, 0, NULL) > MAX_MAPPED_VARS)
     {
         free_tree(left_n);
         report_error("parse_rule: Too many variables in left-hand side. Increase MAX_MAPPED_VARS.\n");
