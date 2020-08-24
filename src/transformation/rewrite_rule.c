@@ -86,7 +86,11 @@ void transform_matched(Node *rule_after, Matching *matching, Node **matched_subt
             {
                 if (strcmp(get_var_name(transformed), matching->mapped_vars[j]) == 0)
                 {
-                    if (matching->mapped_nodes[j].size != 1) report_error("Software defect: trying to replace root with a list > 1.\n");
+                    if (matching->mapped_nodes[j].size != 1) 
+                    {
+                        report_error("Software defect: trying to replace root with a list > 1.\n");
+                    }
+                    
                     tree_replace(&transformed, tree_copy(matching->mapped_nodes[j].nodes[0]));
                 }
             }
