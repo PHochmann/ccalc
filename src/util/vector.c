@@ -1,6 +1,8 @@
 #include <string.h>
 #include "vector.h"
 
+#define VECTOR_GROWTHFACTOR 1.5
+
 void vec_trim(Vector *vec)
 {
     vec->buffer_size = vec->elem_count + 1;
@@ -14,7 +16,7 @@ bool vec_ensure_size(Vector *vec, size_t needed_size)
     while (needed_size > vec->buffer_size)
     {
         res = true;
-        vec->buffer_size <<= 1;
+        vec->buffer_size = (size_t)(vec->buffer_size * VECTOR_GROWTHFACTOR + 0.5);
     }
     vec->buffer = realloc(vec->buffer, vec->elem_size * vec->buffer_size);
     return res;

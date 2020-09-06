@@ -14,7 +14,7 @@
 #define SHORT_HELP_CODE 1
 #define OPS_HELP_CODE   2
 
-#define VERSION "1.5.5"
+#define VERSION "1.5.6"
 
 #ifdef DEBUG
     #define RELEASE VERSION " DEBUG"
@@ -24,9 +24,10 @@
 
 #define TTY_WIDTH 80
 
-static char *INFOBOX_FMT =
-    "ccalc %s (c) 2020 Philipp Hochmann\n"
-    " Scientific calculator in which you can define new functions and constants \n";
+static char *INFOBOX =
+    "ccalc " RELEASE " (c) 2020 Philipp Hochmann\n"
+    " Scientific calculator in which you can define new functions and constants \n"
+    "https://github.com/PhilippHochmann/ccalc";
 
 static char *COMMAND_TABLE[7][2] = {
     { "<func|const> = <after>",                  "Adds or redefines function or constant." },
@@ -257,7 +258,7 @@ void print_op_tables()
 void print_short_help()
 {
     Table table = get_empty_table();
-    add_cell_fmt(&table, INFOBOX_FMT, RELEASE);
+    add_cell_fmt(&table, INFOBOX);
     next_row(&table);
     make_boxed(&table, BORDER_SINGLE);
     set_default_alignments(&table, 1, (TextAlignment[]){ ALIGN_CENTER });

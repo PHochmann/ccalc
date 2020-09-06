@@ -251,8 +251,7 @@ void extend_matching(Matching matching,
         {
             if (tree_list.size == 1
                 && get_type(tree_list.nodes[0]) == NTYPE_OPERATOR
-                && get_op(pattern) == get_op(tree_list.nodes[0])
-                /*&& get_num_children(curr_pattern) == get_num_children(curr_tree)*/)
+                && get_op(pattern) == get_op(tree_list.nodes[0]))
             {
                 match_parameter_lists(matching,
                     get_num_children(pattern),
@@ -344,18 +343,18 @@ void preprocess_pattern(Node *tree)
     char *var_names[num_vars];
     size_t num_vars_distinct = list_variables(tree, num_vars, var_names);
 
-    if (num_vars_distinct > MAX_MAPPED_VARS)
-    {
-        report_error("Trying to preprocess a pattern with too many distinct variables. Increase MAX_MAPPED_VARS.\n");
-        return;
-    }
-
     size_t counter = 0;
     for (size_t i = 0; i < num_vars_distinct; i++)
     {
         if (var_names[i][0] != MATCHING_WILDCARD
             && (var_names[i][0] != MATCHING_LIST_PREFIX || var_names[i][1] != MATCHING_WILDCARD))
         {
+            if (counter == MAX_MAPPED_VARS)
+            {
+                report_error("Trying to preprocess a pattern with too many distinct variables. Increase MAX_MAPPED_VARS.\n");
+                return;
+            }
+
             Node **nodes[num_vars];
             size_t num_nodes = get_variable_nodes(&tree, var_names[i], nodes);
             for (size_t j = 0; j < num_nodes; j++)

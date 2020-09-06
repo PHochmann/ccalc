@@ -157,11 +157,16 @@ bool core_simplify(Node **tree, bool full_simplification)
         }
 
         apply_ruleset(tree, &rulesets[2]); // Normal form rules
+        replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
+
         apply_ruleset(tree, &rulesets[3]); // Simplification rules
         replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
+        replace_negative_consts(tree);
+
         apply_ruleset(tree, &rulesets[4]); // Pretty rules
         replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
         replace_negative_consts(tree);
+
     } while (tree_compare(tree_before, *tree) != NULL);
     free_tree(tree_before);
 

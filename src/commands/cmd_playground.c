@@ -7,14 +7,24 @@
 #include "../core/arith_context.h"
 #include "cmd_playground.h"
 
+#define COMMAND "simplify "
+
 int cmd_playground_check(char *input)
 {
-    return strcmp("playground", input) == 0;
+    return begins_with(COMMAND, input);
 }
 
-bool cmd_playground_exec(__attribute__((unused)) char *input, __attribute__((unused)) int code)
+bool cmd_playground_exec(char *input, __attribute__((unused)) int code)
 {
-    char *pattern_str = NULL;
+    input += strlen(COMMAND);
+    Node *node;
+    arith_parse_input(input, "Error: %s", true, true, &node);
+    print_tree(node, true);
+    printf("\n");
+    free_tree(node);
+    return true;
+
+    /*char *pattern_str = NULL;
     Node *pattern = NULL;
     char *tree_str = NULL;
     Node *tree = NULL;
@@ -86,5 +96,5 @@ bool cmd_playground_exec(__attribute__((unused)) char *input, __attribute__((unu
     free(tree_str);
     free_tree(tree);
     printf("\n");
-    return true;
+    return true;*/
 }

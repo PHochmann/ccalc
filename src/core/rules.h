@@ -9,7 +9,7 @@ char *reduction_string =
 "log(x, e)  -> ln(x)\n"
 "tan(x)     -> sin(x)/cos(x)\n"
 "sqrt(x)    -> x^0.5\n"
-"root(x, y) -> x^(1/y)\n";
+"root(x, y) -> x^(1/y)";
 
 char *derivation_string =
 "deriv(cX*z, z)    -> cX\n"
@@ -118,6 +118,7 @@ char *pretty_string =
 "prod(x, y)    -> x*y\n"
 "prod([xs], x) -> prod([xs])*x\n"
 "--x           -> x\n"
+"-1*x          -> -x\n"
 "x+(-y)        -> x-y\n"
 "x^1           -> x\n"
 "root(x, 2)    -> sqrt(x)\n"
