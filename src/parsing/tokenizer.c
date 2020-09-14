@@ -5,6 +5,7 @@
 
 #include "../util/string_util.h"
 #include "../util/trie.h"
+#include "../util/alloc_wrappers.h"
 #include "tokenizer.h"
 
 #define VECTOR_STARTSIZE 10
@@ -20,7 +21,7 @@ typedef enum
 void push_token(char *input, size_t start, size_t length, Vector *tokens)
 {
     if (length == 0) return;
-    char *tok = malloc(length + 1);
+    char *tok = malloc_wrapper(length + 1);
     for (size_t i = 0; i < length; i++)
     {
         tok[i] = input[start + i];

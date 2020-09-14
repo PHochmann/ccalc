@@ -1,9 +1,10 @@
 #include <string.h>
+#include "../util/alloc_wrappers.h"
 #include "trie.h"
 
 TrieNode *malloc_trienode(size_t elem_size)
 {
-    return calloc(1, sizeof(TrieNode) + elem_size);
+    return calloc_wrapper(1, sizeof(TrieNode) + elem_size);
 }
 
 Trie trie_create(size_t elem_size)

@@ -1,9 +1,10 @@
 #include "linked_list.h"
+#include "../util/alloc_wrappers.h"
 #include <string.h>
 
 ListNode *malloc_node(size_t elem_size, void *data)
 {
-    ListNode *new = malloc(sizeof(ListNode) + elem_size);
+    ListNode *new = malloc_wrapper(sizeof(ListNode) + elem_size);
     new->next = NULL;
     if (data != NULL) memcpy((void*)new->data, data, elem_size);
     return new;

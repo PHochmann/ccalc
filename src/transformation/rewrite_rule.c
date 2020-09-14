@@ -4,6 +4,7 @@
 
 #include "../util/string_util.h"
 #include "../util/console_util.h"
+#include "../util/alloc_wrappers.h"
 #include "../tree/tree_util.h"
 #include "../core/evaluation.h"
 #include "rewrite_rule.h"
@@ -229,7 +230,7 @@ bool parse_rule(char *string, ParsingContext *ctx, MappingFilter default_filter,
 bool parse_ruleset_from_string(char *string, ParsingContext *ctx, MappingFilter default_filter, Vector *out_ruleset)
 {
     // String is likely to be readonly - copy it
-    char *copy = malloc(strlen(string) + 1);
+    char *copy = malloc_wrapper(strlen(string) + 1);
     strcpy(copy, string);
 
     *out_ruleset = get_empty_ruleset();

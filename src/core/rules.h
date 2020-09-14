@@ -79,6 +79,8 @@ char *simplification_string =
 // Products within sum
 "sum([xs], prod(a, x), [ys], x, [zs])                          -> sum([xs], prod(a+1, x), [ys], [zs])\n"
 "sum([xs], prod(x, a), [ys], x, [zs])                          -> sum([xs], prod(x, a+1), [ys], [zs])\n"
+"sum([xs], prod(a, x), [ys], -x, [zs])                          -> sum([xs], prod(a-1, x), [ys], [zs])\n"
+"sum([xs], prod(x, a), [ys], -x, [zs])                          -> sum([xs], prod(x, a-1), [ys], [zs])\n"
 "sum([xs], prod(b, x), [ys], prod(a, x), [zs])                 -> sum([xs], [ys], prod(a+b, x), [zs])\n"
 "sum([xs], prod(x, b), [ys], prod(x, a), [zs])                 -> sum([xs], [ys], prod(a+b, x), [zs])\n"
 "sum([xs], prod(b, x), [ys], prod(x, a), [zs])                 -> sum([xs], [ys], prod(a+b, x), [zs])\n"

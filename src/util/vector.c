@@ -1,12 +1,14 @@
 #include <string.h>
+#include "../util/alloc_wrappers.h"
 #include "vector.h"
 
-#define VECTOR_GROWTHFACTOR 1.5
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define VECTOR_GROWTHFACTOR 0.5
 
 void vec_trim(Vector *vec)
 {
     vec->buffer_size = vec->elem_count + 1;
-    vec->buffer = realloc(vec->buffer, vec->elem_size * vec->buffer_size);
+    vec->buffer = realloc_wrapper(vec->buffer, vec->elem_size * vec->buffer_size);
 }
 
 // Returns true if buffer needed to be extended.
@@ -16,24 +18,19 @@ bool vec_ensure_size(Vector *vec, size_t needed_size)
     while (needed_size > vec->buffer_size)
     {
         res = true;
-        vec->buffer_size = (size_t)(vec->buffer_size * VECTOR_GROWTHFACTOR + 0.5);
+        vec->buffer_size += MAX(1, (size_t)(vec->buffer_size * VECTOR_GROWTHFACTOR));
     }
-    vec->buffer = realloc(vec->buffer, vec->elem_size * vec->buffer_size);
+    vec->buffer = realloc_wrapper(vec->buffer, vec->elem_size * vec->buffer_size);
     return res;
 }
 
 Vector vec_create(size_t elem_size, size_t start_size)
 {
-    if (start_size == 0)
-    {
-        start_size = 1;
-    }
-
     return (Vector){
         .elem_size   = elem_size,
         .elem_count  = 0,
         .buffer_size = start_size,
-        .buffer      = malloc(elem_size * start_size)
+        .buffer      = malloc_wrapper(elem_size * start_size)
     };
 }
 

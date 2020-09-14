@@ -1,4 +1,5 @@
 #include <string.h>
+#include "../util/alloc_wrappers.h"
 #include "node.h"
 
 /*
@@ -7,7 +8,7 @@ The following functions are used for polymorphism of different Node types
 
 Node *malloc_variable_node(char *var_name, size_t id)
 {
-    VariableNode *res = malloc(sizeof(VariableNode) + (strlen(var_name) + 1) * sizeof(char));
+    VariableNode *res = malloc_wrapper(sizeof(VariableNode) + (strlen(var_name) + 1) * sizeof(char));
     if (res == NULL) return NULL;
     res->base.type = NTYPE_VARIABLE;
     res->id = id;
@@ -17,7 +18,7 @@ Node *malloc_variable_node(char *var_name, size_t id)
 
 Node *malloc_constant_node(ConstantType value)
 {
-    ConstantNode *res = malloc(sizeof(ConstantNode));
+    ConstantNode *res = malloc_wrapper(sizeof(ConstantNode));
     if (res == NULL) return NULL;
     res->base.type = NTYPE_CONSTANT;
     res->const_value = value;
@@ -26,7 +27,7 @@ Node *malloc_constant_node(ConstantType value)
 
 Node *malloc_operator_node(Operator *op, size_t num_children)
 {
-    OperatorNode *res = malloc(sizeof(OperatorNode) + num_children * sizeof(Node*));
+    OperatorNode *res = malloc_wrapper(sizeof(OperatorNode) + num_children * sizeof(Node*));
     if (res == NULL) return NULL;
     
     for (size_t i = 0; i < num_children; i++)
