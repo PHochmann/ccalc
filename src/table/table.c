@@ -128,11 +128,14 @@ Summary: Prints table to stdout
 */
 void print_table(Table *table)
 {
+    assert(table != NULL);
     fprint_table_internal(table, stdout);
 }
 
 void fprint_table(Table *table, FILE *stream)
 {
+    assert(table != NULL);
+    assert(stream != NULL);
     fprint_table_internal(table, stream);
 }
 
