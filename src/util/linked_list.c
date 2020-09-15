@@ -73,13 +73,21 @@ void *list_get(LinkedList *list, size_t index)
 
 ListNode *list_append(LinkedList *list, void *data)
 {
-    return list_insert(list, list->count, data);
+    return list_insert_after(list, list->last, data);
 }
 
-ListNode *list_insert(LinkedList *list, size_t index, void *data)
+ListNode *list_insert_after(LinkedList *list, ListNode *before, void *data)
 {
-    ListNode *after = list_get_node(list, index);
-    ListNode *before = after != NULL ? after->previous : list_get_node(list, index - 1);
+    ListNode *after;
+    if (before == NULL)
+    {
+        after = list->first;
+    }
+    else
+    {
+        after = before->next;
+    }
+    
     ListNode *new = malloc_node(list->elem_size, data);
     new->previous = before;
     new->next = after;
@@ -104,6 +112,11 @@ ListNode *list_insert(LinkedList *list, size_t index, void *data)
     
     list->count++;
     return new;
+}
+
+ListNode *list_insert(LinkedList *list, size_t index, void *data)
+{
+    return list_insert_after(list, list_get_node(list, index), data);
 }
 
 void list_delete_node(LinkedList *list, ListNode *node)

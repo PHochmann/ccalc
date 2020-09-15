@@ -9,10 +9,11 @@
 #include "test_randomized.h"
 #include "test_table.h"
 #include "test_simplification.h"
+#include "test_data_structures.h"
 #include "../src/commands/commands.h"
 #include "../src/table/table.h"
 
-static const size_t NUM_TESTS = 6;
+static const size_t NUM_TESTS = 7;
 static Test (*test_getters[])() = {
     get_tree_util_test,
     get_parser_test,
@@ -20,6 +21,7 @@ static Test (*test_getters[])() = {
     get_randomized_test,
     get_table_test,
     get_simplification_test,
+    get_data_structures_test
 };
 
 int main()

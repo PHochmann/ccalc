@@ -36,18 +36,14 @@ bool tree_to_string_test(Vector *error_builder)
         Node *node = NULL;
         if (parse_input(g_ctx, tests[i].input, &node) != PERR_SUCCESS)
         {
-            strbuilder_append(error_builder, "Parser Error in '%s'\n", tests[i].input);
-            return false;
+            ERROR("Parser Error in '%s'\n", tests[i].input);
         }
 
         char *result = tree_to_str(node, false);
 
         if (strcmp(tests[i].expected_result, result) != 0)
         {
-            strbuilder_append(error_builder,
-                "Unexpected result in '%s'. Should be '%s', is '%s'\n",
-                tests[i].input, tests[i].expected_result, result);
-            return false;
+            ERROR("Unexpected result in '%s'. Should be '%s', is '%s'\n", tests[i].input, tests[i].expected_result, result);
         }
 
         free(result);

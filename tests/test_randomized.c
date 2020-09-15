@@ -72,7 +72,6 @@ Summary:
 */
 bool randomized_test(Vector *error_builder)
 {
-    bool error = false;
     srand(SEED);
 
     for (size_t i = 0; i < NUM_CASES; i++)
@@ -105,8 +104,7 @@ bool randomized_test(Vector *error_builder)
         // Check results
         if (result != PERR_SUCCESS)
         {
-            strbuilder_append(error_builder, "Parser error: %s.\n", perr_to_string(result));
-            error = true;
+            ERROR("Parser error: %s.\n", perr_to_string(result));
         }
         else
         {
@@ -116,15 +114,13 @@ bool randomized_test(Vector *error_builder)
                 print_tree_visually(random_tree);
                 printf("Parsed tree tree:\n");
                 print_tree_visually(parsed_tree);
-                strbuilder_append(error_builder, "Parsed tree not equal to generated tree.\n");
-                error = true;
+                ERROR("Parsed tree not equal to generated tree.\n");
             }
         }
 
         free_tree(random_tree);
         free_tree(parsed_tree);
         free(stringed_tree);
-        if (error) return false;
     }
 
     return true;

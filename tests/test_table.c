@@ -4,7 +4,7 @@
 #include "test_table.h"
 #include "../src/table/table.h"
 
-#define NUM_CASES 2
+#define NUM_CASES 4
 
 #define GREEN     "\x1B[92m"
 #define CYAN      "\x1B[1;36m"
@@ -63,7 +63,7 @@ bool table_test(__attribute__((unused)) Vector *error_builder)
     set_position(&t1, 2, 6);
     override_left_border(&t1, BORDER_NONE);
     make_boxed(&t1, BORDER_SINGLE);
-    //print_table(&t1);
+    print_table(&t1);
     free_table(&t1);
 
     // Case 2
@@ -78,8 +78,38 @@ bool table_test(__attribute__((unused)) Vector *error_builder)
         next_row(&t2);
     }
     make_boxed(&t2, BORDER_DOUBLE);
-    //print_table(&t2);
+    print_table(&t2);
     free_table(&t2);
+
+    // Case 3
+    Table t3 = get_empty_table();
+    next_row(&t3);
+    print_table(&t3);
+    free_table(&t3);
+
+    // Case 4
+    Table t4 = get_empty_table();
+    for (size_t i = 1; i < MAX_COLS - 1; i++)
+    {
+        set_span(&t4, i, 1);
+        add_cell_fmt(&t4, " x ");
+        set_span(&t4, MAX_COLS - i - 1, 1);
+        add_cell_fmt(&t4, " x ");
+        next_row(&t4);
+        set_hline(&t4, BORDER_SINGLE);
+    }
+
+    for (size_t i = 0; i < MAX_COLS / 2; i++)
+    {
+        set_span(&t4, 2, 1);
+        add_cell_fmt(&t4, " x ");
+    }
+
+    next_row(&t4);
+    set_all_vlines(&t4, BORDER_SINGLE);
+    make_boxed(&t4, BORDER_SINGLE);
+    print_table(&t4);
+    free_table(&t4);
     
     return true;
 }

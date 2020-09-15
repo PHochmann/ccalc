@@ -115,8 +115,7 @@ bool parser_test(Vector *error_builder)
     {
         if (parse_input(g_ctx, valueTests[i].input, &node) != PERR_SUCCESS)
         {
-            strbuilder_append(error_builder, "Parser Error for '%s'\n", valueTests[i].input);
-            return false;
+            ERROR("Parser Error for '%s'\n", valueTests[i].input);
         }
 
         bool is_equal = almost_equals(arith_evaluate(node), valueTests[i].result);
@@ -124,8 +123,7 @@ bool parser_test(Vector *error_builder)
 
         if (!is_equal)
         {
-            strbuilder_append(error_builder, "Unexpected result for '%s'\n", valueTests[i].input);
-            return false;
+            ERROR("Unexpected result for '%s'\n", valueTests[i].input);
         }
     }
 
@@ -134,8 +132,7 @@ bool parser_test(Vector *error_builder)
     {
         if (parse_input(g_ctx, errorTests[i].input, NULL) != errorTests[i].result)
         {
-            strbuilder_append(error_builder, "Unexpected error type for '%s'\n", errorTests[i].input);
-            return false;
+            ERROR("Unexpected error type for '%s'\n", errorTests[i].input);
         }
     }
 

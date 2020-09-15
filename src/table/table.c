@@ -11,7 +11,6 @@
 #include "constraint.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
-#define STRBUILDER_STARTSIZE 5
 
 void add_cell_internal(Table *table, char *text, bool needs_free)
 {
@@ -145,6 +144,8 @@ Summary: Frees all rows and content strings in cells created by add_cell_fmt.
 */
 void free_table(Table *table)
 {
+    assert(table != NULL);
+
     struct Row *row = table->first_row;
     while (row != NULL)
     {
@@ -232,7 +233,7 @@ void add_cell_fmt(Table *table, char *fmt, ...)
 
 void add_cell_vfmt(Table *table, char *fmt, va_list args)
 {
-    StringBuilder builder = strbuilder_create(STRBUILDER_STARTSIZE);
+    StringBuilder builder = strbuilder_create(0);
     vstrbuilder_append(&builder, fmt, args);
     add_cell_internal(table, builder.buffer, true);
 }
@@ -244,7 +245,6 @@ Summary: Puts contents of memory-contiguous 2D array into table cell by cell.
 */
 void add_cells_from_array(Table *table, size_t width, size_t height, char **array)
 {
-    if (table->curr_col + width > MAX_COLS) return;
     for (size_t i = 0; i < height; i++)
     {
         for (size_t j = 0; j < width; j++)
@@ -261,7 +261,7 @@ Summary: Sets default alignment of columns
 void set_default_alignments(Table *table, size_t num_alignments, TextAlignment *alignments)
 {
     assert(table != NULL);
-    assert(num_alignments < MAX_COLS);
+    assert(num_alignments <= MAX_COLS);
 
     for (size_t i = 0; i < num_alignments; i++)
     {
@@ -293,7 +293,6 @@ void override_alignment_of_row(Table *table, TextAlignment alignment)
 void set_hline(Table *table, BorderStyle style)
 {
     assert(table != NULL);
-
     if (table->curr_row->border_above != BORDER_NONE)
     {
         table->curr_row->border_above_counter--;
@@ -329,7 +328,6 @@ void set_vline(Table *table, size_t index, BorderStyle style)
 void make_boxed(Table *table, BorderStyle style)
 {
     assert(table != NULL);
-
     set_position(table, 0, 0);
     set_vline(table, 0, style);
     set_hline(table, style);

@@ -1,6 +1,8 @@
 #pragma once
 #include <stdlib.h>
 
+#define LIST_INSERT_ELEM_AFTER(list, before, type, expr) (*(type*)list_insert_after(list, before, NULL)->data) = expr
+#define LIST_INSERT_ELEM(list, index, type, expr) (*(type*)list_insert(list, index, NULL)->data) = expr
 #define LIST_APPEND_ELEM(list, type, expr) (*(type*)list_append(list, NULL)->data) = expr
 #define LIST_GET_ELEM(list, type, index) (*(type*)list_get(list, index))
 
@@ -27,6 +29,7 @@ void *list_get(LinkedList *list, size_t index);
 ListNode *list_get_node(LinkedList *list, size_t index);
 
 ListNode *list_append(LinkedList *list, void *data);
+ListNode *list_insert_after(LinkedList *list, ListNode *before, void *data);
 ListNode *list_insert(LinkedList *list, size_t index, void *data);
 
 void list_delete(LinkedList *list, size_t index);

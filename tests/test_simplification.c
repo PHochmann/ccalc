@@ -8,11 +8,6 @@
 #include "../src/core/arith_context.h"
 #include "../src/core/simplification.h"
 
-#define ERROR(fmt, ...) {\
-    strbuilder_append(error_builder, fmt, __VA_ARGS__);\
-    return false;\
-}
-
 static const size_t NUM_CASES = 7;
 char *cases[] = {
     "x-x",             "0",
@@ -48,17 +43,9 @@ bool simplification_test(Vector *error_builder)
         {
             char *wrong_result = tree_to_str(left, true);
             char *right_result = tree_to_str(right, true);
-
-            strbuilder_append(error_builder,
-                "%s simplified to %s, should be %s.\n",
-                cases[2 * i], wrong_result, right_result);
-
-            free(wrong_result);
-            free(right_result);
-            free_tree(left);
-            free_tree(right);
-            return false;
+            ERROR("%s simplified to %s, should be %s.\n", cases[2 * i], wrong_result, right_result);
         }
+        
         free_tree(left);
         free_tree(right);
     }
