@@ -365,6 +365,11 @@ void override_superfluous_lines(Table *table, size_t last_col_width, size_t last
 
 void fprint_table_internal(Table *table, FILE *stream)
 {
+    if (table->num_cols == 0)
+    {
+        return;   
+    }
+
     size_t col_widths[table->num_cols];
     size_t row_heights[table->num_rows];
     get_dimensions(table, col_widths, row_heights);
