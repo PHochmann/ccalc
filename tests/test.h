@@ -13,7 +13,7 @@
 }
 
 #define ERROR_RETURN_VAL(function) {\
-    ERROR("%s", "Unexpected return value of " function);\
+    ERROR("%s", "Unexpected return value of " function ".\n");\
 }
 
 typedef struct {

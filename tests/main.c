@@ -13,6 +13,12 @@
 #include "../src/commands/commands.h"
 #include "../src/table/table.h"
 
+/*
+These tests should not have any memory leaks when they are passed
+Please check with valgrind when all tests pass
+Memory leaks are intentionally present when tests fail (for brevity)
+*/
+
 static const size_t NUM_TESTS = 7;
 static Test (*test_getters[])() = {
     get_tree_util_test,

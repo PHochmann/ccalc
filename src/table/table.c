@@ -380,8 +380,10 @@ void set_span(Table *table, size_t span_x, size_t span_y)
     assert(span_x != 0);
     assert(span_y != 0);
     assert(table->curr_col + span_x <= MAX_COLS);
-
     struct Cell *cell = &table->curr_row->cells[table->curr_col];
+    assert(cell->span_x == 1);
+    assert(cell->span_y == 1);
+
     cell->span_x = span_x;
     cell->span_y = span_y;
     table->num_cols = MAX(table->curr_col + span_x, table->num_cols);

@@ -29,14 +29,14 @@ void trie_destroy(Trie *trie)
     destroy_rec(trie->first_node);
 }
 
-void trie_add_str(Trie *trie, char *string, void *data)
+void *trie_add_str(Trie *trie, char *string)
 {
     TrieNode *curr = trie->first_node;
     for (size_t i = 0; string[i] != '\0'; i++)
     {
         if (string[i] < START_CHAR || string[i] > END_CHAR)
         {
-            return;
+            return NULL;
         }
 
         unsigned char index = string[i] - START_CHAR;
@@ -49,7 +49,7 @@ void trie_add_str(Trie *trie, char *string, void *data)
 
     // curr is end node of inserted string
     curr->is_leaf = true;
-    if (data != NULL) memcpy((void*)curr->data, data, trie->elem_size);
+    return (void*)curr->data;
 }
 
 bool is_node_empty(TrieNode *node)
@@ -97,11 +97,11 @@ void trie_remove_str(Trie *trie, char *string)
     remove_rec(trie->first_node, 0, string);
 }
 
-bool trie_contains(Trie *trie, char *string, void *out_data)
+bool trie_contains(Trie *trie, char *string, void **out_data)
 {
     if (string[0] == '\0')
     {
-        if (out_data != NULL) memcpy(out_data, trie->first_node->data, trie->elem_size);
+        if (out_data != NULL) *out_data = trie->first_node->data;
         return trie->first_node->is_leaf;
     }
     else
@@ -110,11 +110,11 @@ bool trie_contains(Trie *trie, char *string, void *out_data)
     }
 }
 
-size_t trie_longest_prefix(Trie *trie, char *string, void *out_data)
+size_t trie_longest_prefix(Trie *trie, char *string, void **out_data)
 {
     size_t res = 0;
     TrieNode *curr = trie->first_node;
-    if (out_data != NULL) memcpy(out_data, curr->data, trie->elem_size);
+    if (out_data != NULL) *out_data = curr->data;
 
     for (size_t i = 0; string[i] != '\0'; i++)
     {
@@ -134,7 +134,7 @@ size_t trie_longest_prefix(Trie *trie, char *string, void *out_data)
         if (curr->is_leaf)
         {
             res = i + 1;
-            if (out_data != NULL) memcpy(out_data, curr->data, trie->elem_size);
+            if (out_data != NULL) *out_data = curr->data;
         }
     }
 

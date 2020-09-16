@@ -367,7 +367,7 @@ void fprint_table_internal(Table *table, FILE *stream)
 {
     if (table->num_cols == 0)
     {
-        return;   
+        return;
     }
 
     size_t col_widths[table->num_cols];

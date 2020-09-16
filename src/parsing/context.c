@@ -94,7 +94,7 @@ Operator *ctx_add_op(ParsingContext *ctx, Operator op)
     // Successfully passed the checks
     op.id = list_count(&ctx->op_list);
     ListNode *list_node = list_append(&ctx->op_list, &op);
-    trie_add_str(&ctx->op_tries[op.placement], op.name, &list_node);
+    TRIE_ADD_ELEM(&ctx->op_tries[op.placement], op.name, ListNode*, list_node);
     return (Operator*)list_node->data;
 }
 
@@ -103,10 +103,10 @@ Operator *ctx_add_op(ParsingContext *ctx, Operator op)
 */
 bool ctx_delete_op(ParsingContext *ctx, char *name, OpPlacement placement)
 {
-    ListNode *node = NULL;
-    if (trie_contains(&ctx->op_tries[placement], name, &node))
+    ListNode **node = NULL;
+    if (trie_contains(&ctx->op_tries[placement], name, (void**)&node))
     {
-        list_delete_node(&ctx->op_list, node);
+        list_delete_node(&ctx->op_list, *node);
         trie_remove_str(&ctx->keywords_trie, name);
         trie_remove_str(&ctx->op_tries[placement], name);
         return true;
@@ -142,10 +142,10 @@ Operator *ctx_lookup_op(ParsingContext *ctx, char *name, OpPlacement placement)
 {
     if (ctx == NULL || name == NULL) return NULL;
 
-    ListNode *node = NULL;
-    if (trie_contains(&ctx->op_tries[placement], name, &node))
+    ListNode **node = NULL;
+    if (trie_contains(&ctx->op_tries[placement], name, (void**)&node))
     {
-        return (Operator*)node->data;
+        return (Operator*)(*node)->data;
     }
     else
     {
