@@ -6,7 +6,7 @@
 #include "../src/tree/tree_util.h"
 #include "../src/tree/tree_to_string.h"
 
-bool tree_util_test(Vector *error_builder)
+bool tree_util_test(StringBuilder *error_builder)
 {
     Operator op = op_get_function("test", OP_DYNAMIC_ARITY);
 

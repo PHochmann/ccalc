@@ -1,6 +1,6 @@
 #pragma once
 #include <stdbool.h>
-#include "../src/util/string_util.h"
+#include "../src/util/string_builder.h"
 
 #define F_RED     "\x1B[1;31m"
 #define F_GREEN   "\x1B[1;32m"
@@ -17,6 +17,6 @@
 }
 
 typedef struct {
-    bool (*suite)(Vector *error_builder);
+    bool (*suite)(StringBuilder *error_builder);
     char *name;
 } Test;

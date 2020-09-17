@@ -4,7 +4,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "../util/string_util.h"
+#include "../util/string_builder.h"
 #include "../util/alloc_wrappers.h"
 #include "table.h"
 #include "printing.h"

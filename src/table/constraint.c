@@ -4,11 +4,16 @@
 #include "printing.h"
 #include "../util/string_util.h" // For is_digit
 
+/*
+Calculates row and column dimensions as well as dot paddings
+*/
+
+// Represents a size contraint in one dimension imposed by a single cell
 struct Constraint
 {
-    size_t from_index;
-    size_t to_index;
-    size_t min;
+    size_t from_index; // Inclusive
+    size_t to_index;   // Exclusive
+    size_t min;        // Needed size (i.e. minimum size needed)
 };
 
 void set_dot_paddings(size_t num_cells, TextAlignment default_align, struct Cell **col)

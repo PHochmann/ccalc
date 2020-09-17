@@ -8,7 +8,7 @@
 #endif
 
 #include "console_util.h"
-#include "string_util.h"
+#include "string_builder.h"
 
 bool g_interactive;
 

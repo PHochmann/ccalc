@@ -29,7 +29,7 @@ static struct TreeToStringTest tests[] = {
         "-sqrt(abs(((-(-a)!)!)*(-(-sum(-b+c-d+e,f^g^h-i,-sum(j,k),l+m)))*(-(-n)!)!))" },
 };
 
-bool tree_to_string_test(Vector *error_builder)
+bool tree_to_string_test(StringBuilder *error_builder)
 {
     for (size_t i = 0; i < NUM_CASES; i++)
     {

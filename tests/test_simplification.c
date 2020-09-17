@@ -7,6 +7,7 @@
 #include "../src/tree/tree_to_string.h"
 #include "../src/core/arith_context.h"
 #include "../src/core/simplification.h"
+#include "../src/parsing/parser.h"
 
 static const size_t NUM_CASES = 7;
 char *cases[] = {
@@ -20,7 +21,7 @@ char *cases[] = {
     "5x-6x",           "-x"
 };
 
-bool simplification_test(Vector *error_builder)
+bool simplification_test(StringBuilder *error_builder)
 {
     for (size_t i = 0; i < NUM_CASES; i++)
     {

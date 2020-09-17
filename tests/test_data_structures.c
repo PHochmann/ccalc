@@ -3,8 +3,9 @@
 
 #include "test_data_structures.h"
 #include "../src/util/linked_list.h"
+#include "../src/util/trie.h"
 
-bool data_structures_test(Vector *error_builder)
+bool data_structures_test(StringBuilder *error_builder)
 {
     // Case 1: linked list
     LinkedList list = list_create(sizeof(char*));

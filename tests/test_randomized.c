@@ -2,10 +2,11 @@
 #include <string.h>
 
 #include "test_randomized.h"
+#include "../src/parsing/parser.h"
 #include "../src/core/arith_context.h"
 #include "../src/tree/tree_util.h"
-#include "../src/parsing/parser.h"
 #include "../src/tree/tree_to_string.h"
+#include "../src/util/string_util.h"
 
 #define SEED                  21
 #define NUM_CASES            100
@@ -70,7 +71,7 @@ Summary:
     This test does not test them independently.
     Note that dynamic arity functions coexisting with fixed-arity function of same name cause false negatives
 */
-bool randomized_test(Vector *error_builder)
+bool randomized_test(StringBuilder *error_builder)
 {
     srand(SEED);
 

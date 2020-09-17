@@ -10,6 +10,7 @@
 #include "test_table.h"
 #include "test_simplification.h"
 #include "test_data_structures.h"
+#include "../src/util/string_builder.h"
 #include "../src/commands/commands.h"
 #include "../src/table/table.h"
 
@@ -45,7 +46,7 @@ int main()
     set_hline(&table, BORDER_SINGLE);
 
     bool error = false;
-    Vector error_builder = strbuilder_create(100);
+    StringBuilder error_builder = strbuilder_create(100);
     for (size_t i = 0; i < NUM_TESTS; i++)
     {
         Test test = test_getters[i]();

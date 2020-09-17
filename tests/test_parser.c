@@ -106,7 +106,7 @@ bool almost_equals(double a, double b)
     return (fabs(a - b) < EPSILON);
 }
 
-bool parser_test(Vector *error_builder)
+bool parser_test(StringBuilder *error_builder)
 {
     Node *node = NULL;
 
