@@ -56,7 +56,6 @@ Test get_simplification_test()
 {
     return (Test){
         simplification_test,
-        NUM_CASES,
         "Simplification"
     };
 }

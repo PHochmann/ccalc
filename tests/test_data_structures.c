@@ -4,8 +4,6 @@
 #include "test_data_structures.h"
 #include "../src/util/linked_list.h"
 
-static const size_t NUM_CASES = 2;
-
 bool data_structures_test(Vector *error_builder)
 {
     // Case 1: linked list
@@ -21,13 +19,18 @@ bool data_structures_test(Vector *error_builder)
     {
         ERROR_RETURN_VAL("list_count");
     }
-    list_delete(&list, 2);
+    list_delete(&list, 2); // Delete last element
     LIST_INSERT_ELEM_AFTER(&list, NULL, char*, "One");
     if (strcmp(LIST_GET_ELEM(&list, char*, 0), "One") != 0
         || strcmp(LIST_GET_ELEM(&list, char*, 1), "Two") != 0
         || strcmp(LIST_GET_ELEM(&list, char*, 2), "Three") != 0)
     {
-        ERROR("Unexpected item in list.\n");
+        ERROR("Unexpected item in list\n");
+    }
+    list_delete(&list, 0); // Delete first element
+    if (strcmp(LIST_GET_ELEM(&list, char*, 0), "Two") != 0)
+    {
+        ERROR("First element of list not correct\n");
     }
     list_destroy(&list);
 
@@ -56,6 +59,23 @@ bool data_structures_test(Vector *error_builder)
     {
         ERROR("trie_longest_prefix lookup was %zu, should be 21.\n", *data);
     }
+    if (trie_contains(&trie, "testitest", NULL))
+    {
+        ERROR_RETURN_VAL("trie_contains");
+    }
+    if (!trie_contains(&trie, "test", NULL))
+    {
+        ERROR_RETURN_VAL("trie_contains");
+    }
+    if (trie_add_str(&trie, "test") != NULL)
+    {
+        ERROR("trie_add_str did not return NULL on duplicate insertion\n");
+    }
+    trie_remove_str(&trie, "");
+    if (trie_contains(&trie, "", NULL))
+    {
+        ERROR("Empty string should not be in trie, as it has been deleted\n");
+    }
     trie_destroy(&trie);
 
     return true;
@@ -65,7 +85,6 @@ Test get_data_structures_test()
 {
     return (Test){
         data_structures_test,
-        NUM_CASES,
         "Data structures"
     };
 }

@@ -1,6 +1,8 @@
+#include <string.h>
+#include <assert.h>
+
 #include "linked_list.h"
 #include "../util/alloc_wrappers.h"
-#include <string.h>
 
 ListNode *malloc_node(size_t elem_size, void *data)
 {
@@ -21,6 +23,8 @@ LinkedList list_create(size_t elem_size)
 
 void list_destroy(LinkedList *list)
 {
+    assert(list != NULL);
+
     ListNode *curr = list->first;
     while (curr != NULL)
     {
@@ -33,7 +37,8 @@ void list_destroy(LinkedList *list)
 
 ListNode *list_get_node(LinkedList *list, size_t index)
 {
-    if (index >= list->count) return NULL;
+    assert(list != NULL);
+    assert(index < list->count);
 
     ListNode *curr;
     if (index < list->count / 2)
@@ -78,6 +83,8 @@ ListNode *list_append(LinkedList *list, void *data)
 
 ListNode *list_insert_after(LinkedList *list, ListNode *before, void *data)
 {
+    assert(list != NULL);
+
     ListNode *after;
     if (before == NULL)
     {
@@ -121,6 +128,9 @@ ListNode *list_insert(LinkedList *list, size_t index, void *data)
 
 void list_delete_node(LinkedList *list, ListNode *node)
 {
+    assert(list != NULL);
+    assert(node != NULL);
+
     ListNode *after = node->next;
     ListNode *before = node->previous;
     free(node);
@@ -153,5 +163,6 @@ void list_delete(LinkedList *list, size_t index)
 
 size_t list_count(LinkedList *list)
 {
+    assert(list != NULL);
     return list->count;
 }

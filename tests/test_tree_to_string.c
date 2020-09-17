@@ -57,7 +57,6 @@ Test get_tree_to_string_test()
 {
     return (Test){
         tree_to_string_test,
-        NUM_CASES,
         "Tree to string"
     };
 }

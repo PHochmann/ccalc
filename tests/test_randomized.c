@@ -130,7 +130,6 @@ Test get_randomized_test()
 {
     return (Test){
         randomized_test,
-        NUM_CASES,
         "Randomized"
     };
 }

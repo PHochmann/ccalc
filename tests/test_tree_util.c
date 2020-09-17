@@ -6,8 +6,6 @@
 #include "../src/tree/tree_util.h"
 #include "../src/tree/tree_to_string.h"
 
-static const size_t NUM_CASES = 5;
-
 bool tree_util_test(Vector *error_builder)
 {
     Operator op = op_get_function("test", OP_DYNAMIC_ARITY);
@@ -98,7 +96,6 @@ Test get_tree_util_test()
 {
     return (Test){
         tree_util_test,
-        NUM_CASES,
         "Tree util"
     };
 }

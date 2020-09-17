@@ -118,7 +118,6 @@ Test get_table_test()
 {
     return (Test){
         table_test,
-        NUM_CASES,
         "Table"
     };
 }

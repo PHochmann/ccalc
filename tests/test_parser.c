@@ -143,7 +143,6 @@ Test get_parser_test()
 {
     return (Test){
         parser_test,
-        NUM_ERROR_CASES + NUM_VALUE_CASES,
         "Parser"
     };
 }

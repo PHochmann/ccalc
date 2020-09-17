@@ -18,6 +18,5 @@
 
 typedef struct {
     bool (*suite)(Vector *error_builder);
-    int num_cases;
     char *name;
 } Test;

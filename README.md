@@ -104,7 +104,7 @@ Note:
 
 ### Constants
 | Name         | Value         | Description                          |
-| ---          | ---           | ---                                  |
+| ---          | ---:          | ---                                  |
 | ```pi```     | 3.14159265359 | Archimedes' constant                 |
 | ```e```      | 2.71828182846 | Euler's number                       |
 | ```phi```    | 1.61803398874 | Golden ratio                         |
