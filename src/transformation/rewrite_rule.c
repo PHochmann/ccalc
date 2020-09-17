@@ -10,9 +10,6 @@
 #include "rewrite_rule.h"
 #include "matching.h"
 
-#define ARROW           " -> "
-#define COMMENT_PREFIX  '\''
-
 #define MAX_RULESET_ITERATIONS 1000 // To protect against endless loops
 
 /*
@@ -193,74 +190,4 @@ size_t apply_rule_list(Node **tree, LinkedList *rules)
         }
     }
     return 0; // To make compiler happy
-}
-
-bool parse_rule(char *string, ParsingContext *ctx, MappingFilter default_filter, Vector *out_ruleset)
-{
-    if (string[0] == COMMENT_PREFIX || string[0] == '\0')
-    {
-        return true;
-    }
-
-    char *right = strstr(string, ARROW);
-    if (right == NULL)
-    {
-        return false;
-    }
-
-    right[0] = '\0';
-    right += strlen(ARROW);
-    Node *left_n = parse_conveniently(ctx, string);
-    if (left_n == NULL)
-    {
-        return false;
-    }
-
-    Node *right_n = parse_conveniently(ctx, right);
-    if (right_n == NULL)
-    {
-        free_tree(left_n);
-        return false;
-    }
-
-    add_to_ruleset(out_ruleset, get_rule(left_n, right_n, default_filter));
-    return true;
-}
-
-bool parse_ruleset_from_string(char *string, ParsingContext *ctx, MappingFilter default_filter, Vector *out_ruleset)
-{
-    // String is likely to be readonly - copy it
-    char *copy = malloc_wrapper(strlen(string) + 1);
-    strcpy(copy, string);
-
-    *out_ruleset = get_empty_ruleset();
-    size_t line_no = 0;
-    char *line = copy;
-    while (line != NULL)
-    {
-        line_no++;
-        char *next_line = strstr(line, "\n");
-        if (next_line != NULL)
-        {
-            next_line[0] = '\0';
-        }
-
-        if (!parse_rule(line, ctx, default_filter, out_ruleset))
-        {
-            report_error("Failed parsing ruleset in line %zu.\n", line_no);
-            goto error;
-        }
-
-        line = next_line;
-        if (line != NULL) line++; // Skip newline char
-    }
-
-    vec_trim(out_ruleset);
-    free(copy);
-    return true;
-
-    error:
-    free(copy);
-    free_ruleset(out_ruleset);
-    return false;
 }

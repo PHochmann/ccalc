@@ -4,6 +4,7 @@
 #include "tree_to_string.h"
 #include "../util/string_util.h"
 
+#define STRBUILDER_STARTSIZE 20
 #define OPENING_P "("
 #define CLOSING_P ")"
 
@@ -168,9 +169,9 @@ void tree_to_strbuilder(StringBuilder *builder, Node *node, bool color)
 // Summary: Returns string (on heap)
 char *tree_to_str(Node *node, bool color)
 {
-    StringBuilder builder = strbuilder_create(100);
+    StringBuilder builder = strbuilder_create(STRBUILDER_STARTSIZE);
     tree_to_strbuilder(&builder, node, color);
-    return builder.buffer;
+    return strbuilder_to_str(&builder);
 }
 
 /*

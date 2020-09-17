@@ -52,10 +52,11 @@ When starting the calculator normally, you can enter expressions and commands in
 | ```-``` | 6          | Negation    |
 
 ### Postfix operators
-| Name    | Precedence | Description     |
-| ---     | ---        | ---             |
-| ```!``` | 5          | Factorial       |
-| ```%``` | 5          | Division by 100 |
+| Name    | Precedence | Description                |
+| ---     | ---        | ---                        |
+| ```!``` | 5          | Factorial                  |
+| ```%``` | 5          | Division by 100            |
+| ```'``` | 7          | Derivation (experimental!) |
 
 ### Functions
 | Name                 | Description                                    |

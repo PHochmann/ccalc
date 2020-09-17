@@ -58,6 +58,7 @@ void vstrbuilder_append(StringBuilder *builder, char *fmt, va_list args)
     va_end(args_copy);
 }
 
+// Lifetime of string is tied to lifetime of StringBuilder!
 char *strbuilder_to_str(StringBuilder *builder)
 {
     return builder->buffer;
