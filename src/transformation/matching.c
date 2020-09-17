@@ -80,7 +80,7 @@ void match_parameter_lists(Matching matching,
     while (curr_index < vec_count(&vec_suffixes))
     {
         // Since vec_suffixes's buffer could be realloced by any insertion, we can't store a pointer to it
-        SuffixNode curr = VEC_GET_ELEM(&vec_suffixes, SuffixNode, curr_index);
+        SuffixNode curr = *(SuffixNode*)vec_get(&vec_suffixes, curr_index);
         size_t new_sum = curr.sum + curr.label;
 
         // We found a valid end node of suffixes. Try to match.
@@ -94,7 +94,7 @@ void match_parameter_lists(Matching matching,
                 filter);
 
             // Update curr
-            curr = VEC_GET_ELEM(&vec_suffixes, SuffixNode, curr_index);
+            curr = *(SuffixNode*)vec_get(&vec_suffixes, curr_index);
 
             // Copy matchings to result-buffer
             vec_push_many(out_matchings,

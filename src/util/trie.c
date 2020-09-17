@@ -1,7 +1,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "../util/alloc_wrappers.h"
+#include "alloc_wrappers.h"
 #include "trie.h"
 
 TrieNode *malloc_trienode(size_t elem_size)
@@ -41,6 +41,10 @@ void trie_destroy(Trie *trie)
     destroy_rec(trie->first_node);
 }
 
+/*
+Returns: Pointer to a buffer to attach an item to the inserted string
+    The size of this buffer is equal to the elem_size specified when creating the trie
+*/
 void *trie_add_str(Trie *trie, char *string)
 {
     assert(trie != NULL);

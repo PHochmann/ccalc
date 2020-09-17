@@ -2,7 +2,7 @@
 #include <assert.h>
 
 #include "linked_list.h"
-#include "../util/alloc_wrappers.h"
+#include "alloc_wrappers.h"
 
 ListNode *malloc_node(size_t elem_size, void *data)
 {

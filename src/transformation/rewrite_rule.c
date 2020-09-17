@@ -129,7 +129,7 @@ void free_ruleset(Vector *rules)
 {
     for (size_t i = 0; i < vec_count(rules); i++)
     {
-        free_rule(VEC_GET_ELEM(rules, RewriteRule, i));
+        free_rule(*(RewriteRule*)vec_get(rules, i));
     }
     vec_destroy(rules);
 }

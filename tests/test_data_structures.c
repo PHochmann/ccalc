@@ -7,7 +7,30 @@
 
 bool data_structures_test(StringBuilder *error_builder)
 {
-    // Case 1: linked list
+    // Case 1: vector
+    Vector vec = vec_create(sizeof(int), 1); // Size of each element and start size
+    if (vec_count(&vec) != 0)
+    {
+        ERROR_RETURN_VAL("vec_count");
+    }
+    for (int i = 0; i < 50; i++)
+    {
+        VEC_PUSH_ELEM(&vec, int, i);
+    }
+    if (vec_count(&vec) != 50)
+    {
+        ERROR_RETURN_VAL("vec_count");
+    }
+    for (int i = 0; i < 50; i++)
+    {
+        if (*(int*)vec_get(&vec, i) != i)
+        {
+            ERROR("Value mismatch at index %zu\n", i);
+        }
+    }
+    vec_destroy(&vec);
+
+    // Case 2: linked list
     LinkedList list = list_create(sizeof(char*));
     if (list_count(&list) != 0)
     {
@@ -35,7 +58,7 @@ bool data_structures_test(StringBuilder *error_builder)
     }
     list_destroy(&list);
 
-    // Case 2: trie
+    // Case 3: trie
     Trie trie = trie_create(sizeof(int));
     int *data;
     if (trie_contains(&trie, "", (void**)&data))

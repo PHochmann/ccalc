@@ -5,12 +5,10 @@
 #define START_CHAR '!'
 #define END_CHAR   'z'
 
-#define TRIE_ADD_ELEM(trie, str, type, expr) {\
-    *(type*)trie_add_str(trie, str) = (expr);\
-}
+#define TRIE_ADD_ELEM(trie, str, type, expr) *(type*)trie_add_str(trie, str) = (expr)
 
 /*
-A TrieNode directly contains the data and is always on heap
+Summary: A TrieNode directly contains the data and is always on heap
 */
 typedef struct TrieNode
 {

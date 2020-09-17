@@ -4,12 +4,8 @@
 #include <stdarg.h>
 
 // May change the buffer location
-#define VEC_PUSH_ELEM(vec, type, expr) (*(type*)vec_push_empty(vec)) = expr
-#define VEC_SET_ELEM(vec, type, index, expr) (*(type*)vec_get(vec, index)) = expr
-// The following macros will dereference a NULL pointer on invalid index or empty vector
-#define VEC_GET_ELEM(vec, type, index) (*(type*)vec_get(vec, index))
-#define VEC_POP_ELEM(vec, type) *(type*)vec_pop(vec)
-#define VEC_PEEK_ELEM(vec, type) *(type*)vec_peek(vec)
+#define VEC_PUSH_ELEM(vec, type, expr) (*(type*)vec_push_empty(vec)) = (expr)
+#define VEC_SET_ELEM(vec, type, index, expr) (*(type*)vec_get(vec, index)) = (expr)
 
 /*
  * Never save pointers when there are elements
@@ -26,7 +22,7 @@ typedef struct
 
 // Buffer handling
 void vec_trim(Vector *vec);
-bool vec_ensure_size(Vector *vec, size_t needed_size);
+void vec_ensure_size(Vector *vec, size_t needed_size);
 Vector vec_create(size_t elem_size, size_t start_size);
 void vec_reset(Vector *vec);
 void vec_destroy(Vector *vec);

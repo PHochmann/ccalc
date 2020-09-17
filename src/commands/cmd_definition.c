@@ -164,11 +164,11 @@ bool cmd_definition_exec(char *input, __attribute__((unused)) int code)
     if (vec_count(&tokens) > 0)
     {
         // Function name is first token
-        char *name = VEC_GET_ELEM(&tokens, char*, 0);
+        char *name = *(char**)vec_get(&tokens, 0);
         // All other tokens can be freed
         for (size_t i = 1; i < vec_count(&tokens); i++)
         {
-            free(VEC_GET_ELEM(&tokens, char*, i));
+            free(*(char**)vec_get(&tokens, i));
         }
         vec_destroy(&tokens);
 

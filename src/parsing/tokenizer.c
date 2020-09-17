@@ -99,7 +99,7 @@ void free_tokens(Vector *tokens)
 {
     for (size_t i = 0; i < vec_count(tokens); i++)
     {
-        free(VEC_GET_ELEM(tokens, char*, i));
+        free(*(char**)vec_get(tokens, i));
     }
     vec_destroy(tokens);
 }

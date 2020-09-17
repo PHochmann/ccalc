@@ -28,17 +28,6 @@ void strbuilder_append_char(StringBuilder *builder, char c)
     VEC_PUSH_ELEM(builder, char, '\0');
 }
 
-/*void strbuilder_reverse(StringBuilder *builder)
-{
-    for (size_t i = 0; i < (vec_count(builder) - 1) / 2; i++)
-    {
-        char temp = VEC_GET_ELEM(builder, char, i);
-        size_t partner = vec_count(builder) - 2 - i;
-        VEC_SET_ELEM(builder, char, i, VEC_GET_ELEM(builder, char, partner));
-        VEC_SET_ELEM(builder, char, partner, temp);
-    }
-}*/
-
 void vstrbuilder_append(StringBuilder *builder, char *fmt, va_list args)
 {
     va_list args_copy;
@@ -48,12 +37,16 @@ void vstrbuilder_append(StringBuilder *builder, char *fmt, va_list args)
         builder->buffer_size - builder->elem_count + 1,
         fmt, args);
 
-    if (vec_ensure_size(builder, vec_count(builder) + appended_length))
+    // Check whether previous vsnprintf truncated the string...
+    if (builder->buffer_size < vec_count(builder) + appended_length)
     {
-        vsnprintf(vec_get(builder, vec_count(builder) - 1),
+        // ...if this is the case, grow the vector and call vsnprintf again
+        vec_ensure_size(builder, vec_count(builder) + appended_length);
+        vsnprintf(vec_get(builder, vec_count(builder) - 1), // -1 to overwrite old \0
             builder->buffer_size - builder->elem_count + 1,
             fmt, args_copy);
     }
+
     builder->elem_count += appended_length;
     va_end(args_copy);
 }
