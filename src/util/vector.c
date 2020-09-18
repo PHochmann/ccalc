@@ -32,7 +32,7 @@ Vector vec_create(size_t elem_size, size_t start_size)
     };
 }
 
-void vec_reset(Vector *vec)
+void vec_clear(Vector *vec)
 {
     vec->elem_count = 0;
 }
@@ -56,11 +56,11 @@ void *vec_push_empty(Vector *vec)
     return vec_get(vec, vec->elem_count++);
 }
 
-void *vec_push_many(Vector *vec, size_t num, void *elem)
+void *vec_push_many(Vector *vec, size_t num, void *elems)
 {
     vec_ensure_size(vec, vec->elem_count + num);
     void *first = (char*)vec->buffer + vec->elem_size * vec->elem_count;
-    memcpy(first, elem, num * vec->elem_size);
+    memcpy(first, elems, num * vec->elem_size);
     vec->elem_count += num;
     return first;
 }

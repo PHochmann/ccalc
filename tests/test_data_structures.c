@@ -56,6 +56,11 @@ bool data_structures_test(StringBuilder *error_builder)
     {
         ERROR("First element of list not correct\n");
     }
+    LIST_INSERT_ELEM(&list, 1, char*, "2.5");
+    if (strcmp(LIST_GET_ELEM(&list, char*, 1), "2.5") != 0)
+    {
+        ERROR("In-between list insertion incorrect\n");
+    }
     list_destroy(&list);
 
     // Case 3: trie

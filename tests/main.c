@@ -65,7 +65,7 @@ int main()
             add_cell(&table, F_RED " failed " COL_RESET);
             error = true;
         }
-        strbuilder_reset(&error_builder);
+        strbuilder_clear(&error_builder);
         next_row(&table);
     }
     vec_destroy(&error_builder);

@@ -6,14 +6,14 @@
 
 typedef struct
 {
-    Operator *glue_op;                // Points to op in operators
-    LinkedList op_list;               // Buffer of operators
-    Trie op_tries[OP_NUM_PLACEMENTS]; // Tries for fast operator lookup
-    Trie keywords_trie;               // Contains all operators for keyword lookup in tokenizer
+    Operator *glue_op;                // Points to a payload of a listnode of op_list
+    LinkedList op_list;               // List of operators
+    Trie op_tries[OP_NUM_PLACEMENTS]; // Tries for fast operator lookup (payload: pointer to listnode)
+    Trie keywords_trie;               // Contains all names for keyword lookup in tokenizer (no payload)
 } ParsingContext;
 
-ParsingContext context_create();
-void context_destroy(ParsingContext *ctx);
+ParsingContext ctx_create();
+void ctx_destroy(ParsingContext *ctx);
 bool ctx_add_ops(ParsingContext *ctx, size_t count, ...);
 Operator *ctx_add_op(ParsingContext *ctx, Operator op);
 bool ctx_delete_op(ParsingContext *ctx, char *name, OpPlacement placement);

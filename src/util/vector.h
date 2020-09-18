@@ -21,15 +21,15 @@ typedef struct
 } Vector;
 
 // Buffer handling
+Vector vec_create(size_t elem_size, size_t start_size);
+void vec_clear(Vector *vec);
+void vec_destroy(Vector *vec);
 void vec_trim(Vector *vec);
 void vec_ensure_size(Vector *vec, size_t needed_size);
-Vector vec_create(size_t elem_size, size_t start_size);
-void vec_reset(Vector *vec);
-void vec_destroy(Vector *vec);
 
 // Insertion
 void *vec_push(Vector *vec, void *elem);
-void *vec_push_many(Vector *vec, size_t num, void *elem);
+void *vec_push_many(Vector *vec, size_t num, void *elems);
 void *vec_push_empty(Vector *vec);
 
 // Retrieval

@@ -8,7 +8,7 @@
 Summary: This method is used to create a new ParsingContext without glue-op and operators
     Use ctx_add_op and ctx_add_glue_op to add them to new context
 */
-ParsingContext context_create()
+ParsingContext ctx_create()
 {
     ParsingContext res = (ParsingContext){
         .op_list = list_create(sizeof(Operator)),
@@ -24,7 +24,7 @@ ParsingContext context_create()
     return res;
 }
 
-void context_destroy(ParsingContext *ctx)
+void ctx_destroy(ParsingContext *ctx)
 {
     list_destroy(&ctx->op_list);
     trie_destroy(&ctx->keywords_trie);
@@ -142,9 +142,11 @@ Operator *ctx_lookup_op(ParsingContext *ctx, char *name, OpPlacement placement)
 {
     if (ctx == NULL || name == NULL) return NULL;
 
+    // Operators are stored in a linked list, a trie is used to lookup the correct listnode
     ListNode **node = NULL;
     if (trie_contains(&ctx->op_tries[placement], name, (void**)&node))
     {
+        // Return pointer to payload of listnode
         return (Operator*)(*node)->data;
     }
     else

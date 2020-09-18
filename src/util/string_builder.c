@@ -8,9 +8,9 @@ StringBuilder strbuilder_create(size_t start_size)
     return builder;
 }
 
-void strbuilder_reset(StringBuilder *builder)
+void strbuilder_clear(StringBuilder *builder)
 {
-    vec_reset(builder),
+    vec_clear(builder),
     *(char*)vec_push_empty(builder) = '\0';
 }
 

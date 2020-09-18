@@ -138,6 +138,7 @@ void satisfy_constraints(size_t num_constrs, struct Constraint *constrs, size_t 
     }
 }
 
+// Counts number of \n in string
 size_t get_num_lines(char *string)
 {
     if (string == NULL) return 0;
@@ -189,7 +190,7 @@ void get_dimensions(Table *table, size_t *out_col_widths, size_t *out_row_height
     for (size_t i = 0; i < table->num_cols; i++)
     {
         struct Cell *cells[table->num_rows];
-        get_col(table, i, (struct Cell**)&cells);
+        get_col(table, i, (struct Cell**)cells);
         set_dot_paddings(table->num_rows, table->alignments[i], cells);
     }
 
@@ -205,6 +206,7 @@ void get_dimensions(Table *table, size_t *out_col_widths, size_t *out_row_height
             {
                 size_t min = get_text_width(curr_row->cells[i].text) + curr_row->cells[i].zeros_needed;
                 if (curr_row->cells[i].dot_needed) min++;
+
                 // Constraint can be weakened when vlines are in between
                 for (size_t j = i + 1; j < i + curr_row->cells[i].span_x; j++)
                 {
@@ -213,9 +215,9 @@ void get_dimensions(Table *table, size_t *out_col_widths, size_t *out_row_height
                 }
 
                 constrs[index] = (struct Constraint){
-                    .min = min,
+                    .min        = min,
                     .from_index = i,
-                    .to_index = i + curr_row->cells[i].span_x
+                    .to_index   = i + curr_row->cells[i].span_x
                 };
                 index++;
             }
@@ -247,9 +249,9 @@ void get_dimensions(Table *table, size_t *out_col_widths, size_t *out_row_height
                 }
 
                 constrs[index] = (struct Constraint){
-                    .min = min,
+                    .min        = min,
                     .from_index = row_index,
-                    .to_index = row_index + curr_row->cells[i].span_y
+                    .to_index   = row_index + curr_row->cells[i].span_y
                 };
                 index++;
             }

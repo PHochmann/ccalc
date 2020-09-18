@@ -32,7 +32,7 @@ void print_debug(Table *table)
     size_t row_heights[table->num_rows];
     get_dimensions(table, col_widths, row_heights);
 
-    printf("#rows: %zu, #cols: %zu\n", table->num_rows, table->num_cols);
+    printf("Table dimensions: ~ ~ #rows: %zu, #cols: %zu\n", table->num_rows, table->num_cols);
     for (size_t i = 0; i < table->num_rows; i++) printf("%zu ", row_heights[i]);
     printf("; ");
     for (size_t i = 0; i < table->num_cols; i++) printf("%zu ", col_widths[i]);
@@ -217,7 +217,9 @@ void count_styles(BorderStyle style, size_t *out_num_single, size_t *out_num_dou
 
 void print_intersection_char(BorderStyle default_right_border_left,
     BorderStyle default_below_border_above,
-    struct Cell *right_above, struct Cell *left_below, struct Cell *right_below,
+    struct Cell *right_above,
+    struct Cell *left_below,
+    struct Cell *right_below,
     FILE *stream)
 {
     size_t num_single = 0;

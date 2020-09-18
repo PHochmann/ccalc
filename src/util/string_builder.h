@@ -7,7 +7,7 @@
 typedef Vector StringBuilder;
 
 StringBuilder strbuilder_create(size_t start_size);
-void strbuilder_reset(StringBuilder *builder);
+void strbuilder_clear(StringBuilder *builder);
 void strbuilder_append(StringBuilder *builder, char *fmt, ...);
 void vstrbuilder_append(StringBuilder *builder, char *fmt, va_list args);
 void strbuilder_append_char(StringBuilder *builder, char c);

@@ -17,7 +17,7 @@ Summary: Sets arithmetic context stored in global variable
 */
 void init_arith_ctx()
 {
-    __g_ctx = context_create();
+    __g_ctx = ctx_create();
     if (!ctx_add_ops(g_ctx, NUM_PREDEFINED_OPS,
         op_get_prefix("$", 0),
         op_get_prefix("@", 8),
@@ -88,7 +88,7 @@ void unload_arith_ctx()
 {
     clear_composite_functions();
     list_destroy(&g_composite_functions);
-    context_destroy(g_ctx);
+    ctx_destroy(g_ctx);
 }
 
 void add_composite_function(RewriteRule rule)
