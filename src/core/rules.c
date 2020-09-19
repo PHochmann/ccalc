@@ -99,9 +99,9 @@ char *simplification_string =
 "sum([xs], prod([yy], x, [zz]), [ys], prod([y], x, [z]), [zs]) -> sum([xs], x * (prod([yy],[zz]) + prod([y],[z])), [ys], [zs])\n"
 
 // Powers
-"(-dX)^z                          -> (-1)^z*dX^z\n"
 "(x^y)^z                          -> x^prod(y, z)\n"
 "prod([xs], x^y, [ys], x^z, [zs]) -> prod([xs], x^(y+z), [ys], [zs])\n"
+"prod([xs], y^x, [ys], z^x, [zs]) -> prod([xs], (y*z)^x, [ys], [zs])\n"
 "x^0                              -> 1\n"
 "prod(x, [xs])^z                  -> prod(x^z, prod([xs])^z)\n"
 

@@ -138,7 +138,7 @@ void free_ruleset(Vector *rules)
 Summary: Tries to apply rules (priorized by order) until no rule can be applied any more
     Guarantees to terminate after MAX_RULESET_ITERATIONS rule appliances
 */
-//#include "../tree/tree_to_string.h"
+#include "../tree/tree_to_string.h"
 size_t apply_ruleset(Node **tree, Ruleset *rules)
 {
     size_t counter = 0;
@@ -149,7 +149,7 @@ size_t apply_ruleset(Node **tree, Ruleset *rules)
         {
             if (apply_rule(tree, (RewriteRule*)vec_get(rules, j)))
             {
-                //printf("Applied rule %zu: %s\n", j, tree_to_str(*tree, true));
+                printf("Applied rule %zu: %s\n", j, tree_to_str(*tree, true));
                 applied_flag = true;
                 counter++;
                 break;
@@ -158,7 +158,7 @@ size_t apply_ruleset(Node **tree, Ruleset *rules)
 
         if (!applied_flag || counter == MAX_RULESET_ITERATIONS)
         {
-            //printf("End.\n");
+            printf("End.\n");
             return counter;
         }
     }
