@@ -12,6 +12,7 @@
 #define PLAYGROUND_COMMAND "playground"
 #define SIMPLIFY_CODE   1
 #define PLAYGROUND_CODE 2
+#define MATCHINGS_PRINT_THRESHOLD 10
 
 int cmd_playground_check(char *input)
 {
@@ -72,26 +73,33 @@ bool cmd_playground_exec(char *input, int code)
 
             Matching *matchings;
             size_t num_matchings = get_all_matchings(&tree, pattern, &matchings, NULL);
-            for (size_t k = 0; k < num_matchings; k++)
+
+            if (num_matchings < MATCHINGS_PRINT_THRESHOLD)
             {
-                printf("Matching Nr. %zu:\n", k + 1);
-                for (size_t i = 0; i < matchings[k].num_mapped; i++)
+                for (size_t k = 0; k < num_matchings; k++)
                 {
-                    printf("%s -> ", matchings[k].mapped_vars[i]);
-                    for (size_t j = 0; j < matchings[k].mapped_nodes[i].size; j++)
+                    printf("Matching Nr. %zu:\n", k + 1);
+                    for (size_t i = 0; i < matchings[k].num_mapped; i++)
                     {
-                        print_tree(matchings[k].mapped_nodes[i].nodes[j], true);
-                        printf(", ");
+                        printf("%s -> ", matchings[k].mapped_vars[i]);
+                        for (size_t j = 0; j < matchings[k].mapped_nodes[i].size; j++)
+                        {
+                            print_tree(matchings[k].mapped_nodes[i].nodes[j], true);
+                            printf(", ");
+                        }
+                        printf("\n");
                     }
-                    printf("\n");
                 }
             }
-            free(matchings);
-
+            else
+            {
+                printf("%zu matchings found.\n", num_matchings);
+            }
             if (num_matchings == 0)
             {
                 printf("No matching found.\n");
             }
+            free(matchings);
 
             loop_cleanup:
             free(tree_str);

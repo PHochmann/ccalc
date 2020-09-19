@@ -27,7 +27,9 @@ bool do_left_checks(Node *left_n)
         return false;
     }
 
-    for (size_t i = 0; i < get_num_children(left_n); i++)
+    size_t num_children = get_num_children(left_n);
+
+    for (size_t i = 0; i < num_children; i++)
     {
         if (get_type(get_child(left_n, i)) != NTYPE_VARIABLE)
         {
@@ -36,11 +38,16 @@ bool do_left_checks(Node *left_n)
         }
     }
 
-    size_t num_children = get_num_children(left_n);
     char *vars[num_children];
     if (num_children != list_variables(left_n, num_children, vars))
     {
         report_error(FMT_ERROR_LEFT, "Function arguments must be distinct variables.");
+        return false;
+    }
+
+    if (num_children > MAX_MAPPED_VARS)
+    {
+        report_error(FMT_ERROR_LEFT, "Too many function arguments.");
         return false;
     }
 

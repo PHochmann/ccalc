@@ -5,6 +5,7 @@
 #include <math.h>
 
 #include "../tree/tree_util.h"
+#include "../util/console_util.h"
 #include "evaluation.h"
 #include "arith_context.h"
 
@@ -290,7 +291,7 @@ bool op_evaluate(Operator *op, size_t num_args, double *args, double *out)
             return true;
     }
 
-    printf("Software defect: No reduction possible for operator %s.\n", op->name);
+    software_defect("Software defect: No reduction possible for operator %s.\n", op->name);
     return false;
 }
 

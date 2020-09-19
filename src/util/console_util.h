@@ -10,3 +10,4 @@ bool set_interactive(bool value);
 void whisper(const char *format, ...);
 bool ask_input(FILE *file, char **out_input, char *prompt_fmt, ...);
 void report_error(char *fmt, ...);
+void software_defect(char *fmt, ...);

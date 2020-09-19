@@ -351,7 +351,7 @@ void preprocess_pattern(Node *tree)
         {
             if (counter == MAX_MAPPED_VARS)
             {
-                report_error("Trying to preprocess a pattern with too many distinct variables. Increase MAX_MAPPED_VARS.\n");
+                software_defect("Trying to preprocess a pattern with too many distinct variables. Increase MAX_MAPPED_VARS.\n");
                 return;
             }
 
