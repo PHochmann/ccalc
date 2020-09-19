@@ -32,6 +32,7 @@ When starting the calculator normally, you can enter expressions and commands in
 | ```load <path>```             | Loads file as if its content had been typed in.                           |
 | ```help [operators]```        | Lists available commands and operators.                                   |
 | ```clear [<func>]```          | Clears all or one function or constant.                                   |
+| ```simplify <expr>```         | Look what an expression internally simplifies to without evaluating it (experimental) |
 | ```quit```                    | Closes application.                                                       |
 
 ### Infix operators
@@ -39,24 +40,24 @@ When starting the calculator normally, you can enter expressions and commands in
 | ---       | ---           | ---        | ---                  |
 | ```+```   | Both          | 2          | Addition             |
 | ```-```   | Left          | 2          | Subtraction          |
-| ```*```   | Both          | 3          | Multiplication       |
+| ```*```   | Both          | 4          | Multiplication       |
 | ```/```   | Left          | 3          | Division             |
-| ```^```   | Right         | 4          | Exponentiation       |
+| ```^```   | Right         | 5          | Exponentiation       |
 | ```C```   | Left          | 1          | Binomial coefficient |
 | ```mod``` | Left          | 1          | Modulo operator      |
 
 ### Prefix operators
 | Name    | Precedence | Description |
 | ---     | ---        | ---         |
-| ```+``` | 6          | Identity    |
-| ```-``` | 6          | Negation    |
+| ```+``` | 7          | Identity    |
+| ```-``` | 7          | Negation    |
 
 ### Postfix operators
 | Name    | Precedence | Description                |
 | ---     | ---        | ---                        |
-| ```!``` | 5          | Factorial                  |
-| ```%``` | 5          | Division by 100            |
-| ```'``` | 7          | Derivation (experimental!) |
+| ```!``` | 6          | Factorial                  |
+| ```%``` | 6          | Division by 100            |
+| ```'``` | 7          | Derivation (experimental)  |
 
 ### Functions
 | Name                 | Description                                    |
