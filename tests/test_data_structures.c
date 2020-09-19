@@ -8,7 +8,7 @@
 bool data_structures_test(StringBuilder *error_builder)
 {
     // Case 1: vector
-    Vector vec = vec_create(sizeof(int), 1); // Size of each element and start size
+    Vector vec = vec_create(sizeof(int), 1);
     if (vec_count(&vec) != 0)
     {
         ERROR_RETURN_VAL("vec_count");
@@ -28,6 +28,14 @@ bool data_structures_test(StringBuilder *error_builder)
             ERROR("Value mismatch at index %zu\n", i);
         }
     }
+    if (*(int*)vec_pop(&vec) != 49)
+    {
+        ERROR_RETURN_VAL("vec_pop");
+    }
+    if (vec_count(&vec) != 49)
+    {
+        ERROR_RETURN_VAL("vec_count");
+    }
     vec_destroy(&vec);
 
     // Case 2: linked list
@@ -43,21 +51,21 @@ bool data_structures_test(StringBuilder *error_builder)
     {
         ERROR_RETURN_VAL("list_count");
     }
-    list_delete(&list, 2); // Delete last element
+    list_delete_at(&list, 2); // Delete last element
     LIST_INSERT_ELEM_AFTER(&list, NULL, char*, "One");
-    if (strcmp(LIST_GET_ELEM(&list, char*, 0), "One") != 0
-        || strcmp(LIST_GET_ELEM(&list, char*, 1), "Two") != 0
-        || strcmp(LIST_GET_ELEM(&list, char*, 2), "Three") != 0)
+    if (strcmp(*(char**)list_get_at(&list, 0), "One") != 0
+        || strcmp(*(char**)list_get_at(&list, 1), "Two") != 0
+        || strcmp(*(char**)list_get_at(&list, 2), "Three") != 0)
     {
         ERROR("Unexpected item in list\n");
     }
-    list_delete(&list, 0); // Delete first element
-    if (strcmp(LIST_GET_ELEM(&list, char*, 0), "Two") != 0)
+    list_delete_at(&list, 0); // Delete first element
+    if (strcmp(*(char**)list_get_at(&list, 0), "Two") != 0)
     {
         ERROR("First element of list not correct\n");
     }
-    LIST_INSERT_ELEM(&list, 1, char*, "2.5");
-    if (strcmp(LIST_GET_ELEM(&list, char*, 1), "2.5") != 0)
+    LIST_INSERT_ELEM_AT(&list, 1, char*, "2.5");
+    if (strcmp(*(char**)list_get_at(&list, 1), "2.5") != 0)
     {
         ERROR("In-between list insertion incorrect\n");
     }
@@ -79,8 +87,8 @@ bool data_structures_test(StringBuilder *error_builder)
     {
         ERROR("Wrong value after lookup\n");
     }
-    TRIE_ADD_ELEM(&trie, "test", int, 21);
-    if (trie_longest_prefix(&trie, "testitest", (void**)&data) != 4)
+    TRIE_ADD_ELEM(&trie, "aaaa", int, 21);
+    if (trie_longest_prefix(&trie, "aaaaaaa", (void**)&data) != 4)
     {
         ERROR_RETURN_VAL("trie_longest_prefix");
     }
@@ -88,15 +96,15 @@ bool data_structures_test(StringBuilder *error_builder)
     {
         ERROR("trie_longest_prefix lookup was %zu, should be 21.\n", *data);
     }
-    if (trie_contains(&trie, "testitest", NULL))
+    if (trie_contains(&trie, "z", NULL))
     {
         ERROR_RETURN_VAL("trie_contains");
     }
-    if (!trie_contains(&trie, "test", NULL))
+    if (!trie_contains(&trie, "aaaa", NULL))
     {
         ERROR_RETURN_VAL("trie_contains");
     }
-    if (trie_add_str(&trie, "test") != NULL)
+    if (trie_add_str(&trie, "aaaa") != NULL)
     {
         ERROR("trie_add_str did not return NULL on duplicate insertion\n");
     }
@@ -105,6 +113,10 @@ bool data_structures_test(StringBuilder *error_builder)
     {
         ERROR("Empty string should not be in trie, as it has been deleted\n");
     }
+    trie_add_str(&trie, "aaaaaaaaaaaa");
+    trie_add_str(&trie, "aabzzz");
+    trie_add_str(&trie, "aaaaab");
+    trie_remove_str(&trie, "aaaaaaaaaaaa");
     trie_destroy(&trie);
 
     return true;

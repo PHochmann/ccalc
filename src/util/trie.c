@@ -9,15 +9,19 @@ TrieNode *malloc_trienode(size_t elem_size)
     return calloc_wrapper(1, sizeof(TrieNode) + elem_size);
 }
 
-bool is_node_empty(TrieNode *node)
+bool is_legal_char(char c)
 {
-    for (unsigned char i = 0; i < END_CHAR - START_CHAR; i++)
-    {
-        if (node->next[i] != NULL) return false;
-    }
-    return true;
+    return (c >= START_CHAR) && (c < END_CHAR);
 }
 
+unsigned char char_to_index(char c)
+{
+    return (unsigned char)(c - START_CHAR);
+}
+
+/*
+Pass 0 as elem_size to use the trie without payload
+*/
 Trie trie_create(size_t elem_size)
 {
     return (Trie){
@@ -53,50 +57,49 @@ void *trie_add_str(Trie *trie, char *string)
     TrieNode *curr = trie->first_node;
     for (size_t i = 0; string[i] != '\0'; i++)
     {
-        if (string[i] < START_CHAR || string[i] > END_CHAR)
-        {
-            return NULL;
-        }
-
-        unsigned char index = string[i] - START_CHAR;
+        if (!is_legal_char(string[i])) return NULL;
+        unsigned char index = char_to_index(string[i]);
         if (curr->next[index] == NULL)
         {
             curr->next[index] = malloc_trienode(trie->elem_size);
+            curr->num_successors++;
         }
         curr = curr->next[index];
     }
 
     // curr is end node of inserted string
-    if (curr->is_leaf)
+    if (curr->is_terminal)
     {
         // String is already present
         return NULL;
     }
-    curr->is_leaf = true;
+    curr->is_terminal = true;
     return (void*)curr->data;
 }
 
+// Returns true if node has been freed
 bool remove_rec(TrieNode *node, size_t depth, char *string)
 {
     if (depth == strlen(string))
     {
-        node->is_leaf = false;
+        node->is_terminal = false;
     }
     else
     {
-        if (string[depth] < START_CHAR || string[depth] > END_CHAR) return false;
-        unsigned char index = string[depth] - START_CHAR;
+        if (!is_legal_char(string[depth])) return false;
+        unsigned char index = char_to_index(string[depth]);
         if (node->next[index] != NULL)
         {
             if (remove_rec(node->next[index], depth + 1, string))
             {
                 node->next[index] = NULL;
+                node->num_successors--;
             }
         }
     }
 
     // Never free the first trie node
-    if (is_node_empty(node) && depth != 0)
+    if (node->num_successors == 0 && depth != 0)
     {
         free(node);
         return true;
@@ -119,7 +122,7 @@ bool trie_contains(Trie *trie, char *string, void **out_data)
     if (string[0] == '\0')
     {
         if (out_data != NULL) *out_data = trie->first_node->data;
-        return trie->first_node->is_leaf;
+        return trie->first_node->is_terminal;
     }
     else
     {
@@ -139,9 +142,8 @@ size_t trie_longest_prefix(Trie *trie, char *string, void **out_data)
     for (size_t i = 0; string[i] != '\0'; i++)
     {
         // Char in string that can not be in trie
-        if (string[i] < START_CHAR || string[i] > END_CHAR) return res;
-
-        unsigned char index = string[i] - START_CHAR;
+        if (!is_legal_char(string[i])) return res;
+        unsigned char index = char_to_index(string[i]);
         if (curr->next[index] != NULL)
         {
             curr = curr->next[index];
@@ -151,7 +153,7 @@ size_t trie_longest_prefix(Trie *trie, char *string, void **out_data)
             return res;
         }
 
-        if (curr->is_leaf)
+        if (curr->is_terminal)
         {
             res = i + 1;
             if (out_data != NULL) *out_data = curr->data;

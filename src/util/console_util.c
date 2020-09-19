@@ -131,33 +131,6 @@ bool ask_input(FILE *file, char **out_input, char *prompt_fmt, ...)
     return res;
 }
 
-/*
-Returns: True when 'y' typed, false when 'n' typed
-*/
-bool ask_yes_no(bool default_val)
-{
-    int selection = getchar();
-    if (selection != '\n')
-    {
-        while (getchar() != '\n');
-    }
-    switch (selection)
-    {
-        case '\n':
-            return default_val;
-        case 'Y':
-        case 'y':
-            return true;
-        case 'N':
-        case 'n':
-        case EOF:
-            return false;
-        default:
-            printf("Input not recognized.\n");
-            return false;
-    }
-}
-
 void report_error(char *fmt, ...)
 {
     va_list args;

@@ -80,7 +80,7 @@ ListNode *list_get_node(LinkedList *list, size_t index)
 /*
 Returns: Pointer to payload of a list node
 */
-void *list_get(LinkedList *list, size_t index)
+void *list_get_at(LinkedList *list, size_t index)
 {
     ListNode *node = list_get_node(list, index);
     if (node == NULL)
@@ -149,7 +149,7 @@ Params
     index: Valid indices are 0 to list count (inclusive)
         Thus, appending is possible, but index must not be higher!
 */
-ListNode *list_insert(LinkedList *list, size_t index, void *data)
+ListNode *list_insert_at(LinkedList *list, size_t index, void *data)
 {
     if (index == 0)
     {
@@ -191,7 +191,7 @@ void list_delete_node(LinkedList *list, ListNode *node)
     list->count--;
 }
 
-void list_delete(LinkedList *list, size_t index)
+void list_delete_at(LinkedList *list, size_t index)
 {
     list_delete_node(list, list_get_node(list, index));
 }

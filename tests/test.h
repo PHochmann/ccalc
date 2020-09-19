@@ -7,14 +7,12 @@
 #define COL_RESET "\x1B[0m"
 
 #define ERROR(...) {\
-    strbuilder_append(error_builder, "[l%d] ", __LINE__);\
+    strbuilder_append(error_builder, "line %d: ", __LINE__);\
     strbuilder_append(error_builder, __VA_ARGS__);\
     return false;\
 }
 
-#define ERROR_RETURN_VAL(function) {\
-    ERROR("%s", "Unexpected return value of " function ".\n");\
-}
+#define ERROR_RETURN_VAL(function) ERROR("%s", "Unexpected return value of " function ".\n");
 
 typedef struct {
     bool (*suite)(StringBuilder *error_builder);
