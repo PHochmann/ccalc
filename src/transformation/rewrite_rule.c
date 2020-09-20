@@ -134,58 +134,39 @@ void free_ruleset(Vector *rules)
     vec_destroy(rules);
 }
 
+size_t apply_ruleset(Node **tree, Ruleset *ruleset)
+{
+    VectorIterator iterator = vec_get_iterator(ruleset);
+    return apply_ruleset_by_iterator(tree, (Iterator*)&iterator);
+}
+
 /*
 Summary: Tries to apply rules (priorized by order) until no rule can be applied any more
     Guarantees to terminate after MAX_RULESET_ITERATIONS rule appliances
 */
-#include "../tree/tree_to_string.h"
-size_t apply_ruleset(Node **tree, Ruleset *rules)
+//#include "../tree/tree_to_string.h"
+size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator)
 {
     size_t counter = 0;
     while (true)
     {
         bool applied_flag = false;
-        for (size_t j = 0; j < vec_count(rules); j++)
+        RewriteRule *curr_rule = NULL;
+        while ((curr_rule = (RewriteRule*)iterator_get_next(iterator)) != NULL)
         {
-            if (apply_rule(tree, (RewriteRule*)vec_get(rules, j)))
+            if (apply_rule(tree, curr_rule))
             {
-                printf("Applied rule %zu: %s\n", j, tree_to_str(*tree, true));
+                //printf("Applied rule: %s\n", tree_to_str(*tree, true)); // Mem. leak
                 applied_flag = true;
                 counter++;
                 break;
             }
         }
+        iterator_reset(iterator);
 
         if (!applied_flag || counter == MAX_RULESET_ITERATIONS)
         {
-            printf("End.\n");
-            return counter;
-        }
-    }
-    return 0; // To make compiler happy
-}
-
-// Same as apply_rulset, but rules are within a LinkedList instead of a Vector
-// Todo: Can this be refactored?
-size_t apply_rule_list(Node **tree, LinkedList *rules)
-{
-    size_t counter = 0;
-    while (true)
-    {
-        bool applied_flag = false;
-        ListNode *curr = rules->first;
-        while (curr != NULL)
-        {
-            if (apply_rule(tree, (RewriteRule*)curr->data))
-            {
-                applied_flag = true;
-                counter++;
-                break;
-            }
-            curr = curr->next;
-        }
-        if (!applied_flag || counter == MAX_RULESET_ITERATIONS)
-        {
+            //printf("End.\n");
             return counter;
         }
     }

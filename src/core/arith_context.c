@@ -188,7 +188,8 @@ bool arith_parse_input(char *input, char *error_fmt, bool replace_comp_funcs, bo
     {
         if (replace_comp_funcs)
         {
-            apply_rule_list(out_res, &g_composite_functions);
+            LinkedListIterator iterator = list_get_iterator(&g_composite_functions);
+            apply_ruleset_by_iterator(out_res, (Iterator*)&iterator);
         }
 
         if (!core_replace_history(out_res) || !core_simplify(out_res, simplify))

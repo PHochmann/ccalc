@@ -2,6 +2,9 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <sys/types.h>
+
+#include "iterator.h"
 
 // May change the buffer location
 #define VEC_PUSH_ELEM(vec, type, expr) (*(type*)vec_push_empty(vec)) = (expr)
@@ -20,6 +23,13 @@ typedef struct
     void *buffer;
 } Vector;
 
+typedef struct vector
+{
+    Iterator base;
+    Vector *vector;
+    ssize_t curr_index;
+} VectorIterator;
+
 // Buffer handling
 Vector vec_create(size_t elem_size, size_t start_size);
 void vec_clear(Vector *vec);
@@ -36,6 +46,7 @@ void *vec_push_empty(Vector *vec);
 void *vec_get(Vector *vec, size_t index);
 void *vec_pop(Vector *vec);
 void *vec_peek(Vector *vec);
+VectorIterator vec_get_iterator(Vector *list);
 
 // Attributes
 size_t vec_count(Vector *vec);

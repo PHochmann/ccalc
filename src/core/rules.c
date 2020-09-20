@@ -186,8 +186,7 @@ bool parse_ruleset_from_string(char *string, ParsingContext *ctx, MappingFilter 
 
         if (!parse_rule(line, ctx, default_filter, out_ruleset))
         {
-            report_error("Failed parsing ruleset in line %zu.\n", line_no);
-            goto error;
+            software_defect("Failed parsing ruleset in line %zu.\n", line_no);
         }
 
         line = next_line;
@@ -197,9 +196,4 @@ bool parse_ruleset_from_string(char *string, ParsingContext *ctx, MappingFilter 
     vec_trim(out_ruleset);
     free(copy);
     return true;
-
-    error:
-    free(copy);
-    free_ruleset(out_ruleset);
-    return false;
 }

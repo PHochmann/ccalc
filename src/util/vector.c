@@ -42,6 +42,11 @@ void vec_destroy(Vector *vec)
     free(vec->buffer);
 }
 
+void *vec_get(Vector *vec, size_t index)
+{
+    return (char*)vec->buffer + vec->elem_size * index;
+}
+
 void *vec_push(Vector *vec, void *elem)
 {
     return vec_push_many(vec, 1, elem);
@@ -65,11 +70,6 @@ void *vec_push_many(Vector *vec, size_t num, void *elems)
     return first;
 }
 
-void *vec_get(Vector *vec, size_t index)
-{
-    return (char*)vec->buffer + vec->elem_size * index;
-}
-
 void *vec_pop(Vector *vec)
 {
     if (vec->elem_count == 0) return NULL;
@@ -86,4 +86,34 @@ void *vec_peek(Vector *vec)
 size_t vec_count(Vector *vec)
 {
     return vec->elem_count;
+}
+
+// Iterator implementation:
+
+void *veciter_get_next(Iterator *iterator)
+{
+    VectorIterator *it = (VectorIterator*)iterator;
+    it->curr_index++;
+    if ((size_t)it->curr_index < vec_count(it->vector))
+    {
+        return vec_get(it->vector, it->curr_index);
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+void veciter_reset(Iterator *iterator)
+{
+    ((VectorIterator*)iterator)->curr_index = -1;
+}
+
+VectorIterator vec_get_iterator(Vector *vec)
+{
+    return (VectorIterator){
+        .base = (Iterator){ .get_next = veciter_get_next, .reset = veciter_reset },
+        .vector = vec,
+        .curr_index = -1
+    };
 }
