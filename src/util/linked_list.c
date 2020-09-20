@@ -4,7 +4,7 @@
 #include "linked_list.h"
 #include "alloc_wrappers.h"
 
-ListNode *malloc_node(size_t elem_size, void *data)
+static ListNode *malloc_node(size_t elem_size, void *data)
 {
     ListNode *new = malloc_wrapper(sizeof(ListNode) + elem_size);
     new->next = NULL;

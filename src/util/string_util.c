@@ -83,6 +83,50 @@ size_t str_split(char *str, char **out_strs, size_t num_delimiters, ...)
     return res;
 }
 
+// Returns: Length of line (excluding \n or \0)
+size_t get_line_of_string(char *string, size_t line_index, char **out_start)
+{
+    if (string == NULL)
+    {
+        *out_start = NULL;
+        return 0;
+    }
+
+    // Search for start of line
+    if (line_index > 0)
+    {
+        while (*string != '\0')
+        {
+            string++;
+            if (*string == '\n')
+            {
+                line_index--;
+                if (line_index == 0)
+                {
+                    string++;
+                    break;
+                }
+            }
+        }
+    }
+
+    // String does not have that much lines
+    if (line_index != 0)
+    {
+        return 0;
+    }
+
+    *out_start = string;
+
+    // Count length of line
+    size_t count = 0;
+    while (string[count] != '\0' && string[count] != '\n')
+    {
+        count++;
+    }
+    return count;
+}
+
 /*
 Returns: String representation of ParserError
 */

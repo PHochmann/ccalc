@@ -107,7 +107,7 @@ int cmd_help_check(char *input)
 }
 
 // Returns number of characters printed
-int print_op(Operator *op)
+static int print_op(Operator *op)
 {
     printf(OP_COLOR);
     int res = 0;
@@ -156,7 +156,7 @@ int print_op(Operator *op)
     return res + 1;
 }
 
-void print_ops_between(size_t start, size_t end)
+static void print_ops_between(size_t start, size_t end)
 {
     int remaining_width = TTY_WIDTH;
     ListNode *curr = list_get_node(&g_ctx->op_list, start);
@@ -174,7 +174,7 @@ void print_ops_between(size_t start, size_t end)
     }
 }
 
-void print_op_table(OpPlacement place, bool assoc, bool precedence, bool arity, bool value)
+static void print_op_table(OpPlacement place, bool assoc, bool precedence, bool arity, bool value)
 {
     Table table = get_empty_table();
     set_default_alignments(&table, 2, (TextAlignment[]){ ALIGN_LEFT, ALIGN_NUMBERS });
@@ -246,15 +246,6 @@ void print_op_table(OpPlacement place, bool assoc, bool precedence, bool arity, 
     printf("\n");
 }
 
-void print_op_tables()
-{
-    print_op_table(OP_PLACE_INFIX, true, true, false, false);
-    print_op_table(OP_PLACE_PREFIX, false, true, false, false);
-    print_op_table(OP_PLACE_POSTFIX, false, true, false, false);
-    print_op_table(OP_PLACE_FUNCTION, false, false, true, false);
-    print_op_table(OP_PLACE_FUNCTION, false, false, false, true);
-}
-
 void print_short_help()
 {
     Table table = get_empty_table();
@@ -313,7 +304,11 @@ bool cmd_help_exec(__attribute__((unused)) char *input, int code)
     }
     else
     {
-        print_op_tables();
+        print_op_table(OP_PLACE_INFIX, true, true, false, false);
+        print_op_table(OP_PLACE_PREFIX, false, true, false, false);
+        print_op_table(OP_PLACE_POSTFIX, false, true, false, false);
+        print_op_table(OP_PLACE_FUNCTION, false, false, true, false);
+        print_op_table(OP_PLACE_FUNCTION, false, false, false, true);
     }
     return true;
 }

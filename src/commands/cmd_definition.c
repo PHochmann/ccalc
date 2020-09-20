@@ -19,7 +19,7 @@ int cmd_definition_check(char *input)
     return strstr(input, DEFINITION_OP) != NULL;
 }
 
-bool do_left_checks(Node *left_n)
+static bool do_left_checks(Node *left_n)
 {
     if (get_type(left_n) != NTYPE_OPERATOR || get_op(left_n)->placement != OP_PLACE_FUNCTION)
     {
@@ -54,7 +54,7 @@ bool do_left_checks(Node *left_n)
     return true;
 }
 
-bool add_function(char *name, char *left, char *right)
+static bool add_function(char *name, char *left, char *right)
 {
     // First check if function already exists
     Operator *op = ctx_lookup_op(g_ctx, name, OP_PLACE_FUNCTION);

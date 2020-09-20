@@ -19,7 +19,6 @@ typedef struct
 } Matching;
 
 NodeList *lookup_mapped_var(Matching *matching, char *var);
-void extend_matching(Matching matching, Node *pattern, NodeList tree_list, Vector *out_matchings, MappingFilter filter);
 size_t get_all_matchings(Node **tree, Node *pattern, Matching **out_matchings, MappingFilter filter);
 bool get_matching(Node **tree, Node *pattern, Matching *out_matching, MappingFilter filter);
 Node **find_matching(Node **tree, Node *pattern, Matching *out_matching, MappingFilter filter);

@@ -20,7 +20,13 @@ typedef struct {
     size_t parent_index;      // Index of parent node within suffix-vector
 } SuffixNode;
 
-void fill_suffix(size_t curr_index,
+static void extend_matching(Matching matching,
+    Node *pattern,
+    NodeList tree_list,
+    Vector *out_matchings,
+    MappingFilter filter);
+
+static void fill_suffix(size_t curr_index,
     Node **pattern_children,
     Node **tree_children,
     Vector *matchings,
@@ -55,7 +61,7 @@ void fill_suffix(size_t curr_index,
     curr->num_matchings = vec_count(matchings) - curr->first_match_index;
 }
 
-void match_parameter_lists(Matching matching,
+static void match_parameter_lists(Matching matching,
     size_t num_pattern_children,
     Node **pattern_children,
     size_t num_tree_children,
@@ -178,7 +184,7 @@ void match_parameter_lists(Matching matching,
     vec_destroy(&vec_suffixes);
 }
 
-bool nodelists_equal(NodeList *a, NodeList *b)
+static bool nodelists_equal(NodeList *a, NodeList *b)
 {
     if (a->size != b->size) return false;
     for (size_t i = 0; i < a->size; i++)
@@ -188,7 +194,7 @@ bool nodelists_equal(NodeList *a, NodeList *b)
     return true;
 }
 
-void extend_matching(Matching matching,
+static void extend_matching(Matching matching,
     Node *pattern,
     NodeList tree_list,
     Vector *out_matchings,
@@ -268,10 +274,8 @@ void extend_matching(Matching matching,
 size_t get_all_matchings(Node **tree, Node *pattern, Matching **out_matchings, MappingFilter filter)
 {
     if (tree == NULL || pattern == NULL || out_matchings == NULL) return false;
-
     // Due to exponentially many partitions, a lot of states can occur. Use heap.
     Vector result = vec_create(sizeof(Matching), VECTOR_STARTSIZE);
-
     extend_matching(
         (Matching){ .num_mapped = 0 },
         pattern,
@@ -279,7 +283,6 @@ size_t get_all_matchings(Node **tree, Node *pattern, Matching **out_matchings, M
         &result,
         filter);
     *out_matchings = (Matching*)result.buffer;
-
     return result.elem_count;
 }
 
@@ -352,9 +355,7 @@ void preprocess_pattern(Node *tree)
             if (counter == MAX_MAPPED_VARS)
             {
                 software_defect("Trying to preprocess a pattern with too many distinct variables. Increase MAX_MAPPED_VARS.\n");
-                return;
             }
-
             Node **nodes[num_vars];
             size_t num_nodes = get_variable_nodes(&tree, var_names[i], nodes);
             for (size_t j = 0; j < num_nodes; j++)

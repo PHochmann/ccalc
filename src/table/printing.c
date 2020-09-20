@@ -26,7 +26,7 @@ static size_t VLINE_INDEX = 10;
 // Index encodes whether a border intersects (0: no intersection, 1: intersection), clockwise
 static size_t BORDER_LOOKUP[16] = { 11, 11, 11, 6, 11, 10, 0, 3, 11, 8, 9, 7, 2, 5, 1, 4 };
 
-void print_debug(Table *table)
+/*static void print_debug(Table *table)
 {
     size_t col_widths[table->num_cols];
     size_t row_heights[table->num_rows];
@@ -37,14 +37,14 @@ void print_debug(Table *table)
     printf("; ");
     for (size_t i = 0; i < table->num_cols; i++) printf("%zu ", col_widths[i]);
     printf("\n");
-}
+}*/
 
-void print_repeated(char *string, size_t times, FILE *stream)
+static void print_repeated(char *string, size_t times, FILE *stream)
 {
     for (size_t i = 0; i < times; i++) fprintf(stream, "%s", string);
 }
 
-void print_text(struct Cell *cell, TextAlignment default_align, size_t line_index, int total_length, FILE *stream)
+static void print_text(struct Cell *cell, TextAlignment default_align, size_t line_index, int total_length, FILE *stream)
 {
     if (cell->parent != NULL)
     {
@@ -99,51 +99,7 @@ void print_text(struct Cell *cell, TextAlignment default_align, size_t line_inde
     }
 }
 
-// Returns: Length of line (excluding \n or \0)
-size_t get_line_of_string(char *string, size_t line_index, char **out_start)
-{
-    if (string == NULL)
-    {
-        *out_start = NULL;
-        return 0;
-    }
-
-    // Search for start of line
-    if (line_index > 0)
-    {
-        while (*string != '\0')
-        {
-            string++;
-            if (*string == '\n')
-            {
-                line_index--;
-                if (line_index == 0)
-                {
-                    string++;
-                    break;
-                }
-            }
-        }
-    }
-
-    // String does not have that much lines
-    if (line_index != 0)
-    {
-        return 0;
-    }
-
-    *out_start = string;
-
-    // Count length of line
-    size_t count = 0;
-    while (string[count] != '\0' && string[count] != '\n')
-    {
-        count++;
-    }
-    return count;
-}
-
-size_t get_total_width(Table *table, size_t *col_widths, size_t col, size_t span_x)
+static size_t get_total_width(Table *table, size_t *col_widths, size_t col, size_t span_x)
 {
     size_t sum = 0;
     for (size_t i = 0; i < span_x; i++)
@@ -152,12 +108,6 @@ size_t get_total_width(Table *table, size_t *col_widths, size_t col, size_t span
         sum += col_widths[col + i];
     }
     return sum;
-}
-
-size_t get_line_of_cell(struct Cell *cell, size_t line_index, char **out_start)
-{
-    if (cell->parent == NULL) return get_line_of_string(cell->text, line_index, out_start);
-    return get_line_of_string(cell->parent->text, line_index, out_start);
 }
 
 TextAlignment get_align(TextAlignment default_align, struct Cell *cell)
@@ -173,7 +123,7 @@ TextAlignment get_align(TextAlignment default_align, struct Cell *cell)
     }
 }
 
-size_t get_span_x(struct Cell *cell)
+static size_t get_span_x(struct Cell *cell)
 {
     if (cell->parent != NULL)
     {
@@ -185,7 +135,7 @@ size_t get_span_x(struct Cell *cell)
     }
 }
 
-BorderStyle get_border_above(BorderStyle default_style, struct Cell *cell)
+static BorderStyle get_border_above(BorderStyle default_style, struct Cell *cell)
 {
     if (cell->override_border_above)
     {
@@ -197,7 +147,7 @@ BorderStyle get_border_above(BorderStyle default_style, struct Cell *cell)
     }
 }
 
-BorderStyle get_border_left(BorderStyle default_style, struct Cell *cell)
+static BorderStyle get_border_left(BorderStyle default_style, struct Cell *cell)
 {
     if (cell->override_border_left)
     {
@@ -209,13 +159,13 @@ BorderStyle get_border_left(BorderStyle default_style, struct Cell *cell)
     }
 }
 
-void count_styles(BorderStyle style, size_t *out_num_single, size_t *out_num_double)
+static void count_styles(BorderStyle style, size_t *out_num_single, size_t *out_num_double)
 {
     if (style == BORDER_SINGLE) (*out_num_single)++;
     if (style == BORDER_DOUBLE) (*out_num_double)++;
 }
 
-void print_intersection_char(BorderStyle default_right_border_left,
+static void print_intersection_char(BorderStyle default_right_border_left,
     BorderStyle default_below_border_above,
     struct Cell *right_above,
     struct Cell *left_below,
@@ -282,7 +232,7 @@ void print_intersection_char(BorderStyle default_right_border_left,
 }
 
 // Above row can be NULL, below row must not be NULL!
-void print_complete_line(Table *table,
+static void print_complete_line(Table *table,
     struct Row *above_row,
     struct Row *below_row,
     size_t *line_indices,
@@ -331,7 +281,7 @@ void print_complete_line(Table *table,
     fprintf(stream, "\n");
 }
 
-void override_superfluous_lines(Table *table, size_t last_col_width, size_t last_row_height)
+static void override_superfluous_lines(Table *table, size_t last_col_width, size_t last_row_height)
 {
     // Special cases: If last row/col is empty, delete all vlines/hlines in it
     if (last_col_width == 0)

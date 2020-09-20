@@ -86,7 +86,7 @@ void transform_matched(Node *rule_after, Matching *matching, Node **matched_subt
                 {
                     if (matching->mapped_nodes[j].size != 1) 
                     {
-                        report_error("Software defect: trying to replace root with a list > 1.\n");
+                        software_defect("Trying to replace root with a list > 1.\n");
                     }
                     
                     tree_replace(&transformed, tree_copy(matching->mapped_nodes[j].nodes[0]));
@@ -164,10 +164,18 @@ size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator)
         }
         iterator_reset(iterator);
 
-        if (!applied_flag || counter == MAX_RULESET_ITERATIONS)
+        if (!applied_flag)
         {
             //printf("End.\n");
             return counter;
+        }
+        else
+        {
+            if (counter == MAX_RULESET_ITERATIONS)
+            {
+                report_error("Aborted due to too many ruleset iterations (max=%d)", MAX_RULESET_ITERATIONS);
+                return counter;
+            }
         }
     }
     return 0; // To make compiler happy

@@ -12,7 +12,7 @@
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
-void add_cell_internal(Table *table, char *text, bool needs_free)
+static void add_cell_internal(Table *table, char *text, bool needs_free)
 {
     assert(table != NULL);
     assert(table->curr_col < MAX_COLS);
@@ -34,13 +34,13 @@ void add_cell_internal(Table *table, char *text, bool needs_free)
     }
 }
 
-void override_alignment_internal(struct Cell *cell, TextAlignment alignment)
+static void override_alignment_internal(struct Cell *cell, TextAlignment alignment)
 {
     cell->align = alignment;
     cell->override_align = true;
 }
 
-struct Row *malloc_row(size_t y)
+static struct Row *malloc_row(size_t y)
 {
     struct Row *res = calloc_wrapper(1, sizeof(struct Row));
     if (res == NULL) return NULL;
@@ -66,7 +66,7 @@ struct Row *malloc_row(size_t y)
     return res;
 }
 
-struct Row *append_row(Table *table)
+static struct Row *append_row(Table *table)
 {
     struct Row *row = table->curr_row;
     while (row->next_row != NULL)
@@ -78,19 +78,19 @@ struct Row *append_row(Table *table)
     return row->next_row;
 }
 
-struct Row *get_row(Table *table, size_t index)
+static struct Row *get_row(Table *table, size_t index)
 {
     struct Row *row = table->first_row;
     while (index-- > 0 && row != NULL) row = row->next_row;
     return row;
 }
 
-struct Cell *get_curr_cell(Table *table)
+static struct Cell *get_curr_cell(Table *table)
 {
     return &table->curr_row->cells[table->curr_col];
 }
 
-void free_row(Table *table, struct Row *row)
+static void free_row(Table *table, struct Row *row)
 {
     for (size_t i = 0; i < table->num_cols; i++)
     {

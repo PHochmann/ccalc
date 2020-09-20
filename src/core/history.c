@@ -44,7 +44,7 @@ void unload_history()
 Params
     index: 0 -> last evaluation, 1 -> second last evaluation etc.
 */
-Node *get_ans(size_t index)
+static Node *get_ans(size_t index)
 {
     if ((int)next_ans - 1 - (int)index < 0)
     {

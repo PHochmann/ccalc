@@ -97,7 +97,7 @@ void add_composite_function(RewriteRule rule)
 }
 
 // Removes node from g_composite_functions
-void remove_node(ListNode *node)
+static void remove_node(ListNode *node)
 {
     RewriteRule *rule = (RewriteRule*)node->data;
     char *temp = get_op(rule->before)->name;

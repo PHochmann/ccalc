@@ -18,7 +18,7 @@ typedef enum
     TOKSTATE_OTHER,
 } TokState;
 
-void push_token(char *input, size_t start, size_t length, Vector *tokens)
+static void push_token(char *input, size_t start, size_t length, Vector *tokens)
 {
     if (length == 0) return;
     char *tok = malloc_wrapper(length + 1);

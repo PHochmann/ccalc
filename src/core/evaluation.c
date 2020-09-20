@@ -9,7 +9,7 @@
 #include "evaluation.h"
 #include "arith_context.h"
 
-double euclid(double a, double b)
+static double euclid(double a, double b)
 {
     a = fabs(trunc(a));
     b = fabs(trunc(b));
@@ -35,7 +35,7 @@ double euclid(double a, double b)
     }
 }
 
-double binomial(double n, double k)
+static double binomial(double n, double k)
 {
     n = fabs(trunc(n));
     k = fabs(trunc(k));
@@ -52,7 +52,7 @@ double binomial(double n, double k)
     return res;
 }
 
-long fib(long n)
+static long fib(long n)
 {
     if (n == 0) return 0;
     if (n == 1) return 1;
@@ -60,7 +60,7 @@ long fib(long n)
     return fib(n - 1) + fib(n - 2); 
 }
 
-double fibonacci(double n)
+static double fibonacci(double n)
 {
     long l = (long)n;
 
@@ -84,7 +84,7 @@ double fibonacci(double n)
 /*
 Returns: Random natural number between min and max - 1 (i.e. max is exclusive)
 */
-double random_between(double min, double max)
+static double random_between(double min, double max)
 {
     min = trunc(min);
     max = trunc(max);

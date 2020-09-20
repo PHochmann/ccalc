@@ -16,7 +16,7 @@ struct Constraint
     size_t min;        // Needed size (i.e. minimum size needed)
 };
 
-void set_dot_paddings(size_t num_cells, TextAlignment default_align, struct Cell **col)
+static void set_dot_paddings(size_t num_cells, TextAlignment default_align, struct Cell **col)
 {
     size_t after_dot[num_cells];
     size_t max_after_dot = 0;
@@ -57,7 +57,7 @@ void set_dot_paddings(size_t num_cells, TextAlignment default_align, struct Cell
                 }
                 else
                 {
-                    if (*str != ' ')
+                    if (!is_space(*str))
                     {
                         before_first_digit = false;
                         after_dot[i]++;
@@ -95,7 +95,7 @@ void set_dot_paddings(size_t num_cells, TextAlignment default_align, struct Cell
     }
 }
 
-size_t needed_to_satisfy(struct Constraint *constr, size_t *vars)
+static size_t needed_to_satisfy(struct Constraint *constr, size_t *vars)
 {
     size_t sum = 0;
     for (size_t i = constr->from_index; i < constr->to_index; i++)
@@ -106,7 +106,7 @@ size_t needed_to_satisfy(struct Constraint *constr, size_t *vars)
 }
 
 // Make sure to zero out result before
-void satisfy_constraints(size_t num_constrs, struct Constraint *constrs, size_t *result)
+static void satisfy_constraints(size_t num_constrs, struct Constraint *constrs, size_t *result)
 {
     // Current heuristic: Do simple cells before...
     for (size_t i = 0; i < num_constrs; i++)
@@ -140,7 +140,7 @@ void satisfy_constraints(size_t num_constrs, struct Constraint *constrs, size_t 
 }
 
 // Counts number of \n in string
-size_t get_num_lines(char *string)
+static size_t get_num_lines(char *string)
 {
     if (string == NULL) return 0;
     size_t res = 1;
@@ -156,7 +156,7 @@ size_t get_num_lines(char *string)
     return res;
 }
 
-size_t get_text_width(char *str)
+static size_t get_text_width(char *str)
 {
     size_t res = 0;
     for (size_t i = 0; i < get_num_lines(str); i++)
@@ -170,7 +170,7 @@ size_t get_text_width(char *str)
 }
 
 // out_cells must hold table->num_rows pointers to cells
-void get_col(Table *table, size_t col_index, struct Cell **out_cells)
+static void get_col(Table *table, size_t col_index, struct Cell **out_cells)
 {
     struct Row *curr_row = table->first_row;
     size_t index = 0;
