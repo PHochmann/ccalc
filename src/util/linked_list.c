@@ -204,7 +204,7 @@ size_t list_count(LinkedList *list)
 
 // Iterator implementation:
 
-void *listiter_get_next(Iterator *iterator)
+static void *get_next(Iterator *iterator)
 {
     LinkedListIterator *it = (LinkedListIterator*)iterator;
     if (it->curr_node == NULL)
@@ -222,7 +222,7 @@ void *listiter_get_next(Iterator *iterator)
     return it->curr_node->data;
 }
 
-void listiter_reset(Iterator *iterator)
+static void reset(Iterator *iterator)
 {
     ((LinkedListIterator*)iterator)->curr_node = NULL;
 }
@@ -230,7 +230,7 @@ void listiter_reset(Iterator *iterator)
 LinkedListIterator list_get_iterator(LinkedList *list)
 {
     return (LinkedListIterator){
-        .base      = (Iterator){ .get_next = listiter_get_next, .reset = listiter_reset },
+        .base      = (Iterator){ .get_next = get_next, .reset = reset },
         .list      = list,
         .curr_node = NULL
     };

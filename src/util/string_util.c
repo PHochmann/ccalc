@@ -115,22 +115,17 @@ char *perr_to_string(ParserError perr)
     }
 }
 
-StringIterator get_iterator(char *string)
+char *skip_ansi(char *str)
 {
-    return (StringIterator){ .string = string, .index = 0 };
-}
-
-char get_next_char(StringIterator *iterator)
-{
-    if (iterator->string[iterator->index] == ESC_START)
+    if (*str == ESC_START)
     {
-        while (iterator->string[iterator->index] != ESC_END)
+        while (*str != ESC_END)
         {
-            iterator->index++;
+            str++;
         }
-        iterator->index++;
+        str++;
     }
-    return iterator->string[iterator->index++];
+    return str;
 }
 
 /*
@@ -140,13 +135,11 @@ Summary: Calculates length of string displayed in console,
 */
 size_t console_strlen(char *str)
 {
-    if (str == NULL) return 0;
-    StringIterator iterator = get_iterator(str);
     size_t res = 0;
-    while (true)
+    str = skip_ansi(str);
+    while (*str != '\0' && *str != '\n')
     {
-        char curr = get_next_char(&iterator);
-        if (curr == '\0' || curr == '\n') break;
+        str = skip_ansi(str + 1);
         res++;
     }
     return res;

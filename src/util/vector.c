@@ -90,7 +90,7 @@ size_t vec_count(Vector *vec)
 
 // Iterator implementation:
 
-void *veciter_get_next(Iterator *iterator)
+static void *get_next(Iterator *iterator)
 {
     VectorIterator *it = (VectorIterator*)iterator;
     it->curr_index++;
@@ -104,7 +104,7 @@ void *veciter_get_next(Iterator *iterator)
     }
 }
 
-void veciter_reset(Iterator *iterator)
+static void reset(Iterator *iterator)
 {
     ((VectorIterator*)iterator)->curr_index = -1;
 }
@@ -112,7 +112,7 @@ void veciter_reset(Iterator *iterator)
 VectorIterator vec_get_iterator(Vector *vec)
 {
     return (VectorIterator){
-        .base = (Iterator){ .get_next = veciter_get_next, .reset = veciter_reset },
+        .base = (Iterator){ .get_next = get_next, .reset = reset },
         .vector = vec,
         .curr_index = -1
     };

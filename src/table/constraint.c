@@ -31,19 +31,18 @@ void set_dot_paddings(size_t num_cells, TextAlignment default_align, struct Cell
             bool before_dot = true;
             bool before_first_digit = true;
 
-            StringIterator iterator = get_iterator(col[i]->text);
-            char curr_char;
-            while ((curr_char = get_next_char(&iterator)) != '\0')
+            char *str = skip_ansi(col[i]->text);
+            while (*str != '\0')
             {
                 if (before_dot)
                 {
-                    if (curr_char == DECIMAL_SEPARATOR)
+                    if (*str == DECIMAL_SEPARATOR)
                     {
                         before_dot = false;
                     }
                     else
                     {
-                        if (is_digit(curr_char))
+                        if (is_digit(*str))
                         {
                             before_first_digit = false;
                         }
@@ -58,7 +57,7 @@ void set_dot_paddings(size_t num_cells, TextAlignment default_align, struct Cell
                 }
                 else
                 {
-                    if (is_digit(curr_char))
+                    if (*str != ' ')
                     {
                         before_first_digit = false;
                         after_dot[i]++;
@@ -68,12 +67,14 @@ void set_dot_paddings(size_t num_cells, TextAlignment default_align, struct Cell
                         break;
                     }
                 }
+
+                str = skip_ansi(str + 1);
             }
 
             if (after_dot[i] > max_after_dot) max_after_dot = after_dot[i];
             if (!before_first_digit)
             {
-                col[i]->zero_position = iterator.index - 1;
+                col[i]->zero_position = str - col[i]->text;
             }
             else
             {

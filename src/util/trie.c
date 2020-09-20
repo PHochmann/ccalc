@@ -4,17 +4,17 @@
 #include "alloc_wrappers.h"
 #include "trie.h"
 
-TrieNode *malloc_trienode(size_t elem_size)
+static TrieNode *malloc_trienode(size_t elem_size)
 {
     return calloc_wrapper(1, sizeof(TrieNode) + elem_size);
 }
 
-bool is_legal_char(char c)
+static bool is_legal_char(char c)
 {
     return (c >= START_CHAR) && (c < END_CHAR);
 }
 
-unsigned char char_to_index(char c)
+static unsigned char char_to_index(char c)
 {
     return (unsigned char)(c - START_CHAR);
 }
@@ -30,7 +30,7 @@ Trie trie_create(size_t elem_size)
     };
 }
 
-void destroy_rec(TrieNode *node)
+static void destroy_rec(TrieNode *node)
 {
     for (unsigned char i = 0; i < END_CHAR - START_CHAR; i++)
     {
@@ -78,7 +78,7 @@ void *trie_add_str(Trie *trie, char *string)
 }
 
 // Returns true if node has been freed
-bool remove_rec(TrieNode *node, size_t depth, char *string)
+static bool remove_rec(TrieNode *node, size_t depth, char *string)
 {
     if (depth == strlen(string))
     {
