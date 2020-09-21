@@ -29,16 +29,16 @@ typedef struct
 typedef struct
 {
     Iterator base;
-    LinkedList *list;
+    const LinkedList *list;
     ListNode *curr_node;
 } LinkedListIterator;
 
 LinkedList list_create(size_t elem_size);
 void list_destroy(LinkedList *list);
 
-void *list_get_at(LinkedList *list, size_t index);
-ListNode *list_get_node(LinkedList *list, size_t index);
-LinkedListIterator list_get_iterator(LinkedList *list);
+void *list_get_at(const LinkedList *list, size_t index);
+ListNode *list_get_node(const LinkedList *list, size_t index);
+LinkedListIterator list_get_iterator(const LinkedList *list);
 
 ListNode *list_append(LinkedList *list, void *data);
 ListNode *list_insert_after(LinkedList *list, ListNode *before, void *data);
@@ -46,4 +46,4 @@ ListNode *list_insert_at(LinkedList *list, size_t index, void *data);
 void list_delete_at(LinkedList *list, size_t index);
 void list_delete_node(LinkedList *list, ListNode *node);
 
-size_t list_count(LinkedList *list);
+size_t list_count(const LinkedList *list);

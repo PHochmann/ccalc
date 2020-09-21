@@ -9,4 +9,4 @@
 #define MATCHING_OP_PREFIX           'o'
 #define MATCHING_LITERAL_VAR_PREFIX  'l'
 
-bool prefix_filter(char *var, NodeList nodes);
+bool prefix_filter(const char *var, NodeList nodes);

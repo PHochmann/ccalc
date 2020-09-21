@@ -14,7 +14,7 @@
 #define PLAYGROUND_CODE 2
 #define MATCHINGS_PRINT_THRESHOLD 10
 
-int cmd_playground_check(char *input)
+int cmd_playground_check(const char *input)
 {
     if (begins_with(SIMPLIFY_COMMAND, input)) return SIMPLIFY_CODE;
     if (strcmp(input, PLAYGROUND_COMMAND) == 0) return PLAYGROUND_CODE;

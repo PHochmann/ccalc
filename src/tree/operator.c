@@ -3,7 +3,7 @@
 Operator op_get_function(const char *name, size_t arity)
 {
     return (Operator){
-        .name       = name,
+        .name       = (char*)name,
         .arity      = arity,
         .precedence = OP_MAX_PRECEDENCE,
         .placement  = OP_PLACE_FUNCTION,
@@ -14,7 +14,7 @@ Operator op_get_function(const char *name, size_t arity)
 Operator op_get_prefix(const char *name, Precedence precedence)
 {
     return (Operator){
-        .name       = name,
+        .name       = (char*)name,
         .arity      = 1,
         .precedence = precedence,
         .placement  = OP_PLACE_PREFIX,
@@ -25,7 +25,7 @@ Operator op_get_prefix(const char *name, Precedence precedence)
 Operator op_get_infix(const char *name, Precedence precedence, OpAssociativity assoc)
 {
     return (Operator){
-        .name       = name,
+        .name       = (char*)name,
         .arity      = 2,
         .precedence = precedence,
         .assoc      = assoc,
@@ -36,7 +36,7 @@ Operator op_get_infix(const char *name, Precedence precedence, OpAssociativity a
 Operator op_get_postfix(const char *name, Precedence precedence)
 {
     return (Operator){
-        .name       = name,
+        .name       = (char*)name,
         .arity      = 1,
         .precedence = precedence,
         .placement  = OP_PLACE_POSTFIX,

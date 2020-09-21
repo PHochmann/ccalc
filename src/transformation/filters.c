@@ -2,7 +2,7 @@
 #include "matching.h"
 #include "filters.h"
 
-bool prefix_filter(char *var, NodeList nodes)
+bool prefix_filter(const char *var, NodeList nodes)
 {
     // Check special rules
     switch (var[0])

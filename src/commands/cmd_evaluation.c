@@ -13,7 +13,7 @@
 #define ERROR_FMT        "Error: %s.\n"
 #define ASK_VARIABLE_FMT "%s? "
 
-int cmd_evaluation_check(__attribute__((unused)) char *input)
+int cmd_evaluation_check(__attribute__((unused)) const char *input)
 {
     return true;
 }

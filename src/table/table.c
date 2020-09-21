@@ -258,7 +258,7 @@ void add_cells_from_array(Table *table, size_t width, size_t height, char **arra
 /*
 Summary: Sets default alignment of columns
 */
-void set_default_alignments(Table *table, size_t num_alignments, TextAlignment *alignments)
+void set_default_alignments(Table *table, size_t num_alignments, const TextAlignment *alignments)
 {
     assert(table != NULL);
     assert(num_alignments <= MAX_COLS);

@@ -27,22 +27,22 @@ bool is_letter(char c)
         || c == ']';
 }
 
-bool is_opening_parenthesis(char *c)
+bool is_opening_parenthesis(const char *c)
 {
     return strcmp(c, "(") == 0 || strcmp(c, "{") == 0;
 }
 
-bool is_closing_parenthesis(char *c)
+bool is_closing_parenthesis(const char *c)
 {
     return strcmp(c, ")") == 0 || strcmp(c, "}") == 0;
 }
 
-bool is_delimiter(char *c)
+bool is_delimiter(const char *c)
 {
     return strcmp(c, ",") == 0;
 }
 
-bool begins_with(char *prefix, char *str)
+bool begins_with(const char *prefix, const char *str)
 {
     size_t prefix_length = strlen(prefix);
     size_t string_length = strlen(str);
@@ -53,6 +53,7 @@ bool begins_with(char *prefix, char *str)
 /*
 Summary: Helper function when parsing commands to extract strings between delimiters
     Currently only used in cmd_table_exec
+    Will overwrite delimiters in str with \0, does not malloc new out_strs!
 Example: split("abc x def ghi", out, 2, " x ", " g") = 3
     out = { "abc", "def", "hi" }
 */
@@ -84,7 +85,7 @@ size_t str_split(char *str, char **out_strs, size_t num_delimiters, ...)
 }
 
 // Returns: Length of line (excluding \n or \0)
-size_t get_line_of_string(char *string, size_t line_index, char **out_start)
+size_t get_line_of_string(const char *string, size_t line_index, char **out_start)
 {
     if (string == NULL)
     {
@@ -116,7 +117,7 @@ size_t get_line_of_string(char *string, size_t line_index, char **out_start)
         return 0;
     }
 
-    *out_start = string;
+    *out_start = (char*)string;
 
     // Count length of line
     size_t count = 0;
@@ -159,7 +160,7 @@ char *perr_to_string(ParserError perr)
     }
 }
 
-char *skip_ansi(char *str)
+char *skip_ansi(const char *str)
 {
     if (*str == ESC_START)
     {
@@ -169,7 +170,7 @@ char *skip_ansi(char *str)
         }
         str++;
     }
-    return str;
+    return (char*)str;
 }
 
 /*
@@ -177,7 +178,7 @@ Summary: Calculates length of string displayed in console,
     i.e. reads until \0 or \n and omits ANSI-escaped color sequences
     Todo: Consider \t and other special chars
 */
-size_t console_strlen(char *str)
+size_t console_strlen(const char *str)
 {
     size_t res = 0;
     str = skip_ansi(str);

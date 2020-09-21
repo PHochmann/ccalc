@@ -88,7 +88,7 @@ void add_cell_vfmt(Table *table, const char *fmt, va_list args);
 void add_cells_from_array(Table *table, size_t width, size_t height, char **array);
 
 // Settings
-void set_default_alignments(Table *table, size_t num_alignments, TextAlignment *alignments);
+void set_default_alignments(Table *table, size_t num_alignments, const TextAlignment *alignments);
 void override_alignment(Table *table, TextAlignment alignment);
 void override_alignment_of_row(Table *table, TextAlignment alignment);
 void set_hline(Table *table, BorderStyle style);

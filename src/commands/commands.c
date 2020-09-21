@@ -26,7 +26,7 @@ bool error;
 
 // Quit command:
 
-int cmd_quit_check(char *input)
+int cmd_quit_check(const char *input)
 {
     return strcmp(input, "quit") == 0;
 }
@@ -43,7 +43,7 @@ struct Command
     Summary: Checks if passed input string is applicable to a command.
     Returns: 0 if command is not applicable, command-specific code otherwise.
     */
-    int (*check_handler)(char* input);
+    int (*check_handler)(const char* input);
     /*
     Summary: Exec handler is called when check handler returned a value other than 0.
     Params:

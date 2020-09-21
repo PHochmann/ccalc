@@ -6,7 +6,7 @@
 #define MATCHING_LIST_PREFIX '['
 #define MATCHING_WILDCARD    '_'
 
-typedef bool (*MappingFilter)(char *var, NodeList nodes);
+typedef bool (*MappingFilter)(const char *var, NodeList nodes);
 
 /*
 Summary: Contains successful or intermediate matching

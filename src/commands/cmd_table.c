@@ -18,7 +18,7 @@
 
 #define STRBUILDER_STARTSIZE 10
 
-int cmd_table_check(char *input)
+int cmd_table_check(const char *input)
 {
     return begins_with(COMMAND, input);
 }

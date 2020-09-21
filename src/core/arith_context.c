@@ -100,8 +100,7 @@ void add_composite_function(RewriteRule rule)
 static void remove_node(ListNode *node)
 {
     RewriteRule *rule = (RewriteRule*)node->data;
-    // We can cast the const away because the name has been malloced
-    char *temp = (char*)get_op(rule->before)->name;
+    char *temp = get_op(rule->before)->name;
     // Remove function operator from context
     ctx_delete_op(g_ctx, get_op(rule->before)->name, OP_PLACE_FUNCTION);
     // Free its name since it is malloced by the tokenizer in definition-command

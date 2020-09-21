@@ -18,13 +18,13 @@ typedef enum
     TOKSTATE_OTHER,
 } TokState;
 
-static void push_token(char *input, size_t start, size_t length, Vector *tokens)
+static void push_token(const char *input, size_t length, Vector *tokens)
 {
     if (length == 0) return;
     char *tok = malloc_wrapper(length + 1);
     for (size_t i = 0; i < length; i++)
     {
-        tok[i] = input[start + i];
+        tok[i] = input[i];
     }
     tok[length] = '\0';
     VEC_PUSH_ELEM(tokens, char*, tok);
@@ -37,7 +37,7 @@ Params:
     keywords_trie: Allowed to be NULL
     out_tokens:    Vector of pointers to malloced tokens (free with free_tokens)
 */
-void tokenize(char *input, Trie *keywords_trie, Vector *out_tokens)
+void tokenize(const char *input, const Trie *keywords_trie, Vector *out_tokens)
 {
     if (input == NULL) return;
 
@@ -64,7 +64,7 @@ void tokenize(char *input, Trie *keywords_trie, Vector *out_tokens)
         // Did the current token end?
         if (state != TOKSTATE_NEW && (next_state != state || next_state == TOKSTATE_OTHER))
         {
-            push_token(input, next_token_start, i - next_token_start, out_tokens);
+            push_token(input + next_token_start, i - next_token_start, out_tokens);
             next_token_start = i;
         }
 
@@ -82,7 +82,7 @@ void tokenize(char *input, Trie *keywords_trie, Vector *out_tokens)
             size_t keyword_len = trie_longest_prefix(keywords_trie, input + i, NULL);
             if (keyword_len > 0)
             {
-                push_token(input, i, keyword_len, out_tokens);
+                push_token(input + i, keyword_len, out_tokens);
                 next_token_start += keyword_len;
                 i += keyword_len - 1;
                 next_state = TOKSTATE_NEW;
@@ -92,7 +92,7 @@ void tokenize(char *input, Trie *keywords_trie, Vector *out_tokens)
         state = next_state;
     }
 
-    push_token(input, next_token_start, strlen(input) - next_token_start, out_tokens);
+    push_token(input + next_token_start, strlen(input) - next_token_start, out_tokens);
 }
 
 void free_tokens(Vector *tokens)

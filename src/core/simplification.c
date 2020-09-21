@@ -27,7 +27,7 @@ Node *malformed_derivB;
 #define NUM_RULESETS 5
 Vector rulesets[NUM_RULESETS];
 
-bool exponent_even_filter(char *var, NodeList nodes)
+bool exponent_even_filter(const char *var, NodeList nodes)
 {
     if (strcmp(var, "y") != 0) return true;
 

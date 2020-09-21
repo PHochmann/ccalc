@@ -46,7 +46,7 @@ void list_destroy(LinkedList *list)
 Summary: Retrieves a list node (linear time)
     It can be used to manipulate the linked list in constant time.
 */
-ListNode *list_get_node(LinkedList *list, size_t index)
+ListNode *list_get_node(const LinkedList *list, size_t index)
 {
     assert(list != NULL);
     assert(index < list->count);
@@ -80,7 +80,7 @@ ListNode *list_get_node(LinkedList *list, size_t index)
 /*
 Returns: Pointer to payload of a list node
 */
-void *list_get_at(LinkedList *list, size_t index)
+void *list_get_at(const LinkedList *list, size_t index)
 {
     ListNode *node = list_get_node(list, index);
     if (node == NULL)
@@ -196,7 +196,7 @@ void list_delete_at(LinkedList *list, size_t index)
     list_delete_node(list, list_get_node(list, index));
 }
 
-size_t list_count(LinkedList *list)
+size_t list_count(const LinkedList *list)
 {
     assert(list != NULL);
     return list->count;
@@ -231,7 +231,7 @@ static void reset(Iterator *iterator)
     ((LinkedListIterator*)iterator)->curr_node = NULL;
 }
 
-LinkedListIterator list_get_iterator(LinkedList *list)
+LinkedListIterator list_get_iterator(const LinkedList *list)
 {
     return (LinkedListIterator){
         .base      = (Iterator){ .get_next = get_next, .reset = reset },

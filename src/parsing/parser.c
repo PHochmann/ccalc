@@ -23,14 +23,14 @@ struct OpData
 // Encapsulates current state of shunting-yard algo. to be communicated to auxiliary functions
 struct ParserState
 {
-    ParsingContext *ctx;       // Contains operators and glue-op
+    const ParsingContext *ctx;       // Contains operators and glue-op
     Vector vec_nodes;          // Constructed nodes
     Vector vec_ops;            // Parsed operators
     ParserError result;        // Success when no error occurred
 };
 
 // Attempts to parse a substring to a double
-bool try_parse_constant(char *in, ConstantType *out)
+bool try_parse_constant(const char *in, ConstantType *out)
 {
     char *end;
     *out = strtod(in, &end);
@@ -147,7 +147,7 @@ bool push_opening_parenthesis(struct ParserState *state)
 }
 
 // out_res can be NULL if you only want to check if an error occurred
-ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Node **out_res)
+ParserError parse_tokens(const ParsingContext *ctx, int num_tokens, const char **tokens, Node **out_res)
 {
     // 1. Early outs
     if (ctx == NULL || tokens == NULL) return PERR_ARGS_MALFORMED;
@@ -164,7 +164,7 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
     bool await_infix = false; // Or postfix, or delimiter, or closing parenthesis
     for (int i = 0; i < num_tokens; i++)
     {
-        char *token = tokens[i];
+        const char *token = tokens[i];
         
         // I. Does glue-op need to be inserted?
         if (await_infix && state.ctx->glue_op != NULL)
@@ -392,7 +392,7 @@ ParserError parse_tokens(ParsingContext *ctx, int num_tokens, char **tokens, Nod
 Summary: Parses string, tokenized with default tokenizer, to abstract syntax tree
 Returns: Result code to indicate whether string was parsed successfully or which error occurred
 */
-ParserError parse_input(ParsingContext *ctx, char *input, Node **out_res)
+ParserError parse_input(const ParsingContext *ctx, const char *input, Node **out_res)
 {
     Vector tokens;
     tokenize(input, &ctx->keywords_trie, &tokens);
@@ -406,7 +406,7 @@ Summary: Calls parse_input, omits ParserError
 Returns: Operator tree or NULL when error occurred
 */
 #include "../util/console_util.h"
-Node *parse_conveniently(ParsingContext *ctx, char *input)
+Node *parse_conveniently(const ParsingContext *ctx, const char *input)
 {
     Node *result = NULL;
     ParserError error = parse_input(ctx, input, &result);

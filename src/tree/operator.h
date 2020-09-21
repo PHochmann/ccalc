@@ -22,7 +22,7 @@ typedef enum {
 } OpPlacement;
 
 typedef struct {
-    const char *name;
+    char *name;
     size_t id; // For easier lookup
     size_t arity;
     Precedence precedence;

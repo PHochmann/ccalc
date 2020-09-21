@@ -99,7 +99,7 @@ static const size_t MISC_IND  = 34; // Index of first misc. function
 static const size_t CONST_IND = 51; // Index of first constant
 static const size_t LAST_IND  = 56; // Index of last constant
 
-int cmd_help_check(char *input)
+int cmd_help_check(const char *input)
 {
     if (strcmp(HELP, input) == 0) return SHORT_HELP_CODE;
     if (strcmp(HELP_OPS, input) == 0) return OPS_HELP_CODE;

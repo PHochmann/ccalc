@@ -39,12 +39,12 @@ static size_t BORDER_LOOKUP[16] = { 11, 11, 11, 6, 11, 10, 0, 3, 11, 8, 9, 7, 2,
     printf("\n");
 }*/
 
-static void print_repeated(char *string, size_t times, FILE *stream)
+static void print_repeated(const char *string, size_t times, FILE *stream)
 {
     for (size_t i = 0; i < times; i++) fprintf(stream, "%s", string);
 }
 
-static void print_text(struct Cell *cell, TextAlignment default_align, size_t line_index, int total_length, FILE *stream)
+static void print_text(const struct Cell *cell, TextAlignment default_align, size_t line_index, int total_length, FILE *stream)
 {
     if (cell->parent != NULL)
     {
@@ -99,7 +99,7 @@ static void print_text(struct Cell *cell, TextAlignment default_align, size_t li
     }
 }
 
-static size_t get_total_width(Table *table, size_t *col_widths, size_t col, size_t span_x)
+static size_t get_total_width(const Table *table, size_t *col_widths, size_t col, size_t span_x)
 {
     size_t sum = 0;
     for (size_t i = 0; i < span_x; i++)
@@ -110,7 +110,7 @@ static size_t get_total_width(Table *table, size_t *col_widths, size_t col, size
     return sum;
 }
 
-TextAlignment get_align(TextAlignment default_align, struct Cell *cell)
+TextAlignment get_align(TextAlignment default_align, const struct Cell *cell)
 {
     if (cell->parent != NULL) return get_align(default_align, cell->parent);
     if (cell->override_align)

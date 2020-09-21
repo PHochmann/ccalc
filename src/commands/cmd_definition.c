@@ -14,7 +14,7 @@
 #define FMT_ERROR_LEFT  "Error in left expression: %s\n"
 #define FMT_ERROR_RIGHT "Error in right expression: %s\n"
 
-int cmd_definition_check(char *input)
+int cmd_definition_check(const char *input)
 {
     return strstr(input, DEFINITION_OP) != NULL;
 }

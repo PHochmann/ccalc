@@ -105,7 +105,6 @@ Returns: True when matching could be applied, false otherwise
 bool apply_rule(Node **tree, const RewriteRule *rule)
 {
     Matching matching;
-    
     // Try to find matching in tree with pattern specified in rule
     Node **res = find_matching(tree, rule->before, &matching, rule->filter);
     if (res == NULL) return false;

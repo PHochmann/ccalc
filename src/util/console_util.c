@@ -53,7 +53,7 @@ void whisper(const char *format, ...)
     }
 }
 
-bool ask_input_getline(FILE *file, char **out_input, char *prompt_fmt, va_list args)
+bool ask_input_getline(FILE *file, char **out_input, const char *prompt_fmt, va_list args)
 {
     if (g_interactive)
     {
@@ -84,7 +84,7 @@ Params
 #ifdef USE_READLINE
 
 // File is stdin, g_interactive is true
-bool ask_input_readline(char **out_input, char *prompt_fmt, va_list args)
+bool ask_input_readline(char **out_input, const char *prompt_fmt, va_list args)
 {
     Vector strbuilder = strbuilder_create(3);
     vstrbuilder_append(&strbuilder, prompt_fmt, args);
@@ -99,7 +99,7 @@ bool ask_input_readline(char **out_input, char *prompt_fmt, va_list args)
     return true;
 }
 
-bool vask_input(FILE *file, char **out_input, char *prompt_fmt, va_list args)
+bool vask_input(FILE *file, char **out_input, const char *prompt_fmt, va_list args)
 {
     // Use readline when interactive
     if (g_interactive)
@@ -114,14 +114,14 @@ bool vask_input(FILE *file, char **out_input, char *prompt_fmt, va_list args)
 
 #else
 
-bool vask_input(FILE *file, char **out_input, char *prompt_fmt, va_list args)
+bool vask_input(FILE *file, char **out_input, const char *prompt_fmt, va_list args)
 {
     return ask_input_getline(file, out_input, prompt_fmt, args);
 }
 
 #endif
 
-bool ask_input(FILE *file, char **out_input, char *prompt_fmt, ...)
+bool ask_input(FILE *file, char **out_input, const char *prompt_fmt, ...)
 {
     va_list args;
     va_start(args, prompt_fmt);
@@ -131,7 +131,7 @@ bool ask_input(FILE *file, char **out_input, char *prompt_fmt, ...)
     return res;
 }
 
-void report_error(char *fmt, ...)
+void report_error(const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
@@ -139,7 +139,7 @@ void report_error(char *fmt, ...)
     va_end(args);
 }
 
-void software_defect(char *fmt, ...)
+void software_defect(const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
