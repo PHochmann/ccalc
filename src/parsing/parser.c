@@ -16,7 +16,7 @@
 // Represents an operator (with metadata) while being parsed
 struct OpData
 {
-    Operator *op; // Pointer to operator in context, NULL denotes opening parenthesis
+    const Operator *op; // Pointer to operator in context, NULL denotes opening parenthesis
     size_t arity; // Records number of operands to pop
 };
 
@@ -69,7 +69,7 @@ bool op_pop_and_insert(struct ParserState *state)
         return false;
     }
 
-    Operator *op = op_data->op;
+    const Operator *op = op_data->op;
 
     if (op != NULL) // Construct operator-node and append children
     {
@@ -101,7 +101,7 @@ bool op_pop_and_insert(struct ParserState *state)
 
 bool op_push(struct ParserState *state, struct OpData op_d)
 {
-    Operator *op = op_d.op;
+    const Operator *op = op_d.op;
     
     if (op != NULL)
     {
@@ -123,7 +123,7 @@ bool op_push(struct ParserState *state, struct OpData op_d)
 }
 
 // Pushes actual operator on op_stack. op must not be NULL!
-bool push_operator(struct ParserState *state, Operator *op)
+bool push_operator(struct ParserState *state, const Operator *op)
 {
     // Set arity of functions to 0 and enable operand counting
     struct OpData opData;

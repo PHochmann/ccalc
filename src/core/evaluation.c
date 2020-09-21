@@ -93,7 +93,7 @@ static double random_between(double min, double max)
     return rand() % diff + min;
 }
 
-bool op_evaluate(Operator *op, size_t num_args, double *args, double *out)
+bool op_evaluate(const Operator *op, size_t num_args, const double *args, double *out)
 {
     switch (op->id)
     {

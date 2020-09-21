@@ -10,7 +10,7 @@
 #include "rewrite_rule.h"
 #include "matching.h"
 
-#define MAX_RULESET_ITERATIONS 1000 // To protect against endless loops
+#define MAX_RULESET_ITERATIONS 10000 // To protect against endless loops
 
 /*
 Summary: Constructs new rule. Warning: "before" and "after" are not copied, so don't free them!
@@ -34,7 +34,7 @@ void free_rule(RewriteRule rule)
     free_tree(rule.after);
 }
 
-void transform_matched_recursive(Node **parent, Matching *matching)
+static void transform_matched_recursive(Node **parent, Matching *matching)
 {
     size_t i = 0;
     while (i < get_num_children(*parent))
@@ -102,7 +102,7 @@ void transform_matched(Node *rule_after, Matching *matching, Node **matched_subt
 Summary: Tries to find matching in tree and directly transforms tree by it
 Returns: True when matching could be applied, false otherwise
 */
-bool apply_rule(Node **tree, RewriteRule *rule)
+bool apply_rule(Node **tree, const RewriteRule *rule)
 {
     Matching matching;
     
@@ -125,7 +125,7 @@ void add_to_ruleset(Vector *rules, RewriteRule rule)
     VEC_PUSH_ELEM(rules, RewriteRule, rule);
 }
 
-void free_ruleset(Vector *rules)
+void free_ruleset(Ruleset *rules)
 {
     for (size_t i = 0; i < vec_count(rules); i++)
     {
@@ -134,7 +134,7 @@ void free_ruleset(Vector *rules)
     vec_destroy(rules);
 }
 
-size_t apply_ruleset(Node **tree, Ruleset *ruleset)
+size_t apply_ruleset(Node **tree, const Ruleset *ruleset)
 {
     VectorIterator iterator = vec_get_iterator(ruleset);
     return apply_ruleset_by_iterator(tree, (Iterator*)&iterator);
@@ -144,7 +144,7 @@ size_t apply_ruleset(Node **tree, Ruleset *ruleset)
 Summary: Tries to apply rules (priorized by order) until no rule can be applied any more
     Guarantees to terminate after MAX_RULESET_ITERATIONS rule appliances
 */
-//#include "../tree/tree_to_string.h"
+#include "../tree/tree_to_string.h"
 size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator)
 {
     size_t counter = 0;
@@ -173,7 +173,9 @@ size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator)
         {
             if (counter == MAX_RULESET_ITERATIONS)
             {
-                report_error("Aborted due to too many ruleset iterations (max=%d)", MAX_RULESET_ITERATIONS);
+                report_error("Aborted due to too many ruleset iterations (max=%d)\n", MAX_RULESET_ITERATIONS);
+                print_tree(*tree, true);
+                printf("\n");
                 return counter;
             }
         }

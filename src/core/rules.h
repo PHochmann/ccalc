@@ -10,4 +10,5 @@ extern char *normal_form_string;
 extern char *simplification_string;
 extern char *pretty_string;
 
+bool parse_rule(char *string, ParsingContext *ctx, MappingFilter default_filter, Vector *ruleset);
 bool parse_ruleset_from_string(char *string, ParsingContext *ctx, MappingFilter default_filter, Ruleset *out_ruleset);

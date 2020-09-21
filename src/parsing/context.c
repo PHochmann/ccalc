@@ -101,7 +101,7 @@ Operator *ctx_add_op(ParsingContext *ctx, Operator op)
 /*
 
 */
-bool ctx_delete_op(ParsingContext *ctx, char *name, OpPlacement placement)
+bool ctx_delete_op(ParsingContext *ctx, const char *name, OpPlacement placement)
 {
     ListNode **node = NULL;
     if (trie_contains(&ctx->op_tries[placement], name, (void**)&node))
@@ -121,7 +121,7 @@ bool ctx_delete_op(ParsingContext *ctx, char *name, OpPlacement placement)
 Summary: Sets glue-op, which is inserted between two subexpressions (such as 2a -> 2*a)
 Returns: False, if ctx is NULL or operator with arity not equal to 2 or DYNAMIC_ARITY given
 */
-bool ctx_set_glue_op(ParsingContext *ctx, Operator *op)
+bool ctx_set_glue_op(ParsingContext *ctx, const Operator *op)
 {
     if (ctx == NULL
         || (op != NULL
@@ -138,7 +138,7 @@ bool ctx_set_glue_op(ParsingContext *ctx, Operator *op)
 Summmary: Searches for operator of given name and placement
 Returns: NULL if no operator has been found or invalid arguments given, otherwise pointer to operator in ctx->operators
 */
-Operator *ctx_lookup_op(ParsingContext *ctx, char *name, OpPlacement placement)
+Operator *ctx_lookup_op(const ParsingContext *ctx, const char *name, OpPlacement placement)
 {
     if (ctx == NULL || name == NULL) return NULL;
 

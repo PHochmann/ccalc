@@ -189,7 +189,7 @@ static bool nodelists_equal(NodeList *a, NodeList *b)
     if (a->size != b->size) return false;
     for (size_t i = 0; i < a->size; i++)
     {
-        if (tree_compare(a->nodes[i], b->nodes[i]) != NULL) return false;
+        if (!tree_equals(a->nodes[i], b->nodes[i])) return false;
     }
     return true;
 }
@@ -245,7 +245,7 @@ static void extend_matching(Matching matching,
         // 2. Check constants for equality
         case NTYPE_CONSTANT:
         {
-            if (tree_list.size == 1 && tree_compare(pattern, tree_list.nodes[0]) == NULL)
+            if (tree_list.size == 1 && tree_equals(pattern, tree_list.nodes[0]))
             {
                 vec_push(out_matchings, &matching);
             }
@@ -357,7 +357,7 @@ void preprocess_pattern(Node *tree)
                 software_defect("Trying to preprocess a pattern with too many distinct variables. Increase MAX_MAPPED_VARS.\n");
             }
             Node **nodes[num_vars];
-            size_t num_nodes = get_variable_nodes(&tree, var_names[i], nodes);
+            size_t num_nodes = get_variable_nodes((const Node**)&tree, var_names[i], nodes);
             for (size_t j = 0; j < num_nodes; j++)
             {
                 set_id(*(nodes[j]), counter);

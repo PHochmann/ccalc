@@ -100,7 +100,8 @@ void add_composite_function(RewriteRule rule)
 static void remove_node(ListNode *node)
 {
     RewriteRule *rule = (RewriteRule*)node->data;
-    char *temp = get_op(rule->before)->name;
+    // We can cast the const away because the name has been malloced
+    char *temp = (char*)get_op(rule->before)->name;
     // Remove function operator from context
     ctx_delete_op(g_ctx, get_op(rule->before)->name, OP_PLACE_FUNCTION);
     // Free its name since it is malloced by the tokenizer in definition-command
@@ -117,8 +118,8 @@ bool remove_composite_function(Operator *function)
     ListNode *curr = g_composite_functions.first;
     while (curr != NULL)
     {
-        RewriteRule *rule = (RewriteRule*)curr->data;
-        if (find_op(&rule->after, function) != NULL)
+        const RewriteRule *rule = (const RewriteRule*)curr->data;
+        if (find_op((const Node**)&rule->after, function) != NULL)
         {
             report_error("This function can not be removed as it is used in another function's definition.\n");
             return false;

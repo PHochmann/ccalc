@@ -38,7 +38,7 @@ bool tree_util_test(StringBuilder *error_builder)
 
     // Case 3
     Node **vars_x[3];
-    if (get_variable_nodes(&root, "x", vars_x) != 3)
+    if (get_variable_nodes((const Node**)&root, "x", vars_x) != 3)
     {
         free_tree(root);
         ERROR_RETURN_VAL("get_variable_nodes");
@@ -53,10 +53,10 @@ bool tree_util_test(StringBuilder *error_builder)
     }
 
     // Case 4
-    if (tree_compare(root, child) == NULL)
+    if (tree_equals(root, child))
     {
         free_tree(root);
-        ERROR_RETURN_VAL("tree_compare");
+        ERROR_RETURN_VAL("tree_equals");
     }
 
     // Case 5
@@ -80,7 +80,7 @@ bool tree_util_test(StringBuilder *error_builder)
     }
     
     // Check equality
-    if (tree_compare(root_copy, root) != NULL)
+    if (!tree_equals(root_copy, root))
     {
         ERROR("Unexpected replacement by replace_variable_nodes (or tree_copy broken).\n");
     }

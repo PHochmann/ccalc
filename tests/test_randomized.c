@@ -67,7 +67,7 @@ void generate_tree(size_t max_inner_nodes, Node **out)
 
 /*
 Summary:
-    Tests parse_input, tree_to_string and tree_compare in combination
+    Tests parse_input, tree_to_string and tree_equals in combination
     This test does not test them independently.
     Note that dynamic arity functions coexisting with fixed-arity function of same name cause false negatives
 */
@@ -109,7 +109,7 @@ bool randomized_test(StringBuilder *error_builder)
         }
         else
         {
-            if (tree_compare(random_tree, parsed_tree) != NULL)
+            if (!tree_equals(random_tree, parsed_tree))
             {
                 printf("Generated tree:\n");
                 print_tree_visually(random_tree);

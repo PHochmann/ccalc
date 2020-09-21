@@ -22,7 +22,7 @@ typedef enum {
 } OpPlacement;
 
 typedef struct {
-    char *name;
+    const char *name;
     size_t id; // For easier lookup
     size_t arity;
     Precedence precedence;
@@ -30,8 +30,8 @@ typedef struct {
     OpPlacement placement;
 } Operator;
 
-Operator op_get_function(char *name, size_t arity);
-Operator op_get_prefix(char *name, Precedence precedence);
-Operator op_get_infix(char *name, Precedence precedence, OpAssociativity assoc);
-Operator op_get_postfix(char *name, Precedence precedence);
-Operator op_get_constant(char *name);
+Operator op_get_function(const char *name, size_t arity);
+Operator op_get_prefix(const char *name, Precedence precedence);
+Operator op_get_infix(const char *name, Precedence precedence, OpAssociativity assoc);
+Operator op_get_postfix(const char *name, Precedence precedence);
+Operator op_get_constant(const char *name);

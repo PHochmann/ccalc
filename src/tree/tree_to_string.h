@@ -9,7 +9,7 @@
 
 #define CONSTANT_TYPE_FMT "%-.10g"
 
-char *tree_to_str(Node *node, bool color);
-void tree_to_strbuilder(StringBuilder *builder, Node *node, bool color);
-void print_tree(Node *node, bool color);
-void print_tree_visually(Node *node);
+char *tree_to_str(const Node *node, bool color);
+void tree_to_strbuilder(StringBuilder *builder, const Node *node, bool color);
+void print_tree(const Node *node, bool color);
+void print_tree_visually(const Node *node);

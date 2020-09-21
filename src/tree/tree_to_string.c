@@ -18,9 +18,9 @@ static void p_close(StringBuilder *builder)
     strbuilder_append(builder, CLOSING_P);
 }
 
-static void to_str(StringBuilder *builder, bool color, Node *node, bool l, bool r);
+static void to_str(StringBuilder *builder, bool color, const Node *node, bool l, bool r);
 
-static void prefix_to_str(StringBuilder *builder, bool color, Node *node, bool l, bool r)
+static void prefix_to_str(StringBuilder *builder, bool color, const Node *node, bool l, bool r)
 {
     if (l) p_open(builder);
     strbuilder_append(builder, get_op(node)->name);
@@ -42,7 +42,7 @@ static void prefix_to_str(StringBuilder *builder, bool color, Node *node, bool l
     if (l) p_close(builder);
 }
 
-static void postfix_to_str(StringBuilder *builder, bool color, Node *node, bool l, bool r)
+static void postfix_to_str(StringBuilder *builder, bool color, const Node *node, bool l, bool r)
 {
     if (r) p_open(builder);
 
@@ -64,7 +64,7 @@ static void postfix_to_str(StringBuilder *builder, bool color, Node *node, bool 
     if (r) p_close(builder);
 }
 
-static void function_to_str(StringBuilder *builder, bool color, Node *node)
+static void function_to_str(StringBuilder *builder, bool color, const Node *node)
 {
     if (get_op(node)->arity != 0)
     {
@@ -82,7 +82,7 @@ static void function_to_str(StringBuilder *builder, bool color, Node *node)
     }
 }
 
-static void infix_to_str(StringBuilder *builder, bool color, Node *node, bool l, bool r)
+static void infix_to_str(StringBuilder *builder, bool color, const Node *node, bool l, bool r)
 {
     Node *childL = get_child(node, 0);
     Node *childR = get_child(node, 1);
@@ -130,7 +130,7 @@ Params
         It needs to be protected when it is adjacent to an operator on this side.
         When the subexpression starts (ends) with an operator and needs to be protected to the left (right), a parenthesis is printed in between.
 */
-static void to_str(StringBuilder *builder, bool color, Node *node, bool l, bool r)
+static void to_str(StringBuilder *builder, bool color, const Node *node, bool l, bool r)
 {
     switch (get_type(node))
     {
@@ -161,13 +161,13 @@ static void to_str(StringBuilder *builder, bool color, Node *node, bool l, bool 
         }
 }
 
-void tree_to_strbuilder(StringBuilder *builder, Node *node, bool color)
+void tree_to_strbuilder(StringBuilder *builder, const Node *node, bool color)
 {
     to_str(builder, color, node, false, false);
 }
 
 // Summary: Returns string (on heap)
-char *tree_to_str(Node *node, bool color)
+char *tree_to_str(const Node *node, bool color)
 {
     StringBuilder builder = strbuilder_create(STRBUILDER_STARTSIZE);
     tree_to_strbuilder(&builder, node, color);
@@ -177,7 +177,7 @@ char *tree_to_str(Node *node, bool color)
 /*
 Summary: Prints result of tree_to_str to stdout
 */
-void print_tree(Node *node, bool color)
+void print_tree(const Node *node, bool color)
 {
     char *str = tree_to_str(node, color);
     printf("%s", str);
@@ -193,7 +193,7 @@ void print_tree(Node *node, bool color)
 #define BRANCH_TAB "├── "
 #define END_TAB    "└── "
 
-static void print_tree_visually_internal(Node *node, unsigned char layer, unsigned int vert_lines)
+static void print_tree_visually_internal(const Node *node, unsigned char layer, unsigned int vert_lines)
 {
     if (layer != 0)
     {
@@ -228,7 +228,7 @@ static void print_tree_visually_internal(Node *node, unsigned char layer, unsign
 /*
 Summary: Draws colored tree to stdout
 */
-void print_tree_visually(Node *node)
+void print_tree_visually(const Node *node)
 {
     if (node == NULL) return;
     print_tree_visually_internal(node, 0, 0);

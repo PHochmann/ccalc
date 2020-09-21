@@ -18,7 +18,7 @@
 #define P(x) parse_conveniently(g_ctx, x)
 
 #define NUM_DONT_REDUCE 4
-Operator *dont_reduce[NUM_DONT_REDUCE];
+const Operator *dont_reduce[NUM_DONT_REDUCE];
 Node *deriv_before;
 Node *deriv_after;
 Node *malformed_derivA;
@@ -149,13 +149,8 @@ bool core_simplify(Node **tree, bool full_simplification)
         free_tree(tree_before);
         tree_before = tree_copy(*tree);
 
-        for (size_t j = 0; j < vec_count(&rulesets[1]); j++)
-        {
-            if (apply_rule(tree, (RewriteRule*)vec_get(&rulesets[1], j)))
-            {
-                break;
-            }
-        }
+        apply_ruleset(tree, &rulesets[1]); // Derivation rules
+        replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
 
         apply_ruleset(tree, &rulesets[2]); // Normal form rules
         replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
@@ -167,8 +162,9 @@ bool core_simplify(Node **tree, bool full_simplification)
         apply_ruleset(tree, &rulesets[4]); // Pretty rules
         replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
         replace_negative_consts(tree);
+        
+    } while (!tree_equals(tree_before, *tree));
 
-    } while (tree_compare(tree_before, *tree) != NULL);
     free_tree(tree_before);
 
     if (find_matching_discarded(*tree, deriv_after, NULL) != NULL)

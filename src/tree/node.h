@@ -33,7 +33,7 @@ typedef struct {
 
 typedef struct {
     Node base;
-    Operator *op;        // Points to operator in context
+    const Operator *op;        // Points to operator in context
     size_t num_children; // Size of children buffer
     Node *children[];
 } OperatorNode;
@@ -45,19 +45,19 @@ typedef struct {
 } NodeList;
 
 // Memory
-Node *malloc_variable_node(char *var_name, size_t id);
+Node *malloc_variable_node(const char *var_name, size_t id);
 Node *malloc_constant_node(ConstantType value);
-Node *malloc_operator_node(Operator *op, size_t num_children);
+Node *malloc_operator_node(const Operator *op, size_t num_children);
 void free_tree(Node *tree);
 
 // Accessors
-NodeType get_type(Node *node);
-Operator *get_op(Node *node);
-size_t get_num_children(Node *node);
-Node *get_child(Node *node, size_t index);
-Node **get_child_addr(Node *node, size_t index);
+NodeType get_type(const Node *node);
+const Operator *get_op(const Node *node);
+size_t get_num_children(const Node *node);
+Node *get_child(const Node *node, size_t index);
+Node **get_child_addr(const Node *node, size_t index);
 void set_child(Node *node, size_t index, Node *child);
-char *get_var_name(Node *node);
-size_t get_id(Node *node);
+char *get_var_name(const Node *node);
+size_t get_id(const Node *node);
 void set_id(Node *node, size_t id);
-ConstantType get_const_value(Node *node);
+ConstantType get_const_value(const Node *node);

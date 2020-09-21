@@ -49,7 +49,7 @@ void trie_destroy(Trie *trie)
 Returns: Pointer to a buffer to attach an item to the inserted string
     The size of this buffer is equal to the elem_size specified when creating the trie
 */
-void *trie_add_str(Trie *trie, char *string)
+void *trie_add_str(Trie *trie, const char *string)
 {
     assert(trie != NULL);
     assert(string != NULL);
@@ -78,7 +78,7 @@ void *trie_add_str(Trie *trie, char *string)
 }
 
 // Returns true if node has been freed
-static bool remove_rec(TrieNode *node, size_t depth, char *string)
+static bool remove_rec(TrieNode *node, size_t depth, const char *string)
 {
     if (depth == strlen(string))
     {
@@ -110,14 +110,14 @@ static bool remove_rec(TrieNode *node, size_t depth, char *string)
     }
 }
 
-void trie_remove_str(Trie *trie, char *string)
+void trie_remove_str(Trie *trie, const char *string)
 {
     assert(trie != NULL);
     assert(string != NULL);
     remove_rec(trie->first_node, 0, string);
 }
 
-bool trie_contains(Trie *trie, char *string, void **out_data)
+bool trie_contains(const Trie *trie, const char *string, void **out_data)
 {
     if (string[0] == '\0')
     {
@@ -130,7 +130,7 @@ bool trie_contains(Trie *trie, char *string, void **out_data)
     }
 }
 
-size_t trie_longest_prefix(Trie *trie, char *string, void **out_data)
+size_t trie_longest_prefix(const Trie *trie, const char *string, void **out_data)
 {
     assert(trie != NULL);
     assert(string != NULL);

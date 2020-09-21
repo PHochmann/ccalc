@@ -40,7 +40,7 @@ bool simplification_test(StringBuilder *error_builder)
             ERROR("core_simplify returned false in test case %zu.\n", i);
         }
 
-        if (tree_compare(left, right) != NULL)
+        if (!tree_equals(left, right))
         {
             char *wrong_result = tree_to_str(left, true);
             char *right_result = tree_to_str(right, true);

@@ -7,8 +7,8 @@
 #include "iterator.h"
 
 // May change the buffer location
-#define VEC_PUSH_ELEM(vec, type, expr) (*(type*)vec_push_empty(vec)) = (expr)
-#define VEC_SET_ELEM(vec, type, index, expr) (*(type*)vec_get(vec, index)) = (expr)
+#define VEC_PUSH_ELEM(vec, type, expr) ((*(type*)vec_push_empty(vec)) = (expr))
+#define VEC_SET_ELEM(vec, type, index, expr) ((*(type*)vec_get(vec, index)) = (expr))
 
 /*
  * Never save pointers when there are elements
@@ -23,10 +23,10 @@ typedef struct
     void *buffer;
 } Vector;
 
-typedef struct vector
+typedef struct
 {
     Iterator base;
-    Vector *vector;
+    const Vector *vector;
     ssize_t curr_index;
 } VectorIterator;
 
@@ -43,10 +43,10 @@ void *vec_push_many(Vector *vec, size_t num, void *elems);
 void *vec_push_empty(Vector *vec);
 
 // Retrieval
-void *vec_get(Vector *vec, size_t index);
+void *vec_get(const Vector *vec, size_t index);
 void *vec_pop(Vector *vec);
-void *vec_peek(Vector *vec);
-VectorIterator vec_get_iterator(Vector *list);
+void *vec_peek(const Vector *vec);
+VectorIterator vec_get_iterator(const Vector *list);
 
 // Attributes
-size_t vec_count(Vector *vec);
+size_t vec_count(const Vector *vec);

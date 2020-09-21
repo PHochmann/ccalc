@@ -215,11 +215,15 @@ static void *get_next(Iterator *iterator)
     {
         it->curr_node = it->curr_node->next;
     }
+    
     if (it->curr_node == NULL)
     {
         return NULL;
     }
-    return it->curr_node->data;
+    else
+    {
+        return it->curr_node->data;
+    }
 }
 
 static void reset(Iterator *iterator)

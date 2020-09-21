@@ -1,4 +1,6 @@
 #include <string.h>
+#include <stdint.h>
+
 #include "alloc_wrappers.h"
 #include "vector.h"
 
@@ -42,9 +44,9 @@ void vec_destroy(Vector *vec)
     free(vec->buffer);
 }
 
-void *vec_get(Vector *vec, size_t index)
+void *vec_get(const Vector *vec, size_t index)
 {
-    return (char*)vec->buffer + vec->elem_size * index;
+    return (uint8_t*)vec->buffer + vec->elem_size * index;
 }
 
 void *vec_push(Vector *vec, void *elem)
@@ -64,7 +66,7 @@ void *vec_push_empty(Vector *vec)
 void *vec_push_many(Vector *vec, size_t num, void *elems)
 {
     vec_ensure_size(vec, vec->elem_count + num);
-    void *first = (char*)vec->buffer + vec->elem_size * vec->elem_count;
+    void *first = (uint8_t*)vec->buffer + vec->elem_size * vec->elem_count;
     memcpy(first, elems, num * vec->elem_size);
     vec->elem_count += num;
     return first;
@@ -77,13 +79,13 @@ void *vec_pop(Vector *vec)
     return vec_get(vec, vec->elem_count);
 }
 
-void *vec_peek(Vector *vec)
+void *vec_peek(const Vector *vec)
 {
     if (vec->elem_count == 0) return NULL;
     return vec_get(vec, vec->elem_count - 1);
 }
 
-size_t vec_count(Vector *vec)
+size_t vec_count(const Vector *vec)
 {
     return vec->elem_count;
 }
@@ -109,7 +111,7 @@ static void reset(Iterator *iterator)
     ((VectorIterator*)iterator)->curr_index = -1;
 }
 
-VectorIterator vec_get_iterator(Vector *vec)
+VectorIterator vec_get_iterator(const Vector *vec)
 {
     return (VectorIterator){
         .base = (Iterator){ .get_next = get_next, .reset = reset },

@@ -223,7 +223,7 @@ void add_empty_cell(Table *table)
 Summary: Adds next cell and maintains buffer of text.
     Use add_cell to save memory if you maintain a content string yourself.
 */
-void add_cell_fmt(Table *table, char *fmt, ...)
+void add_cell_fmt(Table *table, const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
@@ -231,7 +231,7 @@ void add_cell_fmt(Table *table, char *fmt, ...)
     va_end(args);
 }
 
-void add_cell_vfmt(Table *table, char *fmt, va_list args)
+void add_cell_vfmt(Table *table, const char *fmt, va_list args)
 {
     StringBuilder builder = strbuilder_create(0);
     vstrbuilder_append(&builder, fmt, args);

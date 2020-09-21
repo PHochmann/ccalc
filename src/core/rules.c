@@ -20,13 +20,14 @@ char *reduction_string =
 "root(x, y) -> x^(1/y)";
 
 char *derivation_string =
+"deriv(cX, z)      -> 0\n"
+"deriv(x, x)       -> 1\n"
+"deriv(bX, z)      -> 0\n"
 "deriv(cX*z, z)    -> cX\n"
 "deriv(cX*z^cZ, z) -> cZ*cX*z^(cZ-1)\n"
 "deriv(-x, z)      -> -deriv(x, z)\n"
 "deriv(x + y, z)   -> deriv(x, z) + deriv(y, z)\n"
 "deriv(x - y, z)   -> deriv(x, z) - deriv(y, z)\n"
-"deriv(x, x)       -> 1\n"
-"deriv(bX, z)      -> 0\n"
 "deriv(x*y, z)     -> deriv(x, z)*y + x*deriv(y, z)\n"
 "deriv(x/y, z)     -> (deriv(x, z)*y - x*deriv(y, z)) / y^2\n"
 "deriv(sin(x), z)  -> cos(x) * deriv(x, z)\n"
@@ -134,7 +135,7 @@ char *pretty_string =
 "root(x, 2)    -> sqrt(x)\n"
 "x^(1/y)       -> root(x, y)\n";
 
-bool parse_rule(char *string, ParsingContext *ctx, MappingFilter default_filter, Vector *out_ruleset)
+bool parse_rule(char *string, ParsingContext *ctx, MappingFilter default_filter, Vector *ruleset)
 {
     if (string[0] == COMMENT_PREFIX || string[0] == '\0')
     {
@@ -162,7 +163,7 @@ bool parse_rule(char *string, ParsingContext *ctx, MappingFilter default_filter,
         return false;
     }
 
-    add_to_ruleset(out_ruleset, get_rule(left_n, right_n, default_filter));
+    add_to_ruleset(ruleset, get_rule(left_n, right_n, default_filter));
     return true;
 }
 

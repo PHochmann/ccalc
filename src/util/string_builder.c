@@ -14,7 +14,7 @@ void strbuilder_clear(StringBuilder *builder)
     *(char*)vec_push_empty(builder) = '\0';
 }
 
-void strbuilder_append(StringBuilder *builder, char *fmt, ...)
+void strbuilder_append(StringBuilder *builder, const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
@@ -28,7 +28,7 @@ void strbuilder_append_char(StringBuilder *builder, char c)
     VEC_PUSH_ELEM(builder, char, '\0');
 }
 
-void vstrbuilder_append(StringBuilder *builder, char *fmt, va_list args)
+void vstrbuilder_append(StringBuilder *builder, const char *fmt, va_list args)
 {
     va_list args_copy;
     va_copy(args_copy, args);
@@ -52,7 +52,7 @@ void vstrbuilder_append(StringBuilder *builder, char *fmt, va_list args)
 }
 
 // Lifetime of string is tied to lifetime of StringBuilder!
-char *strbuilder_to_str(StringBuilder *builder)
+char *strbuilder_to_str(const StringBuilder *builder)
 {
     return builder->buffer;
 }

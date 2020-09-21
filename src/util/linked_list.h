@@ -1,10 +1,12 @@
 #pragma once
 #include <stdlib.h>
+#include <stdint.h>
+
 #include "iterator.h"
 
-#define LIST_INSERT_ELEM_AFTER(list, before, type, expr) (*(type*)list_insert_after(list, before, NULL)->data) = (expr)
-#define LIST_INSERT_ELEM_AT(list, index, type, expr) (*(type*)list_insert_at(list, index, NULL)->data) = (expr)
-#define LIST_APPEND_ELEM(list, type, expr) (*(type*)list_append(list, NULL)->data) = (expr)
+#define LIST_INSERT_ELEM_AFTER(list, before, type, expr) ((*(type*)list_insert_after(list, before, NULL)->data) = (expr))
+#define LIST_INSERT_ELEM_AT(list, index, type, expr) ((*(type*)list_insert_at(list, index, NULL)->data) = (expr))
+#define LIST_APPEND_ELEM(list, type, expr) ((*(type*)list_append(list, NULL)->data) = (expr))
 
 /*
 A ListNode directly contains the payload and is always on heap
@@ -13,7 +15,7 @@ typedef struct ListNode
 {
     struct ListNode *next;
     struct ListNode *previous;
-    char data[];
+    uint8_t data[];
 } ListNode;
 
 typedef struct

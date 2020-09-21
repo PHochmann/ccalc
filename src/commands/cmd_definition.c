@@ -88,13 +88,15 @@ static bool add_function(char *name, char *left, char *right)
     // Check if left side is "function(var_1, ..., var_n)"
     if (!do_left_checks(left_n)) goto error;
 
-    // Assign correct arity
-    get_op(left_n)->arity = get_num_children(left_n);
+    // Assign correct arity:
+    // Since operators are const, we can't change the arity directly
+    // A new operator with correct arity has to be created and left expression has to be parsed again
+    ctx_delete_op(g_ctx, name, OP_PLACE_FUNCTION);
+    ctx_add_op(g_ctx, op_get_function(name, get_num_children(left_n)));
+    free_tree(left_n);
+    arith_parse_input_raw(left, FMT_ERROR_LEFT, &left_n); // Should never fail
 
-    if (!arith_parse_input_raw(right, FMT_ERROR_RIGHT, &right_n))
-    {
-        goto error;
-    }
+    arith_parse_input_raw(right, FMT_ERROR_RIGHT, &right_n);
 
     if (find_matching_discarded(right_n, left_n, NULL) != NULL)
     {
