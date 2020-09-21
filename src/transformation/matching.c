@@ -21,14 +21,14 @@ typedef struct {
 } SuffixNode;
 
 static void extend_matching(Matching matching,
-    Node *pattern,
+    const Node *pattern,
     NodeList tree_list,
     Vector *out_matchings,
     MappingFilter filter);
 
 static void fill_suffix(size_t curr_index,
-    Node **pattern_children,
-    Node **tree_children,
+    const Node **pattern_children,
+    const Node **tree_children,
     Vector *matchings,
     Vector *suffixes,
     MappingFilter filter)
@@ -63,9 +63,9 @@ static void fill_suffix(size_t curr_index,
 
 static void match_parameter_lists(Matching matching,
     size_t num_pattern_children,
-    Node **pattern_children,
+    const Node **pattern_children,
     size_t num_tree_children,
-    Node **tree_children,
+    const Node **tree_children,
     Vector *out_matchings,
     MappingFilter filter)
 {
@@ -184,7 +184,7 @@ static void match_parameter_lists(Matching matching,
     vec_destroy(&vec_suffixes);
 }
 
-static bool nodelists_equal(NodeList *a, NodeList *b)
+static bool nodelists_equal(const NodeList *a, const NodeList *b)
 {
     if (a->size != b->size) return false;
     for (size_t i = 0; i < a->size; i++)
@@ -195,7 +195,7 @@ static bool nodelists_equal(NodeList *a, NodeList *b)
 }
 
 static void extend_matching(Matching matching,
-    Node *pattern,
+    const Node *pattern,
     NodeList tree_list,
     Vector *out_matchings,
     MappingFilter filter)
@@ -261,9 +261,9 @@ static void extend_matching(Matching matching,
             {
                 match_parameter_lists(matching,
                     get_num_children(pattern),
-                    get_child_addr(pattern, 0),
+                    (const Node**)get_child_addr(pattern, 0),
                     get_num_children(tree_list.nodes[0]),
-                    get_child_addr(tree_list.nodes[0], 0),
+                    (const Node**)get_child_addr(tree_list.nodes[0], 0),
                     out_matchings,
                     filter);
             }
@@ -271,7 +271,7 @@ static void extend_matching(Matching matching,
     }
 }
 
-size_t get_all_matchings(Node **tree, Node *pattern, Matching **out_matchings, MappingFilter filter)
+size_t get_all_matchings(const Node **tree, const Node *pattern, Matching **out_matchings, MappingFilter filter)
 {
     if (tree == NULL || pattern == NULL || out_matchings == NULL) return false;
     // Due to exponentially many partitions, a lot of states can occur. Use heap.
@@ -290,7 +290,7 @@ size_t get_all_matchings(Node **tree, Node *pattern, Matching **out_matchings, M
 Summary: suffixess to match "tree" against "pattern" (only in root)
 Returns: True, if matching is found, false if NULL-pointers given in arguments or no matching found
 */
-bool get_matching(Node **tree, Node *pattern, Matching *out_matching, MappingFilter filter)
+bool get_matching(const Node **tree, const Node *pattern, Matching *out_matching, MappingFilter filter)
 {
     if (tree == NULL || pattern == NULL || out_matching == NULL) return false;
 
@@ -314,14 +314,14 @@ bool get_matching(Node **tree, Node *pattern, Matching *out_matching, MappingFil
 /*
 Summary: Looks for matching in tree, i.e. suffixess to construct matching in each node until matching is found (Top-Down)
 */
-Node **find_matching(Node **tree, Node *pattern, Matching *out_matching, MappingFilter filter)
+Node **find_matching(const Node **tree, const Node *pattern, Matching *out_matching, MappingFilter filter)
 {
-    if (get_matching(tree, pattern, out_matching, filter)) return tree;
+    if (get_matching(tree, pattern, out_matching, filter)) return (Node**)tree;
     if (get_type(*tree) == NTYPE_OPERATOR)
     {
         for (size_t i = 0; i < get_num_children(*tree); i++)
         {
-            Node **res = find_matching(get_child_addr(*tree, i), pattern, out_matching, filter);
+            Node **res = find_matching((const Node**)get_child_addr(*tree, i), pattern, out_matching, filter);
             if (res != NULL) return res;
         }
     }
@@ -331,10 +331,10 @@ Node **find_matching(Node **tree, Node *pattern, Matching *out_matching, Mapping
 /*
 Summary: Basically the same as find_matching, but discards matching
 */
-Node **find_matching_discarded(Node *tree, Node *pattern, MappingFilter filter)
+Node **find_matching_discarded(const Node *tree, const Node *pattern, MappingFilter filter)
 {
     Matching matching;
-    return find_matching(&tree, pattern, &matching, filter);
+    return find_matching((const Node**)&tree, pattern, &matching, filter);
 }
 
 /*

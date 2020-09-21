@@ -16,5 +16,5 @@
 
 typedef struct {
     bool (*suite)(StringBuilder *error_builder);
-    char *name;
+    const char *name;
 } Test;

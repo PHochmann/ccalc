@@ -72,7 +72,7 @@ bool cmd_playground_exec(char *input, int code)
             }
 
             Matching *matchings;
-            size_t num_matchings = get_all_matchings(&tree, pattern, &matchings, NULL);
+            size_t num_matchings = get_all_matchings((const Node**)&tree, pattern, &matchings, NULL);
 
             if (num_matchings < MATCHINGS_PRINT_THRESHOLD)
             {

@@ -68,7 +68,7 @@ bool core_replace_history(Node **tree)
     // Replace @x
     Matching ans_matching;
     Node **matched_subtree;
-    while ((matched_subtree = find_matching(tree, ans_pattern, &ans_matching, NULL)) != NULL)
+    while ((matched_subtree = find_matching((const Node**)tree, ans_pattern, &ans_matching, NULL)) != NULL)
     {
         if (count_variables(ans_matching.mapped_nodes[0].nodes[0]) > 0)
         {

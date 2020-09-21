@@ -14,13 +14,13 @@ Summary: Contains successful or intermediate matching
 typedef struct
 {
     size_t num_mapped;                      // Size of mapped_vars and mapped_nodes
-    char *mapped_vars[MAX_MAPPED_VARS];     // Variables in pattern, not copied, thus lifetime coupled to RewriteRule or whatever supplied the pattern
+    const char *mapped_vars[MAX_MAPPED_VARS];     // Variables in pattern, not copied, thus lifetime coupled to RewriteRule or whatever supplied the pattern
     NodeList mapped_nodes[MAX_MAPPED_VARS]; // Subtrees in matched_tree that need to replace each mapped_var
 } Matching;
 
-NodeList *lookup_mapped_var(Matching *matching, char *var);
-size_t get_all_matchings(Node **tree, Node *pattern, Matching **out_matchings, MappingFilter filter);
-bool get_matching(Node **tree, Node *pattern, Matching *out_matching, MappingFilter filter);
-Node **find_matching(Node **tree, Node *pattern, Matching *out_matching, MappingFilter filter);
-Node **find_matching_discarded(Node *tree, Node *pattern, MappingFilter filter);
+NodeList *lookup_mapped_var(const Matching *matching, const char *var);
+size_t get_all_matchings(const Node **tree, const Node *pattern, Matching **out_matchings, MappingFilter filter);
+bool get_matching(const Node **tree, const Node *pattern, Matching *out_matching, MappingFilter filter);
+Node **find_matching(const Node **tree, const Node *pattern, Matching *out_matching, MappingFilter filter);
+Node **find_matching_discarded(const Node *tree, const Node *pattern, MappingFilter filter);
 void preprocess_pattern(Node *tree);

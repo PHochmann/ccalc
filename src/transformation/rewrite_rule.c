@@ -106,11 +106,10 @@ bool apply_rule(Node **tree, const RewriteRule *rule)
 {
     Matching matching;
     // Try to find matching in tree with pattern specified in rule
-    Node **res = find_matching(tree, rule->before, &matching, rule->filter);
+    Node **res = find_matching((const Node**)tree, rule->before, &matching, rule->filter);
     if (res == NULL) return false;
     // If matching is found, transform tree with it
     transform_matched(rule->after, &matching, res);
-
     return true;
 }
 
@@ -143,7 +142,7 @@ size_t apply_ruleset(Node **tree, const Ruleset *ruleset)
 Summary: Tries to apply rules (priorized by order) until no rule can be applied any more
     Guarantees to terminate after MAX_RULESET_ITERATIONS rule appliances
 */
-#include "../tree/tree_to_string.h"
+//#include "../tree/tree_to_string.h"
 size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator)
 {
     size_t counter = 0;
@@ -162,7 +161,6 @@ size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator)
             }
         }
         iterator_reset(iterator);
-
         if (!applied_flag)
         {
             //printf("End.\n");
@@ -173,8 +171,8 @@ size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator)
             if (counter == MAX_RULESET_ITERATIONS)
             {
                 report_error("Aborted due to too many ruleset iterations (max=%d)\n", MAX_RULESET_ITERATIONS);
-                print_tree(*tree, true);
-                printf("\n");
+                //print_tree(*tree, true);
+                //printf("\n");
                 return counter;
             }
         }

@@ -116,7 +116,7 @@ bool core_simplify(Node **tree, bool full_simplification)
 
     Matching matching;
     Node **matched;
-    while ((matched = find_matching(tree, deriv_before, &matching, NULL)) != NULL)
+    while ((matched = find_matching((const Node**)tree, deriv_before, &matching, NULL)) != NULL)
     {
         char *var_names[2];
         size_t var_count = list_variables(*matched, 2, var_names);
