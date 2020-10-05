@@ -172,20 +172,3 @@ char *skip_ansi(const char *str)
     }
     return (char*)str;
 }
-
-/*
-Summary: Calculates length of string displayed in console,
-    i.e. reads until \0 or \n and omits ANSI-escaped color sequences
-    Todo: Consider \t and other special chars
-*/
-size_t console_strlen(const char *str)
-{
-    size_t res = 0;
-    str = skip_ansi(str);
-    while (*str != '\0' && *str != '\n')
-    {
-        str = skip_ansi(str + 1);
-        res++;
-    }
-    return res;
-}

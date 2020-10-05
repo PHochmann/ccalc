@@ -20,7 +20,7 @@ static unsigned char char_to_index(char c)
 }
 
 /*
-Pass 0 as elem_size to use the trie without payload
+Pass elem_size = 0 to use the trie without payload
 */
 Trie trie_create(size_t elem_size)
 {

@@ -22,55 +22,10 @@ typedef enum
     ALIGN_NUMBERS // Aligned at dot, rightmost, does not support \n
 } TextAlignment;
 
-struct Cell
-{
-    char *text; // Actual content to be displayed
-
-    // Settings
-    TextAlignment align;        // Non default, how to place text in col width
-    BorderStyle border_left;    // Non-default border left
-    BorderStyle border_above;   // Non-default border above
-    size_t span_x;              // How many cols to span over
-    size_t span_y;              // How many rows to span over
-
-    // Generated
-    bool override_align;        // Default set for each col in table
-    bool override_border_left;  // Default set for each col in table
-    bool override_border_above; // Default set in row
-
-    bool is_set;          // Indicates whether data is valid
-    bool text_needs_free; // When set to true, text will be freed on free_table
-    size_t x;             // Column position
-    size_t y;             // Row position
-    struct Cell *parent;  // Cell that spans into this cell
-    // Additionally generated for ALIGN_NUMBERS:
-    size_t zero_position; // Position of first padded trailing zero
-    size_t zeros_needed;  // Amount of padded trailing zeros
-    bool dot_needed;      // Whether DECIMAL_SEPARATOR needs to be printed
-};
-
-struct Row
-{
-    struct Cell cells[MAX_COLS]; // All cells of this row from left to right
-    struct Row *next_row;        // Pointer to next row or NULL if last row
-    BorderStyle border_above;    // Default border above (can be overwritten in cell)
-    size_t border_above_counter; // Counts cells that override their border_above
-};
-
-typedef struct
-{
-    size_t num_cols;                       // Number of columns (max. of num_cells over all rows)
-    size_t num_rows;                       // Number of rows (length of linked list)
-    struct Row *first_row;                 // Start of linked list to rows
-    struct Row *curr_row;                  // Marker of row of next inserted cell
-    size_t curr_col;                       // Marker of col of next inserted cell
-    BorderStyle borders_left[MAX_COLS];    // Default left border of cols
-    TextAlignment alignments[MAX_COLS];    // Default alignment of cols
-    size_t border_left_counters[MAX_COLS]; // Counts cells that override their border_left
-} Table;
+typedef struct Table Table;
 
 // Data and printing
-Table get_empty_table();
+Table *get_empty_table();
 void print_table(Table *table);
 void fprint_table(Table *table, FILE *stream);
 void free_table(Table *table);

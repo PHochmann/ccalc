@@ -116,32 +116,32 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     if ((start_val < end_val && step_val < 0)
         || (start_val > end_val && step_val > 0))
     {
-        step_val = -step_val;
+        step_val *= -1;
     }
 
-    Table table = get_empty_table();
+    Table *table = get_empty_table();
     
     // Header
     if (g_interactive)
     {
-        add_cell(&table, " # ");
+        add_cell(table, " # ");
         if (num_vars != 0)
         {
-            add_cell_fmt(&table, VAR_COLOR " %s " COL_RESET, variables[0]);
+            add_cell_fmt(table, VAR_COLOR " %s " COL_RESET, variables[0]);
         }
         else
         {
-            add_empty_cell(&table);
+            add_empty_cell(table);
         }
 
         Vector builder = strbuilder_create(STRBUILDER_STARTSIZE);
         strbuilder_append(&builder, " ");
         tree_to_strbuilder(&builder, expr, true);
         strbuilder_append(&builder, " ");
-        add_cell_gc(&table, builder.buffer);
-        override_alignment_of_row(&table, ALIGN_CENTER);
-        next_row(&table);
-        set_hline(&table, BORDER_SINGLE);
+        add_cell_gc(table, builder.buffer);
+        override_alignment_of_row(table, ALIGN_CENTER);
+        next_row(table);
+        set_hline(table, BORDER_SINGLE);
     }
 
     // Loop through all values and add them to table
@@ -152,9 +152,9 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
         replace_variable_nodes(&current_expr, current_val, variables[0]);
         double result = arith_evaluate(current_expr);
 
-        add_cell_fmt(&table, " %zu ", i);
-        add_cell_fmt(&table, " " CONSTANT_TYPE_FMT " ", start_val);
-        add_cell_fmt(&table, " " CONSTANT_TYPE_FMT " ", result);
+        add_cell_fmt(table, " %zu ", i);
+        add_cell_fmt(table, " " CONSTANT_TYPE_FMT " ", start_val);
+        add_cell_fmt(table, " " CONSTANT_TYPE_FMT " ", result);
 
         if (num_args == 6)
         {
@@ -171,19 +171,19 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
 
         free_tree(current_expr);
         free_tree(current_val);
-        next_row(&table);
+        next_row(table);
         start_val += step_val;
     }
 
     if (g_interactive)
     {
-        make_boxed(&table, BORDER_SINGLE);
-        set_all_vlines(&table, BORDER_SINGLE);
+        make_boxed(table, BORDER_SINGLE);
+        set_all_vlines(table, BORDER_SINGLE);
     }
 
-    set_default_alignments(&table, 3, (TextAlignment[]){ ALIGN_RIGHT, ALIGN_NUMBERS, ALIGN_NUMBERS });
-    print_table(&table);
-    free_table(&table);
+    set_default_alignments(table, 3, (TextAlignment[]){ ALIGN_RIGHT, ALIGN_NUMBERS, ALIGN_NUMBERS });
+    print_table(table);
+    free_table(table);
 
     if (num_args == 6)
     {

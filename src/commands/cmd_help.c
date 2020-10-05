@@ -176,16 +176,16 @@ static void print_ops_between(size_t start, size_t end)
 
 static void print_op_table(OpPlacement place, bool assoc, bool precedence, bool arity, bool value)
 {
-    Table table = get_empty_table();
-    set_default_alignments(&table, 2, (TextAlignment[]){ ALIGN_LEFT, ALIGN_NUMBERS });
-    override_alignment_of_row(&table, ALIGN_LEFT);
-    add_cell(&table, " Name ");
-    if (precedence) add_cell(&table, " Precedence ");
-    if (assoc) add_cell(&table, " Assoc. ");
-    if (arity) add_cell(&table, " Arity ");
-    if (value) add_cell(&table, " Value ");
-    add_cell(&table, " Description ");
-    next_row(&table);
+    Table *table = get_empty_table();
+    set_default_alignments(table, 2, (TextAlignment[]){ ALIGN_LEFT, ALIGN_NUMBERS });
+    override_alignment_of_row(table, ALIGN_LEFT);
+    add_cell(table, " Name ");
+    if (precedence) add_cell(table, " Precedence ");
+    if (assoc) add_cell(table, " Assoc. ");
+    if (arity) add_cell(table, " Arity ");
+    if (value) add_cell(table, " Value ");
+    add_cell(table, " Description ");
+    next_row(table);
 
     ListNode *curr = list_get_node(&g_ctx->op_list, BASIC_IND);
     size_t index = BASIC_IND;
@@ -195,11 +195,11 @@ static void print_op_table(OpPlacement place, bool assoc, bool precedence, bool 
 
         if (op->placement == place && (place != OP_PLACE_FUNCTION || (value == (op->arity == 0))))
         {
-            add_cell_fmt(&table, " %s ", op->name);
+            add_cell_fmt(table, " %s ", op->name);
 
             if (precedence)
             {
-                add_cell_fmt(&table, " %d ", op->precedence);
+                add_cell_fmt(table, " %d ", op->precedence);
             }
 
             if (assoc)
@@ -207,10 +207,10 @@ static void print_op_table(OpPlacement place, bool assoc, bool precedence, bool 
                 switch (op->assoc)
                 {
                     case OP_ASSOC_LEFT:
-                        add_cell(&table, " Left ");
+                        add_cell(table, " Left ");
                         break;
                     case OP_ASSOC_RIGHT:
-                        add_cell(&table, " Right ");
+                        add_cell(table, " Right ");
                 }
             }
 
@@ -218,11 +218,11 @@ static void print_op_table(OpPlacement place, bool assoc, bool precedence, bool 
             {
                 if (op->arity != OP_DYNAMIC_ARITY)
                 {
-                    add_cell_fmt(&table, " %d ", op->arity);
+                    add_cell_fmt(table, " %d ", op->arity);
                 }
                 else
                 {
-                    add_cell(&table, " * ");
+                    add_cell(table, " * ");
                 }
             }
 
@@ -230,37 +230,37 @@ static void print_op_table(OpPlacement place, bool assoc, bool precedence, bool 
             {
                 double const_val;
                 op_evaluate(op, 0, NULL, &const_val);
-                override_alignment(&table, ALIGN_NUMBERS);
-                add_cell_fmt(&table, " " CONSTANT_TYPE_FMT " ", const_val);
+                override_alignment(table, ALIGN_NUMBERS);
+                add_cell_fmt(table, " " CONSTANT_TYPE_FMT " ", const_val);
             }
             
-            add_cell(&table, OP_DESCRIPTIONS[index - BASIC_IND]);
-            next_row(&table);
+            add_cell(table, OP_DESCRIPTIONS[index - BASIC_IND]);
+            next_row(table);
         }
         index++;
         curr = curr->next;
     }
 
-    print_table(&table);
-    free_table(&table);
+    print_table(table);
+    free_table(table);
     printf("\n");
 }
 
 void print_short_help()
 {
-    Table table = get_empty_table();
-    add_cell_fmt(&table, INFOBOX);
-    next_row(&table);
-    make_boxed(&table, BORDER_SINGLE);
-    set_default_alignments(&table, 1, (TextAlignment[]){ ALIGN_CENTER });
-    print_table(&table);
-    free_table(&table);
+    Table *table = get_empty_table();
+    add_cell_fmt(table, INFOBOX);
+    next_row(table);
+    make_boxed(table, BORDER_SINGLE);
+    set_default_alignments(table, 1, (TextAlignment[]){ ALIGN_CENTER });
+    print_table(table);
+    free_table(table);
     printf("\n");
 
     table = get_empty_table();
-    add_cells_from_array(&table, 2, 7, (char**)COMMAND_TABLE);
-    print_table(&table);
-    free_table(&table);
+    add_cells_from_array(table, 2, 7, (char**)COMMAND_TABLE);
+    print_table(table);
+    free_table(table);
 
     printf("\nBasic operators:\n");
     print_ops_between(BASIC_IND, TRIG_IND);
@@ -280,14 +280,14 @@ void print_short_help()
         while (curr != NULL)
         {
             RewriteRule *rule = (RewriteRule*)curr->data;
-            add_cell_gc(&table, tree_to_str(rule->before, true));
-            add_cell(&table, " = ");
-            add_cell_gc(&table, tree_to_str(rule->after, true));
-            next_row(&table);
+            add_cell_gc(table, tree_to_str(rule->before, true));
+            add_cell(table, " = ");
+            add_cell_gc(table, tree_to_str(rule->after, true));
+            next_row(table);
             curr = curr->next;
         }
-        print_table(&table);
-        free_table(&table);
+        print_table(table);
+        free_table(table);
         printf("\n");
     }
     else
