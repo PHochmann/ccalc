@@ -2,6 +2,28 @@
 #include "../util/alloc_wrappers.h"
 #include "node.h"
 
+struct Node {
+    NodeType type;
+};
+
+struct VariableNode {
+    Node base;
+    size_t id; // For easier lookup
+    char var_name[];
+};
+
+struct ConstantNode {
+    Node base;
+    ConstantType const_value;
+};
+
+struct OperatorNode {
+    Node base;
+    const Operator *op;        // Points to operator in context
+    size_t num_children; // Size of children buffer
+    Node *children[];
+};
+
 /*
 The following functions are used for polymorphism of different Node types
 */

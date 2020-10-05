@@ -185,7 +185,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     print_table(table);
     free_table(table);
 
-    if (num_args == 6)
+    if (num_args == 6) // Contains fold expression
     {
         printf("Fold result: " CONSTANT_TYPE_FMT "\n", fold_val);
         core_update_history(fold_val);

@@ -10,33 +10,16 @@ Constants and variables are leaf nodes.
 
 typedef double ConstantType;
 
+typedef struct Node Node;
+typedef struct VariableNode VariableNode;
+typedef struct ConstantNode ConstantNode;
+typedef struct OperatorNode OperatorNode;
+
 typedef enum {
     NTYPE_OPERATOR,
     NTYPE_CONSTANT,
     NTYPE_VARIABLE
 } NodeType;
-
-typedef struct {
-    NodeType type;
-} Node;
-
-typedef struct {
-    Node base;
-    size_t id; // For easier lookup
-    char var_name[];
-} VariableNode;
-
-typedef struct {
-    Node base;
-    ConstantType const_value;
-} ConstantNode;
-
-typedef struct {
-    Node base;
-    const Operator *op;        // Points to operator in context
-    size_t num_children; // Size of children buffer
-    Node *children[];
-} OperatorNode;
 
 // Not to be confused with struct ListNode ;)
 typedef struct {
