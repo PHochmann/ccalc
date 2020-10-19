@@ -331,10 +331,17 @@ Node **find_matching(const Node **tree, const Node *pattern, Matching *out_match
 /*
 Summary: Basically the same as find_matching, but discards matching
 */
-Node **find_matching_discarded(const Node *tree, const Node *pattern, MappingFilter filter)
+bool does_match(const Node *tree, const Node *pattern, MappingFilter filter)
 {
     Matching matching;
-    return find_matching((const Node**)&tree, pattern, &matching, filter);
+    if (find_matching((const Node**)&tree, pattern, &matching, filter) != NULL)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 /*

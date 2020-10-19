@@ -593,14 +593,14 @@ static void satisfy_constraints(size_t num_constrs, struct Constraint *constrs, 
 }
 
 // Counts number of \n in string
-static size_t get_num_lines(char *string)
+static size_t get_text_height(const char *str)
 {
-    if (string == NULL) return 0;
+    if (str == NULL) return 0;
     size_t res = 1;
     size_t pos = 0;
-    while (string[pos] != '\0')
+    while (str[pos] != '\0')
     {
-        if (string[pos] == '\n')
+        if (str[pos] == '\n')
         {
             res++;
         }
@@ -609,10 +609,11 @@ static size_t get_num_lines(char *string)
     return res;
 }
 
-static size_t get_text_width(char *str)
+static size_t get_text_width(const char *str)
 {
     size_t res = 0;
-    for (size_t i = 0; i < get_num_lines(str); i++)
+    size_t height = get_text_height(str);
+    for (size_t i = 0; i < height; i++)
     {
         char *line;
         get_line_of_string(str, i, &line);
@@ -691,7 +692,7 @@ void get_dimensions(Table *table, size_t *out_col_widths, size_t *out_row_height
         {
             if (curr_row->cells[i].is_set && curr_row->cells[i].parent == NULL)
             {
-                size_t min = get_num_lines(curr_row->cells[i].text);
+                size_t min = get_text_height(curr_row->cells[i].text);
                 struct Row *row_checked_for_hline = curr_row->next_row;
 
                 // Constraint can be weakened when hlines are in between

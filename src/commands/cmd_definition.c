@@ -29,26 +29,29 @@ static bool do_left_checks(Node *left_n)
 
     size_t num_children = get_num_children(left_n);
 
-    for (size_t i = 0; i < num_children; i++)
+    if (num_children > 0)
     {
-        if (get_type(get_child(left_n, i)) != NTYPE_VARIABLE)
+        for (size_t i = 0; i < num_children; i++)
         {
-            report_error(FMT_ERROR_LEFT, "Function arguments must be variables.");
+            if (get_type(get_child(left_n, i)) != NTYPE_VARIABLE)
+            {
+                report_error(FMT_ERROR_LEFT, "Function arguments must be variables.");
+                return false;
+            }
+        }
+
+        char *vars[num_children];
+        if (num_children != list_variables(left_n, num_children, vars))
+        {
+            report_error(FMT_ERROR_LEFT, "Function arguments must be distinct variables.");
             return false;
         }
-    }
 
-    char *vars[num_children];
-    if (num_children != list_variables(left_n, num_children, vars))
-    {
-        report_error(FMT_ERROR_LEFT, "Function arguments must be distinct variables.");
-        return false;
-    }
-
-    if (num_children > MAX_MAPPED_VARS)
-    {
-        report_error(FMT_ERROR_LEFT, "Too many function arguments.");
-        return false;
+        if (num_children > MAX_MAPPED_VARS)
+        {
+            report_error(FMT_ERROR_LEFT, "Too many function arguments.");
+            return false;
+        }
     }
 
     return true;
@@ -98,7 +101,7 @@ static bool add_function(char *name, char *left, char *right)
 
     arith_parse_input_raw(right, FMT_ERROR_RIGHT, &right_n);
 
-    if (find_matching_discarded(right_n, left_n, NULL) != NULL)
+    if (does_match(right_n, left_n, NULL))
     {
         report_error("Error: Recursive definition.\n");
         goto error;

@@ -13,6 +13,7 @@
 #define HELP_OPS  "help operators"
 #define SHORT_HELP_CODE 1
 #define OPS_HELP_CODE   2
+#define TTY_WIDTH 80
 
 #define VERSION "1.5.6"
 
@@ -22,15 +23,13 @@
     #define RELEASE VERSION
 #endif
 
-#define TTY_WIDTH 80
-
 static char *INFOBOX =
     "ccalc " RELEASE " (c) 2020 Philipp Hochmann\n"
     " Scientific calculator in which you can define new functions and constants \n"
     "https://github.com/PhilippHochmann/ccalc";
 
 static char *COMMAND_TABLE[7][2] = {
-    { "<func|const> = <after>",                  "Adds or redefines function or constant." },
+    { "<func|const> = <after>",                  "Adds function or constant." },
     { "table <expr> ; <from> ; <to> ; <step>  \n"
       "   [fold <expr> ; <init>]",               "Prints table of values." },
     { "load <path>",                             "Executes commands in file." },

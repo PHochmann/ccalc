@@ -136,8 +136,8 @@ bool core_simplify(Node **tree, bool full_simplification)
         tree_replace(matched, replacement);
     }
 
-    if (find_matching_discarded(*tree, malformed_derivA, prefix_filter) != NULL
-        || find_matching_discarded(*tree, malformed_derivA, prefix_filter) != NULL)
+    if (does_match(*tree, malformed_derivA, prefix_filter)
+        || does_match(*tree, malformed_derivA, prefix_filter))
     {
         report_error("Second operand of deriv must be variable.\n");
         return false;
@@ -167,7 +167,7 @@ bool core_simplify(Node **tree, bool full_simplification)
 
     free_tree(tree_before);
 
-    if (find_matching_discarded(*tree, deriv_after, NULL) != NULL)
+    if (does_match(*tree, deriv_after, NULL))
     {
         report_error("Could not derivate expression.\n");
         return false;

@@ -22,5 +22,5 @@ NodeList *lookup_mapped_var(const Matching *matching, const char *var);
 size_t get_all_matchings(const Node **tree, const Node *pattern, Matching **out_matchings, MappingFilter filter);
 bool get_matching(const Node **tree, const Node *pattern, Matching *out_matching, MappingFilter filter);
 Node **find_matching(const Node **tree, const Node *pattern, Matching *out_matching, MappingFilter filter);
-Node **find_matching_discarded(const Node *tree, const Node *pattern, MappingFilter filter);
+bool does_match(const Node *tree, const Node *pattern, MappingFilter filter);
 void preprocess_pattern(Node *tree);
