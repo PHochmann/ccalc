@@ -6,7 +6,7 @@
 
 typedef struct
 {
-    const Operator *glue_op;                // Points to a payload of a listnode of op_list
+    const Operator *glue_op;          // Points to a payload of a listnode of op_list
     LinkedList op_list;               // List of operators
     Trie op_tries[OP_NUM_PLACEMENTS]; // Tries for fast operator lookup (payload: pointer to listnode)
     Trie keywords_trie;               // Contains all names for keyword lookup in tokenizer (no payload)

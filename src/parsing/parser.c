@@ -17,13 +17,13 @@
 struct OpData
 {
     const Operator *op; // Pointer to operator in context, NULL denotes opening parenthesis
-    size_t arity; // Records number of operands to pop
+    size_t arity;       // Records number of operands to pop
 };
 
 // Encapsulates current state of shunting-yard algo. to be communicated to auxiliary functions
 struct ParserState
 {
-    const ParsingContext *ctx;       // Contains operators and glue-op
+    const ParsingContext *ctx; // Contains operators and glue-op
     Vector vec_nodes;          // Constructed nodes
     Vector vec_ops;            // Parsed operators
     ParserError result;        // Success when no error occurred

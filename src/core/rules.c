@@ -88,8 +88,8 @@ char *simplification_string =
 // Products within sum
 "sum([xs], prod(a, x), [ys], x, [zs])                          -> sum([xs], prod(a+1, x), [ys], [zs])\n"
 "sum([xs], prod(x, a), [ys], x, [zs])                          -> sum([xs], prod(x, a+1), [ys], [zs])\n"
-"sum([xs], prod(a, x), [ys], -x, [zs])                          -> sum([xs], prod(a-1, x), [ys], [zs])\n"
-"sum([xs], prod(x, a), [ys], -x, [zs])                          -> sum([xs], prod(x, a-1), [ys], [zs])\n"
+"sum([xs], prod(a, x), [ys], -x, [zs])                         -> sum([xs], prod(a-1, x), [ys], [zs])\n"
+"sum([xs], prod(x, a), [ys], -x, [zs])                         -> sum([xs], prod(x, a-1), [ys], [zs])\n"
 "sum([xs], prod(b, x), [ys], prod(a, x), [zs])                 -> sum([xs], [ys], prod(a+b, x), [zs])\n"
 "sum([xs], prod(x, b), [ys], prod(x, a), [zs])                 -> sum([xs], [ys], prod(a+b, x), [zs])\n"
 "sum([xs], prod(b, x), [ys], prod(x, a), [zs])                 -> sum([xs], [ys], prod(a+b, x), [zs])\n"
@@ -102,7 +102,7 @@ char *simplification_string =
 // Powers
 "(x^y)^z                          -> x^prod(y, z)\n"
 "prod([xs], x^y, [ys], x^z, [zs]) -> prod([xs], x^(y+z), [ys], [zs])\n"
-"prod([xs], y^x, [ys], z^x, [zs]) -> prod([xs], (y*z)^x, [ys], [zs])\n"
+//"prod([xs], y^x, [ys], z^x, [zs]) -> prod([xs], (y*z)^x, [ys], [zs])\n"
 "x^0                              -> 1\n"
 "prod(x, [xs])^z                  -> prod(x^z, prod([xs])^z)\n"
 

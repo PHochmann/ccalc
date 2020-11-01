@@ -63,7 +63,6 @@ static long fib(long n)
 static double fibonacci(double n)
 {
     long l = (long)n;
-
     if (l < 0) // Generalization to negative numbers
     {
         if (l % 2 == 0)

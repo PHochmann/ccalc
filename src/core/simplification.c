@@ -6,7 +6,6 @@
 #include "../tree/tree_util.h"
 #include "../tree/tree_to_string.h"
 #include "../transformation/rewrite_rule.h"
-#include "../transformation/filters.h"
 #include "../parsing/parser.h"
 #include "../util/console_util.h"
 #include "../util/linked_list.h"
@@ -14,6 +13,7 @@
 #include "arith_context.h"
 #include "evaluation.h"
 #include "rules.h"
+#include "filters.h"
 
 #define P(x) parse_conveniently(g_ctx, x)
 

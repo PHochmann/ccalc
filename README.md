@@ -32,7 +32,7 @@ When starting the calculator normally, you can enter expressions and commands in
 | ```load <path>```             | Loads file as if its content had been typed in.                           |
 | ```help [operators]```        | Lists available commands and operators.                                   |
 | ```clear [<func>]```          | Clears all or one function or constant.                                   |
-| ```simplify <expr>```         | Look what an expression internally simplifies to without evaluating it (experimental) |
+| ```simplify <expr>```         | Look what an expression internally simplifies to without evaluating it. (experimental) |
 | ```quit```                    | Closes application.                                                       |
 
 ### Infix operators
