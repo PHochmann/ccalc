@@ -6,9 +6,10 @@
 
 #define NUM_PREDEFINED_OPS 56
 #define g_ctx (&__g_ctx)
+#define g_composite_functions (&__g_composite_functions)
 
 extern ParsingContext __g_ctx;
-extern LinkedList g_composite_functions;
+extern LinkedList __g_composite_functions;
 
 void init_arith_ctx();
 void unload_arith_ctx();

@@ -117,7 +117,7 @@ static bool add_function(char *name, char *left, char *right)
          * => Replace unbounded variables of the same name with this new constant.
          */
         bool replaced_variable = false;
-        ListNode *curr = g_composite_functions.first;
+        ListNode *curr = g_composite_functions->first;
         while (curr != NULL)
         {
             RewriteRule *rule = (RewriteRule*)curr->data;

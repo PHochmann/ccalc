@@ -10,6 +10,7 @@ Constants and variables are leaf nodes.
 
 typedef double ConstantType;
 
+// Opaque forward declarations
 typedef struct Node Node;
 typedef struct VariableNode VariableNode;
 typedef struct ConstantNode ConstantNode;

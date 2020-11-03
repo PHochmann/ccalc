@@ -11,8 +11,10 @@
 
 #define HELP      "help"
 #define HELP_OPS  "help operators"
+#define LICENSE_OPS "license"
 #define SHORT_HELP_CODE 1
 #define OPS_HELP_CODE   2
+#define LICENSE_CODE    3
 #define TTY_WIDTH 80
 
 #define VERSION "1.5.6"
@@ -23,17 +25,33 @@
     #define RELEASE VERSION
 #endif
 
-static char *INFOBOX =
-    "ccalc " RELEASE " (c) 2020 Philipp Hochmann\n"
-    " Scientific calculator in which you can define new functions and constants \n"
-    "https://github.com/PhilippHochmann/ccalc";
+#define COPYRIGHT_NOTICE "ccalc " RELEASE " Copyright (C) 2020 Philipp Hochmann, phil.hochmann@gmail.com\n"
 
-static char *COMMAND_TABLE[7][2] = {
+static char *INFOBOX =
+    COPYRIGHT_NOTICE
+    " Scientific calculator in which you can define new functions and constants \n"
+    "\n"
+    "This program is free software: you can redistribute it and/or modify\n"
+    "it under the terms of the GNU General Public License as published by\n"
+    "the Free Software Foundation, either version 3 of the License, or\n"
+    "(at your option) any later version.\n"
+    "\n"
+    "This program is distributed in the hope that it will be useful,\n"
+    "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+    "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+    "GNU General Public License for more details.\n"
+    "\n"
+    "You should have received a copy of the GNU General Public License\n"
+    "along with this program.  If not, see <https://www.gnu.org/licenses/>.";
+
+static char *COMMAND_TABLE[9][2] = {
     { "<func|const> = <after>",                  "Adds function or constant." },
     { "table <expr> ; <from> ; <to> ; <step>  \n"
       "   [fold <expr> ; <init>]",               "Prints table of values." },
     { "load <path>",                             "Executes commands in file." },
     { "clear [<func>]",                          "Clears all or one function or constant." },
+    { "help [operators]",                        "Shows this message or a verbose list of all operators." },
+    { "license",                                 "Shows information about ccalc's license." },
     { "quit",                                    "Closes application." }
 };
 
@@ -102,7 +120,8 @@ int cmd_help_check(const char *input)
 {
     if (strcmp(HELP, input) == 0) return SHORT_HELP_CODE;
     if (strcmp(HELP_OPS, input) == 0) return OPS_HELP_CODE;
-    return false;
+    if (strcmp(LICENSE_OPS, input) == 0) return LICENSE_CODE;
+    return 0;
 }
 
 // Returns number of characters printed
@@ -247,17 +266,10 @@ static void print_op_table(OpPlacement place, bool assoc, bool precedence, bool 
 
 void print_short_help()
 {
+    printf(COPYRIGHT_NOTICE);
+    printf("\nAvailable commands:\n");
     Table *table = get_empty_table();
-    add_cell_fmt(table, INFOBOX);
-    next_row(table);
-    make_boxed(table, BORDER_SINGLE);
-    set_default_alignments(table, 1, (TextAlignment[]){ ALIGN_CENTER });
-    print_table(table);
-    free_table(table);
-    printf("\n");
-
-    table = get_empty_table();
-    add_cells_from_array(table, 2, 7, (char**)COMMAND_TABLE);
+    add_cells_from_array(table, 2, 9, (char**)COMMAND_TABLE);
     print_table(table);
     free_table(table);
 
@@ -271,11 +283,11 @@ void print_short_help()
     print_ops_between(CONST_IND, LAST_IND);
 
     // Print user-defined functions if there are any
-    if (list_count(&g_composite_functions) > 0)
+    if (list_count(g_composite_functions) > 0)
     {
         printf("\nUser-defined functions and constants:\n");
         table = get_empty_table();
-        ListNode *curr = g_composite_functions.first;
+        ListNode *curr = g_composite_functions->first;
         while (curr != NULL)
         {
             RewriteRule *rule = (RewriteRule*)curr->data;
@@ -303,11 +315,24 @@ bool cmd_help_exec(__attribute__((unused)) char *input, int code)
     }
     else
     {
-        print_op_table(OP_PLACE_INFIX, true, true, false, false);
-        print_op_table(OP_PLACE_PREFIX, false, true, false, false);
-        print_op_table(OP_PLACE_POSTFIX, false, true, false, false);
-        print_op_table(OP_PLACE_FUNCTION, false, false, true, false);
-        print_op_table(OP_PLACE_FUNCTION, false, false, false, true);
+        if (code == LICENSE_CODE)
+        {
+            Table *table = get_empty_table();
+            add_cell_fmt(table, INFOBOX);
+            next_row(table);
+            make_boxed(table, BORDER_SINGLE);
+            set_default_alignments(table, 1, (TextAlignment[]){ ALIGN_CENTER });
+            print_table(table);
+            free_table(table);
+        }
+        else
+        {
+            print_op_table(OP_PLACE_INFIX, true, true, false, false);
+            print_op_table(OP_PLACE_PREFIX, false, true, false, false);
+            print_op_table(OP_PLACE_POSTFIX, false, true, false, false);
+            print_op_table(OP_PLACE_FUNCTION, false, false, true, false);
+            print_op_table(OP_PLACE_FUNCTION, false, false, false, true);
+        }
     }
     return true;
 }

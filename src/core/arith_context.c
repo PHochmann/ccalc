@@ -10,7 +10,7 @@
 #include "../parsing/parser.h"
 
 ParsingContext __g_ctx;
-LinkedList g_composite_functions;
+LinkedList __g_composite_functions;
 
 /*
 Summary: Sets arithmetic context stored in global variable
@@ -81,19 +81,19 @@ void init_arith_ctx()
     // Set multiplication as glue-op
     ctx_set_glue_op(g_ctx, ctx_lookup_op(g_ctx, "*", OP_PLACE_INFIX));
     srand(time(NULL));
-    g_composite_functions = list_create(sizeof(RewriteRule));
+    __g_composite_functions = list_create(sizeof(RewriteRule));
 }
 
 void unload_arith_ctx()
 {
     clear_composite_functions();
-    list_destroy(&g_composite_functions);
+    list_destroy(g_composite_functions);
     ctx_destroy(g_ctx);
 }
 
 void add_composite_function(RewriteRule rule)
 {
-    list_append(&g_composite_functions, (void*)(&rule));
+    list_append(g_composite_functions, (void*)&rule);
 }
 
 // Removes node from g_composite_functions
@@ -108,13 +108,13 @@ static void remove_node(ListNode *node)
     // Free elimination rule
     free_rule(*(RewriteRule*)node->data);
     // Remove from linked list
-    list_delete_node(&g_composite_functions, node);
+    list_delete_node(g_composite_functions, node);
 }
 
 bool remove_composite_function(Operator *function)
 {
     // First check if another composite function depends on the operator
-    ListNode *curr = g_composite_functions.first;
+    ListNode *curr = __g_composite_functions.first;
     while (curr != NULL)
     {
         const RewriteRule *rule = (const RewriteRule*)curr->data;
@@ -127,7 +127,7 @@ bool remove_composite_function(Operator *function)
     }
 
     // Search for node in linked list to remove
-    curr = g_composite_functions.first;
+    curr = __g_composite_functions.first;
     while (curr != NULL)
     {
         RewriteRule *rule = (RewriteRule*)curr->data;
@@ -145,15 +145,15 @@ bool remove_composite_function(Operator *function)
 
 void clear_composite_functions()
 {
-    while (list_count(&g_composite_functions) != 0)
+    while (list_count(g_composite_functions) != 0)
     {
-        remove_node(g_composite_functions.first);
+        remove_node(__g_composite_functions.first);
     }
 }
 
 RewriteRule *get_composite_function(Operator *op)
 {
-    ListNode *curr = g_composite_functions.first;
+    ListNode *curr = __g_composite_functions.first;
     while (curr != NULL)
     {
         RewriteRule *rule = (RewriteRule*)curr->data;
@@ -188,7 +188,7 @@ bool arith_parse_input(char *input, char *error_fmt, bool replace_comp_funcs, bo
     {
         if (replace_comp_funcs)
         {
-            LinkedListIterator iterator = list_get_iterator(&g_composite_functions);
+            LinkedListIterator iterator = list_get_iterator(g_composite_functions);
             apply_ruleset_by_iterator(out_res, (Iterator*)&iterator);
         }
 
