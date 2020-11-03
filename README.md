@@ -1,5 +1,6 @@
 ![build](https://github.com/PhilippHochmann/ccalc/workflows/build/badge.svg)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
+[![AUR](https://img.shields.io/aur/version/ccalc)](https://aur.archlinux.org/packages/ccalc/)
 
 # ccalc
 Scientific calculator in which you can define new functions and constants
