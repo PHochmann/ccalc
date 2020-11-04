@@ -113,3 +113,6 @@ Note:
 | ```phi```    | 1.61803398874 | Golden ratio                         |
 | ```clight``` | 299792458     | Speed of light [m/s]                 |
 | ```csound``` | 343.2         | Speed of sound in air at 20 °C [m/s] |
+
+## Contributing
+Not currently accepting contributions. Feel free to create an issue.

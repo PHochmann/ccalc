@@ -10,9 +10,9 @@ int main(int argc, char **argv)
 
     if (interactive)
     {
-        printf("ccalc  Copyright (C) 2020  Philipp Hochmann\n"
-            "This program comes with ABSOLUTELY NO WARRANTY; for details type `license'.\n"
-            "This is free software, and you are welcome to redistribute it under certain conditions.\n\n");
+        printf("ccalc Copyright (C) 2020 Philipp Hochmann\n"
+            "This program comes with ABSOLUTELY NO WARRANTY; for details type 'license'.\n"
+            "This is free software, and you are welcome to redistribute it under certain conditions.\n");
     }
 
     // Build arithmetic context, initialize commands
