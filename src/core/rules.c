@@ -6,7 +6,6 @@
 #include "../util/console_util.h"
 
 #define ARROW           " -> "
-#define COMMENT_PREFIX  '\''
 
 char *reduction_string =
 "+x         -> x\n"
@@ -137,7 +136,7 @@ char *pretty_string =
 
 bool parse_rule(char *string, ParsingContext *ctx, MappingFilter default_filter, Vector *ruleset)
 {
-    if (string[0] == COMMENT_PREFIX || string[0] == '\0')
+    if (string[0] == '\0')
     {
         return true;
     }

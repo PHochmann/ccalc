@@ -2,19 +2,18 @@
 #include <unistd.h>
 
 #include "util/console_util.h"
+#include "commands/cmd_help.h"
 #include "commands/commands.h"
 
 int main(int argc, char **argv)
 {
     bool interactive = isatty(STDIN_FILENO);
-
     if (interactive)
     {
-        printf("ccalc Copyright (C) 2020 Philipp Hochmann\n"
+        printf(COPYRIGHT_NOTICE
             "This program comes with ABSOLUTELY NO WARRANTY; for details type 'license'.\n"
             "This is free software, and you are welcome to redistribute it under certain conditions.\n");
     }
-
     // Build arithmetic context, initialize commands
     init_commands();
     // Free all resources at exit

@@ -33,7 +33,8 @@ When starting the calculator normally, you can enter expressions and commands in
 | ```load <path>```             | Loads file as if its content had been typed in.                           |
 | ```help [operators]```        | Lists available commands and operators.                                   |
 | ```clear [<func>]```          | Clears all or one function or constant.                                   |
-| ```simplify <expr>```         | Look what an expression internally simplifies to without evaluating it. (experimental) |
+| ```simplify <expr>```         | Attempts to simplify an expression (beta)                                 |
+| ```license```                 | Shows information about ccalc's license.                                  |
 | ```quit```                    | Closes application.                                                       |
 
 ### Infix operators
@@ -54,15 +55,16 @@ When starting the calculator normally, you can enter expressions and commands in
 | ```-``` | 7          | Negation    |
 
 ### Postfix operators
-| Name    | Precedence | Description                |
-| ---     | ---        | ---                        |
-| ```!``` | 6          | Factorial                  |
-| ```%``` | 6          | Division by 100            |
-| ```'``` | 7          | Derivation (experimental)  |
+| Name    | Precedence | Description                 |
+| ---     | ---        | ---                         |
+| ```!``` | 6          | Factorial                   |
+| ```%``` | 6          | Division by 100             |
+| ```'``` | 7          | Derivative shorthand (beta) |
 
 ### Functions
 | Name                 | Description                                    |
 | ---                  | ---                                            |
+| ```deriv(x, y)```    | Derivative of x with respect to y (beta)       |
 | ```exp(x)```         | Natural exponential function                   |
 | ```root(x, n)```     | nth root of x                                  |
 | ```sqrt(x)```        | Square root                                    |

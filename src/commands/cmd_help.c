@@ -9,27 +9,17 @@
 #include "../table/table.h"
 #include "../core/evaluation.h"
 
-#define HELP      "help"
-#define HELP_OPS  "help operators"
+#define HELP        "help"
+#define HELP_OPS    "help operators"
 #define LICENSE_OPS "license"
 #define SHORT_HELP_CODE 1
 #define OPS_HELP_CODE   2
 #define LICENSE_CODE    3
 #define TTY_WIDTH 80
 
-#define VERSION "1.5.6"
-
-#ifdef DEBUG
-    #define RELEASE VERSION " DEBUG"
-#else
-    #define RELEASE VERSION
-#endif
-
-#define COPYRIGHT_NOTICE "ccalc " RELEASE " Copyright (C) 2020 Philipp Hochmann, phil.hochmann@gmail.com\n"
-
 static char *INFOBOX =
     COPYRIGHT_NOTICE
-    " Scientific calculator in which you can define new functions and constants \n"
+    "Scientific calculator in which you can define new functions and constants \n"
     "\n"
     "This program is free software: you can redistribute it and/or modify\n"
     "it under the terms of the GNU General Public License as published by\n"
@@ -42,20 +32,26 @@ static char *INFOBOX =
     "GNU General Public License for more details.\n"
     "\n"
     "You should have received a copy of the GNU General Public License\n"
-    "along with this program.  If not, see <https://www.gnu.org/licenses/>.";
+    "along with this program.  If not, see <https://www.gnu.org/licenses/>.\n";
 
-static char *COMMAND_TABLE[9][2] = {
-    { "<func|const> = <after>",                  "Adds function or constant." },
+#define NUM_COMMANDS 10
+static char *COMMAND_TABLE[NUM_COMMANDS][2] = {
+    { "<func|const> = <after>",                  "Adds function or constant" },
     { "table <expr> ; <from> ; <to> ; <step>  \n"
-      "   [fold <expr> ; <init>]",               "Prints table of values." },
-    { "load <path>",                             "Executes commands in file." },
-    { "clear [<func>]",                          "Clears all or one function or constant." },
-    { "help [operators]",                        "Shows this message or a verbose list of all operators." },
-    { "license",                                 "Shows information about ccalc's license." },
-    { "quit",                                    "Closes application." }
+      "   [fold <expr> ; <init>]",               "Prints table of values" },
+    { "load <path>",                             "Executes commands of file" },
+    { "clear [<func>]",                          "Clears all or one function or constant" },
+    { "simplify <expr>",                         "Attempts to simplify an expression (beta)" },
+    { "help [operators]",                        "Shows this message or a verbose list of all operators" },
+    { "license",                                 "Shows information about ccalc's license" },
+    { "quit",                                    "Closes application" }
 };
 
-static char *OP_DESCRIPTIONS[52] = {
+static char *OP_DESCRIPTIONS[56] = {
+    " Max. precedence parsing ",
+    " History operator ",
+    " Derivative shorthand ",
+    " Derivative of expression with respect to variable ",
     " Addition ",
     " Subtraction ",
     " Multiplication ",
@@ -110,11 +106,12 @@ static char *OP_DESCRIPTIONS[52] = {
     " Speed of sound in air at 20 °C [m/s] "
 };
 
-static const size_t BASIC_IND =  4; // Index of first basic operator ($x, x@y, deriv before, should no be shown)
-static const size_t TRIG_IND  = 22; // Index of first trigonometric function
-static const size_t MISC_IND  = 34; // Index of first misc. function
-static const size_t CONST_IND = 51; // Index of first constant
-static const size_t LAST_IND  = 56; // Index of last constant
+static const size_t PSEUDO_IND =  0; // Index of first pseudo operator ($, @, ', deriv)
+static const size_t BASIC_IND  =  4; // Index of first basic operator
+static const size_t TRIG_IND   = 22; // Index of first trigonometric function
+static const size_t MISC_IND   = 34; // Index of first misc. function
+static const size_t CONST_IND  = 51; // Index of first constant
+static const size_t LAST_IND   = 56; // Index of last constant
 
 int cmd_help_check(const char *input)
 {
@@ -205,8 +202,8 @@ static void print_op_table(OpPlacement place, bool assoc, bool precedence, bool 
     add_cell(table, " Description ");
     next_row(table);
 
-    ListNode *curr = list_get_node(&g_ctx->op_list, BASIC_IND);
-    size_t index = BASIC_IND;
+    ListNode *curr = list_get_node(&g_ctx->op_list, PSEUDO_IND);
+    size_t index = PSEUDO_IND;
     while (curr != NULL && index < LAST_IND)
     {
         Operator *op = (Operator*)curr->data;
@@ -252,7 +249,7 @@ static void print_op_table(OpPlacement place, bool assoc, bool precedence, bool 
                 add_cell_fmt(table, " " CONSTANT_TYPE_FMT " ", const_val);
             }
             
-            add_cell(table, OP_DESCRIPTIONS[index - BASIC_IND]);
+            add_cell(table, OP_DESCRIPTIONS[index]);
             next_row(table);
         }
         index++;
@@ -261,18 +258,19 @@ static void print_op_table(OpPlacement place, bool assoc, bool precedence, bool 
 
     print_table(table);
     free_table(table);
-    printf("\n");
 }
 
 void print_short_help()
 {
     printf(COPYRIGHT_NOTICE);
-    printf("\nAvailable commands:\n");
+    printf("\n");
     Table *table = get_empty_table();
-    add_cells_from_array(table, 2, 9, (char**)COMMAND_TABLE);
+    add_cells_from_array(table, 2, NUM_COMMANDS, (char**)COMMAND_TABLE);
     print_table(table);
     free_table(table);
 
+    printf("\nPseudo operators:\n");
+    print_ops_between(PSEUDO_IND, BASIC_IND);
     printf("\nBasic operators:\n");
     print_ops_between(BASIC_IND, TRIG_IND);
     printf("\nTrigonometric functions:\n");
@@ -281,11 +279,12 @@ void print_short_help()
     print_ops_between(MISC_IND, CONST_IND);
     printf("\nConstants:\n");
     print_ops_between(CONST_IND, LAST_IND);
+    printf("\n");
 
     // Print user-defined functions if there are any
     if (list_count(g_composite_functions) > 0)
     {
-        printf("\nUser-defined functions and constants:\n");
+        printf("User-defined functions and constants:\n");
         table = get_empty_table();
         ListNode *curr = g_composite_functions->first;
         while (curr != NULL)
@@ -299,11 +298,6 @@ void print_short_help()
         }
         print_table(table);
         free_table(table);
-        printf("\n");
-    }
-    else
-    {
-        printf("\n\n");
     }
 }
 
@@ -317,20 +311,19 @@ bool cmd_help_exec(__attribute__((unused)) char *input, int code)
     {
         if (code == LICENSE_CODE)
         {
-            Table *table = get_empty_table();
-            add_cell_fmt(table, INFOBOX);
-            next_row(table);
-            make_boxed(table, BORDER_SINGLE);
-            set_default_alignments(table, 1, (TextAlignment[]){ ALIGN_CENTER });
-            print_table(table);
-            free_table(table);
+            printf(INFOBOX);
         }
         else
         {
+            printf("Infix operators:\n");
             print_op_table(OP_PLACE_INFIX, true, true, false, false);
+            printf("\nPrefix operators:\n");
             print_op_table(OP_PLACE_PREFIX, false, true, false, false);
+            printf("\nPostfix operators:\n");
             print_op_table(OP_PLACE_POSTFIX, false, true, false, false);
+            printf("\nFunctions:\n");
             print_op_table(OP_PLACE_FUNCTION, false, false, true, false);
+            printf("\nConstants:\n");
             print_op_table(OP_PLACE_FUNCTION, false, false, false, true);
         }
     }

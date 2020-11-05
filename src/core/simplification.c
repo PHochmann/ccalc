@@ -1,4 +1,3 @@
-#define _GNU_SOURCE
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
@@ -137,9 +136,9 @@ bool core_simplify(Node **tree, bool full_simplification)
     }
 
     if (does_match(*tree, malformed_derivA, prefix_filter)
-        || does_match(*tree, malformed_derivA, prefix_filter))
+        || does_match(*tree, malformed_derivB, prefix_filter))
     {
-        report_error("Second operand of deriv must be variable.\n");
+        report_error("Second operand of function 'deriv' must be variable.\n");
         return false;
     }
 
@@ -167,9 +166,12 @@ bool core_simplify(Node **tree, bool full_simplification)
 
     free_tree(tree_before);
 
-    if (does_match(*tree, deriv_after, NULL))
+    // All derivation operators have been reduced. If the tree still contains one,
+    // the user attempted to derivate a subtree for which no reduction rule exists.
+    Node **unresolved_derivation = find_op((const Node**)tree, get_op(deriv_after));
+    if (unresolved_derivation != NULL)
     {
-        report_error("Could not derivate expression.\n");
+        report_error("Can't derivate operator '%s'.\n", get_op(get_child((*unresolved_derivation), 0))->name);
         return false;
     }
 
