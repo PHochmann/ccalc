@@ -1,3 +1,4 @@
+#include "../util/vector.h"
 #include "../util/console_util.h"
 #include "../transformation/matching.h"
 #include "../parsing/parser.h"
@@ -8,98 +9,76 @@
 
 #define ERROR_NOT_SET       "Error: This part of the history is not set yet.\n"
 #define ERROR_NOT_CONSTANT  "Error: In @x, x must contain no variable.\n"
-#define ERROR_OUT_OF_BOUNDS "Error: In @x, x must be between 0 and %d.\n"
+#define ERROR_OUT_OF_BOUNDS "Error: In @x, x must be >= 0.\n"
 #define ANS_VAR             "ans"
 
-#define ANS_HISTORY_SIZE 10
-
 size_t next_ans;
-Node *ans[ANS_HISTORY_SIZE]; // Results of last evaluations (each evaluated to single ConstantNode)
-Node *ans_pattern;
+Vector ans_vec; // Results of last evaluations (doubles)
+const Operator *history_op;
 
 void init_history()
 {
-    ans_pattern = parse_conveniently(g_ctx, "@x");
-    preprocess_pattern(ans_pattern);
-    for (size_t i = 0; i < ANS_HISTORY_SIZE; i++)
-    {
-        ans[i] = NULL;
-    }
+    ans_vec = vec_create(sizeof(double), 5);
+    history_op = ctx_lookup_op(g_ctx, "@", OP_PLACE_PREFIX);
 }
 
 void unload_history()
 {
-    for (size_t i = 0; i < ANS_HISTORY_SIZE; i++)
-    {
-        if (ans[i] != NULL)
-        {
-            free_tree(ans[i]);
-            ans[i] = NULL;
-        }
-    }
-    free_tree(ans_pattern);
+    vec_destroy(&ans_vec);
 }
 
 /*
 Params
     index: 0 -> last evaluation, 1 -> second last evaluation etc.
 */
-static Node *get_ans(size_t index)
+static double get_ans(size_t index)
 {
-    if ((int)next_ans - 1 - (int)index < 0)
-    {
-        return ans[(int)next_ans - 1 - (int)index + ANS_HISTORY_SIZE];
-    }
-    else
-    {
-        return ans[next_ans - 1 - index];
-    }
+    return *(double*)vec_get(&ans_vec, vec_count(&ans_vec) - 1 - index);
 }
 
-void core_update_history(ConstantType value)
+void core_add_history(double value)
 {
-    if (ans[next_ans] != NULL) free_tree(ans[next_ans]);
-    ans[next_ans] = malloc_constant_node(value);
-    next_ans = (next_ans + 1) % ANS_HISTORY_SIZE;
+    VEC_PUSH_ELEM(&ans_vec, double, value);
 }
 
 bool core_replace_history(Node **tree)
 {
     // Replace @x
-    Matching ans_matching;
-    Node **matched_subtree;
-    while ((matched_subtree = find_matching((const Node**)tree, ans_pattern, &ans_matching, NULL)) != NULL)
+    Node **hist_subtree;
+    while ((hist_subtree = find_op((const Node**)tree, history_op)) != NULL)
     {
-        if (count_variables(ans_matching.mapped_nodes[0].nodes[0]) > 0)
+        if (count_variables(*hist_subtree) > 0)
         {
             report_error(ERROR_NOT_CONSTANT);
             return false;
         }
 
-        int index = (int)arith_evaluate(ans_matching.mapped_nodes[0].nodes[0]);
+        int index = (int)arith_evaluate(get_child(*hist_subtree, 0));
 
-        if (index < 0 || index >= ANS_HISTORY_SIZE)
+        if (index < 0)
         {
-            report_error(ERROR_OUT_OF_BOUNDS, ANS_HISTORY_SIZE - 1);
+            report_error(ERROR_OUT_OF_BOUNDS);
             return false;
         }
-        if (get_ans(index) == 0)
+        if ((size_t)index >= vec_count(&ans_vec))
         {
             report_error(ERROR_NOT_SET);
             return false;
         }
 
-        tree_replace(matched_subtree, tree_copy(get_ans(index)));
+        tree_replace(hist_subtree, malloc_constant_node(get_ans(index)));
     }
 
     // Replace normal ans
-    if (get_ans(0) != NULL)
+    if (count_variable_nodes(*tree, ANS_VAR) > 0)
     {
-        replace_variable_nodes(tree, get_ans(0), ANS_VAR);
-    }
-    else
-    {
-        if (count_variable_nodes(*tree, ANS_VAR) > 0)
+        if (vec_count(&ans_vec) > 0)
+        {
+            Node *n = malloc_constant_node(get_ans(0));
+            replace_variable_nodes(tree, n, ANS_VAR);
+            free_tree(n);
+        }
+        else
         {
             printf(ERROR_NOT_SET);
             return false;

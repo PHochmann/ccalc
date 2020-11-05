@@ -80,7 +80,7 @@ bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
         ConstantType result = arith_evaluate(res);
         whisper("= ");
         printf(CONSTANT_TYPE_FMT "\n", result);
-        core_update_history(result);
+        core_add_history(result);
         free_tree(res);
         
         return true;

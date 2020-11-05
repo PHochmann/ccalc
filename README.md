@@ -12,14 +12,14 @@ You can install package ```ccalc``` directly from the AUR.
 ### Install from GitHub
 1. Clone repository.
 2. If you want to use readline, download its development files (Ubuntu: ```sudo apt-get install libreadline-dev```).
-3. In root of repository, invoke ```make``` (optional targets: ```debug```, ```tests```, ```noreadline```).
+3. In root of repository, invoke ```make``` (optional targets: ```debug```, ```tests```).
 
 ## How to use it
 When starting the calculator normally, you can enter expressions and commands interactively. Passed arguments will be evaluated beforehand. You can pipe in contents which will be evaluated as if typed in, after that the calculator terminates and does not enter interactive mode.
 
 ### Syntax
 * Just type in a mathematical expression to evaluate it.
-* Use ```ans``` or ```@<index>``` to reference previous results.
+* Use ```ans``` or ```@<index>``` to reference previous results. ```@0``` is the same as ```ans```, ```@1``` the second previous result and so on.
 * Two subexpressions next to each other without an infix operator will be multiplied (e.g. ```2a``` or ```(x-1)(y+1)```).
 * You can define functions and constants (e.g. ```myFunc(x) = x^2```, ```myConst = 42```).
 * Any line starting with ```'``` will be ignored (useful for comments in files to be loaded).

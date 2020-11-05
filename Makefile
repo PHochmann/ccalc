@@ -5,9 +5,11 @@ SRC_DIRS    := ./src
 CFLAGS      := -MMD -MP -std=c99 -Wall -Wextra -Werror -pedantic
 LDFLAGS     := -lm
 
-ifeq (,$(filter $(MAKECMDGOALS),noreadline tests))
-	CFLAGS += -DUSE_READLINE
-	LDFLAGS += -lreadline
+ifeq (,$(filter $(MAKECMDGOALS),tests))
+	ifeq ($(NOREADLINE),)
+		CFLAGS += -DUSE_READLINE
+		LDFLAGS += -lreadline
+	endif
 endif
 
 ifneq (,$(filter $(MAKECMDGOALS),debug tests))
@@ -37,8 +39,6 @@ INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 all: $(BUILD_DIR)/$(TARGET_EXEC)
 
 debug: $(BUILD_DIR)/$(TARGET_EXEC)
-
-noreadline: $(BUILD_DIR)/$(TARGET_EXEC)
 
 tests: $(BUILD_DIR)/$(TARGET_EXEC)
 	@./$(BUILD_DIR)/$(TARGET_EXEC)
