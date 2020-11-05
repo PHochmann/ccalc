@@ -311,7 +311,8 @@ bool cmd_help_exec(__attribute__((unused)) char *input, int code)
     {
         if (code == LICENSE_CODE)
         {
-            printf(INFOBOX);
+            // GitHub CI reports formats-security error, albeit COPYRIGHT_NOTICE being a string literal
+            fputs(INFOBOX, stdout);
         }
         else
         {
