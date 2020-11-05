@@ -24,7 +24,7 @@ bool table_test(__attribute__((unused)) StringBuilder *error_builder)
     // Case 1
     Table *t1 = get_empty_table();
     set_default_alignments(t1, 5, (TextAlignment[]){ ALIGN_LEFT, ALIGN_NUMBERS, ALIGN_RIGHT, ALIGN_CENTER, ALIGN_CENTER });
-    add_cells_from_array(t1, 4, 4, (char**)arrayA);
+    add_cells_from_array(t1, 4, 4, (const char**)arrayA);
     set_position(t1, 0, 0);
     override_alignment_of_row(t1, ALIGN_CENTER);
     set_position(t1, 4, 0);

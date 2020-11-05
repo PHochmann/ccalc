@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "cmd_help.h"
+#include "../version.h"
 #include "../util/string_util.h"
 #include "../tree/operator.h"
 #include "../tree/tree_to_string.h"
@@ -17,7 +18,7 @@
 #define LICENSE_CODE    3
 #define TTY_WIDTH 80
 
-static char *INFOBOX =
+static const char *LICENSE =
     COPYRIGHT_NOTICE
     "Scientific calculator in which you can define new functions and constants \n"
     "\n"
@@ -35,7 +36,7 @@ static char *INFOBOX =
     "along with this program.  If not, see <https://www.gnu.org/licenses/>.\n";
 
 #define NUM_COMMANDS 10
-static char *COMMAND_TABLE[NUM_COMMANDS][2] = {
+static const char *COMMAND_TABLE[NUM_COMMANDS][2] = {
     { "<func|const> = <after>",                  "Adds function or constant" },
     { "table <expr> ; <from> ; <to> ; <step>  \n"
       "   [fold <expr> ; <init>]",               "Prints table of values" },
@@ -47,7 +48,7 @@ static char *COMMAND_TABLE[NUM_COMMANDS][2] = {
     { "quit",                                    "Closes application" }
 };
 
-static char *OP_DESCRIPTIONS[56] = {
+static const char *OP_DESCRIPTIONS[56] = {
     " Max. precedence parsing ",
     " History operator ",
     " Derivative shorthand ",
@@ -265,7 +266,7 @@ void print_short_help()
     printf(COPYRIGHT_NOTICE);
     printf("\n");
     Table *table = get_empty_table();
-    add_cells_from_array(table, 2, NUM_COMMANDS, (char**)COMMAND_TABLE);
+    add_cells_from_array(table, 2, NUM_COMMANDS, (const char**)COMMAND_TABLE);
     print_table(table);
     free_table(table);
 
@@ -312,7 +313,7 @@ bool cmd_help_exec(__attribute__((unused)) char *input, int code)
         if (code == LICENSE_CODE)
         {
             // GitHub CI reports formats-security error, albeit COPYRIGHT_NOTICE being a string literal
-            fputs(INFOBOX, stdout);
+            fputs(LICENSE, stdout);
         }
         else
         {

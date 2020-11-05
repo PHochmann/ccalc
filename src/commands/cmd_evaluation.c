@@ -77,7 +77,7 @@ bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
         set_interactive(temp);
 
         // Print result
-        ConstantType result = arith_evaluate(res);
+        double result = arith_evaluate(res);
         whisper("= ");
         printf(CONSTANT_TYPE_FMT "\n", result);
         core_add_history(result);

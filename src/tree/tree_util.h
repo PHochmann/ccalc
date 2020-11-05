@@ -1,7 +1,7 @@
 #pragma once
 #include "node.h"
 
-typedef bool (*Evaluation)(const Operator *op, size_t num_children, const ConstantType *children, ConstantType *out);
+typedef bool (*Evaluation)(const Operator *op, size_t num_children, const double *children, double *out);
 
 // Data handling
 bool tree_equals(const Node *a, const Node *b);
@@ -16,5 +16,5 @@ size_t count_variable_nodes(const Node *tree, const char *var_name);
 size_t list_variables(const Node *tree, size_t buffer_size, char **out_variables);
 Node **find_op(const Node **tree, const Operator *op);
 size_t replace_variable_nodes(Node **tree, const Node *tree_to_copy, const char *var_name);
-bool tree_reduce(const Node *tree, Evaluation eval, ConstantType *out);
+bool tree_reduce(const Node *tree, Evaluation eval, double *out);
 void replace_constant_subtrees(Node **tree, Evaluation eval, size_t num_dont_reduce, const Operator **dont_reduce);

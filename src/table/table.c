@@ -804,9 +804,9 @@ void next_row(Table *table)
 Summary: Adds next cell. Buffer is not copied. print_table will access it.
     Ensure that lifetime of buffer outlasts last call of print_table!
 */
-void add_cell(Table *table, char *text)
+void add_cell(Table *table, const char *text)
 {
-    add_cell_internal(table, text, false);
+    add_cell_internal(table, (char*)text, false);
 }
 
 /*
@@ -846,7 +846,7 @@ Summary: Puts contents of memory-contiguous 2D array into table cell by cell.
     Strings are not copied. Ensure that lifetime of array outlasts last call of print_table.
     Position of next insertion is first cell in next row.
 */
-void add_cells_from_array(Table *table, size_t width, size_t height, char **array)
+void add_cells_from_array(Table *table, size_t width, size_t height, const char **array)
 {
     for (size_t i = 0; i < height; i++)
     {

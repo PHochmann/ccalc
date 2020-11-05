@@ -253,7 +253,7 @@ Params
     reduction: Function that takes an operator, number of children, and pointer to number of children many child values
     out:       Reduction result
 */
-bool tree_reduce(const Node *tree, Evaluation eval, ConstantType *out)
+bool tree_reduce(const Node *tree, Evaluation eval, double *out)
 {
     switch (get_type(tree))
     {
@@ -264,7 +264,7 @@ bool tree_reduce(const Node *tree, Evaluation eval, ConstantType *out)
         case NTYPE_OPERATOR:
         {
             size_t num_args = get_num_children(tree);
-            ConstantType args[num_args];
+            double args[num_args];
             for (size_t i = 0; i < num_args; i++)
             {
                 if (!tree_reduce(get_child(tree, i), eval, &args[i]))
@@ -313,7 +313,7 @@ void replace_constant_subtrees(Node **tree, Evaluation eval, size_t num_dont_red
 
     if (is_constant && no_dont_reduce)
     {
-        ConstantType res;
+        double res;
         tree_reduce(*tree, eval, &res);
         tree_replace(tree, malloc_constant_node(res));
     }

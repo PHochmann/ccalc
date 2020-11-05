@@ -6,23 +6,23 @@ struct Node {
     NodeType type;
 };
 
-struct VariableNode {
+typedef struct {
     Node base;
     size_t id; // For easier lookup
     char var_name[];
-};
+} VariableNode;
 
-struct ConstantNode {
+typedef struct {
     Node base;
-    ConstantType const_value;
-};
+    double const_value;
+} ConstantNode;
 
-struct OperatorNode {
+typedef struct {
     Node base;
-    const Operator *op;        // Points to operator in context
+    const Operator *op;  // Points to operator in context
     size_t num_children; // Size of children buffer
     Node *children[];
-};
+} OperatorNode;
 
 /*
 The following functions are used for polymorphism of different Node types
@@ -38,7 +38,7 @@ Node *malloc_variable_node(const char *var_name, size_t id)
     return (Node*)res;
 }
 
-Node *malloc_constant_node(ConstantType value)
+Node *malloc_constant_node(double value)
 {
     ConstantNode *res = malloc_wrapper(sizeof(ConstantNode));
     if (res == NULL) return NULL;
@@ -121,7 +121,7 @@ void set_id(Node *node, size_t id)
     ((VariableNode*)node)->id = id;
 }
 
-ConstantType get_const_value(const Node *node)
+double get_const_value(const Node *node)
 {
     return ((ConstantNode*)node)->const_value;
 }

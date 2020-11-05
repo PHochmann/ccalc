@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "version.h"
 #include "util/console_util.h"
-#include "commands/cmd_help.h"
 #include "commands/commands.h"
 
 int main(int argc, char **argv)

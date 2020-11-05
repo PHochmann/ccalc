@@ -30,7 +30,7 @@ struct ParserState
 };
 
 // Attempts to parse a substring to a double
-bool try_parse_constant(const char *in, ConstantType *out)
+bool try_parse_constant(const char *in, double *out)
 {
     char *end;
     *out = strtod(in, &end);
@@ -327,7 +327,7 @@ ParserError parse_tokens(const ParsingContext *ctx, int num_tokens, const char *
         Node *node;
 
         // Is token constant?
-        ConstantType const_val;
+        double const_val;
         if (try_parse_constant(token, &const_val))
         {
             node = malloc_constant_node(const_val);

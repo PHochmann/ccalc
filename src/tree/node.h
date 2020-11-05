@@ -8,13 +8,8 @@ Operators are usually inner nodes (exception: zero-arity functions).
 Constants and variables are leaf nodes.
 */
 
-typedef double ConstantType;
-
-// Opaque forward declarations
+// Opaque forward declaration
 typedef struct Node Node;
-typedef struct VariableNode VariableNode;
-typedef struct ConstantNode ConstantNode;
-typedef struct OperatorNode OperatorNode;
 
 typedef enum {
     NTYPE_OPERATOR,
@@ -30,7 +25,7 @@ typedef struct {
 
 // Memory
 Node *malloc_variable_node(const char *var_name, size_t id);
-Node *malloc_constant_node(ConstantType value);
+Node *malloc_constant_node(double value);
 Node *malloc_operator_node(const Operator *op, size_t num_children);
 void free_tree(Node *tree);
 
@@ -44,4 +39,4 @@ void set_child(Node *node, size_t index, Node *child);
 char *get_var_name(const Node *node);
 size_t get_id(const Node *node);
 void set_id(Node *node, size_t id);
-ConstantType get_const_value(const Node *node);
+double get_const_value(const Node *node);

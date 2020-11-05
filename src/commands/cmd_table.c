@@ -11,10 +11,10 @@
 #include "../core/evaluation.h"
 #include "../table/table.h"
 
-#define COMMAND "table "
+#define COMMAND      "table "
 #define FOLD_KEYWORD " fold "
-#define FOLD_VAR_1 "x"
-#define FOLD_VAR_2 "y"
+#define FOLD_VAR_1   "x"
+#define FOLD_VAR_2   "y"
 
 #define STRBUILDER_STARTSIZE 10
 
