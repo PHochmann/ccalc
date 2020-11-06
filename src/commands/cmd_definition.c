@@ -40,7 +40,7 @@ static bool do_left_checks(Node *left_n)
             }
         }
 
-        char *vars[num_children];
+        const char *vars[num_children];
         if (num_children != list_variables(left_n, num_children, vars))
         {
             report_error(FMT_ERROR_LEFT, "Function arguments must be distinct variables.");

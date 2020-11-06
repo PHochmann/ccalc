@@ -83,7 +83,7 @@ void tree_replace(Node **tree_to_replace, Node *tree_to_insert)
 Returns: Total number of variable nodes in tree.
     Can be used as an upper bound for the needed size of a buffer to supply to get_variable_nodes
 */
-size_t count_variables(const Node *tree)
+size_t count_all_variable_nodes(const Node *tree)
 {
     if (tree == NULL) return 0;
 
@@ -100,7 +100,7 @@ size_t count_variables(const Node *tree)
             size_t sum = 0;
             for (size_t i = 0; i < get_num_children(tree); i++)
             {
-                sum += count_variables(get_child(tree, i));
+                sum += count_all_variable_nodes(get_child(tree, i));
             }
             return sum;
         }
@@ -154,11 +154,11 @@ Summary: Variant of get_variable_nodes that discards 'out_instances'
 size_t count_variable_nodes(const Node *tree, const char *var_name)
 {
     // out-discard pattern
-    Node **instances[count_variables(tree)];
+    Node **instances[count_all_variable_nodes(tree)];
     return get_variable_nodes(&tree, var_name, instances);
 }
 
-size_t list_variables_rec(const Node *tree, size_t buffer_size, size_t num_found, char **out_variables)
+size_t list_variables_rec(const Node *tree, size_t buffer_size, size_t num_found, const char **out_variables)
 {
     switch (get_type(tree))
     {
@@ -218,7 +218,7 @@ Params
     tree:          Tree to search for variables
     out_variables: Contains result. Function unsafe when too small
 */
-size_t list_variables(const Node *tree, size_t buffer_size, char **out_variables)
+size_t list_variables(const Node *tree, size_t buffer_size, const char **out_variables)
 {
     if (tree == NULL || out_variables == NULL) return 0;
     return list_variables_rec(tree, buffer_size, 0, out_variables);
@@ -236,7 +236,7 @@ size_t replace_variable_nodes(Node **tree, const Node *tree_to_copy, const char 
 {
     if (tree == NULL || *tree == NULL || tree_to_copy == NULL || var_name == NULL) return 0;
 
-    Node **instances[count_variables(*tree)];
+    Node **instances[count_all_variable_nodes(*tree)];
     size_t num_instances = get_variable_nodes((const Node**)tree, var_name, instances);
     for (size_t i = 0; i < num_instances; i++)
     {
@@ -296,7 +296,7 @@ Params:
 */
 void replace_constant_subtrees(Node **tree, Evaluation eval, size_t num_dont_reduce, const Operator **dont_reduce)
 {
-    bool is_constant = (count_variables(*tree) == 0);
+    bool is_constant = (count_all_variable_nodes(*tree) == 0);
     bool no_dont_reduce = true;
 
     if (is_constant)

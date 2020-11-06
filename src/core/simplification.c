@@ -34,7 +34,7 @@ bool exponent_even_filter(const char *var, NodeList nodes)
     // Be brave and dereference!
     //if (nodes.size != 1) return false;
 
-    if (count_variables(nodes.nodes[0]) == 0)
+    if (count_all_variable_nodes(nodes.nodes[0]) == 0)
     {
         double res = arith_evaluate(nodes.nodes[0]);
         if (res != (int)res) return false;
@@ -117,9 +117,9 @@ bool core_simplify(Node **tree, bool full_simplification)
     Node **matched;
     while ((matched = find_matching((const Node**)tree, deriv_before, &matching, NULL)) != NULL)
     {
-        char *var_names[2];
-        size_t var_count = list_variables(*matched, 2, var_names);
-
+        // Check if there is more than one variable in within derivative shorthand
+        const char *vars[2];
+        size_t var_count = list_variables(*matched, 2, vars);
         if (var_count > 1)
         {
             report_error("You can only use expr' when there is not more than one variable in expr.\n");
@@ -129,7 +129,7 @@ bool core_simplify(Node **tree, bool full_simplification)
         Node *replacement = tree_copy(deriv_after);
         if (var_count == 1)
         {
-            tree_replace(get_child_addr(replacement, 1), P(var_names[0]));
+            tree_replace(get_child_addr(replacement, 1), P(vars[0]));
         }
         tree_replace(get_child_addr(replacement, 0), tree_copy(matching.mapped_nodes[0].nodes[0]));
         tree_replace(matched, replacement);

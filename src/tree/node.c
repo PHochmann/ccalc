@@ -106,7 +106,7 @@ void set_child(Node *node, size_t index, Node *child)
     ((OperatorNode*)node)->children[index] = child;
 }
 
-char *get_var_name(const Node *node)
+const char *get_var_name(const Node *node)
 {
     return ((VariableNode*)node)->var_name;
 }

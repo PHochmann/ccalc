@@ -22,14 +22,14 @@ bool tree_util_test(StringBuilder *error_builder)
     set_child(child, 1, malloc_variable_node("y", 0));
 
     // Case 1
-    if (count_variables(root) != 5)
+    if (count_all_variable_nodes(root) != 5)
     {
         free_tree(root);
         ERROR_RETURN_VAL("count_variables");
     }
 
     // Case 2
-    char *nodes[2];
+    const char *nodes[2];
     if (list_variables(root, 2, nodes) != 2)
     {
         free_tree(root);

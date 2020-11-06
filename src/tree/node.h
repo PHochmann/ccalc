@@ -36,7 +36,7 @@ size_t get_num_children(const Node *node);
 Node *get_child(const Node *node, size_t index);
 Node **get_child_addr(const Node *node, size_t index);
 void set_child(Node *node, size_t index, Node *child);
-char *get_var_name(const Node *node);
+const char *get_var_name(const Node *node);
 size_t get_id(const Node *node);
 void set_id(Node *node, size_t id);
 double get_const_value(const Node *node);

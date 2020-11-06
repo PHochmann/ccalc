@@ -49,8 +49,8 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
         return false;
     }
 
-    char *variables[count_variables(expr)];
-    size_t num_vars = list_variables(expr, __SIZE_MAX__, variables);
+    const char *vars[count_all_variable_nodes(expr)];
+    size_t num_vars = list_variables(expr, SIZE_MAX, vars);
     if (num_vars > 1)
     {
         report_error("Error: Expression contains more than one variable.\n");
@@ -64,9 +64,9 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
         goto exit;
     }
 
-    if (count_variables(start) > 0
-        || count_variables(end) > 0
-        || count_variables(step) > 0)
+    if (count_all_variable_nodes(start) > 0
+        || count_all_variable_nodes(end) > 0
+        || count_all_variable_nodes(step) > 0)
     {
         report_error("Error: Start, end and step must be constant.\n");
         goto exit;
@@ -93,7 +93,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
             goto exit;
         }
 
-        if (count_variables(fold_expr)
+        if (count_all_variable_nodes(fold_expr)
             - count_variable_nodes(fold_expr, FOLD_VAR_1)
             - count_variable_nodes(fold_expr, FOLD_VAR_2) != 0)
         {
@@ -102,7 +102,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
             goto exit;
         }
 
-        if (count_variables(fold_init) > 0)
+        if (count_all_variable_nodes(fold_init) > 0)
         {
             report_error("Error: Initial fold value must be constant.\n");
             goto exit;
@@ -127,7 +127,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
         add_empty_cell(table);
         if (num_vars != 0)
         {
-            add_cell_fmt(table, VAR_COLOR " %s " COL_RESET, variables[0]);
+            add_cell_fmt(table, VAR_COLOR " %s " COL_RESET, vars[0]);
         }
         else
         {
@@ -149,7 +149,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     {
         Node *current_expr = tree_copy(expr);
         Node *current_val = malloc_constant_node(start_val);
-        replace_variable_nodes(&current_expr, current_val, variables[0]);
+        replace_variable_nodes(&current_expr, current_val, vars[0]);
         double result = arith_evaluate(current_expr);
 
         add_cell_fmt(table, " %zu ", i);

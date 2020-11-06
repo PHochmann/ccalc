@@ -205,7 +205,7 @@ static void extend_matching(Matching matching,
         // 1. Check if variable is bound, if it is, check occurrence. Otherwise, bind.
         case NTYPE_VARIABLE:
         {
-            char *var_name = get_var_name(pattern);
+            const char *var_name = get_var_name(pattern);
 
             // Check for wildcard
             if (var_name[0] == MATCHING_WILDCARD
@@ -349,22 +349,22 @@ Summary: Sets ids of variable nodes for faster lookup while matching
 */
 void preprocess_pattern(Node *tree)
 {
-    size_t num_vars = count_variables(tree);
-    char *var_names[num_vars];
-    size_t num_vars_distinct = list_variables(tree, num_vars, var_names);
+    size_t num_vars = count_all_variable_nodes(tree);
+    const char *vars[num_vars];
+    size_t num_vars_distinct = list_variables(tree, num_vars, vars);
 
     size_t counter = 0;
     for (size_t i = 0; i < num_vars_distinct; i++)
     {
-        if (var_names[i][0] != MATCHING_WILDCARD
-            && (var_names[i][0] != MATCHING_LIST_PREFIX || var_names[i][1] != MATCHING_WILDCARD))
+        if (vars[i][0] != MATCHING_WILDCARD
+            && (vars[i][0] != MATCHING_LIST_PREFIX || vars[i][1] != MATCHING_WILDCARD))
         {
             if (counter == MAX_MAPPED_VARS)
             {
                 software_defect("Trying to preprocess a pattern with too many distinct variables. Increase MAX_MAPPED_VARS.\n");
             }
             Node **nodes[num_vars];
-            size_t num_nodes = get_variable_nodes((const Node**)&tree, var_names[i], nodes);
+            size_t num_nodes = get_variable_nodes((const Node**)&tree, vars[i], nodes);
             for (size_t j = 0; j < num_nodes; j++)
             {
                 set_id(*(nodes[j]), counter);

@@ -47,7 +47,7 @@ bool core_replace_history(Node **tree)
     Node **hist_subtree;
     while ((hist_subtree = find_op((const Node**)tree, history_op)) != NULL)
     {
-        if (count_variables(*hist_subtree) > 0)
+        if (count_all_variable_nodes(*hist_subtree) > 0)
         {
             report_error(ERROR_NOT_CONSTANT);
             return false;
