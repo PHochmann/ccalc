@@ -109,7 +109,11 @@ char *g_simplification_string =
 
 // Trigonometrics
 "sum([xs], cos(x)^2, [ys], sin(x)^2) -> sum(1, [xs], [ys], [zs])\n"
-"sum([xs], sin(x)^2, [ys], cos(x)^2) -> sum(1, [xs], [ys], [zs])\n";
+"sum([xs], sin(x)^2, [ys], cos(x)^2) -> sum(1, [xs], [ys], [zs])\n"
+
+// Some special ops
+"min(x, x)     -> x\n"
+"max(x, x)     -> x";
 
 char *g_pretty_string =
 "prod([xs], sin(x), [ys], cos(x)^-1, [zs])   -> prod([xs], tan(x), [ys], [zs])\n"

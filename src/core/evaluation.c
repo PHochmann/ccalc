@@ -252,7 +252,11 @@ bool op_evaluate(const Operator *op, size_t num_args, const double *args, double
         }
         case 45: // avg(x, y, ...)
         {
-            if (num_args == 0) *out = 0;
+            if (num_args == 0)
+            {
+                *out = 0;
+                return true;
+            }
             double res = 0;
             for (size_t i = 0; i < num_args; i++) res += args[i];
             *out = res / num_args;

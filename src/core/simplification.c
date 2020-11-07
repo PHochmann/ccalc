@@ -16,7 +16,7 @@
 
 #define P(x) parse_conveniently(g_ctx, x)
 
-#define CAP             10000 // To protect against endless loops
+#define CAP             1000 // To protect against endless loops
 #define NUM_DONT_REDUCE 4
 const Operator *dont_reduce[NUM_DONT_REDUCE];
 Node *deriv_before;
@@ -100,6 +100,20 @@ bool core_simplify(Node **tree)
     // Apply elimination rules
     apply_ruleset(tree, &rulesets[0], CAP);
 
+    Node **avg_node;
+    while ((avg_node = find_op((const Node**)tree, ctx_lookup_op(g_ctx, "avg", OP_PLACE_FUNCTION))) != NULL)
+    {
+        Node *replacement = P("sum([xs])/n");
+        tree_replace(get_child_addr(replacement, 1), malloc_constant_node(get_num_children(*avg_node)));
+        tree_replace_by_list(
+            get_child_addr(replacement, 0),
+            0,
+            (NodeList){ .nodes = (const Node**)get_child_addr(*avg_node, 0), .size = get_num_children(*avg_node) }
+        );
+
+        tree_replace(avg_node, replacement);
+    }
+
     Matching matching;
     Node **matched;
     while ((matched = find_matching((const Node**)tree, deriv_before, &matching, NULL)) != NULL)
@@ -129,12 +143,22 @@ bool core_simplify(Node **tree)
         return false;
     }
 
+    // Eliminiate deriv(x,y)
     while (apply_ruleset(tree, &rulesets[1], 1) != 0)
     {
         replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
     }
 
-    size_t cap = 10;
+    // If the tree still contains deriv-operators, the user attempted to derivate 
+    // a subtree for which no reduction rule exists.
+    Node **unresolved_derivation = find_op((const Node**)tree, get_op(deriv_after));
+    if (unresolved_derivation != NULL)
+    {
+        report_error("Can't derivate operator '%s'.\n", get_op(get_child((*unresolved_derivation), 0))->name);
+        return false;
+    }
+
+    size_t passes_cap = 10; //
     Node *tree_before = NULL;
     do
     {
@@ -151,19 +175,9 @@ bool core_simplify(Node **tree)
         apply_ruleset(tree, &rulesets[4], CAP); // Pretty rules
         replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
         replace_negative_consts(tree);
-        
-    } while (!tree_equals(tree_before, *tree) && --cap != 0);
-
-    free_tree(tree_before);
-
-    // All derivation operators have been reduced. If the tree still contains one,
-    // the user attempted to derivate a subtree for which no reduction rule exists.
-    Node **unresolved_derivation = find_op((const Node**)tree, get_op(deriv_after));
-    if (unresolved_derivation != NULL)
-    {
-        report_error("Can't derivate operator '%s'.\n", get_op(get_child((*unresolved_derivation), 0))->name);
-        return false;
     }
+    while (!tree_equals(tree_before, *tree) && --passes_cap != 0);
+    free_tree(tree_before);
 
     return true;
 }
