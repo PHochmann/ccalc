@@ -1050,7 +1050,8 @@ void set_all_vlines(Table *table, BorderStyle style)
 
 // Printing
 
-/*static void print_debug(Table *table)
+#ifdef DEBUG
+static void print_debug(Table *table)
 {
     size_t col_widths[table->num_cols];
     size_t row_heights[table->num_rows];
@@ -1061,7 +1062,8 @@ void set_all_vlines(Table *table, BorderStyle style)
     printf("; ");
     for (size_t i = 0; i < table->num_cols; i++) printf("%zu ", col_widths[i]);
     printf("\n");
-}*/
+}
+#endif
 
 /*
 Summary: Prints table to stdout

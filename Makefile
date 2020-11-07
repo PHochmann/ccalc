@@ -2,6 +2,7 @@ TARGET_EXEC := ccalc
 BUILD_DIR   := ./bin/release
 SRC_DIRS    := ./src
 
+CC          := gcc
 CFLAGS      := -MMD -MP -std=c99 -Wall -Wextra -Werror -pedantic
 LDFLAGS     := -lm
 
@@ -14,7 +15,7 @@ endif
 
 ifneq (,$(filter $(MAKECMDGOALS),debug tests))
 	BUILD_DIR := ./bin/debug
-	CFLAGS += -g3 -O0
+	CFLAGS += -DDEBUG -g3 -O0
 endif
 
 ifneq (,$(filter $(MAKECMDGOALS),noreadline))

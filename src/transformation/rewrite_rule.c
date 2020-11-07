@@ -141,7 +141,7 @@ size_t apply_ruleset(Node **tree, const Ruleset *ruleset)
 Summary: Tries to apply rules (priorized by order) until no rule can be applied any more
     Guarantees to terminate after MAX_RULESET_ITERATIONS rule appliances
 */
-//#include "../tree/tree_to_string.h"
+#include "../tree/tree_to_string.h"
 size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator)
 {
     size_t counter = 0;
@@ -153,7 +153,9 @@ size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator)
         {
             if (apply_rule(tree, curr_rule))
             {
-                //printf("Applied rule: %s\n", tree_to_str(*tree, true)); // Mem. leak
+                #ifdef DEBUG
+                printf("Applied rule: %s\n", tree_to_str(*tree, true)); // Mem. leak
+                #endif
                 applied_flag = true;
                 counter++;
                 break;
@@ -162,7 +164,9 @@ size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator)
         iterator_reset(iterator);
         if (!applied_flag)
         {
-            //printf("End.\n");
+            #ifdef DEBUG
+            printf("End.\n");
+            #endif
             return counter;
         }
         else
@@ -170,8 +174,8 @@ size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator)
             if (counter == MAX_RULESET_ITERATIONS)
             {
                 report_error("Aborted due to too many ruleset iterations (max=%d)\n", MAX_RULESET_ITERATIONS);
-                //print_tree(*tree, true);
-                //printf("\n");
+                print_tree(*tree, true);
+                printf("\n");
                 return counter;
             }
         }

@@ -14,6 +14,14 @@
 #define FMT_ERROR_LEFT  "Error in left expression: %s\n"
 #define FMT_ERROR_RIGHT "Error in right expression: %s\n"
 
+#define ERR_NOT_A_FUNC           "Not a function or constant"
+#define ERR_ARGS_NOT_VARS        "Function arguments must be variables"
+#define ERR_NOT_DISTINCT         "Function arguments must be distinct variables"
+#define ERR_TOO_MANY_ARGS        "Too many function arguments"
+#define ERR_BUILTIN_REDEFINITION "Built-in functions can not be redefined.\n"
+#define ERR_REDEFINITION         "Function or constant already defined. Please use clear command before redefinition.\n"
+#define ERR_RECURSIVE_DEFINITION "Error: Recursive definition\n"
+
 int cmd_definition_check(const char *input)
 {
     return strstr(input, DEFINITION_OP) != NULL;
@@ -23,7 +31,7 @@ static bool do_left_checks(Node *left_n)
 {
     if (get_type(left_n) != NTYPE_OPERATOR || get_op(left_n)->placement != OP_PLACE_FUNCTION)
     {
-        report_error(FMT_ERROR_LEFT, "Not a function or constant.");
+        report_error(FMT_ERROR_LEFT, ERR_NOT_A_FUNC);
         return false;
     }
 
@@ -35,7 +43,7 @@ static bool do_left_checks(Node *left_n)
         {
             if (get_type(get_child(left_n, i)) != NTYPE_VARIABLE)
             {
-                report_error(FMT_ERROR_LEFT, "Function arguments must be variables.");
+                report_error(FMT_ERROR_LEFT, ERR_ARGS_NOT_VARS);
                 return false;
             }
         }
@@ -43,13 +51,13 @@ static bool do_left_checks(Node *left_n)
         const char *vars[num_children];
         if (num_children != list_variables(left_n, num_children, vars))
         {
-            report_error(FMT_ERROR_LEFT, "Function arguments must be distinct variables.");
+            report_error(FMT_ERROR_LEFT, ERR_NOT_DISTINCT);
             return false;
         }
 
         if (num_children > MAX_MAPPED_VARS)
         {
-            report_error(FMT_ERROR_LEFT, "Too many function arguments.");
+            report_error(FMT_ERROR_LEFT, ERR_TOO_MANY_ARGS);
             return false;
         }
     }
@@ -65,11 +73,11 @@ static bool add_function(char *name, char *left, char *right)
     {
         if (op->id < NUM_PREDEFINED_OPS)
         {
-            report_error("Built-in functions can not be redefined.\n");
+            report_error(ERR_BUILTIN_REDEFINITION);
         }
         else
         {
-            report_error("Function or constant already defined. Please use clear command before redefinition.\n");
+            report_error(ERR_REDEFINITION);
         }
         
         // Don't goto error since no new operator has been added to context
@@ -107,7 +115,7 @@ static bool add_function(char *name, char *left, char *right)
     // Check if function is used in its definition
     if (find_op((const Node**)&right_n, new_op) != NULL)
     {
-        report_error("Error: Recursive definition.\n");
+        report_error(ERR_RECURSIVE_DEFINITION);
         goto error;
     }
 
@@ -197,7 +205,7 @@ bool cmd_definition_exec(char *input, __attribute__((unused)) int code)
         if (!is_letter(name[0]))
         {
             free(name);
-            report_error(FMT_ERROR_LEFT, "Not a function or constant.");
+            report_error(FMT_ERROR_LEFT, ERR_NOT_A_FUNC);
             return false;
         }
 
