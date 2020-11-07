@@ -86,6 +86,11 @@ const Operator *get_op(const Node *node)
     return ((OperatorNode*)node)->op;
 }
 
+void set_op(Node *node, const Operator *op)
+{
+    ((OperatorNode*)node)->op = op;
+}
+
 size_t get_num_children(const Node *node)
 {
     return ((OperatorNode*)node)->num_children;

@@ -39,7 +39,7 @@ static bool do_left_checks(Node *left_n)
                 return false;
             }
         }
-        
+
         const char *vars[num_children];
         if (num_children != list_variables(left_n, num_children, vars))
         {
@@ -69,7 +69,7 @@ static bool add_function(char *name, char *left, char *right)
         }
         else
         {
-            report_error("Function or constant already defined. Please use clear command before re-definition.\n");
+            report_error("Function or constant already defined. Please use clear command before redefinition.\n");
         }
         
         // Don't goto error since no new operator has been added to context
@@ -83,7 +83,7 @@ static bool add_function(char *name, char *left, char *right)
     // Add function operator to parse left input
     // Must be OP_DYNAMIC_ARITY because we do not know the actual arity yet
     ctx_add_op(g_ctx, op_get_function(name, OP_DYNAMIC_ARITY));
-    if (!arith_parse_input_raw(left, FMT_ERROR_LEFT, &left_n))
+    if (!arith_parse_raw(left, FMT_ERROR_LEFT, &left_n))
     {
         goto error;
     }
@@ -93,17 +93,28 @@ static bool add_function(char *name, char *left, char *right)
 
     // Assign correct arity:
     // Since operators are const, we can't change the arity directly
-    // A new operator with correct arity has to be created and left expression has to be parsed again
+    // A new operator with correct arity has to be created
     ctx_delete_op(g_ctx, name, OP_PLACE_FUNCTION);
     const Operator *new_op = ctx_add_op(g_ctx, op_get_function(name, get_num_children(left_n)));
-    free_tree(left_n);
-    arith_parse_input_raw(left, FMT_ERROR_LEFT, &left_n); // Should never fail
-    arith_parse_input_raw(right, FMT_ERROR_RIGHT, &right_n);
+    set_op(left_n, new_op);
+
+    // Parse right expression raw to detect a recursive definition
+    if (!arith_parse_raw(right, FMT_ERROR_RIGHT, &right_n))
+    {
+        goto error;
+    }
 
     // Check if function is used in its definition
     if (find_op((const Node**)&right_n, new_op) != NULL)
     {
         report_error("Error: Recursive definition.\n");
+        goto error;
+    }
+
+    // Since right expression was parsed raw to detect recursive definitions, do postprocessing
+    if (!arith_postprocess(&right_n, true))
+    {
+        // Error message given by arith_postprocess
         goto error;
     }
 
@@ -147,8 +158,7 @@ static bool add_function(char *name, char *left, char *right)
     }
 
     // Add rule to eliminate operator before evaluation
-    RewriteRule rule = get_rule(left_n, right_n, NULL);
-    add_composite_function(rule);
+    add_composite_function(get_rule(left_n, right_n, NULL));
     return true;
 
     error:

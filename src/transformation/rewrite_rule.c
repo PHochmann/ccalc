@@ -69,7 +69,6 @@ Summary: Substitutes subtree in which matching was found according to rule
 void transform_matched(Node *rule_after, Matching *matching, Node **matched_subtree)
 {
     if (rule_after == NULL || matching == NULL) return;
-    
     Node *transformed = tree_copy(rule_after);
 
     if (get_type(transformed) == NTYPE_OPERATOR)
@@ -88,8 +87,8 @@ void transform_matched(Node *rule_after, Matching *matching, Node **matched_subt
                     {
                         software_defect("Trying to replace root with a list > 1.\n");
                     }
-                    
                     tree_replace(&transformed, tree_copy(matching->mapped_nodes[j].nodes[0]));
+                    break;
                 }
             }
         }

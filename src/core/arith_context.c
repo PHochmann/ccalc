@@ -152,9 +152,18 @@ RewriteRule *get_composite_function(Operator *op)
     return NULL;
 }
 
-bool arith_parse_input_raw(char *input, char *error_fmt, Node **out_res)
+/*
+Summary: Only calls parser, does not perform any substitution
+*/
+bool arith_parse_raw(char *input, char *error_fmt, Node **out_res)
 {
-    return arith_parse_input(input, error_fmt, false, out_res);
+    ParserError perr = parse_input(g_ctx, input, out_res);
+    if (perr != PERR_SUCCESS)
+    {
+        report_error(error_fmt, perr_to_string(perr));
+        return false;
+    }
+    return true;
 }
 
 /*
@@ -164,25 +173,30 @@ Summary:
 Returns:
     True when input was successfully parsed, false when syntax error in input or semantical error while transforming
 */
-bool arith_parse_input(char *input, char *error_fmt, bool simplify, Node **out_res)
+bool arith_parse_and_postprocess(char *input, char *error_fmt, bool simplify, Node **out_res)
 {
-    ParserError perr = parse_input(g_ctx, input, out_res);
-    if (perr != PERR_SUCCESS)
+    if (arith_parse_raw(input, error_fmt, out_res))
     {
-        report_error(error_fmt, perr_to_string(perr));
-        return false;
-    }
-    else
-    {
-        LinkedListIterator iterator = list_get_iterator(g_composite_functions);
-        apply_ruleset_by_iterator(out_res, (Iterator*)&iterator);
-
-        if (!core_replace_history(out_res) || !core_simplify(out_res, simplify))
+        if (!arith_postprocess(out_res, simplify))
         {
             free_tree(*out_res);
             return false;
         }
-
         return true;
     }
+    else
+    {
+        return false;
+    }
+}
+
+bool arith_postprocess(Node **tree, bool simplify)
+{
+    LinkedListIterator iterator = list_get_iterator(g_composite_functions);
+    apply_ruleset_by_iterator(tree, (Iterator*)&iterator);
+    if (!core_replace_history(tree) || !core_simplify(tree, simplify))
+    {
+        return false;
+    }
+    return true;
 }

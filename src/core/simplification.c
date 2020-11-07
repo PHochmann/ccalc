@@ -128,7 +128,7 @@ bool core_simplify(Node **tree, bool full_simplification)
         Node *replacement = tree_copy(deriv_after);
         if (var_count == 1)
         {
-            tree_replace(get_child_addr(replacement, 1), P(vars[0]));
+            tree_replace(get_child_addr(replacement, 1), malloc_variable_node(vars[0], 0));
         }
         tree_replace(get_child_addr(replacement, 0), tree_copy(matching.mapped_nodes[0].nodes[0]));
         tree_replace(matched, replacement);
@@ -141,7 +141,6 @@ bool core_simplify(Node **tree, bool full_simplification)
         return false;
     }
 
-    // Apply derivation
     apply_ruleset(tree, &rulesets[1]); // Derivation rules
     replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
 

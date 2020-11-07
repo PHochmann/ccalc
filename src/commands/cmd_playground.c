@@ -27,7 +27,7 @@ bool cmd_playground_exec(char *input, int code)
     {
         input += strlen(SIMPLIFY_COMMAND);
         Node *node;
-        if (!arith_parse_input(input, "Error: %s\n", true, &node)) return false;
+        if (!arith_parse_and_postprocess(input, "Error: %s\n", true, &node)) return false;
         print_tree(node, true);
         printf("\n");
         free_tree(node);
