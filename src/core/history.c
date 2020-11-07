@@ -70,7 +70,7 @@ bool core_replace_history(Node **tree)
     }
 
     // Replace normal ans
-    if (count_variable_nodes(*tree, ANS_VAR) > 0)
+    if (get_variable_nodes((const Node**)tree, ANS_VAR, NULL) > 0)
     {
         if (vec_count(&ans_vec) > 0)
         {

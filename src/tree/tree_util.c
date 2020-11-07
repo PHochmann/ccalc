@@ -111,7 +111,7 @@ size_t count_all_variable_nodes(const Node *tree)
 /*
 Summary: Lists all pointers to variable nodes of given name
 Params
-    out_instances: Contains result. Function unsafe when too small.
+    out_instances: Contains result. Function unsafe when too small. Allowed to be NULL.
 Returns: Number of variable nodes found, i.e. count of out_instances
 */
 size_t get_variable_nodes(const Node **tree, const char *var_name, Node ***out_instances)
@@ -126,7 +126,10 @@ size_t get_variable_nodes(const Node **tree, const char *var_name, Node ***out_i
         case NTYPE_VARIABLE:
             if (strcmp(get_var_name(*tree), var_name) == 0)
             {
-                *out_instances = (Node**)tree; // Discards const!
+                if (out_instances != NULL)
+                {
+                    *out_instances = (Node**)tree; // Discards const!
+                }
                 return 1;
             }
             else
@@ -146,16 +149,6 @@ size_t get_variable_nodes(const Node **tree, const char *var_name, Node ***out_i
     }
 
     return 0;
-}
-
-/*
-Summary: Variant of get_variable_nodes that discards 'out_instances'
-*/
-size_t count_variable_nodes(const Node *tree, const char *var_name)
-{
-    // out-discard pattern
-    Node **instances[count_all_variable_nodes(tree)];
-    return get_variable_nodes(&tree, var_name, instances);
 }
 
 size_t list_variables_rec(const Node *tree, size_t buffer_size, size_t num_found, const char **out_variables)

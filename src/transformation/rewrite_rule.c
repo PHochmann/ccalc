@@ -10,8 +10,6 @@
 #include "rewrite_rule.h"
 #include "matching.h"
 
-#define MAX_RULESET_ITERATIONS 10000 // To protect against endless loops
-
 /*
 Summary: Constructs new rule. Warning: "before" and "after" are not copied, so don't free them!
 */
@@ -131,10 +129,10 @@ void free_ruleset(Ruleset *rules)
     vec_destroy(rules);
 }
 
-size_t apply_ruleset(Node **tree, const Ruleset *ruleset)
+size_t apply_ruleset(Node **tree, const Ruleset *ruleset, size_t cap)
 {
     VectorIterator iterator = vec_get_iterator(ruleset);
-    return apply_ruleset_by_iterator(tree, (Iterator*)&iterator);
+    return apply_ruleset_by_iterator(tree, (Iterator*)&iterator, cap);
 }
 
 /*
@@ -142,7 +140,7 @@ Summary: Tries to apply rules (priorized by order) until no rule can be applied 
     Guarantees to terminate after MAX_RULESET_ITERATIONS rule appliances
 */
 #include "../tree/tree_to_string.h"
-size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator)
+size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator, size_t cap)
 {
     size_t counter = 0;
     while (true)
@@ -171,13 +169,7 @@ size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator)
         }
         else
         {
-            if (counter == MAX_RULESET_ITERATIONS)
-            {
-                report_error("Aborted due to too many ruleset iterations (max=%d)\n", MAX_RULESET_ITERATIONS);
-                print_tree(*tree, true);
-                printf("\n");
-                return counter;
-            }
+            if (counter == cap) return counter;
         }
     }
     return 0; // To make compiler happy

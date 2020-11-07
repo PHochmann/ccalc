@@ -229,7 +229,7 @@ static void extend_matching(Matching matching,
             else
             {
                 // Check with filter if it's okay to bind
-                if (filter != NULL && !filter(var_name, tree_list))
+                if (filter != NULL && !filter(var_name, tree_list, &matching))
                 {
                     return;
                 }

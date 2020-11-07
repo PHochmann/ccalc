@@ -9,4 +9,6 @@
 #define MATCHING_OP_PREFIX           'o'
 #define MATCHING_LITERAL_VAR_PREFIX  'l'
 
-bool prefix_filter(const char *var, NodeList nodes);
+bool prefix_filter(const char *var, NodeList nodes, Matching *m);
+bool exponent_even_filter(const char *var, NodeList nodes, Matching *m);
+bool constant_derivative_filter(const char *var, NodeList nodes, Matching *m);

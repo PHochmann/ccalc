@@ -16,6 +16,7 @@
 
 #define P(x) parse_conveniently(g_ctx, x)
 
+#define CAP             10000 // To protect against endless loops
 #define NUM_DONT_REDUCE 4
 const Operator *dont_reduce[NUM_DONT_REDUCE];
 Node *deriv_before;
@@ -25,26 +26,6 @@ Node *malformed_derivB;
 
 #define NUM_RULESETS 5
 Vector rulesets[NUM_RULESETS];
-
-bool exponent_even_filter(const char *var, NodeList nodes)
-{
-    if (strcmp(var, "y") != 0) return true;
-
-    // The following should not be needed due to the nature of the matching algorithm
-    // Be brave and dereference!
-    //if (nodes.size != 1) return false;
-
-    if (count_all_variable_nodes(nodes.nodes[0]) == 0)
-    {
-        double res = arith_evaluate(nodes.nodes[0]);
-        if (res != (int)res) return false;
-        if ((int)res % 2 == 0)
-        {
-            return true;
-        }
-    }
-    return false;
-}
 
 void replace_negative_consts(Node **tree)
 {
@@ -71,6 +52,19 @@ void replace_negative_consts(Node **tree)
 
 void init_simplification()
 {
+    for (size_t i = 0; i < NUM_RULESETS; i++)
+    {
+        rulesets[i] = get_empty_ruleset();
+    }
+
+    parse_ruleset_from_string(g_reduction_string, g_ctx, prefix_filter, rulesets);
+    add_to_ruleset(&rulesets[1], get_rule(P("deriv(x,y)"), P("0"), exponent_even_filter));
+    parse_ruleset_from_string(g_derivation_string, g_ctx, prefix_filter, rulesets + 1);
+    parse_ruleset_from_string(g_normal_form_string, g_ctx, prefix_filter, rulesets + 2);
+    parse_ruleset_from_string(g_simplification_string, g_ctx, prefix_filter, rulesets + 3);
+    parse_ruleset_from_string(g_pretty_string, g_ctx, prefix_filter, rulesets + 4);
+    add_to_ruleset(&rulesets[3], get_rule(P("(-x)^y"), P("x^y"), exponent_even_filter));
+
     deriv_before = P("x'");
     deriv_after = P("deriv(x, z)");
     malformed_derivA = P("deriv(x, cX)");
@@ -83,12 +77,6 @@ void init_simplification()
     dont_reduce[1] = ctx_lookup_op(g_ctx, "e", OP_PLACE_FUNCTION);
     dont_reduce[2] = ctx_lookup_op(g_ctx, "rand", OP_PLACE_FUNCTION);
     dont_reduce[3] = ctx_lookup_op(g_ctx, "$", OP_PLACE_PREFIX); // There are no evaluation cases before +
-    parse_ruleset_from_string(g_reduction_string, g_ctx, prefix_filter, rulesets);
-    parse_ruleset_from_string(g_derivation_string, g_ctx, prefix_filter, rulesets + 1);
-    parse_ruleset_from_string(g_normal_form_string, g_ctx, prefix_filter, rulesets + 2);
-    parse_ruleset_from_string(g_simplification_string, g_ctx, prefix_filter, rulesets + 3);
-    parse_ruleset_from_string(g_pretty_string, g_ctx, prefix_filter, rulesets + 4);
-    add_to_ruleset(&rulesets[3], get_rule(P("(-x)^y"), P("x^y"), exponent_even_filter));
 }
 
 void unload_simplification()
@@ -107,10 +95,10 @@ void unload_simplification()
 Summary: Applies all pre-defined rewrite rules to tree
 Returns: True when transformations could be applied, False otherwise
 */
-bool core_simplify(Node **tree, bool full_simplification)
+bool core_simplify(Node **tree)
 {
     // Apply elimination rules
-    apply_ruleset(tree, &rulesets[0]);
+    apply_ruleset(tree, &rulesets[0], CAP);
 
     Matching matching;
     Node **matched;
@@ -141,29 +129,30 @@ bool core_simplify(Node **tree, bool full_simplification)
         return false;
     }
 
-    apply_ruleset(tree, &rulesets[1]); // Derivation rules
-    replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
+    while (apply_ruleset(tree, &rulesets[1], 1) != 0)
+    {
+        replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
+    }
 
-    if (!full_simplification) return true;
-
+    size_t cap = 10;
     Node *tree_before = NULL;
     do
     {
         free_tree(tree_before);
         tree_before = tree_copy(*tree);
 
-        apply_ruleset(tree, &rulesets[2]); // Normal form rules
+        apply_ruleset(tree, &rulesets[2], SIZE_MAX); // Normal form rules
         replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
 
-        apply_ruleset(tree, &rulesets[3]); // Simplification rules
+        apply_ruleset(tree, &rulesets[3], CAP); // Simplification rules
         replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
         replace_negative_consts(tree);
 
-        apply_ruleset(tree, &rulesets[4]); // Pretty rules
+        apply_ruleset(tree, &rulesets[4], CAP); // Pretty rules
         replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
         replace_negative_consts(tree);
         
-    } while (!tree_equals(tree_before, *tree));
+    } while (!tree_equals(tree_before, *tree) && --cap != 0);
 
     free_tree(tree_before);
 

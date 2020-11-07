@@ -120,7 +120,7 @@ static bool add_function(char *name, char *left, char *right)
     }
 
     // Since right expression was parsed raw to detect recursive definitions, do postprocessing
-    if (!arith_postprocess(&right_n, true))
+    if (!arith_postprocess(&right_n))
     {
         // Error message given by arith_postprocess
         goto error;
@@ -141,7 +141,7 @@ static bool add_function(char *name, char *left, char *right)
         {
             RewriteRule *rule = (RewriteRule*)curr->data;
             // Check if variables are unbounded...
-            if (count_variable_nodes(rule->before, name) == 0)
+            if (get_variable_nodes((const Node**)&rule->before, name, NULL) == 0)
             {
                 // ...if they are, replace them by new definition
                 if (replace_variable_nodes(&rule->after, left_n, name) > 0)

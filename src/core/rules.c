@@ -174,7 +174,6 @@ bool parse_ruleset_from_string(char *string, ParsingContext *ctx, MappingFilter 
     char *copy = malloc_wrapper(strlen(string) + 1);
     strcpy(copy, string);
 
-    *out_ruleset = get_empty_ruleset();
     size_t line_no = 0;
     char *line = copy;
     while (line != NULL)

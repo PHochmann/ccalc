@@ -173,11 +173,11 @@ Summary:
 Returns:
     True when input was successfully parsed, false when syntax error in input or semantical error while transforming
 */
-bool arith_parse_and_postprocess(char *input, char *error_fmt, bool simplify, Node **out_res)
+bool arith_parse_and_postprocess(char *input, char *error_fmt, Node **out_res)
 {
     if (arith_parse_raw(input, error_fmt, out_res))
     {
-        if (!arith_postprocess(out_res, simplify))
+        if (!arith_postprocess(out_res))
         {
             free_tree(*out_res);
             return false;
@@ -190,11 +190,11 @@ bool arith_parse_and_postprocess(char *input, char *error_fmt, bool simplify, No
     }
 }
 
-bool arith_postprocess(Node **tree, bool simplify)
+bool arith_postprocess(Node **tree)
 {
     LinkedListIterator iterator = list_get_iterator(g_composite_functions);
-    apply_ruleset_by_iterator(tree, (Iterator*)&iterator);
-    if (!core_replace_history(tree) || !core_simplify(tree, simplify))
+    apply_ruleset_by_iterator(tree, (Iterator*)&iterator, SIZE_MAX);
+    if (!core_replace_history(tree) || !core_simplify(tree))
     {
         return false;
     }

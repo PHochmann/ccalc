@@ -19,5 +19,5 @@ bool remove_composite_function(Operator *function);
 void clear_composite_functions();
 RewriteRule *get_composite_function(Operator *op);
 bool arith_parse_raw(char *input, char *error_fmt, Node **out_res);
-bool arith_parse_and_postprocess(char *input, char *error_fmt, bool simplify, Node **out_res);
-bool arith_postprocess(Node **tree, bool simplify);
+bool arith_parse_and_postprocess(char *input, char *error_fmt, Node **out_res);
+bool arith_postprocess(Node **tree);

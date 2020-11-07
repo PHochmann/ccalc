@@ -44,7 +44,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     Node *fold_expr = NULL;
     Node *fold_init = NULL;
 
-    if (!arith_parse_and_postprocess(args[0], "Error in expression: %s.\n", true, &expr))
+    if (!arith_parse_and_postprocess(args[0], "Error in expression: %s.\n", &expr))
     {
         return false;
     }
@@ -57,9 +57,9 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
         goto exit;
     }
 
-    if (!arith_parse_and_postprocess(args[1], "Error in start: %s.\n", true, &start)
-        || !arith_parse_and_postprocess(args[2], "Error in end: %s.\n", true, &end)
-        || !arith_parse_and_postprocess(args[3], "Error in step: %s.\n", true, &step))
+    if (!arith_parse_and_postprocess(args[1], "Error in start: %s.\n", &start)
+        || !arith_parse_and_postprocess(args[2], "Error in end: %s.\n", &end)
+        || !arith_parse_and_postprocess(args[3], "Error in step: %s.\n", &step))
     {
         goto exit;
     }
@@ -87,15 +87,15 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     if (num_args == 6)
     {
         // Parse initial fold-value
-        if (!arith_parse_and_postprocess(args[4], "Error in fold expression: %s.\n", true, &fold_expr)
-            || !arith_parse_and_postprocess(args[5], "Error in initial fold value: %s.\n", true, &fold_init))
+        if (!arith_parse_and_postprocess(args[4], "Error in fold expression: %s.\n", &fold_expr)
+            || !arith_parse_and_postprocess(args[5], "Error in initial fold value: %s.\n", &fold_init))
         {
             goto exit;
         }
 
         if (count_all_variable_nodes(fold_expr)
-            - count_variable_nodes(fold_expr, FOLD_VAR_1)
-            - count_variable_nodes(fold_expr, FOLD_VAR_2) != 0)
+            - get_variable_nodes((const Node**)&fold_expr, FOLD_VAR_1, NULL)
+            - get_variable_nodes((const Node**)&fold_expr, FOLD_VAR_2, NULL) != 0)
         {
             report_error("Error: Fold expression must not contain any variables except '"
                 FOLD_VAR_1 "' and '" FOLD_VAR_2 "'.\n");

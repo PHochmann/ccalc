@@ -13,7 +13,7 @@ ifeq (,$(filter $(MAKECMDGOALS),tests))
 	endif
 endif
 
-ifneq (,$(filter $(MAKECMDGOALS),debug tests))
+ifneq (,$(filter $(MAKECMDGOALS),debug))
 	BUILD_DIR := ./bin/debug
 	CFLAGS += -DDEBUG -g3 -O0
 endif
