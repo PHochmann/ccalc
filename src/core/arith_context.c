@@ -113,21 +113,8 @@ static void remove_node(ListNode *node)
 
 bool remove_composite_function(Operator *function)
 {
-    // First check if another composite function depends on the operator
-    ListNode *curr = __g_composite_functions.first;
-    while (curr != NULL)
-    {
-        const RewriteRule *rule = (const RewriteRule*)curr->data;
-        if (find_op((const Node**)&rule->after, function) != NULL)
-        {
-            report_error("This function can not be removed as it is used in another function's definition.\n");
-            return false;
-        }
-        curr = curr->next;
-    }
-
     // Search for node in linked list to remove
-    curr = __g_composite_functions.first;
+    ListNode *curr = __g_composite_functions.first;
     while (curr != NULL)
     {
         RewriteRule *rule = (RewriteRule*)curr->data;
@@ -167,16 +154,17 @@ RewriteRule *get_composite_function(Operator *op)
 
 bool arith_parse_input_raw(char *input, char *error_fmt, Node **out_res)
 {
-    return arith_parse_input(input, error_fmt, false, false, out_res);
+    return arith_parse_input(input, error_fmt, false, out_res);
 }
 
 /*
 Summary:
     Parses input, does post-processing of input, gives feedback on command line
+    Result is guaranteed not to contain any user-defined functions or pseudo-ops (deriv, $...)
 Returns:
     True when input was successfully parsed, false when syntax error in input or semantical error while transforming
 */
-bool arith_parse_input(char *input, char *error_fmt, bool replace_comp_funcs, bool simplify, Node **out_res)
+bool arith_parse_input(char *input, char *error_fmt, bool simplify, Node **out_res)
 {
     ParserError perr = parse_input(g_ctx, input, out_res);
     if (perr != PERR_SUCCESS)
@@ -186,11 +174,8 @@ bool arith_parse_input(char *input, char *error_fmt, bool replace_comp_funcs, bo
     }
     else
     {
-        if (replace_comp_funcs)
-        {
-            LinkedListIterator iterator = list_get_iterator(g_composite_functions);
-            apply_ruleset_by_iterator(out_res, (Iterator*)&iterator);
-        }
+        LinkedListIterator iterator = list_get_iterator(g_composite_functions);
+        apply_ruleset_by_iterator(out_res, (Iterator*)&iterator);
 
         if (!core_replace_history(out_res) || !core_simplify(out_res, simplify))
         {

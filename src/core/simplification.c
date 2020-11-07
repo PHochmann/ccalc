@@ -82,12 +82,12 @@ void init_simplification()
     dont_reduce[0] = ctx_lookup_op(g_ctx, "pi", OP_PLACE_FUNCTION);
     dont_reduce[1] = ctx_lookup_op(g_ctx, "e", OP_PLACE_FUNCTION);
     dont_reduce[2] = ctx_lookup_op(g_ctx, "rand", OP_PLACE_FUNCTION);
-    dont_reduce[3] = ctx_lookup_op(g_ctx, "$", OP_PLACE_PREFIX);
-    parse_ruleset_from_string(reduction_string, g_ctx, prefix_filter, rulesets);
-    parse_ruleset_from_string(derivation_string, g_ctx, prefix_filter, rulesets + 1);
-    parse_ruleset_from_string(normal_form_string, g_ctx, prefix_filter, rulesets + 2);
-    parse_ruleset_from_string(simplification_string, g_ctx, prefix_filter, rulesets + 3);
-    parse_ruleset_from_string(pretty_string, g_ctx, prefix_filter, rulesets + 4);
+    dont_reduce[3] = ctx_lookup_op(g_ctx, "$", OP_PLACE_PREFIX); // There are no evaluation cases before +
+    parse_ruleset_from_string(g_reduction_string, g_ctx, prefix_filter, rulesets);
+    parse_ruleset_from_string(g_derivation_string, g_ctx, prefix_filter, rulesets + 1);
+    parse_ruleset_from_string(g_normal_form_string, g_ctx, prefix_filter, rulesets + 2);
+    parse_ruleset_from_string(g_simplification_string, g_ctx, prefix_filter, rulesets + 3);
+    parse_ruleset_from_string(g_pretty_string, g_ctx, prefix_filter, rulesets + 4);
     add_to_ruleset(&rulesets[3], get_rule(P("(-x)^y"), P("x^y"), exponent_even_filter));
 }
 
@@ -111,7 +111,6 @@ bool core_simplify(Node **tree, bool full_simplification)
 {
     // Apply elimination rules
     apply_ruleset(tree, &rulesets[0]);
-    if (!full_simplification) return true;
 
     Matching matching;
     Node **matched;
@@ -142,14 +141,17 @@ bool core_simplify(Node **tree, bool full_simplification)
         return false;
     }
 
+    // Apply derivation
+    apply_ruleset(tree, &rulesets[1]); // Derivation rules
+    replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
+
+    if (!full_simplification) return true;
+
     Node *tree_before = NULL;
     do
     {
         free_tree(tree_before);
         tree_before = tree_copy(*tree);
-
-        apply_ruleset(tree, &rulesets[1]); // Derivation rules
-        replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
 
         apply_ruleset(tree, &rulesets[2]); // Normal form rules
         replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);

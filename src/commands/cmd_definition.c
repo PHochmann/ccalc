@@ -39,7 +39,7 @@ static bool do_left_checks(Node *left_n)
                 return false;
             }
         }
-
+        
         const char *vars[num_children];
         if (num_children != list_variables(left_n, num_children, vars))
         {

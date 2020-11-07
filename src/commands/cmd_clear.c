@@ -31,7 +31,6 @@ bool cmd_clear_exec(char *input, int code)
     else
     {
         input += strlen(CLEAR_COMMAND) + 1;
-        
         Operator *function = ctx_lookup_op(g_ctx, input, OP_PLACE_FUNCTION);
         if (function != NULL)
         {

@@ -7,7 +7,7 @@
 
 #define ARROW           " -> "
 
-char *reduction_string =
+char *g_reduction_string =
 "+x         -> x\n"
 "$x         -> x\n"
 "--x        -> x\n"
@@ -18,7 +18,9 @@ char *reduction_string =
 "sqrt(x)    -> x^0.5\n"
 "root(x, y) -> x^(1/y)";
 
-char *derivation_string =
+char *g_derivation_string =
+"deriv(e, _)       -> 0\n"
+"deriv(pi, _)      -> 0\n"
 "deriv(cX, z)      -> 0\n"
 "deriv(x, x)       -> 1\n"
 "deriv(bX, z)      -> 0\n"
@@ -36,14 +38,14 @@ char *derivation_string =
 "deriv(x^y, z)     -> ((y*deriv(x, z))*x^-1 + deriv(y, z)*ln(x))*x^y\n"
 "deriv(ln(x), z)   -> deriv(x, z)*^-1\n";
 
-char *normal_form_string =
+char *g_normal_form_string =
 "x-y    -> x+(-y)\n"
 "-(x+y) -> -x+(-y)\n"
 "-(x*y) -> (-x)*y\n"
 "dX+cY  -> cY+dX\n"
 "dX*cY  -> cY*dX\n";
 
-char *simplification_string =
+char *g_simplification_string =
 // Get a nice sum
 "x+y                        -> sum(x,y)\n"
 "sum([xs], sum([ys]), [zs]) -> sum([xs], [ys], [zs])\n"
@@ -109,7 +111,7 @@ char *simplification_string =
 "sum([xs], cos(x)^2, [ys], sin(x)^2) -> sum(1, [xs], [ys], [zs])\n"
 "sum([xs], sin(x)^2, [ys], cos(x)^2) -> sum(1, [xs], [ys], [zs])\n";
 
-char *pretty_string =
+char *g_pretty_string =
 "prod([xs], sin(x), [ys], cos(x)^-1, [zs])   -> prod([xs], tan(x), [ys], [zs])\n"
 "prod([xs], sin(x)^y, [ys], cos(x)^-y, [zs]) -> prod([xs], tan(x)^y, [ys], [zs])\n"
 
