@@ -62,7 +62,7 @@ bool ask_input_getline(FILE *file, char **out_input, const char *prompt_fmt, va_
     
     size_t size;
     *out_input = NULL;
-    if (getline(out_input, &size, file) == -1)
+    if (getline(out_input, &size, file) == EOF)
     {
         free(*out_input);
         return false;

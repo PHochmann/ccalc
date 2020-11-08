@@ -97,22 +97,25 @@ Returns: True when transformations could be applied, False otherwise
 */
 bool core_simplify(Node **tree)
 {
-    // Apply elimination rules
-    apply_ruleset(tree, &rulesets[0], CAP);
-
+    // Replace avg(x,y,z...) by sum(x,y,z...)/num_children
     Node **avg_node;
     while ((avg_node = find_op((const Node**)tree, ctx_lookup_op(g_ctx, "avg", OP_PLACE_FUNCTION))) != NULL)
     {
-        Node *replacement = P("sum([xs])/n");
-        tree_replace(get_child_addr(replacement, 1), malloc_constant_node(get_num_children(*avg_node)));
-        tree_replace_by_list(
-            get_child_addr(replacement, 0),
-            0,
-            (NodeList){ .nodes = (const Node**)get_child_addr(*avg_node, 0), .size = get_num_children(*avg_node) }
-        );
-
-        tree_replace(avg_node, replacement);
+        set_op(*avg_node, ctx_lookup_op(g_ctx, "sum", OP_PLACE_FUNCTION));
+        Node *replacement = malloc_operator_node(ctx_lookup_op(g_ctx, "/", OP_PLACE_INFIX), 2);
+        set_child(replacement, 0, *avg_node);
+        set_child(replacement, 1, malloc_constant_node(get_num_children(*avg_node)));
+        // Now some careful pointer bending from one tree to the other
+        // Note: Usually, pointer spaghetti is discouraged
+        for (size_t i = 0; i < get_num_children(*avg_node); i++)
+        {
+            set_child(get_child(replacement, 0), i, get_child(*avg_node, i));
+        }
+        *avg_node = replacement;
     }
+
+    // Apply elimination rules
+    apply_ruleset(tree, &rulesets[0], CAP);
 
     Matching matching;
     Node **matched;

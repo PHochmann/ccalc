@@ -152,7 +152,9 @@ size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator, size_t cap)
             if (apply_rule(tree, curr_rule))
             {
                 #ifdef DEBUG
-                printf("Applied rule: %s\n", tree_to_str(*tree, true)); // Mem. leak
+                printf("Applied rule: ");
+                print_tree(*tree, true);
+                printf("\n");
                 #endif
                 applied_flag = true;
                 counter++;
