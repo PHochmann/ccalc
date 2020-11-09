@@ -9,27 +9,36 @@
 #include "cmd_playground.h"
 
 #define SIMPLIFY_COMMAND   "simplify "
+#define VISUALIZE_COMMAND  "visualize "
 #define PLAYGROUND_COMMAND "playground"
 #define SIMPLIFY_CODE   1
 #define PLAYGROUND_CODE 2
+#define VISUALIZE_CODE  3
 #define MATCHINGS_PRINT_THRESHOLD 10
 
 int cmd_playground_check(const char *input)
 {
     if (begins_with(SIMPLIFY_COMMAND, input)) return SIMPLIFY_CODE;
+    if (begins_with(VISUALIZE_COMMAND, input)) return VISUALIZE_CODE;
     if (strcmp(input, PLAYGROUND_COMMAND) == 0) return PLAYGROUND_CODE;
     return 0;
 }
 
 bool cmd_playground_exec(char *input, int code)
 {
-    if (code == SIMPLIFY_CODE)
+    if (code == SIMPLIFY_CODE || code == VISUALIZE_CODE)
     {
         input += strlen(SIMPLIFY_COMMAND);
         Node *node;
         if (!arith_parse_and_postprocess(input, "Error: %s\n", &node)) return false;
+        if (code == VISUALIZE_CODE)
+        {
+            print_tree_visually(node);
+        }
+
         print_tree(node, true);
         printf("\n");
+
         free_tree(node);
         return true;
     }

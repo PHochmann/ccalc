@@ -19,12 +19,13 @@
 #define CAP             1000 // To protect against endless loops
 #define NUM_DONT_REDUCE 4
 const Operator *dont_reduce[NUM_DONT_REDUCE];
+
 Node *deriv_before;
 Node *deriv_after;
 Node *malformed_derivA;
 Node *malformed_derivB;
 
-#define NUM_RULESETS 6
+// Contains parsed and compiled rules
 Vector rulesets[NUM_RULESETS];
 
 void replace_negative_consts(Node **tree)
@@ -55,15 +56,11 @@ void init_simplification()
     for (size_t i = 0; i < NUM_RULESETS; i++)
     {
         rulesets[i] = get_empty_ruleset();
+        parse_ruleset_from_string(g_rulestrings[i], g_ctx, prefix_filter, rulesets + i);
     }
 
-    parse_ruleset_from_string(g_reduction_string, g_ctx, prefix_filter, rulesets);
+    // Add rules with special filters
     add_to_ruleset(&rulesets[1], get_rule(P("deriv(x,y)"), P("0"), constant_derivative_filter));
-    parse_ruleset_from_string(g_derivation_string, g_ctx, prefix_filter, rulesets + 1);
-    parse_ruleset_from_string(g_normal_form_string, g_ctx, prefix_filter, rulesets + 2);
-    parse_ruleset_from_string(g_simplification_string, g_ctx, prefix_filter, rulesets + 3);
-    parse_ruleset_from_string(g_fold_string, g_ctx, prefix_filter, rulesets + 4);
-    parse_ruleset_from_string(g_pretty_string, g_ctx, prefix_filter, rulesets + 5);
     add_to_ruleset(&rulesets[3], get_rule(P("(-x)^y"), P("x^y"), exponent_even_filter));
 
     deriv_before = P("x'");
@@ -148,7 +145,14 @@ bool core_simplify(Node **tree)
     }
 
     // Eliminiate deriv(x,y)
-    apply_ruleset(tree, &rulesets[1], SIZE_MAX); // Normal form rules
+    // Since the deriv-ruleset is extremely expansive in nature,
+    // aggressively replace constant subtrees
+    VectorIterator deriv_it = vec_get_iterator(&rulesets[1]);
+    while (apply_ruleset_by_iterator(tree, (Iterator*)&deriv_it, 1) != 0)
+    {
+        iterator_reset((Iterator*)&deriv_it);
+        replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
+    };
 
     // If the tree still contains deriv-operators, the user attempted to derivate 
     // a subtree for which no reduction rule exists.
@@ -164,17 +168,21 @@ bool core_simplify(Node **tree)
 
     apply_ruleset(tree, &rulesets[2], SIZE_MAX); // Normal form rules
     replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
-    replace_negative_consts(tree);
 
-    apply_ruleset(tree, &rulesets[3], SIZE_MAX); // Simplification
-    replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
-    replace_negative_consts(tree);
+    while (apply_ruleset(tree, &rulesets[3], 10) != 0)
+    {
+        replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
+    }; // Simplification
 
     apply_ruleset(tree, &rulesets[4], SIZE_MAX); // Remove sum() and prod()
     replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
     replace_negative_consts(tree);
 
-    apply_ruleset(tree, &rulesets[5], SIZE_MAX); // Pretty rules
+    #ifdef DEBUG
+    printf("Beginning with pretty printing...\n");
+    #endif
+
+    apply_ruleset(tree, &rulesets[5], SIZE_MAX); // Pretty printing
     replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
     replace_negative_consts(tree);
 

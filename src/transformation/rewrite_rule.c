@@ -142,6 +142,12 @@ Summary: Tries to apply rules (priorized by order) until no rule can be applied 
 #include "../tree/tree_to_string.h"
 size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator, size_t cap)
 {
+    #ifdef DEBUG
+    printf("Starting with: ");
+    print_tree(*tree, true);
+    printf("\n");
+    #endif
+
     size_t counter = 0;
     while (true)
     {
@@ -165,13 +171,19 @@ size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator, size_t cap)
         if (!applied_flag)
         {
             #ifdef DEBUG
-            printf("End.\n");
+            printf("Can't apply any rule. End.\n");
             #endif
             return counter;
         }
         else
         {
-            if (counter == cap) return counter;
+            if (counter == cap)
+            {
+                #ifdef DEBUG
+                printf("Iteration cap reached. End.\n");
+                #endif
+                return counter;
+            }
         }
     }
     return 0; // To make compiler happy

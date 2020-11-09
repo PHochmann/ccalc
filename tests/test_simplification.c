@@ -10,10 +10,12 @@
 #include "../src/core/simplification.h"
 #include "../src/parsing/parser.h"
 
-static const size_t NUM_CASES = 9;
+static const size_t NUM_CASES = 11;
 char *cases[] = {
     "x-x",                 "0",
     "x+x",                 "2x",
+    "x+x+x+x+x",           "5x",
+    "x-x-x-x-x",           "-3x",
     "2*(sqrt(2)*x)^2",     "4x^2", // Precision problems
     "(-x)^2 - x^2",        "0",
     "(-x)^(1+1)",          "x^2",
