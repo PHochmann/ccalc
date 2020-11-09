@@ -19,6 +19,10 @@ char *g_reduction_string =
 "root(x, y) -> x^(1/y)";
 
 char *g_derivation_string =
+"x*0               -> 0\n"
+"0*x               -> 0\n"
+"x+0               -> x\n"
+"0+x               -> x\n" // Smart but redundant elimination rules for performance
 "deriv(e, _)       -> 0\n"
 "deriv(pi, _)      -> 0\n"
 "deriv(cX, z)      -> 0\n"
@@ -30,28 +34,22 @@ char *g_derivation_string =
 "deriv(x + y, z)   -> deriv(x, z) + deriv(y, z)\n"
 "deriv(x - y, z)   -> deriv(x, z) - deriv(y, z)\n"
 "deriv(x*y, z)     -> deriv(x, z)*y + x*deriv(y, z)\n"
-"deriv(x/y, z)     -> (deriv(x, z)*y - x*deriv(y, z)) / y^2\n"
 "deriv(sin(x), z)  -> cos(x) * deriv(x, z)\n"
 "deriv(cos(x), z)  -> -sin(x) * deriv(x, z)\n"
 "deriv(tan(x), z)  -> deriv(x, z) * cos(x)^-2\n"
 "deriv(e^y, z)     -> deriv(y, z)*e^y\n"
 "deriv(x^y, z)     -> ((y*deriv(x, z))*x^-1 + deriv(y, z)*ln(x))*x^y\n"
-"deriv(ln(x), z)   -> deriv(x, z)*^-1\n";
+"deriv(ln(x), z)   -> deriv(x, z)*x^(-1)\n";
 
 char *g_normal_form_string =
 "x-y    -> x+(-y)\n"
 "-(x+y) -> -x+(-y)\n"
-"-(x*y) -> (-x)*y\n"
-"dX+cY  -> cY+dX\n"
-"dX*cY  -> cY*dX\n";
+"-(x*y) -> (-x)*y\n";
 
 char *g_simplification_string =
-// Get a nice sum
-"x+y                        -> sum(x,y)\n"
-"sum([xs], sum([ys]), [zs]) -> sum([xs], [ys], [zs])\n"
-"sum([xs])+sum([ys])        -> sum([xs], [ys])\n"
-"x+sum([xs])                -> sum(x, [xs])\n"
-"sum([xs])+x                -> sum([xs], x)\n"
+
+// Misc.
+"--x -> x\n"
 
 // Get a nice product
 "x*y                          -> prod(x,y)\n"
@@ -59,19 +57,22 @@ char *g_simplification_string =
 "prod([xs])*prod([ys])        -> prod([xs], [ys])\n"
 "x*prod([xs])                 -> prod(x, [xs])\n"
 "prod([xs])*x                 -> prod([xs], x)\n"
+// Fast elim
+"prod([_], 0, [_])            -> 0\n"
+"prod([xs], 1, [ys])          -> prod([xs], [ys])\n"
 
-// Move constants and variables to the left
-// Constants left to variables or operators
-"sum([xs], dX, [ys], cY, [zs])  -> sum(cY, [xs], dX, [ys], [zs])\n"
-// Variables left to operators
-"sum([xs], oX, [ys], bY, [zs])  -> sum([xs], bY, [ys], oX, [zs])\n"
-"prod([xs], dX, [ys], cY, [zs]) -> prod(cY, [xs], dX, [ys], [zs])\n"
-"prod([xs], oX, [ys], bY, [zs]) -> prod([xs], bY, [ys], oX, [zs])\n"
+// Get a nice sum
+"x+y                        -> sum(x,y)\n"
+"sum([xs], sum([ys]), [zs]) -> sum([xs], [ys], [zs])\n"
+"sum([xs])+sum([ys])        -> sum([xs], [ys])\n"
+"x+sum([xs])                -> sum(x, [xs])\n"
+"sum([xs])+x                -> sum([xs], x)\n"
+// Fast elim
+"sum([xs], 0, [ys])         -> sum([xs], [ys])\n"
 
 // Simplify sums
 "sum()                        -> 0\n"
 "sum(x)                       -> x\n"
-"sum([xs], 0, [ys])           -> sum([xs], [ys])\n"
 "sum([xs], x, [ys], -x, [zs]) -> sum([xs], [ys], [zs])\n"
 "sum([xs], -x, [ys], x, [zs]) -> sum([xs], [ys], [zs])\n"
 
@@ -82,9 +83,7 @@ char *g_simplification_string =
 "prod([xs], x, [ys], x^y, [zs])   -> prod([xs], x^(y+1), [ys], [zs])\n"
 "prod([xs], x^y, [ys], x, [zs])   -> prod([xs], x^(y+1), [ys], [zs])\n"
 "prod([xs], x^z, [ys], x^y, [zs]) -> prod([xs], x^(y+z), [ys], [zs])\n"
-"prod([_], 0, [_])                -> 0\n"
-"prod([xs], 1, [ys])              -> prod([xs], [ys])\n"
-"prod([xs], -x, [ys])             -> -prod([xs], x, [ys])\n"
+"prod([xs], -1, [ys])             -> -prod([xs], [ys])\n"
 
 // Products within sum
 "sum([xs], prod(a, x), [ys], x, [zs])                          -> sum([xs], prod(a+1, x), [ys], [zs])\n"
@@ -101,6 +100,7 @@ char *g_simplification_string =
 "sum([xs], prod([yy], x, [zz]), [ys], prod([y], x, [z]), [zs]) -> sum([xs], x * (prod([yy],[zz]) + prod([y],[z])), [ys], [zs])\n"
 
 // Powers
+"x^1                              -> x\n"
 "(x^y)^z                          -> x^prod(y, z)\n"
 "prod([xs], x^y, [ys], x^z, [zs]) -> prod([xs], x^(y+z), [ys], [zs])\n"
 //"prod([xs], y^x, [ys], z^x, [zs]) -> prod([xs], (y*z)^x, [ys], [zs])\n"
@@ -108,37 +108,51 @@ char *g_simplification_string =
 "prod(x, [xs])^z                  -> prod(x^z, prod([xs])^z)\n"
 
 // Trigonometrics
-"sum([xs], cos(x)^2, [ys], sin(x)^2) -> sum(1, [xs], [ys], [zs])\n"
-"sum([xs], sin(x)^2, [ys], cos(x)^2) -> sum(1, [xs], [ys], [zs])\n"
-
-// Some special ops
-"min(x, x)     -> x\n"
-"max(x, x)     -> x";
-
-char *g_pretty_string =
+"sum([xs], cos(x)^2, [ys], sin(x)^2)         -> sum(1, [xs], [ys], [zs])\n"
+"sum([xs], sin(x)^2, [ys], cos(x)^2)         -> sum(1, [xs], [ys], [zs])\n"
 "prod([xs], sin(x), [ys], cos(x)^-1, [zs])   -> prod([xs], tan(x), [ys], [zs])\n"
 "prod([xs], sin(x)^y, [ys], cos(x)^-y, [zs]) -> prod([xs], tan(x)^y, [ys], [zs])\n"
 
-"-prod(x, [xs])   -> prod(-x, [xs])\n"
-"-sum([xs], x)    -> -sum([xs])-x\n"
-"prod([xs], x)^cY -> prod([xs])^cY * x^cY\n"
+// Some special ops
+"min(x, x)     -> x\n"
+"max(x, x)     -> x\n"
 
+// Ordering
+// Move constants and variables to the left
+// Constants left to variables or operators
+"sum([xs], dX, [ys], cY, [zs])  -> sum(cY, [xs], dX, [ys], [zs])\n"
+// Variables left to operators
+"sum([xs], oX, [ys], bY, [zs])  -> sum([xs], bY, [ys], oX, [zs])\n"
+"prod([xs], dX, [ys], cY, [zs]) -> prod(cY, [xs], dX, [ys], [zs])\n"
+"prod([xs], oX, [ys], bY, [zs]) -> prod([xs], bY, [ys], oX, [zs])";
+
+char *g_fold_string =
+"-sum([xs], x)                           -> -sum([xs])-x\n"
+"sum([xs], x)                            -> sum([xs])+x\n"
+"sum(x)                                  -> x\n"
+"prod([xs], x)                           -> prod([xs])*x\n"
+"prod(x)                                 -> x\n"
+"sum([xs], prod([xxs], -x, [yys]), [ys]) -> sum([xs], [ys]) - prod([xxs],x,[yys])\n"
+"prod([xs], x)^cY                        -> prod([xs])^cY * x^cY";
+
+char *g_pretty_string =
+"0*x           -> 0\n"
+"1*x           -> x\n"
+"0+x           -> x\n"
+"x^(-1)        -> 1/x\n"
+"x^1           -> x\n"
+"x*(cY/z)     -> (cY*x)/z\n"
+"x+((-y)/z)    -> x-(y/z)\n"
+"x+(-y*z)      -> x-y*z\n"
 "(x+y)^2       -> x^2 + 2*x*y + y^2\n"
 "cX*(x+y)      -> cX*x + cX*y\n"
 "x+(y+z)       -> x+y+z\n"
 "x*(y*z)       -> x*y*z\n"
-"sum(x, y)     -> x+y\n"
-"sum([xs], x)  -> sum([xs])+x\n"
-"sum(x)        -> x\n"
-"prod(x)       -> x\n"
-"prod(x, y)    -> x*y\n"
-"prod([xs], x) -> prod([xs])*x\n"
 "--x           -> x\n"
 "-1*x          -> -x\n"
 "x+(-y)        -> x-y\n"
-"x^1           -> x\n"
 "root(x, 2)    -> sqrt(x)\n"
-"x^(1/y)       -> root(x, y)\n";
+"x^(1/y)       -> root(x, y)";
 
 bool parse_rule(char *string, ParsingContext *ctx, MappingFilter default_filter, Vector *ruleset)
 {

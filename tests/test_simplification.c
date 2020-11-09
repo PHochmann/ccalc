@@ -20,7 +20,8 @@ char *cases[] = {
     "x'",                  "1",
     "(2x)/(4x)",           "0.5",
     "5x-6x",               "-x",
-    "(10x^10)'''''''''''", "0"
+    "(10x^10)'''''''''''", "0",
+    
 };
 
 bool simplification_test(StringBuilder *error_builder)

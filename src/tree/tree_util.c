@@ -116,7 +116,7 @@ Returns: Number of variable nodes found, i.e. count of out_instances
 */
 size_t get_variable_nodes(const Node **tree, const char *var_name, Node ***out_instances)
 {
-    if (tree == NULL || var_name == NULL || out_instances == NULL) return 0;
+    if (tree == NULL || var_name == NULL) return 0;
 
     switch (get_type(*tree))
     {
@@ -142,7 +142,8 @@ size_t get_variable_nodes(const Node **tree, const char *var_name, Node ***out_i
             size_t res = 0;
             for (size_t i = 0; i < get_num_children(*tree); i++)
             {
-                res += get_variable_nodes((const Node**)get_child_addr(*tree, i), var_name, out_instances + res);
+                res += get_variable_nodes((const Node**)get_child_addr(*tree, i), var_name,
+                    out_instances != NULL ? out_instances + res : NULL);
             }
             return res;
         }

@@ -28,8 +28,10 @@ typedef struct {
 The following functions are used for polymorphism of different Node types
 */
 
+#include <stdio.h>
 Node *malloc_variable_node(const char *var_name, size_t id)
 {
+    if (strcmp(var_name, "^") == 0) printf("WTFFFFFFFFFFFFF\n");
     VariableNode *res = malloc_wrapper(sizeof(VariableNode) + (strlen(var_name) + 1) * sizeof(char));
     if (res == NULL) return NULL;
     res->base.type = NTYPE_VARIABLE;

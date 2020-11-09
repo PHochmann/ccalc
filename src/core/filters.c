@@ -73,7 +73,7 @@ bool exponent_even_filter(const char *var, NodeList nodes, __attribute__((unused
     }
 }
 
-// deriv(y, x) -> 0
+// deriv(x,y) -> 0
 bool constant_derivative_filter(const char *var, NodeList nodes, Matching *m)
 {
     if (strcmp(var, "y") == 0)
