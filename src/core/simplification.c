@@ -59,6 +59,15 @@ void init_simplification()
         parse_ruleset_from_string(g_rulestrings[i], g_ctx, prefix_filter, rulesets + i);
     }
 
+    // Speciality for pretty-ruleset: Replace xC with unary minus operator with corresponding double in rules
+    // This allows for an ordering of constants < variables < operators since e.g. "-1" is no operator but a constant
+    /*for (size_t i = 0; i < vec_count(rulesets + 5); i++)
+    {
+        RewriteRule *rule = (RewriteRule*)vec_get(rulesets + 5, i);
+        replace_constant_subtrees(&rule->after, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
+        replace_constant_subtrees(&rule->before, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
+    }*/
+
     // Add rules with special filters
     add_to_ruleset(&rulesets[1], get_rule(P("deriv(x,y)"), P("0"), constant_derivative_filter));
     add_to_ruleset(&rulesets[3], get_rule(P("(-x)^y"), P("x^y"), exponent_even_filter));
@@ -166,23 +175,38 @@ bool core_simplify(Node **tree)
     replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
     replace_negative_consts(tree);
 
+    printf("\n\nBeginning with flattening...\n");
+
     apply_ruleset(tree, &rulesets[2], SIZE_MAX); // Normal form rules
     replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
 
-    while (apply_ruleset(tree, &rulesets[3], 10) != 0)
+    printf("\n\nBeginning with main simplification...\n");
+
+    // Simplification - don't hang forever
+    size_t simp_cap = 1000000;
+    while (apply_ruleset(tree, &rulesets[3], 10) != 0 && simp_cap-- != 0)
     {
         replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
-    }; // Simplification
+    }
+    replace_negative_consts(tree);
+
+    print_tree(*tree, true);
+    printf("\n");
+
+    printf("\n\nBeginning with folding...\n");
 
     apply_ruleset(tree, &rulesets[4], SIZE_MAX); // Remove sum() and prod()
     replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
     replace_negative_consts(tree);
 
-    #ifdef DEBUG
-    printf("Beginning with pretty printing...\n");
-    #endif
+    printf("\n\nBeginning with pretty printing...\n");
 
     apply_ruleset(tree, &rulesets[5], SIZE_MAX); // Pretty printing
+    replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
+
+    printf("\n\nBeginning with ordering...\n");
+
+    apply_ruleset(tree, &rulesets[6], SIZE_MAX); // Ordering
     replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
     replace_negative_consts(tree);
 

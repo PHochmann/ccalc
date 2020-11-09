@@ -10,20 +10,22 @@
 #include "../src/core/simplification.h"
 #include "../src/parsing/parser.h"
 
-static const size_t NUM_CASES = 11;
+static const size_t NUM_CASES = 12;
 char *cases[] = {
     "x-x",                 "0",
     "x+x",                 "2x",
     "x+x+x+x+x",           "5x",
     "x-x-x-x-x",           "-3x",
+    "10x-x-x-x-10x",       "-3x",
     "2*(sqrt(2)*x)^2",     "4x^2", // Precision problems
     "(-x)^2 - x^2",        "0",
     "(-x)^(1+1)",          "x^2",
-    "x'",                  "1",
     "(2x)/(4x)",           "0.5",
     "5x-6x",               "-x",
-    "(10x^10)'''''''''''", "0",
     
+    // Derivative
+    "x'",                  "1",
+    "(10x^10)'''''''''''", "0",    
 };
 
 bool simplification_test(StringBuilder *error_builder)
