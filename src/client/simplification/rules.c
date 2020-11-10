@@ -208,7 +208,7 @@ char *g_rulestrings[NUM_RULESETS] = {
     "dX+cX         -> cX+dX"
 };
 
-bool parse_rule(char *string, ParsingContext *ctx, MappingFilter default_filter, Vector *ruleset)
+bool parse_rule(char *string, ParsingContext *ctx, Vector *ruleset)
 {
     if (string[0] == '\0')
     {
@@ -237,11 +237,11 @@ bool parse_rule(char *string, ParsingContext *ctx, MappingFilter default_filter,
         return false;
     }
 
-    add_to_ruleset(ruleset, get_rule(left_n, right_n, default_filter));
+    add_to_ruleset(ruleset, get_rule(left_n, right_n));
     return true;
 }
 
-bool parse_ruleset_from_string(char *string, ParsingContext *ctx, MappingFilter default_filter, Vector *out_ruleset)
+bool parse_ruleset_from_string(char *string, ParsingContext *ctx, Vector *out_ruleset)
 {
     // String is likely to be readonly - copy it
     char *copy = malloc_wrapper(strlen(string) + 1);
@@ -258,7 +258,7 @@ bool parse_ruleset_from_string(char *string, ParsingContext *ctx, MappingFilter 
             next_line[0] = '\0';
         }
 
-        if (!parse_rule(line, ctx, default_filter, out_ruleset))
+        if (!parse_rule(line, ctx, out_ruleset))
         {
             software_defect("Failed parsing ruleset in line %zu.\n", line_no);
         }

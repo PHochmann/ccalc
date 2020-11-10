@@ -10,7 +10,7 @@
 #include "../src/core/simplification.h"
 #include "../src/parsing/parser.h"
 
-static const size_t NUM_CASES = 14;
+static const size_t NUM_CASES = 15;
 char *cases[] = {
     "x-x",                 "0",
     "x+x",                 "2x",
@@ -24,6 +24,7 @@ char *cases[] = {
     "5x-6x",               "-x",
     "100x%",               "x",
     "(x^2+x^3)x^4",        "x^7+x^6",
+    "sqrt(x)/sqrt(x y)",   "1/sqrt(y)",
     
     // Derivative
     "x'",                  "1",

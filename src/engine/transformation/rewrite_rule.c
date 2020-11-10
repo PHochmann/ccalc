@@ -8,22 +8,21 @@
 #include "../tree/tree_to_string.h"
 #include "../core/evaluation.h"
 #include "rewrite_rule.h"
+#include "transformation.h"
 #include "matching.h"
 
 /*
 Summary: Constructs new rule. Warning: "before" and "after" are not copied, so don't free them!
 */
-RewriteRule get_rule(Node *before, Node *after, MappingFilter filter)
+RewriteRule get_rule(Pattern *pattern, Node *after)
 {
-    preprocess_pattern(before);
-
     const char *after_vars[count_all_variable_nodes(after)];
     size_t num_vars_distinct = list_variables(after, SIZE_MAX, after_vars);
     for (size_t i = 0; i < num_vars_distinct; i++)
     {
-        if (get_variable_nodes((const Node**)&before, after_vars[i], NULL) == 0)
+        if (get_variable_nodes((const Node**)&pattern->pattern, after_vars[i], NULL) == 0)
         {
-            print_tree(before, true);
+            print_tree(pattern->pattern, true);
             printf("\n");
             print_tree(after, true);
             printf("\n");
@@ -32,9 +31,8 @@ RewriteRule get_rule(Node *before, Node *after, MappingFilter filter)
     }
 
     return (RewriteRule){
-        .before = before,
+        .pattern = pattern,
         .after  = after,
-        .filter = filter
     };
 }
 
@@ -43,85 +41,26 @@ Summary: Frees trees "before" and "after"
 */
 void free_rule(RewriteRule rule)
 {
-    free_tree(rule.before);
+    pattern_destroy(rule.pattern);
     free_tree(rule.after);
-}
-
-static void transform_matched_recursive(Node **parent, Matching *matching)
-{
-    size_t i = 0;
-    while (i < get_num_children(*parent))
-    {
-        if (get_type(get_child(*parent, i)) == NTYPE_VARIABLE)
-        {
-            for (size_t j = 0; j < matching->num_mapped; j++)
-            {
-                if (strcmp(get_var_name(get_child(*parent, i)), matching->mapped_vars[j]) == 0)
-                {
-                    tree_replace_by_list(parent, i, matching->mapped_nodes[j]);
-                    i += matching->mapped_nodes[j].size - 1;
-                    break;
-                }
-            }
-            i++;
-        }
-        else
-        {
-            if (get_type(get_child(*parent, i)) == NTYPE_OPERATOR)
-            {
-                transform_matched_recursive(get_child_addr(*parent, i), matching);
-            }
-            i++;
-        }
-    }
-}
-
-/*
-Summary: Substitutes subtree in which matching was found according to rule
-*/
-void transform_matched(Node *rule_after, Matching *matching, Node **matched_subtree)
-{
-    if (rule_after == NULL || matching == NULL) return;
-    Node *transformed = tree_copy(rule_after);
-
-    if (get_type(transformed) == NTYPE_OPERATOR)
-    {
-        transform_matched_recursive(&transformed, matching);
-    }
-    else
-    {
-        if (get_type(transformed) == NTYPE_VARIABLE)
-        {
-            for (size_t j = 0; j < matching->num_mapped; j++)
-            {
-                if (strcmp(get_var_name(transformed), matching->mapped_vars[j]) == 0)
-                {
-                    if (matching->mapped_nodes[j].size != 1) 
-                    {
-                        software_defect("Trying to replace root with a list > 1.\n");
-                    }
-                    tree_replace(&transformed, tree_copy(matching->mapped_nodes[j].nodes[0]));
-                    break;
-                }
-            }
-        }
-    }
-    
-    tree_replace(matched_subtree, transformed);
 }
 
 /*
 Summary: Tries to find matching in tree and directly transforms tree by it
 Returns: True when matching could be applied, false otherwise
+Params
+    eval: Is allowed to be NULL
 */
-bool apply_rule(Node **tree, const RewriteRule *rule)
+bool apply_rule(Node **tree, const RewriteRule *rule, Evaluation eval)
 {
     Matching matching;
     // Try to find matching in tree with pattern specified in rule
-    Node **res = find_matching((const Node**)tree, rule->before, &matching, rule->filter);
-    if (res == NULL) return false;
+    Node **matched_subtree = find_matching((const Node**)tree, rule->pattern, eval, &matching);
+    if (matched_subtree == NULL) return false;
     // If matching is found, transform tree with it
-    transform_matched(rule->after, &matching, res);
+    Node *transformed = tree_copy(rule->after);
+    transform_by_matching(transformed, &matching);
+    tree_replace(matched_subtree, transformed);
     return true;
 }
 
@@ -135,7 +74,7 @@ void add_to_ruleset(Vector *rules, RewriteRule rule)
     VEC_PUSH_ELEM(rules, RewriteRule, rule);
 }
 
-void free_ruleset(Ruleset *rules)
+void free_ruleset(Vector *rules)
 {
     for (size_t i = 0; i < vec_count(rules); i++)
     {
@@ -144,17 +83,17 @@ void free_ruleset(Ruleset *rules)
     vec_destroy(rules);
 }
 
-size_t apply_ruleset(Node **tree, const Ruleset *ruleset, size_t cap)
+size_t apply_ruleset(Node **tree, const Vector *ruleset, Evaluation eval, size_t cap)
 {
     VectorIterator iterator = vec_get_iterator(ruleset);
-    return apply_ruleset_by_iterator(tree, (Iterator*)&iterator, cap);
+    return apply_ruleset_by_iterator(tree, (Iterator*)&iterator, eval, cap);
 }
 
 /*
 Summary: Tries to apply rules (priorized by order) until no rule can be applied any more
     Guarantees to terminate after MAX_RULESET_ITERATIONS rule appliances
 */
-size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator, size_t cap)
+size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator, Evaluation eval, size_t cap)
 {
     #ifdef DEBUG
     printf("Starting with: ");
@@ -169,7 +108,7 @@ size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator, size_t cap)
         RewriteRule *curr_rule = NULL;
         while ((curr_rule = (RewriteRule*)iterator_get_next(iterator)) != NULL)
         {
-            if (apply_rule(tree, curr_rule))
+            if (apply_rule(tree, curr_rule, eval))
             {
                 #ifdef DEBUG
                 printf("Applied rule ");

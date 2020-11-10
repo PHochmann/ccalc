@@ -3,12 +3,19 @@
 #include <stdint.h>
 
 #include "matching.h"
+#include "transformation.h"
 #include "../util/vector.h"
 #include "../tree/tree_util.h"
 #include "../util/console_util.h"
 #include "../util/string_util.h"
 
 #define VECTOR_STARTSIZE 1
+
+// On heap during matching
+typedef struct {
+    Pattern *pattern;
+    Evaluation eval;
+} MatchingContext;
 
 // A suffix-tree is used to lookup common prefixes of matchings
 typedef struct {
@@ -20,28 +27,29 @@ typedef struct {
     size_t parent_index;      // Index of parent node within suffix-vector
 } SuffixNode;
 
-static void extend_matching(Matching matching,
+static void extend_matching(MatchingContext *ctx,
+    Matching matching,
     const Node *pattern,
     NodeList tree_list,
-    Vector *out_matchings,
-    MappingFilter filter);
+    Vector *out_matchings);
 
-static void fill_suffix(size_t curr_index,
+static void fill_suffix(
+    MatchingContext *ctx,
+    size_t curr_index,
     const Node **pattern_children,
     const Node **tree_children,
     Vector *matchings,
-    Vector *suffixes,
-    MappingFilter filter)
+    Vector *suffixes)
 {
     if (((SuffixNode*)vec_get(suffixes, curr_index))->first_match_index != SIZE_MAX) return;
 
     // Recursively fill all suffix nodes before
-    fill_suffix(((SuffixNode*)vec_get(suffixes, curr_index))->parent_index,
+    fill_suffix(ctx,
+        ((SuffixNode*)vec_get(suffixes, curr_index))->parent_index,
         pattern_children,
         tree_children,
         matchings,
-        suffixes,
-        filter);
+        suffixes);
 
     // We can save curr for readability and performance because we won't insert into the vector
     SuffixNode *curr = (SuffixNode*)vec_get(suffixes, curr_index);
@@ -51,23 +59,24 @@ static void fill_suffix(size_t curr_index,
     {
         // Extend every single matching in parent with additional parameters of this node
         extend_matching(
+            ctx,
             *(Matching*)vec_get(matchings, ((SuffixNode*)vec_get(suffixes, curr->parent_index))->first_match_index + i),
             pattern_children[curr->distance - 1],
             (NodeList){ .size = curr->label, .nodes = tree_children + curr->sum },
-            matchings,
-            filter);
+            matchings);
     }
 
     curr->num_matchings = vec_count(matchings) - curr->first_match_index;
 }
 
-static void match_parameter_lists(Matching matching,
+static void match_parameter_lists(
+    MatchingContext *ctx,
+    Matching matching,
     size_t num_pattern_children,
     const Node **pattern_children,
     size_t num_tree_children,
     const Node **tree_children,
-    Vector *out_matchings,
-    MappingFilter filter)
+    Vector *out_matchings)
 {
     Vector vec_local_matchings = vec_create(sizeof(Matching), VECTOR_STARTSIZE);
     Vector vec_suffixes = vec_create(sizeof(SuffixNode), VECTOR_STARTSIZE);
@@ -97,7 +106,7 @@ static void match_parameter_lists(Matching matching,
                 tree_children,
                 &vec_local_matchings,
                 &vec_suffixes,
-                filter);
+                ctx);
 
             // Update curr
             curr = *(SuffixNode*)vec_get(&vec_suffixes, curr_index);
@@ -194,11 +203,12 @@ static bool nodelists_equal(const NodeList *a, const NodeList *b)
     return true;
 }
 
-static void extend_matching(Matching matching,
+static void extend_matching(
+    MatchingContext *ctx,
+    Matching matching,
     const Node *pattern,
     NodeList tree_list,
-    Vector *out_matchings,
-    MappingFilter filter)
+    Vector *out_matchings)
 {
     switch (get_type(pattern))
     {
@@ -228,10 +238,19 @@ static void extend_matching(Matching matching,
             }
             else
             {
-                // Check with filter if it's okay to bind
-                if (filter != NULL && !filter(var_name, tree_list, &matching))
+                // Check constraints if its okay to bind
+                for (size_t i = 0; i < ctx->pattern->num_constraints[id]; i++)
                 {
-                    return;
+                    Node *cpy_l = tree_copy(ctx->pattern->constraints[id][i].lhs);
+                    Node *cpy_r = tree_copy(ctx->pattern->constraints[id][i].rhs);
+                    transform_by_matching(cpy_l, &matching);
+                    transform_by_matching(cpy_r, &matching);
+                    tree_replace_constant_subtrees(&cpy_l, ctx->eval, 0, NULL);
+                    tree_replace_constant_subtrees(&cpy_r, ctx->eval, 0, NULL);
+                    bool res = tree_equals(cpy_l, cpy_r);
+                    free_tree(cpy_l);
+                    free_tree(cpy_r);
+                    if (!res) return;
                 }
 
                 matching.mapped_vars[id]  = var_name;
@@ -259,29 +278,37 @@ static void extend_matching(Matching matching,
                 && get_type(tree_list.nodes[0]) == NTYPE_OPERATOR
                 && get_op(pattern) == get_op(tree_list.nodes[0]))
             {
-                match_parameter_lists(matching,
+                match_parameter_lists(ctx,
+                    matching,
                     get_num_children(pattern),
                     (const Node**)get_child_addr(pattern, 0),
                     get_num_children(tree_list.nodes[0]),
                     (const Node**)get_child_addr(tree_list.nodes[0], 0),
-                    out_matchings,
-                    filter);
+                    out_matchings);
             }
         }
     }
 }
 
-size_t get_all_matchings(const Node **tree, const Node *pattern, Matching **out_matchings, MappingFilter filter)
+size_t get_all_matchings(const Node **tree, const Pattern *pattern, Evaluation eval, Matching **out_matchings)
 {
     if (tree == NULL || pattern == NULL || out_matchings == NULL) return false;
+
     // Due to exponentially many partitions, a lot of states can occur. Use heap.
     Vector result = vec_create(sizeof(Matching), VECTOR_STARTSIZE);
+
+    // Create context object and put it on heap, this saves stack space during recursion
+    MatchingContext ctx = (MatchingContext){
+        .pattern = pattern,
+        .eval = eval
+    };
+
     extend_matching(
+        &ctx,
         (Matching){ .num_mapped = 0 },
         pattern,
         (NodeList){ .size = 1, .nodes = tree },
-        &result,
-        filter);
+        &result);
     *out_matchings = (Matching*)result.buffer;
     return result.elem_count;
 }
@@ -290,12 +317,12 @@ size_t get_all_matchings(const Node **tree, const Node *pattern, Matching **out_
 Summary: suffixess to match "tree" against "pattern" (only in root)
 Returns: True, if matching is found, false if NULL-pointers given in arguments or no matching found
 */
-bool get_matching(const Node **tree, const Node *pattern, Matching *out_matching, MappingFilter filter)
+bool get_matching(const Node **tree, const Pattern *pattern, Evaluation eval, Matching *out_matching)
 {
     if (tree == NULL || pattern == NULL || out_matching == NULL) return false;
 
     Matching *matchings;
-    size_t num_matchings = get_all_matchings(tree, pattern, &matchings, filter);
+    size_t num_matchings = get_all_matchings(tree, pattern, eval, &matchings);
 
     // Return first matching if any
     if (num_matchings > 0)
@@ -314,14 +341,14 @@ bool get_matching(const Node **tree, const Node *pattern, Matching *out_matching
 /*
 Summary: Looks for matching in tree, i.e. suffixess to construct matching in each node until matching is found (Top-Down)
 */
-Node **find_matching(const Node **tree, const Node *pattern, Matching *out_matching, MappingFilter filter)
+Node **find_matching(const Node **tree, const Pattern *pattern, Evaluation eval, Matching *out_matching)
 {
-    if (get_matching(tree, pattern, out_matching, filter)) return (Node**)tree;
+    if (get_matching(tree, pattern, eval, out_matching)) return (Node**)tree;
     if (get_type(*tree) == NTYPE_OPERATOR)
     {
         for (size_t i = 0; i < get_num_children(*tree); i++)
         {
-            Node **res = find_matching((const Node**)get_child_addr(*tree, i), pattern, out_matching, filter);
+            Node **res = find_matching((const Node**)get_child_addr(*tree, i), pattern, eval, out_matching);
             if (res != NULL) return res;
         }
     }
@@ -331,10 +358,10 @@ Node **find_matching(const Node **tree, const Node *pattern, Matching *out_match
 /*
 Summary: Basically the same as find_matching, but discards matching
 */
-bool does_match(const Node *tree, const Node *pattern, MappingFilter filter)
+bool does_match(const Node *tree, const Pattern *pattern, Evaluation eval)
 {
     Matching matching;
-    if (find_matching((const Node**)&tree, pattern, &matching, filter) != NULL)
+    if (find_matching((const Node**)&tree, pattern, eval, &matching) != NULL)
     {
         return true;
     }
@@ -345,31 +372,83 @@ bool does_match(const Node *tree, const Node *pattern, MappingFilter filter)
 }
 
 /*
-Summary: Sets ids of variable nodes for faster lookup while matching
+Summary: - Sets ids of variable nodes for faster lookup while matching
+         - Computes trigger-indices for constraints
 */
-void preprocess_pattern(Node *tree)
+Pattern pattern_create(Node *tree, size_t num_constraints, Node **constr_l, Node **constr_r)
 {
+    Pattern res = (Pattern){
+        .pattern         = tree,
+        .num_constraints = { 0 }
+    };
+
     size_t num_vars = count_all_variable_nodes(tree);
     const char *vars[num_vars];
     size_t num_vars_distinct = list_variables(tree, num_vars, vars);
 
-    size_t counter = 0;
+    // Step 1: Set id in pattern tree
+    size_t curr_id = 0;
     for (size_t i = 0; i < num_vars_distinct; i++)
     {
         if (vars[i][0] != MATCHING_WILDCARD
             && (vars[i][0] != MATCHING_LIST_PREFIX || vars[i][1] != MATCHING_WILDCARD))
         {
-            if (counter == MAX_MAPPED_VARS)
+            if (curr_id == MAX_MAPPED_VARS)
             {
                 software_defect("Trying to preprocess a pattern with too many distinct variables. Increase MAX_MAPPED_VARS.\n");
             }
+
             Node **nodes[num_vars];
             size_t num_nodes = get_variable_nodes((const Node**)&tree, vars[i], nodes);
             for (size_t j = 0; j < num_nodes; j++)
             {
-                set_id(*(nodes[j]), counter);
+                set_id(*(nodes[j]), curr_id);
             }
-            counter++;
+            curr_id++;
+        }
+    }
+
+
+    // Step 2: Compute contraints that should be checked when variable with this id is bound
+    // This involves computing the variable with the highest id that occurs in the constraint
+    for (size_t i = 0; i < num_constraints; i++)
+    {
+        size_t max_id = 0;
+        curr_id = 0;
+        for (size_t i = 0; i < num_vars_distinct; i++)
+        {
+            if (vars[i][0] != MATCHING_WILDCARD
+                && (vars[i][0] != MATCHING_LIST_PREFIX || vars[i][1] != MATCHING_WILDCARD))
+            {
+                if (get_variable_nodes(constr_l + i, vars[curr_id], NULL) != 0
+                    || get_variable_nodes(constr_r + i, vars[curr_id], NULL) != 0)
+                {
+                    max_id = curr_id;
+                }
+                curr_id++;
+            }
+        }
+
+        // max_id contains trigger index
+        res.constraints[max_id][res.num_constraints[max_id]] = (PatternConstraint){
+            .lhs = constr_l[i],
+            .rhs = constr_r[i]
+        };
+        res.num_constraints[max_id]++;
+    }
+
+    return res;
+}
+
+void pattern_destroy(Pattern *pattern)
+{
+    free_tree(pattern->pattern);
+    for (size_t i = 0; i < MAX_MAPPED_VARS; i++)
+    {
+        for (size_t j = 0; j < pattern->num_constraints[i]; j++)
+        {
+            free_tree(pattern->constraints[i][j].lhs);
+            free_tree(pattern->constraints[i][j].rhs);
         }
     }
 }

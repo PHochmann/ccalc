@@ -16,4 +16,4 @@ size_t list_variables(const Node *tree, size_t buffer_size, const char **out_var
 Node **find_op(const Node **tree, const Operator *op);
 size_t replace_variable_nodes(Node **tree, const Node *tree_to_copy, const char *var_name);
 bool tree_reduce(const Node *tree, Evaluation eval, double *out);
-void replace_constant_subtrees(Node **tree, Evaluation eval, size_t num_dont_reduce, const Operator **dont_reduce);
+void tree_replace_constant_subtrees(Node **tree, Evaluation eval, size_t num_dont_reduce, const Operator **dont_reduce);

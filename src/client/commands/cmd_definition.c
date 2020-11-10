@@ -2,12 +2,12 @@
 #include <string.h>
 
 #include "cmd_definition.h"
-#include "../util/string_util.h"
-#include "../util/console_util.h"
-#include "../tree/node.h"
-#include "../tree/tree_util.h"
-#include "../parsing/tokenizer.h"
-#include "../transformation/rewrite_rule.h"
+#include "../../engine/util/string_util.h"
+#include "../../engine/util/console_util.h"
+#include "../../engine/tree/node.h"
+#include "../../engine/tree/tree_util.h"
+#include "../../engine/parsing/tokenizer.h"
+#include "../../engine/transformation/rewrite_rule.h"
 #include "../core/arith_context.h"
 
 #define DEFINITION_OP   "="

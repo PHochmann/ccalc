@@ -10,7 +10,7 @@
 #include "../util/linked_list.h"
 #include "simplification.h"
 #include "arith_context.h"
-#include "evaluation.h"
+#include "arith_evaluation.h"
 #include "rules.h"
 #include "filters.h"
 

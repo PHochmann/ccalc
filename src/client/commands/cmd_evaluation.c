@@ -2,13 +2,14 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "../../engine/util/console_util.h"
+#include "../../engine/tree/tree_to_string.h"
+#include "../../engine/tree/tree_util.h"
+
 #include "cmd_evaluation.h"
-#include "../util/console_util.h"
-#include "../tree/tree_to_string.h"
-#include "../tree/tree_util.h"
 #include "../core/arith_context.h"
 #include "../core/history.h"
-#include "../core/evaluation.h"
+#include "../core/arith_evaluation.h"
 
 #define ERROR_FMT        "Error: %s.\n"
 #define ASK_VARIABLE_FMT "%s? "

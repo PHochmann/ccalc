@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "../../engine/util/string_util.h"
+#include "../../engine/tree/operator.h"
+#include "../../engine/tree/tree_to_string.h"
+#include "../../engine/table/table.h"
+
 #include "cmd_help.h"
 #include "../version.h"
-#include "../util/string_util.h"
-#include "../tree/operator.h"
-#include "../tree/tree_to_string.h"
 #include "../core/arith_context.h"
-#include "../table/table.h"
-#include "../core/evaluation.h"
 
 #define HELP        "help"
 #define HELP_OPS    "help operators"
@@ -291,7 +291,7 @@ void print_short_help()
         while (curr != NULL)
         {
             RewriteRule *rule = (RewriteRule*)curr->data;
-            add_cell_gc(table, tree_to_str(rule->before, true));
+            add_cell_gc(table, tree_to_str(rule->pattern.pattern, true));
             add_cell(table, " = ");
             add_cell_gc(table, tree_to_str(rule->after, true));
             next_row(table);

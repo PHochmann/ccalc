@@ -288,7 +288,7 @@ Params:
     dont_reduce:     Array of operators that will not be reduced.
                      NULL can be passed if num_dont_reduce is 0
 */
-void replace_constant_subtrees(Node **tree, Evaluation eval, size_t num_dont_reduce, const Operator **dont_reduce)
+void tree_replace_constant_subtrees(Node **tree, Evaluation eval, size_t num_dont_reduce, const Operator **dont_reduce)
 {
     bool is_constant = (count_all_variable_nodes(*tree) == 0);
     bool no_dont_reduce = true;
