@@ -25,7 +25,7 @@ endif
 ifneq (,$(filter $(MAKECMDGOALS),tests))
 	BUILD_DIR := ./bin/tests
 	SRC_DIRS += ./tests
-	CFLAGS += -DDEBUG
+	#CFLAGS += -DDEBUG
 	SRCS = $(shell find $(SRC_DIRS) -name *.c ! -wholename "./src/main.c")
 	TARGET_EXEC := test
 else

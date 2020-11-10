@@ -171,10 +171,10 @@ size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator, size_t cap)
         {
             if (apply_rule(tree, curr_rule))
             {
-                //print_tree(curr_rule->before, true);
-                //printf("\n");
                 #ifdef DEBUG
-                printf("Applied rule: ");
+                printf("Applied rule ");
+                print_tree(curr_rule->before, true);
+                printf(" : ");
                 print_tree(*tree, true);
                 printf("\n");
                 #endif
