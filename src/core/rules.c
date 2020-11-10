@@ -95,17 +95,17 @@ char *g_rulestrings[NUM_RULESETS] = {
     // Products within sum
     "sum([xs], x, [ys], x, [zs]) -> sum([xs], prod(2,x), [ys], [zs])\n"
 
-    "sum([xs], prod([xxs], x, [yys]), [ys], -x, [zs]) -> sum([xs], prod(sum(prod([xxs], [yys]), -1), x), [ys], [zs])\n"
-    "sum([xs], -x, [ys], prod([xxs], x, [yys]), [zs]) -> sum([xs], prod(sum(prod([xxs], [yys]), -1), x), [ys], [zs])\n"
-    "sum([xs], prod([xxs], x, [yys]), [ys], x, [zs]) -> sum([xs], prod(sum(prod([xxs], [yys]), 1), x), [ys], [zs])\n"
-    "sum([xs], x, [ys], prod([xxs], x, [yys]), [zs]) -> sum([xs], prod(sum(prod([xxs], [yys]), 1), x), [ys], [zs])\n"
+    "sum([xs], prod([xxs], x, [yys]), [ys], -x, [zs]) -> sum([xs], prod(sum(-1, prod([xxs], [yys])), x), [ys], [zs])\n"
+    "sum([xs], -x, [ys], prod([xxs], x, [yys]), [zs]) -> sum([xs], prod(sum(-1, prod([xxs], [yys])), x), [ys], [zs])\n"
+    "sum([xs], prod([xxs], x, [yys]), [ys], x, [zs]) -> sum([xs], prod(sum(1, prod([xxs], [yys])), x), [ys], [zs])\n"
+    "sum([xs], x, [ys], prod([xxs], x, [yys]), [zs]) -> sum([xs], prod(sum(1, prod([xxs], [yys])), x), [ys], [zs])\n"
 
     "sum([xs], prod([xxs], x, [yys]), [ys], prod([xxxs], x, [yyys]), [zs])"
         "-> sum([xs], prod(sum(prod([xxs], [yys]), prod([xxxs], [yyys])), x), [ys], [zs])\n"
 
     // Sums within products
     // Multipliziere aus falls es sich um Konstanten handelt
-    "prod(cX, [xs], sum(cY, [xxs]), [zs])    -> prod([xs], sum(cX*cY, prod(cX, [xxs])), [zs])\n"
+    "prod(cX, [xs], sum(cY, [xxs]), [zs])    -> prod([xs], sum(cX*cY, prod(cX, sum([xxs]))), [zs])\n"
 
     // The following three rules pull a value of a common base into a product
     // e.g.: x + a*x^z -> (a+z^(1-z))*x^z
@@ -151,8 +151,8 @@ char *g_rulestrings[NUM_RULESETS] = {
     "sum(x+y,[xs],cX,[ys])      -> sum(x+y+cX,[xs],[ys])\n"
     "sum(x,[xs],cX,[ys])        -> sum(cX,x,[xs],[ys])\n"
     "prod([xs],cX,[ys],cY,[zs]) -> prod(cX*cY,[xs],[ys],[zs])\n"
-    "prod(x*y,[xs],cX,[ys])     -> prod(x*y*cX,[xs],[ys])\n"
-    "prod(x,[xs],cX,[ys])       -> prod(cX,x,[xs],[ys])",
+    "prod(x*y,[xs],cX,[ys])     -> prod(x*y*cX,[xs],[ys])",
+    //"prod(x,[xs],cX,[ys])       -> prod(cX,x,[xs],[ys])",
 
 // Fold flattened operators again
     "sum(x)                                  -> x\n"
@@ -175,6 +175,7 @@ char *g_rulestrings[NUM_RULESETS] = {
     "0+x           -> x\n"
     "x^(-1)        -> 1/x\n"
     "x^1           -> x\n"
+    "-(x+y)        -> x-y\n"
 
     "x*(cY/z)      -> (cY*x)/z\n"
     "x+((-y)/z)    -> x-(y/z)\n"

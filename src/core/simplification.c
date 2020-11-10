@@ -175,12 +175,12 @@ bool core_simplify(Node **tree)
     replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
     replace_negative_consts(tree);
 
-    printf("\n\nBeginning with flattening...\n");
+    //printf("\n\nBeginning with flattening...\n");
 
     apply_ruleset(tree, &rulesets[2], SIZE_MAX); // Normal form rules
     replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
 
-    printf("\n\nBeginning with main simplification...\n");
+    //printf("\n\nBeginning with main simplification...\n");
 
     // Simplification - don't hang forever
     size_t simp_cap = 1000000;
@@ -190,21 +190,21 @@ bool core_simplify(Node **tree)
     }
     replace_negative_consts(tree);
 
-    print_tree(*tree, true);
-    printf("\n");
+    //print_tree(*tree, true);
+    //printf("\n");
 
-    printf("\n\nBeginning with folding...\n");
+    //printf("\n\nBeginning with folding...\n");
 
     apply_ruleset(tree, &rulesets[4], SIZE_MAX); // Remove sum() and prod()
     replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
     replace_negative_consts(tree);
 
-    printf("\n\nBeginning with pretty printing...\n");
+    //printf("\n\nBeginning with pretty printing...\n");
 
     apply_ruleset(tree, &rulesets[5], SIZE_MAX); // Pretty printing
     replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
 
-    printf("\n\nBeginning with ordering...\n");
+    //printf("\n\nBeginning with ordering...\n");
 
     apply_ruleset(tree, &rulesets[6], SIZE_MAX); // Ordering
     replace_constant_subtrees(tree, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
