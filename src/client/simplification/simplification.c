@@ -12,7 +12,6 @@
 #include "arith_context.h"
 #include "arith_evaluation.h"
 #include "rules.h"
-#include "filters.h"
 
 #define P(x) parse_conveniently(g_ctx, x)
 
@@ -56,7 +55,7 @@ void init_simplification()
     for (size_t i = 0; i < NUM_RULESETS; i++)
     {
         rulesets[i] = get_empty_ruleset();
-        parse_ruleset_from_string(g_rulestrings[i], g_ctx, prefix_filter, rulesets + i);
+        parse_ruleset_from_string(g_rulestrings[i], g_ctx, rulesets + i);
     }
 
     // Speciality for pretty-ruleset: Replace xC with unary minus operator with corresponding double in rules
@@ -67,10 +66,6 @@ void init_simplification()
         replace_constant_subtrees(&rule->after, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
         replace_constant_subtrees(&rule->before, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
     }*/
-
-    // Add rules with special filters
-    add_to_ruleset(&rulesets[1], get_rule(P("deriv(x,y)"), P("0"), constant_derivative_filter));
-    add_to_ruleset(&rulesets[3], get_rule(P("(-x)^y"), P("x^y"), exponent_even_filter));
 
     deriv_before = P("x'");
     deriv_after = P("deriv(x, z)");
@@ -146,8 +141,8 @@ bool core_simplify(Node **tree)
         tree_replace(matched, replacement);
     }
 
-    if (does_match(*tree, malformed_derivA, prefix_filter)
-        || does_match(*tree, malformed_derivB, prefix_filter))
+    if (does_match(*tree, malformed_derivA)
+        || does_match(*tree, malformed_derivB))
     {
         report_error("Second operand of function 'deriv' must be variable.\n");
         return false;

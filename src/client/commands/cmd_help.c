@@ -5,10 +5,9 @@
 #include "../../engine/tree/operator.h"
 #include "../../engine/tree/tree_to_string.h"
 #include "../../engine/table/table.h"
-
-#include "cmd_help.h"
 #include "../version.h"
 #include "../core/arith_context.h"
+#include "cmd_help.h"
 
 #define HELP        "help"
 #define HELP_OPS    "help operators"

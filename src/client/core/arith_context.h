@@ -1,8 +1,8 @@
 #pragma once
 #include <stdbool.h>
-#include "../parsing/context.h"
-#include "../tree/node.h"
-#include "../transformation/rewrite_rule.h"
+#include "../../engine/parsing/context.h"
+#include "../../engine/tree/node.h"
+#include "../../engine/transformation/rewrite_rule.h"
 
 #define NUM_PREDEFINED_OPS 56
 #define g_ctx (&__g_ctx)
@@ -12,6 +12,7 @@ extern ParsingContext __g_ctx;
 extern LinkedList __g_composite_functions;
 
 void init_arith_ctx();
+ParsingContext get_arith_ctx();
 void unload_arith_ctx();
 
 void add_composite_function(RewriteRule rule);

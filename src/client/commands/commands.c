@@ -1,6 +1,13 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "../../engine/util/string_util.h"
+#include "../../engine/util/console_util.h"
+
+#include "../core/arith_context.h"
+#include "../core/history.h"
+#include "../simplification/simplification.h"
+
 #include "commands.h"
 #include "cmd_evaluation.h"
 #include "cmd_help.h"
@@ -9,14 +16,6 @@
 #include "cmd_definition.h"
 #include "cmd_table.h"
 #include "cmd_playground.h"
-#include "../util/string_util.h"
-#include "../util/console_util.h"
-#include "../core/arith_context.h"
-#include "../core/history.h"
-#include "../core/simplification.h"
-#include "../parsing/tokenizer.h"
-
-#include "../tree/tree_to_string.h"
 
 #define INTERACTIVE_ASK_PREFIX "> "
 #define COMMENT_PREFIX         '\''

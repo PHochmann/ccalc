@@ -1,11 +1,12 @@
-#include "../util/vector.h"
-#include "../util/console_util.h"
-#include "../transformation/matching.h"
-#include "../parsing/parser.h"
-#include "../tree/tree_util.h"
+#include "../../engine/util/vector.h"
+#include "../../engine/util/console_util.h"
+#include "../../engine/transformation/matching.h"
+#include "../../engine/parsing/parser.h"
+#include "../../engine/tree/tree_util.h"
+
 #include "history.h"
 #include "arith_context.h"
-#include "evaluation.h"
+#include "arith_evaluation.h"
 
 #define ERROR_NOT_SET       "Error: This part of the history is not set yet.\n"
 #define ERROR_NOT_CONSTANT  "Error: In @x, x must contain no variable.\n"

@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../transformation/matching.h"
-#include "../util/console_util.h"
-#include "../util/string_util.h"
-#include "../tree/tree_to_string.h"
+#include "../../engine/transformation/matching.h"
+#include "../../engine/util/console_util.h"
+#include "../../engine/util/string_util.h"
+#include "../../engine/tree/tree_to_string.h"
 #include "../core/arith_context.h"
 #include "cmd_playground.h"
 

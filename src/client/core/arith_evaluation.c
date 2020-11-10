@@ -4,9 +4,10 @@
 #include <float.h>
 #include <math.h>
 
-#include "../tree/tree_util.h"
-#include "../util/console_util.h"
-#include "evaluation.h"
+#include "../../engine/tree/tree_util.h"
+#include "../../engine/util/console_util.h"
+
+#include "arith_evaluation.h"
 #include "arith_context.h"
 
 static double euclid(double a, double b)

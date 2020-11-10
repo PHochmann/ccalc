@@ -1,15 +1,15 @@
 #include <string.h>
 
-#include "cmd_table.h"
-#include "../util/console_util.h"
-#include "../util/string_util.h"
-#include "../util/string_builder.h"
-#include "../tree/tree_to_string.h"
-#include "../tree/tree_util.h"
+#include "../../engine/util/console_util.h"
+#include "../../engine/util/string_util.h"
+#include "../../engine/util/string_builder.h"
+#include "../../engine/tree/tree_to_string.h"
+#include "../../engine/tree/tree_util.h"
+#include "../../engine/table/table.h"
 #include "../core/arith_context.h"
 #include "../core/history.h"
-#include "../core/evaluation.h"
-#include "../table/table.h"
+#include "../core/arith_evaluation.h"
+#include "cmd_table.h"
 
 #define COMMAND      "table "
 #define FOLD_KEYWORD " fold "

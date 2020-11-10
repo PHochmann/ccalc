@@ -1,12 +1,4 @@
-#include <string.h>
-#include <stdio.h>
-
 #include "rules.h"
-#include "../util/alloc_wrappers.h"
-#include "../util/console_util.h"
-
-#define ARROW           "->"
-
 
 char *g_rulestrings[NUM_RULESETS] = {
 // Operator elimination (de-sugar)
@@ -65,6 +57,9 @@ char *g_rulestrings[NUM_RULESETS] = {
     "sum([xs])+x                -> sum([xs], x)",
 
 // Main simplification DONT USE INFIX + AND - HERE!
+
+    "(-x)^y -> x^y       where    t(y) = CONST ; y mod 2 = 0"
+
     // Flatten again and easy simplification
     "prod()                       -> 1\n"
     "prod(x)                      -> x\n"
@@ -207,67 +202,3 @@ char *g_rulestrings[NUM_RULESETS] = {
     "dX*-cX        -> -cX*dX\n"
     "dX+cX         -> cX+dX"
 };
-
-bool parse_rule(char *string, ParsingContext *ctx, Vector *ruleset)
-{
-    if (string[0] == '\0')
-    {
-        return true;
-    }
-
-    char *right = strstr(string, ARROW);
-    if (right == NULL)
-    {
-        printf("No arrow found.\n");
-        return false;
-    }
-
-    right[0] = '\0';
-    right += strlen(ARROW);
-    Node *left_n = parse_conveniently(ctx, string); // Gives error message
-    if (left_n == NULL)
-    {
-        return false;
-    }
-
-    Node *right_n = parse_conveniently(ctx, right);
-    if (right_n == NULL)
-    {
-        free_tree(left_n);
-        return false;
-    }
-
-    add_to_ruleset(ruleset, get_rule(left_n, right_n));
-    return true;
-}
-
-bool parse_ruleset_from_string(char *string, ParsingContext *ctx, Vector *out_ruleset)
-{
-    // String is likely to be readonly - copy it
-    char *copy = malloc_wrapper(strlen(string) + 1);
-    strcpy(copy, string);
-
-    size_t line_no = 0;
-    char *line = copy;
-    while (line != NULL)
-    {
-        line_no++;
-        char *next_line = strstr(line, "\n");
-        if (next_line != NULL)
-        {
-            next_line[0] = '\0';
-        }
-
-        if (!parse_rule(line, ctx, out_ruleset))
-        {
-            software_defect("Failed parsing ruleset in line %zu.\n", line_no);
-        }
-
-        line = next_line;
-        if (line != NULL) line++; // Skip newline char
-    }
-
-    vec_trim(out_ruleset);
-    free(copy);
-    return true;
-}

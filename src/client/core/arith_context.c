@@ -1,24 +1,32 @@
 #include <stdio.h>
 #include <time.h>
 
+#include "../../engine/tree/tree_util.h"
+#include "../../engine/util/string_util.h"
+#include "../../engine/util/console_util.h"
+#include "../../engine/parsing/parser.h"
+
+#include "../simplification/simplification.h"
 #include "arith_context.h"
-#include "simplification.h"
 #include "history.h"
-#include "../tree/tree_util.h"
-#include "../util/string_util.h"
-#include "../util/console_util.h"
-#include "../parsing/parser.h"
 
 ParsingContext __g_ctx;
 LinkedList __g_composite_functions;
 
+void init_arith_ctx()
+{
+    __g_ctx = get_arith_ctx();
+    srand(time(NULL));
+    __g_composite_functions = list_create(sizeof(RewriteRule));
+}
+
 /*
 Summary: Sets arithmetic context stored in global variable
 */
-void init_arith_ctx()
+ParsingContext get_arith_ctx()
 {
-    __g_ctx = ctx_create();
-    if (!ctx_add_ops(g_ctx, NUM_PREDEFINED_OPS,
+    ParsingContext res = ctx_create();
+    if (!ctx_add_ops(&res, NUM_PREDEFINED_OPS,
         op_get_prefix("$", 0),
         op_get_prefix("@", 8),
         op_get_postfix("'", 7),
@@ -76,12 +84,10 @@ void init_arith_ctx()
         op_get_constant("clight"),
         op_get_constant("csound")))
     {
-        report_error("Software defect: Inconsistent operator set.\n");
+        software_defect("Inconsistent operator set.\n");
     }
     // Set multiplication as glue-op
-    ctx_set_glue_op(g_ctx, ctx_lookup_op(g_ctx, "*", OP_PLACE_INFIX));
-    srand(time(NULL));
-    __g_composite_functions = list_create(sizeof(RewriteRule));
+    ctx_set_glue_op(&res, ctx_lookup_op(&res, "*", OP_PLACE_INFIX));
 }
 
 void unload_arith_ctx()
@@ -100,9 +106,9 @@ void add_composite_function(RewriteRule rule)
 static void remove_node(ListNode *node)
 {
     RewriteRule *rule = (RewriteRule*)node->data;
-    char *temp = get_op(rule->before)->name;
+    char *temp = get_op(rule->pattern.pattern)->name;
     // Remove function operator from context
-    ctx_delete_op(g_ctx, get_op(rule->before)->name, OP_PLACE_FUNCTION);
+    ctx_delete_op(g_ctx, get_op(rule->pattern.pattern)->name, OP_PLACE_FUNCTION);
     // Free its name since it is malloced by the tokenizer in definition-command
     free(temp);
     // Free elimination rule
@@ -118,7 +124,7 @@ bool remove_composite_function(Operator *function)
     while (curr != NULL)
     {
         RewriteRule *rule = (RewriteRule*)curr->data;
-        if (get_op(rule->before) == function)
+        if (get_op(rule->pattern.pattern) == function)
         {
             remove_node(curr);
             return true;
@@ -144,7 +150,7 @@ RewriteRule *get_composite_function(Operator *op)
     while (curr != NULL)
     {
         RewriteRule *rule = (RewriteRule*)curr->data;
-        if (get_op(rule->before) == op)
+        if (get_op(rule->pattern.pattern) == op)
         {
             return rule;
         }
@@ -193,7 +199,7 @@ bool arith_parse_and_postprocess(char *input, char *error_fmt, Node **out_res)
 bool arith_postprocess(Node **tree)
 {
     LinkedListIterator iterator = list_get_iterator(g_composite_functions);
-    apply_ruleset_by_iterator(tree, (Iterator*)&iterator, SIZE_MAX);
+    apply_ruleset_by_iterator(tree, (Iterator*)&iterator, NULL, SIZE_MAX);
     if (!core_replace_history(tree) || !core_simplify(tree))
     {
         return false;

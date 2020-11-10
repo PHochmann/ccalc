@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "cmd_definition.h"
 #include "../../engine/util/string_util.h"
 #include "../../engine/util/console_util.h"
 #include "../../engine/tree/node.h"
 #include "../../engine/tree/tree_util.h"
 #include "../../engine/parsing/tokenizer.h"
 #include "../../engine/transformation/rewrite_rule.h"
+
+#include "cmd_definition.h"
 #include "../core/arith_context.h"
 
 #define DEFINITION_OP   "="
@@ -141,7 +142,7 @@ static bool add_function(char *name, char *left, char *right)
         {
             RewriteRule *rule = (RewriteRule*)curr->data;
             // Check if variables are unbounded...
-            if (get_variable_nodes((const Node**)&rule->before, name, NULL) == 0)
+            if (get_variable_nodes((const Node**)&rule->pattern.pattern, name, NULL) == 0)
             {
                 // ...if they are, replace them by new definition
                 if (replace_variable_nodes(&rule->after, left_n, name) > 0)
@@ -166,7 +167,7 @@ static bool add_function(char *name, char *left, char *right)
     }
 
     // Add rule to eliminate operator before evaluation
-    add_composite_function(get_rule(left_n, right_n, NULL));
+    add_composite_function(get_rule(left_n, right_n));
     return true;
 
     error:

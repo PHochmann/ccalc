@@ -10,7 +10,7 @@ typedef struct
     Node *after;
 } RewriteRule;
 
-RewriteRule get_rule(Pattern *pattern, Node *after);
+RewriteRule get_rule(Pattern pattern, Node *after);
 void free_rule(RewriteRule rule);
 bool apply_rule(Node **tree, const RewriteRule *rule, Evaluation eval);
 

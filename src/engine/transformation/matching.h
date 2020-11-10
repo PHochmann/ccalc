@@ -3,7 +3,7 @@
 #include "../tree/node.h"
 
 #define MAX_MAPPED_VARS 10
-#define MAX_CONSTRAINTS 10
+#define MATCHING_MAX_CONSTRAINTS 10
 #define MATCHING_LIST_PREFIX '['
 #define MATCHING_WILDCARD    '_'
 
@@ -17,7 +17,7 @@ typedef struct
 {
     Node *pattern;
     size_t num_constraints[MAX_MAPPED_VARS];
-    PatternConstraint constraints[MAX_MAPPED_VARS][MAX_CONSTRAINTS];
+    PatternConstraint constraints[MAX_MAPPED_VARS][MATCHING_MAX_CONSTRAINTS];
 } Pattern;
 
 /*
@@ -36,5 +36,5 @@ bool get_matching(const Node **tree, const Pattern *pattern, Evaluation eval, Ma
 Node **find_matching(const Node **tree, const Pattern *pattern, Evaluation eval, Matching *out_matching);
 bool does_match(const Node *tree, const Pattern *pattern, Evaluation eval);
 
-Pattern pattern_create(Node *tree, size_t num_constraints, Node **constr_l, Node **constr_r);
-void pattern_destroy(Pattern *pattern);
+Pattern get_pattern(Node *tree, size_t num_constraints, PatternConstraint *constrs);
+void free_pattern(Pattern *pattern);

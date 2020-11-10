@@ -1,4 +1,4 @@
-#define VERSION "1.5.7"
+#define VERSION "1.5.8"
 
 #ifdef DEBUG
     #define RELEASE VERSION " DEBUG"

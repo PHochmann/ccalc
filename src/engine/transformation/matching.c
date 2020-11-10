@@ -440,7 +440,7 @@ Pattern pattern_create(Node *tree, size_t num_constraints, Node **constr_l, Node
     return res;
 }
 
-void pattern_destroy(Pattern *pattern)
+void free_pattern(Pattern *pattern)
 {
     free_tree(pattern->pattern);
     for (size_t i = 0; i < MAX_MAPPED_VARS; i++)

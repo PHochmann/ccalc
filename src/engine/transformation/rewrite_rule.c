@@ -6,7 +6,6 @@
 #include "../util/alloc_wrappers.h"
 #include "../tree/tree_util.h"
 #include "../tree/tree_to_string.h"
-#include "../core/evaluation.h"
 #include "rewrite_rule.h"
 #include "transformation.h"
 #include "matching.h"
@@ -14,15 +13,15 @@
 /*
 Summary: Constructs new rule. Warning: "before" and "after" are not copied, so don't free them!
 */
-RewriteRule get_rule(Pattern *pattern, Node *after)
+RewriteRule get_rule(Pattern pattern, Node *after)
 {
     const char *after_vars[count_all_variable_nodes(after)];
     size_t num_vars_distinct = list_variables(after, SIZE_MAX, after_vars);
     for (size_t i = 0; i < num_vars_distinct; i++)
     {
-        if (get_variable_nodes((const Node**)&pattern->pattern, after_vars[i], NULL) == 0)
+        if (get_variable_nodes((const Node**)&pattern.pattern, after_vars[i], NULL) == 0)
         {
-            print_tree(pattern->pattern, true);
+            print_tree(pattern.pattern, true);
             printf("\n");
             print_tree(after, true);
             printf("\n");
@@ -41,7 +40,7 @@ Summary: Frees trees "before" and "after"
 */
 void free_rule(RewriteRule rule)
 {
-    pattern_destroy(rule.pattern);
+    free_pattern(&rule.pattern);
     free_tree(rule.after);
 }
 
@@ -55,7 +54,7 @@ bool apply_rule(Node **tree, const RewriteRule *rule, Evaluation eval)
 {
     Matching matching;
     // Try to find matching in tree with pattern specified in rule
-    Node **matched_subtree = find_matching((const Node**)tree, rule->pattern, eval, &matching);
+    Node **matched_subtree = find_matching((const Node**)tree, &rule->pattern, eval, &matching);
     if (matched_subtree == NULL) return false;
     // If matching is found, transform tree with it
     Node *transformed = tree_copy(rule->after);
