@@ -87,15 +87,10 @@ char *g_rulestrings[NUM_RULESETS] = {
     "prod()                           -> 1\n"
     "prod(x)                          -> x\n"
 
-    // No minusses in or before products
+    // No minuses in or before products
     "-prod([xs])                      -> prod(-1, [xs])\n"
     "prod([xs],-x,[zs])               -> prod(-1, [xs], x, [zs])\n"
-
     "prod(z,[xs],-x,[ys])             -> prod(-z,[xs],x,[ys])\n"
-    "prod([xs], x, [ys], x, [zs])     -> prod([xs], x^2, [ys], [zs])\n"
-    "prod([xs], x, [ys], x^y, [zs])   -> prod([xs], x^sum(y,1), [ys], [zs])\n"
-    "prod([xs], x^y, [ys], x, [zs])   -> prod([xs], x^sum(y,1), [ys], [zs])\n"
-    "prod([xs], x^z, [ys], x^y, [zs]) -> prod([xs], x^sum(y,z), [ys], [zs])\n"
 
     // Products within sum
     "sum([xs], x, [ys], x, [zs]) -> sum([xs], prod(2,x), [ys], [zs])\n"
@@ -134,8 +129,13 @@ char *g_rulestrings[NUM_RULESETS] = {
     "x^1                              -> x\n"
     "(x^y)^z                          -> x^prod(y, z)\n"
     "prod([xs], x^y, [ys], x^z, [zs]) -> prod([xs], x^sum(y,z), [ys], [zs])\n"
-    "prod([xs], y^x, [ys], z^x, [zs]) -> prod([xs], prod(y, z)^x, [ys], [zs])\n"
+    "prod([xs], dY^x, [ys], dZ^x, [zs]) -> prod([xs], prod(dY, dZ)^x, [ys], [zs])\n"
     "x^0                              -> 1\n"
+    "prod([xs], x, [ys], x, [zs])     -> prod([xs], x^2, [ys], [zs])\n"
+    "prod([xs], x, [ys], x^y, [zs])   -> prod([xs], x^sum(y,1), [ys], [zs])\n"
+    "prod(cX, x)^cZ                   -> prod(cX^cZ, x^cZ)\n"
+    "prod([xs], x^y, [ys], x, [zs])   -> prod([xs], x^sum(y,1), [ys], [zs])\n"
+    "prod([xs], x^z, [ys], x^y, [zs]) -> prod([xs], x^sum(y,z), [ys], [zs])\n"
     // Trigonometrics
     "sum([xs], cos(x)^2, [ys], sin(x)^2, [zs])   -> sum(1, [xs], [ys], [zs])\n"
     "sum([xs], sin(x)^2, [ys], cos(x)^2, [zs])   -> sum(1, [xs], [ys], [zs])\n"
