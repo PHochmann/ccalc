@@ -1,4 +1,3 @@
-#define _GNU_SOURCE
 #include <string.h>
 #include <stdio.h>
 
@@ -6,6 +5,7 @@
 #include "../util/console_util.h"
 #include "../util/alloc_wrappers.h"
 #include "../tree/tree_util.h"
+#include "../tree/tree_to_string.h"
 #include "../core/evaluation.h"
 #include "rewrite_rule.h"
 #include "matching.h"
@@ -16,6 +16,21 @@ Summary: Constructs new rule. Warning: "before" and "after" are not copied, so d
 RewriteRule get_rule(Node *before, Node *after, MappingFilter filter)
 {
     preprocess_pattern(before);
+
+    const char *after_vars[count_all_variable_nodes(after)];
+    size_t num_vars_distinct = list_variables(after, SIZE_MAX, after_vars);
+    for (size_t i = 0; i < num_vars_distinct; i++)
+    {
+        if (get_variable_nodes((const Node**)&before, after_vars[i], NULL) == 0)
+        {
+            print_tree(before, true);
+            printf("\n");
+            print_tree(after, true);
+            printf("\n");
+            software_defect("Trying to create a rule that introduces a new variable after appliance.\n");
+        }
+    }
+
     return (RewriteRule){
         .before = before,
         .after  = after,
@@ -139,7 +154,6 @@ size_t apply_ruleset(Node **tree, const Ruleset *ruleset, size_t cap)
 Summary: Tries to apply rules (priorized by order) until no rule can be applied any more
     Guarantees to terminate after MAX_RULESET_ITERATIONS rule appliances
 */
-#include "../tree/tree_to_string.h"
 size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator, size_t cap)
 {
     #ifdef DEBUG
@@ -157,6 +171,8 @@ size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator, size_t cap)
         {
             if (apply_rule(tree, curr_rule))
             {
+                //print_tree(curr_rule->before, true);
+                //printf("\n");
                 #ifdef DEBUG
                 printf("Applied rule: ");
                 print_tree(*tree, true);
