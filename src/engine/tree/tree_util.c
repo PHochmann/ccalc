@@ -247,7 +247,7 @@ Params
     reduction: Function that takes an operator, number of children, and pointer to number of children many child values
     out:       Reduction result
 */
-bool tree_reduce(const Node *tree, Evaluation eval, double *out)
+bool tree_reduce(const Node *tree, TreeListener listener, double *out)
 {
     switch (get_type(tree))
     {
@@ -261,7 +261,7 @@ bool tree_reduce(const Node *tree, Evaluation eval, double *out)
             double args[num_args];
             for (size_t i = 0; i < num_args; i++)
             {
-                if (!tree_reduce(get_child(tree, i), eval, &args[i]))
+                if (!tree_reduce(get_child(tree, i), listener, &args[i]))
                 {
                     return false;
                 }
@@ -283,12 +283,12 @@ bool tree_reduce(const Node *tree, Evaluation eval, double *out)
 Summary: Replaces reducible subtrees by a ConstantNode
 Params:
     tree:            Tree that will be changed
-    eval:            Evaluation function to evaluate value of constants
+    listener:        Compositional evaluation function
     num_dont_reduce: Length of dont_reduce
     dont_reduce:     Array of operators that will not be reduced.
                      NULL can be passed if num_dont_reduce is 0
 */
-void tree_replace_constant_subtrees(Node **tree, Evaluation eval, size_t num_dont_reduce, const Operator **dont_reduce)
+void tree_replace_constant_subtrees(Node **tree, TreeListener listener, size_t num_dont_reduce, const Operator **dont_reduce)
 {
     bool is_constant = (count_all_variable_nodes(*tree) == 0);
     bool no_dont_reduce = true;
@@ -308,7 +308,7 @@ void tree_replace_constant_subtrees(Node **tree, Evaluation eval, size_t num_don
     if (is_constant && no_dont_reduce)
     {
         double res;
-        tree_reduce(*tree, eval, &res);
+        tree_reduce(*tree, listener, &res);
         tree_replace(tree, malloc_constant_node(res));
     }
     else
@@ -317,9 +317,24 @@ void tree_replace_constant_subtrees(Node **tree, Evaluation eval, size_t num_don
         {
             for (size_t i = 0; i < get_num_children(*tree); i++)
             {
-                replace_constant_subtrees(get_child_addr(*tree, i), eval, num_dont_reduce, dont_reduce);
+                replace_constant_subtrees(get_child_addr(*tree, i), listener, num_dont_reduce, dont_reduce);
             }
         }
+    }
+}
+
+void tree_visit(TreeVisitor *visitor, Node **tree)
+{
+    switch (get_type(tree))
+    {
+        case NTYPE_CONSTANT:
+            visitor->const_visitor(tree, get_const_value(tree));
+            break;
+        case NTYPE_OPERATOR:
+            visitor->op_visitor(visitor, tree, get_op(tree), get_num_children(tree), get_child_addr(tree, 0));
+            break;
+        case NTYPE_VARIABLE:
+            visitor->var_visitor(tree, get_var_name(tree));
     }
 }
 

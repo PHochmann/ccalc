@@ -14,7 +14,7 @@
 // On heap during matching
 typedef struct {
     Pattern *pattern;
-    Evaluation eval;
+    TreeListener listener;
 } MatchingContext;
 
 // A suffix-tree is used to lookup common prefixes of matchings
@@ -290,7 +290,7 @@ static void extend_matching(
     }
 }
 
-size_t get_all_matchings(const Node **tree, const Pattern *pattern, Evaluation eval, Matching **out_matchings)
+size_t get_all_matchings(const Node **tree, const Pattern *pattern, TreeListener listener, Matching **out_matchings)
 {
     if (tree == NULL || pattern == NULL || out_matchings == NULL) return false;
 
@@ -317,12 +317,12 @@ size_t get_all_matchings(const Node **tree, const Pattern *pattern, Evaluation e
 Summary: suffixess to match "tree" against "pattern" (only in root)
 Returns: True, if matching is found, false if NULL-pointers given in arguments or no matching found
 */
-bool get_matching(const Node **tree, const Pattern *pattern, Evaluation eval, Matching *out_matching)
+bool get_matching(const Node **tree, const Pattern *pattern, TreeListener listener, Matching *out_matching)
 {
     if (tree == NULL || pattern == NULL || out_matching == NULL) return false;
 
     Matching *matchings;
-    size_t num_matchings = get_all_matchings(tree, pattern, eval, &matchings);
+    size_t num_matchings = get_all_matchings(tree, pattern, listener, &matchings);
 
     // Return first matching if any
     if (num_matchings > 0)
@@ -341,14 +341,14 @@ bool get_matching(const Node **tree, const Pattern *pattern, Evaluation eval, Ma
 /*
 Summary: Looks for matching in tree, i.e. suffixess to construct matching in each node until matching is found (Top-Down)
 */
-Node **find_matching(const Node **tree, const Pattern *pattern, Evaluation eval, Matching *out_matching)
+Node **find_matching(const Node **tree, const Pattern *pattern, TreeListener listener, Matching *out_matching)
 {
-    if (get_matching(tree, pattern, eval, out_matching)) return (Node**)tree;
+    if (get_matching(tree, pattern, listener, out_matching)) return (Node**)tree;
     if (get_type(*tree) == NTYPE_OPERATOR)
     {
         for (size_t i = 0; i < get_num_children(*tree); i++)
         {
-            Node **res = find_matching((const Node**)get_child_addr(*tree, i), pattern, eval, out_matching);
+            Node **res = find_matching((const Node**)get_child_addr(*tree, i), pattern, listener, out_matching);
             if (res != NULL) return res;
         }
     }
@@ -358,10 +358,10 @@ Node **find_matching(const Node **tree, const Pattern *pattern, Evaluation eval,
 /*
 Summary: Basically the same as find_matching, but discards matching
 */
-bool does_match(const Node *tree, const Pattern *pattern, Evaluation eval)
+bool does_match(const Node *tree, const Pattern *pattern, TreeListener listener)
 {
     Matching matching;
-    if (find_matching((const Node**)&tree, pattern, eval, &matching) != NULL)
+    if (find_matching((const Node**)&tree, pattern, listener, &matching) != NULL)
     {
         return true;
     }

@@ -31,10 +31,10 @@ typedef struct
 } Matching;
 
 NodeList *lookup_mapped_var(const Matching *matching, const char *var);
-size_t get_all_matchings(const Node **tree, const Pattern *pattern, Evaluation eval, Matching **out_matchings);
-bool get_matching(const Node **tree, const Pattern *pattern, Evaluation eval, Matching *out_matching);
-Node **find_matching(const Node **tree, const Pattern *pattern, Evaluation eval, Matching *out_matching);
-bool does_match(const Node *tree, const Pattern *pattern, Evaluation eval);
+size_t get_all_matchings(const Node **tree, const Pattern *pattern, TreeListener listener, Matching **out_matchings);
+bool get_matching(const Node **tree, const Pattern *pattern, TreeListener listener, Matching *out_matching);
+Node **find_matching(const Node **tree, const Pattern *pattern, TreeListener listener, Matching *out_matching);
+bool does_match(const Node *tree, const Pattern *pattern, TreeListener listener);
 
 Pattern get_pattern(Node *tree, size_t num_constraints, PatternConstraint *constrs);
 void free_pattern(Pattern *pattern);

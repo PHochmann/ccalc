@@ -50,11 +50,11 @@ Returns: True when matching could be applied, false otherwise
 Params
     eval: Is allowed to be NULL
 */
-bool apply_rule(Node **tree, const RewriteRule *rule, Evaluation eval)
+bool apply_rule(Node **tree, const RewriteRule *rule, TreeListener listener)
 {
     Matching matching;
     // Try to find matching in tree with pattern specified in rule
-    Node **matched_subtree = find_matching((const Node**)tree, &rule->pattern, eval, &matching);
+    Node **matched_subtree = find_matching((const Node**)tree, &rule->pattern, listener, &matching);
     if (matched_subtree == NULL) return false;
     // If matching is found, transform tree with it
     Node *transformed = tree_copy(rule->after);
@@ -82,17 +82,17 @@ void free_ruleset(Vector *rules)
     vec_destroy(rules);
 }
 
-size_t apply_ruleset(Node **tree, const Vector *ruleset, Evaluation eval, size_t cap)
+size_t apply_ruleset(Node **tree, const Vector *ruleset, TreeListener listener, size_t cap)
 {
     VectorIterator iterator = vec_get_iterator(ruleset);
-    return apply_ruleset_by_iterator(tree, (Iterator*)&iterator, eval, cap);
+    return apply_ruleset_by_iterator(tree, (Iterator*)&iterator, listener, cap);
 }
 
 /*
 Summary: Tries to apply rules (priorized by order) until no rule can be applied any more
     Guarantees to terminate after MAX_RULESET_ITERATIONS rule appliances
 */
-size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator, Evaluation eval, size_t cap)
+size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator, TreeListener listener, size_t cap)
 {
     #ifdef DEBUG
     printf("Starting with: ");
@@ -107,7 +107,7 @@ size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator, Evaluation eva
         RewriteRule *curr_rule = NULL;
         while ((curr_rule = (RewriteRule*)iterator_get_next(iterator)) != NULL)
         {
-            if (apply_rule(tree, curr_rule, eval))
+            if (apply_rule(tree, curr_rule, listener))
             {
                 #ifdef DEBUG
                 printf("Applied rule ");
