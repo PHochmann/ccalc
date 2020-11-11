@@ -239,17 +239,18 @@ static void extend_matching(
             }
             else
             {
+                matching.mapped_nodes[id] = tree_list;
+
                 // Check constraints if its okay to bind
                 for (size_t i = 0; i < ctx->pattern->num_constraints[id]; i++)
                 {
                     Node *constr_cpy = tree_copy(ctx->pattern->constraints[id][i]);
-                    transform_by_matching(ctx->pattern, &matching, constr_cpy);
+                    transform_by_matching(id + 1, ctx->pattern->free_vars, &matching, &constr_cpy);
                     bool res = ctx->checker(&constr_cpy);
                     free_tree(constr_cpy);
                     if (!res) return;
                 }
 
-                matching.mapped_nodes[id] = tree_list;
                 vec_push(out_matchings, &matching);
                 return;
             }
@@ -414,12 +415,12 @@ Pattern get_pattern(Node *tree, size_t num_constraints, Node **constrs)
     {
         size_t max_id = 0;
         size_t curr_id = 0;
-        for (size_t i = 0; i < num_vars_distinct; i++)
+        for (size_t j = 0; j < num_vars_distinct; j++)
         {
-            if (vars[i][0] != MATCHING_WILDCARD
-                && (vars[i][0] != MATCHING_LIST_PREFIX || vars[i][1] != MATCHING_WILDCARD))
+            if (vars[j][0] != MATCHING_WILDCARD
+                && (vars[j][0] != MATCHING_LIST_PREFIX || vars[j][1] != MATCHING_WILDCARD))
             {
-                if (get_variable_nodes((const Node**)&constrs[i], vars[curr_id], NULL) != 0)
+                if (get_variable_nodes((const Node**)&constrs[i], vars[j], NULL) != 0)
                 {
                     max_id = curr_id;
                 }

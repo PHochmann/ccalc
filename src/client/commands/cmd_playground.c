@@ -2,8 +2,11 @@
 #include <string.h>
 
 #include "../../engine/transformation/matching.h"
+#include "../../engine/transformation/rewrite_rule.h"
+#include "../../engine/transformation/transformation.h"
 #include "../../engine/util/console_util.h"
 #include "../../engine/util/string_util.h"
+#include "../../engine/tree/tree_util.h"
 #include "../../engine/tree/tree_to_string.h"
 #include "../core/arith_context.h"
 #include "../simplification/rule_parsing.h"
@@ -80,35 +83,19 @@ bool cmd_playground_exec(char *input, int code)
                 goto loop_cleanup;
             }
 
-            Matching *matchings;
-            size_t num_matchings = get_all_matchings((const Node**)&tree, &rule.pattern, propositional_checker, &matchings);
-
-            if (num_matchings < MATCHINGS_PRINT_THRESHOLD)
+            Matching matching;
+            if (get_matching((const Node**)&tree, &rule.pattern, propositional_checker, &matching))
             {
-                for (size_t k = 0; k < num_matchings; k++)
-                {
-                    printf("Matching Nr. %zu:\n", k + 1);
-                    for (size_t i = 0; i < rule.pattern.num_free_vars; i++)
-                    {
-                        printf("%s -> ", rule.pattern.free_vars[i]);
-                        for (size_t j = 0; j < matchings[k].mapped_nodes[i].size; j++)
-                        {
-                            print_tree(matchings[k].mapped_nodes[i].nodes[j], true);
-                            printf(", ");
-                        }
-                        printf("\n");
-                    }
-                }
+                Node *transformed = tree_copy(rule.after);
+                transform_by_matching(rule.pattern.num_free_vars, rule.pattern.free_vars, &matching, &transformed);
+                print_tree(transformed, true);
+                printf("\n");
+                free_tree(transformed);
             }
             else
             {
-                printf("%zu matchings found.\n", num_matchings);
-            }
-            if (num_matchings == 0)
-            {
                 printf("No matching found.\n");
             }
-            free(matchings);
 
             loop_cleanup:
             free(tree_str);

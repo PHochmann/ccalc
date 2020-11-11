@@ -4,16 +4,19 @@
 #include "../tree/tree_util.h"
 #include "transformation.h"
 
-static void transform_matched_recursive(const Pattern *pattern, const Matching *matching, Node **parent)
+static void transform_matched_recursive(size_t num_free_vars,
+    const char * const *free_vars,
+    const Matching *matching,
+    Node **parent)
 {
     size_t i = 0;
     while (i < get_num_children(*parent))
     {
         if (get_type(get_child(*parent, i)) == NTYPE_VARIABLE)
         {
-            for (size_t j = 0; j < pattern->num_free_vars; j++)
+            for (size_t j = 0; j < num_free_vars; j++)
             {
-                if (strcmp(get_var_name(get_child(*parent, i)), pattern->free_vars[j]) == 0)
+                if (strcmp(get_var_name(get_child(*parent, i)), free_vars[j]) == 0)
                 {
                     tree_replace_by_list(parent, i, matching->mapped_nodes[j]);
                     i += matching->mapped_nodes[j].size - 1;
@@ -26,7 +29,7 @@ static void transform_matched_recursive(const Pattern *pattern, const Matching *
         {
             if (get_type(get_child(*parent, i)) == NTYPE_OPERATOR)
             {
-                transform_matched_recursive(pattern, matching, get_child_addr(*parent, i));
+                transform_matched_recursive(num_free_vars, free_vars, matching, get_child_addr(*parent, i));
             }
             i++;
         }
@@ -36,27 +39,30 @@ static void transform_matched_recursive(const Pattern *pattern, const Matching *
 /*
 Summary: Substitutes subtree in which matching was found according to rule
 */
-void transform_by_matching(const Pattern *pattern, const Matching *matching, Node *to_transform)
+void transform_by_matching(size_t num_free_vars,
+    const char * const *free_vars,
+    const Matching *matching,
+    Node **to_transform)
 {
     if (to_transform == NULL || matching == NULL) return;
 
-    if (get_type(to_transform) == NTYPE_OPERATOR)
+    if (get_type(*to_transform) == NTYPE_OPERATOR)
     {
-        transform_matched_recursive(pattern, matching, &to_transform);
+        transform_matched_recursive(num_free_vars, free_vars, matching, to_transform);
     }
     else
     {
-        if (get_type(to_transform) == NTYPE_VARIABLE)
+        if (get_type(*to_transform) == NTYPE_VARIABLE)
         {
-            for (size_t j = 0; j < pattern->num_free_vars; j++)
+            for (size_t j = 0; j < num_free_vars; j++)
             {
-                if (strcmp(get_var_name(to_transform), pattern->free_vars[j]) == 0)
+                if (strcmp(get_var_name(*to_transform), free_vars[j]) == 0)
                 {
                     if (matching->mapped_nodes[j].size != 1) 
                     {
                         software_defect("Trying to replace root with a list > 1.\n");
                     }
-                    tree_replace(&to_transform, tree_copy(matching->mapped_nodes[j].nodes[0]));
+                    tree_replace(to_transform, tree_copy(matching->mapped_nodes[j].nodes[0]));
                     break;
                 }
             }

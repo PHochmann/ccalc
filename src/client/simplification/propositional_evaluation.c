@@ -92,5 +92,6 @@ bool propositional_checker(Node **tree)
     {
         return false;
     }
+    
     return (reduced == EVAL_TRUE);
 }

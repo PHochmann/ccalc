@@ -146,6 +146,9 @@ bool core_simplify(Node **tree)
         tree_replace(matched, replacement);
     }
 
+    print_tree(malformed_derivA.pattern, true);
+    printf("\n");
+
     if (does_match(*tree, &malformed_derivA, propositional_checker)
         || does_match(*tree, &malformed_derivB, propositional_checker))
     {

@@ -14,11 +14,6 @@
 
 bool parse_rule(char *string, ParsingContext *main_ctx, ParsingContext *extended_ctx, RewriteRule *out_rule)
 {
-    if (string[0] == '\0')
-    {
-        return true;
-    }
-
     char *arrow_pos = strstr(string, ARROW);
     char *next_constr = strstr(string, WHERE); // Optional
 
@@ -90,14 +85,17 @@ bool parse_ruleset_from_string(const char *string, ParsingContext *main_ctx, Par
             next_line[0] = '\0';
         }
 
-        if (!parse_rule(line, main_ctx, extended_ctx, vec_push_empty(out_ruleset)))
+        if (line[0] != '\0') // Allow for empty lines - just ignore them
         {
-            report_error("Failed parsing ruleset in line %zu.\n", line_no);
-            return false;
+            if (!parse_rule(line, main_ctx, extended_ctx, vec_push_empty(out_ruleset)))
+            {
+                report_error("Failed parsing ruleset in line %zu.\n", line_no);
+                return false;
+            }
         }
 
         line = next_line;
-        if (line != NULL) line++; // Skip newline char
+        if (line != NULL) line++; // Skip terminator char
     }
 
     vec_trim(out_ruleset);

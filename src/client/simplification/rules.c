@@ -21,6 +21,7 @@ char *g_rulestrings[NUM_RULESETS] = {
     "x*1               -> x\n" // Smart but redundant elimination rules for performance
     "deriv(e, _)       -> 0\n"
     "deriv(pi, _)      -> 0\n"
+    "\n"
     "deriv(cX, z)      -> 0\n"
     "deriv(x, x)       -> 1\n"
     "deriv(bX, z)      -> 0\n"

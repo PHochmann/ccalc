@@ -95,6 +95,7 @@ Operator *ctx_add_op(ParsingContext *ctx, Operator op)
     op.id = list_count(&ctx->op_list);
     ListNode *list_node = list_append(&ctx->op_list, &op);
     TRIE_ADD_ELEM(&ctx->op_tries[op.placement], op.name, ListNode*, list_node);
+    trie_add_str(&ctx->keywords_trie, op.name);
     return (Operator*)list_node->data;
 }
 
