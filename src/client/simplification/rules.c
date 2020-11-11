@@ -58,7 +58,7 @@ char *g_rulestrings[NUM_RULESETS] = {
 
 // Main simplification DONT USE INFIX + AND - HERE!
 
-    "(-x)^y -> x^y       where    t(y) = CONST ; y mod 2 = 0"
+    "(-x)^y -> x^y       WHERE    type(y) = CONST ; y mod 2 = 0\n"
 
     // Flatten again and easy simplification
     "prod()                       -> 1\n"

@@ -1,6 +1,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "console_util.h"
 #include "alloc_wrappers.h"
 #include "trie.h"
 
@@ -57,7 +58,11 @@ void *trie_add_str(Trie *trie, const char *string)
     TrieNode *curr = trie->first_node;
     for (size_t i = 0; string[i] != '\0'; i++)
     {
-        if (!is_legal_char(string[i])) return NULL;
+        if (!is_legal_char(string[i]))
+        {
+            software_defect("Trying to insert out of range char %c into trie.\n", string[i]);
+        }
+
         unsigned char index = char_to_index(string[i]);
         if (curr->next[index] == NULL)
         {

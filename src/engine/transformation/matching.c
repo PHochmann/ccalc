@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdint.h>
+#include <assert.h>
 
 #include "matching.h"
 #include "transformation.h"
@@ -373,6 +374,8 @@ Summary: - Sets ids of variable nodes for faster lookup while matching
 */
 Pattern get_pattern(Node *tree, size_t num_constraints, Node **constrs)
 {
+    assert(tree != NULL);
+
     Pattern res = (Pattern){
         .pattern         = tree,
         .num_free_vars   = 0,

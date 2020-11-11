@@ -56,6 +56,7 @@ void replace_negative_consts(Node **tree)
 
 void init_simplification()
 {
+    init_propositional_ctx();
     for (size_t i = 0; i < NUM_RULESETS; i++)
     {
         rulesets[i] = get_empty_ruleset();
@@ -94,6 +95,7 @@ void unload_simplification()
     {
         free_ruleset(&rulesets[i]);
     }
+    unload_propositional_ctx();
 }
 
 /*

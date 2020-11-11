@@ -10,7 +10,7 @@
 
 #define ARROW  "->"
 #define WHERE  " WHERE "
-#define AND    " AND "
+#define AND    " ; "
 
 bool parse_rule(char *string, ParsingContext *main_ctx, ParsingContext *extended_ctx, RewriteRule *out_rule)
 {
@@ -32,15 +32,18 @@ bool parse_rule(char *string, ParsingContext *main_ctx, ParsingContext *extended
     arrow_pos[0] = '\0';
     arrow_pos += strlen(ARROW);
 
+    if (next_constr != NULL)
+    {
+        *next_constr = '\0';
+        next_constr += strlen(WHERE);
+    }
+
     size_t num_constrs = 0;
     Node *constrs[MATCHING_MAX_CONSTRAINTS];
 
     // 2. Parse contraints of form ".... WHERE x=y ; a=b"
     while (next_constr != NULL)
     {
-        *next_constr = '\0';
-        next_constr += strlen(WHERE);
-
         char *next_and = strstr(next_constr, AND);
         if (next_and != NULL)
         {
