@@ -58,7 +58,7 @@ bool prop_op_evaluate(const Operator *op, size_t num_args, const double *args, d
     return false;
 }
 
-double type_eval(__attribute__((unused)) size_t num_children, Node **children)
+double equals_eval(__attribute__((unused)) size_t num_children, Node **children)
 {
     if (tree_equals(children[0], children[1]))
     {
@@ -70,7 +70,7 @@ double type_eval(__attribute__((unused)) size_t num_children, Node **children)
     }
 }
 
-double equals_eval(__attribute__((unused)) size_t num_children, Node **children)
+double type_eval(__attribute__((unused)) size_t num_children, Node **children)
 {
     if (get_type(children[0]) == NTYPE_CONSTANT) return EVAL_TYPE_CONST;
     if (get_type(children[0]) == NTYPE_OPERATOR) return EVAL_TYPE_OP;
@@ -92,6 +92,6 @@ bool propositional_checker(Node **tree)
     {
         return false;
     }
-    
+
     return (reduced == EVAL_TRUE);
 }
