@@ -1,16 +1,19 @@
 #include <stdlib.h>
+#include <string.h>
+#include "../util/console_util.h"
+#include "../tree/tree_util.h"
 #include "transformation.h"
 
-static void transform_matched_recursive(Node **parent, Matching *matching)
+static void transform_matched_recursive(const Pattern *pattern, const Matching *matching, Node **parent)
 {
     size_t i = 0;
     while (i < get_num_children(*parent))
     {
         if (get_type(get_child(*parent, i)) == NTYPE_VARIABLE)
         {
-            for (size_t j = 0; j < matching->num_mapped; j++)
+            for (size_t j = 0; j < pattern->num_free_vars; j++)
             {
-                if (strcmp(get_var_name(get_child(*parent, i)), matching->mapped_vars[j]) == 0)
+                if (strcmp(get_var_name(get_child(*parent, i)), pattern->free_vars[j]) == 0)
                 {
                     tree_replace_by_list(parent, i, matching->mapped_nodes[j]);
                     i += matching->mapped_nodes[j].size - 1;
@@ -23,7 +26,7 @@ static void transform_matched_recursive(Node **parent, Matching *matching)
         {
             if (get_type(get_child(*parent, i)) == NTYPE_OPERATOR)
             {
-                transform_matched_recursive(get_child_addr(*parent, i), matching);
+                transform_matched_recursive(pattern, matching, get_child_addr(*parent, i));
             }
             i++;
         }
@@ -33,21 +36,21 @@ static void transform_matched_recursive(Node **parent, Matching *matching)
 /*
 Summary: Substitutes subtree in which matching was found according to rule
 */
-void transform_by_matching(Node *to_transform, Matching *matching)
+void transform_by_matching(const Pattern *pattern, const Matching *matching, Node *to_transform)
 {
     if (to_transform == NULL || matching == NULL) return;
 
     if (get_type(to_transform) == NTYPE_OPERATOR)
     {
-        transform_matched_recursive(&to_transform, matching);
+        transform_matched_recursive(pattern, matching, &to_transform);
     }
     else
     {
         if (get_type(to_transform) == NTYPE_VARIABLE)
         {
-            for (size_t j = 0; j < matching->num_mapped; j++)
+            for (size_t j = 0; j < pattern->num_free_vars; j++)
             {
-                if (strcmp(get_var_name(to_transform), matching->mapped_vars[j]) == 0)
+                if (strcmp(get_var_name(to_transform), pattern->free_vars[j]) == 0)
                 {
                     if (matching->mapped_nodes[j].size != 1) 
                     {

@@ -21,14 +21,13 @@ Summary: Contains successful matching
 */
 typedef struct
 {
-    size_t num_mapped;
-    const char *mapped_vars[MAX_MAPPED_VARS];
     NodeList mapped_nodes[MAX_MAPPED_VARS];   // Subtrees in matched_tree that need to replace each mapped_var
 } Matching;
 
-typedef bool (*ConstraintChecker)(Node **tree, Pattern *pattern, Matching *matching);
+typedef bool (*ConstraintChecker)(Node **tree);
 
 NodeList *lookup_mapped_var(const Matching *matching, const char *var);
+size_t get_all_matchings(const Node **tree, const Pattern *pattern, ConstraintChecker checker, Matching **out_matchings);
 bool get_matching(const Node **tree, const Pattern *pattern, ConstraintChecker checker, Matching *out_matching);
 Node **find_matching(const Node **tree, const Pattern *pattern, ConstraintChecker checker, Matching *out_matching);
 bool does_match(const Node *tree, const Pattern *pattern, ConstraintChecker checker);

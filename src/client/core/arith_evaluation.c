@@ -93,7 +93,7 @@ static double random_between(double min, double max)
     return rand() % diff + min;
 }
 
-bool op_evaluate(const Operator *op, size_t num_args, const double *args, double *out)
+bool arith_op_evaluate(const Operator *op, size_t num_args, const double *args, double *out)
 {
     switch (op->id)
     {
@@ -302,6 +302,6 @@ bool op_evaluate(const Operator *op, size_t num_args, const double *args, double
 double arith_evaluate(const Node *tree)
 {
     double res = 0;
-    tree_reduce(tree, op_evaluate, &res);
+    tree_reduce(tree, arith_op_evaluate, &res);
     return res;
 }

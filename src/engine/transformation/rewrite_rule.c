@@ -50,15 +50,15 @@ Returns: True when matching could be applied, false otherwise
 Params
     eval: Is allowed to be NULL
 */
-bool apply_rule(Node **tree, const RewriteRule *rule, TreeListener listener)
+bool apply_rule(Node **tree, const RewriteRule *rule, ConstraintChecker checker)
 {
     Matching matching;
     // Try to find matching in tree with pattern specified in rule
-    Node **matched_subtree = find_matching((const Node**)tree, &rule->pattern, listener, &matching);
+    Node **matched_subtree = find_matching((const Node**)tree, &rule->pattern, checker, &matching);
     if (matched_subtree == NULL) return false;
     // If matching is found, transform tree with it
     Node *transformed = tree_copy(rule->after);
-    transform_by_matching(transformed, &matching);
+    transform_by_matching(&rule->pattern, &matching, transformed);
     tree_replace(matched_subtree, transformed);
     return true;
 }
@@ -82,17 +82,17 @@ void free_ruleset(Vector *rules)
     vec_destroy(rules);
 }
 
-size_t apply_ruleset(Node **tree, const Vector *ruleset, TreeListener listener, size_t cap)
+size_t apply_ruleset(Node **tree, const Vector *ruleset, ConstraintChecker checker, size_t cap)
 {
     VectorIterator iterator = vec_get_iterator(ruleset);
-    return apply_ruleset_by_iterator(tree, (Iterator*)&iterator, listener, cap);
+    return apply_ruleset_by_iterator(tree, (Iterator*)&iterator, checker, cap);
 }
 
 /*
 Summary: Tries to apply rules (priorized by order) until no rule can be applied any more
     Guarantees to terminate after MAX_RULESET_ITERATIONS rule appliances
 */
-size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator, TreeListener listener, size_t cap)
+size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator, ConstraintChecker checker, size_t cap)
 {
     #ifdef DEBUG
     printf("Starting with: ");
@@ -107,7 +107,7 @@ size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator, TreeListener l
         RewriteRule *curr_rule = NULL;
         while ((curr_rule = (RewriteRule*)iterator_get_next(iterator)) != NULL)
         {
-            if (apply_rule(tree, curr_rule, listener))
+            if (apply_rule(tree, curr_rule, checker))
             {
                 #ifdef DEBUG
                 printf("Applied rule ");

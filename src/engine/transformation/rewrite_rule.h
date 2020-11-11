@@ -12,10 +12,10 @@ typedef struct
 
 RewriteRule get_rule(Pattern pattern, Node *after);
 void free_rule(RewriteRule rule);
-bool apply_rule(Node **tree, const RewriteRule *rule, TreeListener listener);
+bool apply_rule(Node **tree, const RewriteRule *rule, ConstraintChecker checker);
 
 Vector get_empty_ruleset();
 void add_to_ruleset(Vector *rules, RewriteRule rule);
 void free_ruleset(Vector *rules);
-size_t apply_ruleset(Node **tree, const Vector *ruleset, TreeListener listener, size_t cap);
-size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator, TreeListener listener, size_t cap);
+size_t apply_ruleset(Node **tree, const Vector *ruleset, ConstraintChecker checker, size_t cap);
+size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator, ConstraintChecker checker, size_t cap);

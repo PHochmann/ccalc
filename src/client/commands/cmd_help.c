@@ -5,8 +5,9 @@
 #include "../../engine/tree/operator.h"
 #include "../../engine/tree/tree_to_string.h"
 #include "../../engine/table/table.h"
-#include "../version.h"
 #include "../core/arith_context.h"
+#include "../core/arith_evaluation.h"
+#include "../version.h"
 #include "cmd_help.h"
 
 #define HELP        "help"
@@ -244,7 +245,7 @@ static void print_op_table(OpPlacement place, bool assoc, bool precedence, bool 
             if (value)
             {
                 double const_val;
-                op_evaluate(op, 0, NULL, &const_val);
+                arith_op_evaluate(op, 0, NULL, &const_val);
                 override_alignment(table, ALIGN_NUMBERS);
                 add_cell_fmt(table, " " CONSTANT_TYPE_FMT " ", const_val);
             }

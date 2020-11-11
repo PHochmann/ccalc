@@ -4,3 +4,4 @@
 #include "../../engine/tree/node.h"
 
 bool prop_op_evaluate(const Operator *op, size_t num_args, const double *args, double *out);
+bool propositional_checker(Node **tree);

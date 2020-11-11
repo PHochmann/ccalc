@@ -72,7 +72,7 @@ static bool add_function(char *name, char *left, char *right)
     Operator *op = ctx_lookup_op(g_ctx, name, OP_PLACE_FUNCTION);
     if (op != NULL)
     {
-        if (op->id < NUM_PREDEFINED_OPS)
+        if (op->id < NUM_ARITH_OPS)
         {
             report_error(ERR_BUILTIN_REDEFINITION);
         }
@@ -167,7 +167,7 @@ static bool add_function(char *name, char *left, char *right)
     }
 
     // Add rule to eliminate operator before evaluation
-    add_composite_function(get_rule(left_n, right_n));
+    add_composite_function(get_rule(get_pattern(left_n, 0, NULL), right_n));
     return true;
 
     error:

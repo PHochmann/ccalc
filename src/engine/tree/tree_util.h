@@ -2,7 +2,7 @@
 #include "node.h"
 
 typedef bool (*TreeListener)(const Operator *op, size_t num_children, const double *children, double *out);
-typedef bool (*OpCallback)(Node **tree, size_t num_children, Node **children);
+typedef double (*OpEval)(size_t num_children, Node **children);
 
 // Data handling
 bool tree_equals(const Node *a, const Node *b);
@@ -19,5 +19,5 @@ Node **find_op(const Node **tree, const Operator *op);
 // Traversal
 size_t replace_variable_nodes(Node **tree, const Node *tree_to_copy, const char *var_name);
 bool tree_reduce(const Node *tree, TreeListener listener, double *out);
-void tree_replace_constant_subtrees(Node **tree, TreeListener listener, size_t num_dont_reduce, const Operator **dont_reduce);
-bool tree_visit_ops(Node **tree, const Operator *op, OpCallback);
+void tree_reduce_constant_subtrees(Node **tree, TreeListener listener, size_t num_dont_reduce, const Operator **dont_reduce);
+void tree_reduce_ops(Node **tree, const Operator *op, OpEval eval);

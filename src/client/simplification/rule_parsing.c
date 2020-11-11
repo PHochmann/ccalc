@@ -1,5 +1,7 @@
 #include <string.h>
 
+#include "../../engine/util/alloc_wrappers.h"
+#include "../../engine/util/console_util.h"
 #include "../../engine/tree/node.h"
 #include "../../engine/transformation/matching.h"
 #include "../../engine/transformation/rewrite_rule.h"
@@ -10,7 +12,7 @@
 #define WHERE  " WHERE "
 #define AND    " AND "
 
-bool parse_rule(char *string, ParsingContext *ctx, Vector *ruleset)
+bool parse_rule(char *string, ParsingContext *main_ctx, ParsingContext *extended_ctx, RewriteRule *out_rule)
 {
     if (string[0] == '\0')
     {
@@ -22,7 +24,7 @@ bool parse_rule(char *string, ParsingContext *ctx, Vector *ruleset)
 
     if (arrow_pos == NULL)
     {
-        printf("No arrow found.\n");
+        report_error("No arrow found.\n");
         return false;
     }
 
@@ -46,29 +48,29 @@ bool parse_rule(char *string, ParsingContext *ctx, Vector *ruleset)
             next_and += strlen(AND);
         }
 
-        constrs[num_constrs] = parse_conveniently(ctx, next_constr);
+        constrs[num_constrs] = parse_conveniently(extended_ctx, next_constr);
         num_constrs++;
         next_constr = next_and;
     }
 
-    Node *left_n = parse_conveniently(ctx, string); // Gives error message
+    Node *left_n = parse_conveniently(main_ctx, string); // Gives error message
     if (left_n == NULL)
     {
         return false;
     }
 
-    Node *right_n = parse_conveniently(ctx, arrow_pos);
+    Node *right_n = parse_conveniently(main_ctx, arrow_pos);
     if (right_n == NULL)
     {
         free_tree(left_n);
         return false;
     }
 
-    add_to_ruleset(ruleset, get_rule(get_pattern(left_n, num_constrs, constrs), right_n));
+    *out_rule = get_rule(get_pattern(left_n, num_constrs, constrs), right_n);
     return true;
 }
 
-bool parse_ruleset_from_string(const char *string, ParsingContext *ctx, Vector *out_ruleset)
+bool parse_ruleset_from_string(const char *string, ParsingContext *main_ctx, ParsingContext *extended_ctx, Vector *out_ruleset)
 {
     // String is likely to be readonly - copy it (made explicit in signature)
     char *copy = malloc_wrapper(strlen(string) + 1);
@@ -85,9 +87,10 @@ bool parse_ruleset_from_string(const char *string, ParsingContext *ctx, Vector *
             next_line[0] = '\0';
         }
 
-        if (!parse_rule(line, ctx, out_ruleset))
+        if (!parse_rule(line, main_ctx, extended_ctx, vec_push_empty(out_ruleset)))
         {
-            software_defect("Failed parsing ruleset in line %zu.\n", line_no);
+            report_error("Failed parsing ruleset in line %zu.\n", line_no);
+            return false;
         }
 
         line = next_line;

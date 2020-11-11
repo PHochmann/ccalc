@@ -300,7 +300,7 @@ bool tree_reduce(const Node *tree, TreeListener listener, double *out)
                     return false;
                 }
             }
-            if (!eval(get_op(tree), num_args, args, out))
+            if (!listener(get_op(tree), num_args, args, out))
             {
                 return false;
             }
@@ -322,7 +322,7 @@ Params:
     dont_reduce:     Array of operators that will not be reduced.
                      NULL can be passed if num_dont_reduce is 0
 */
-void tree_replace_constant_subtrees(Node **tree, TreeListener listener, size_t num_dont_reduce, const Operator **dont_reduce)
+void tree_reduce_constant_subtrees(Node **tree, TreeListener listener, size_t num_dont_reduce, const Operator **dont_reduce)
 {
     bool is_constant = (count_all_variable_nodes(*tree) == 0);
     bool no_dont_reduce = true;
@@ -351,25 +351,24 @@ void tree_replace_constant_subtrees(Node **tree, TreeListener listener, size_t n
         {
             for (size_t i = 0; i < get_num_children(*tree); i++)
             {
-                replace_constant_subtrees(get_child_addr(*tree, i), listener, num_dont_reduce, dont_reduce);
+                tree_reduce_constant_subtrees(get_child_addr(*tree, i), listener, num_dont_reduce, dont_reduce);
             }
         }
     }
 }
 
-bool tree_visit_ops(Node **tree, const Operator *op, OpCallback callback)
+void tree_reduce_ops(Node **tree, const Operator *op, OpEval callback)
 {
     if (get_type(*tree) == NTYPE_OPERATOR)
     {
         for (size_t i = 0; i < get_num_children(*tree); i++)
         {
-            tree_visit_ops(get_child_addr(*tree, i), op, callback);
+            tree_reduce_ops(get_child_addr(*tree, i), op, callback);
         }
 
         if (get_op(*tree) == op)
         {
-            return callback(tree, get_num_children(*tree), get_child_addr(*tree, 0));
+            tree_replace(tree, malloc_constant_node(callback(get_num_children(*tree), get_child_addr(*tree, 0))));
         }
     }
-    return false;
 }

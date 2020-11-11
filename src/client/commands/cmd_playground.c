@@ -6,6 +6,9 @@
 #include "../../engine/util/string_util.h"
 #include "../../engine/tree/tree_to_string.h"
 #include "../core/arith_context.h"
+#include "../simplification/rule_parsing.h"
+#include "../simplification/propositional_context.h"
+#include "../simplification/propositional_evaluation.h"
 #include "cmd_playground.h"
 
 #define SIMPLIFY_COMMAND   "simplify "
@@ -44,28 +47,25 @@ bool cmd_playground_exec(char *input, int code)
     }
     else
     {
-        char *pattern_str = NULL;
-        Node *pattern = NULL;
+        char *rule_str = NULL;
+        RewriteRule rule;
         char *tree_str = NULL;
         Node *tree = NULL;
 
         while (true)
         {
-            if (!ask_input(stdin, &pattern_str, "pattern: "))
+            if (!ask_input(stdin, &rule_str, "rule: "))
             {
                 goto cleanup;
             }
 
-            if (parse_input(g_ctx, pattern_str, &pattern) != PERR_SUCCESS)
+            if (!parse_rule(rule_str, g_ctx, g_propositional_ctx, &rule))
             {
-                printf("Syntax Error.\n");
-                free(pattern_str);
+                free(rule_str);
                 continue;
             }
             break;
         }
-
-        preprocess_pattern(pattern);
 
         while (true)
         {
@@ -81,16 +81,16 @@ bool cmd_playground_exec(char *input, int code)
             }
 
             Matching *matchings;
-            size_t num_matchings = get_all_matchings((const Node**)&tree, pattern, &matchings, NULL);
+            size_t num_matchings = get_all_matchings((const Node**)&tree, &rule.pattern, propositional_checker, &matchings);
 
             if (num_matchings < MATCHINGS_PRINT_THRESHOLD)
             {
                 for (size_t k = 0; k < num_matchings; k++)
                 {
                     printf("Matching Nr. %zu:\n", k + 1);
-                    for (size_t i = 0; i < matchings[k].num_mapped; i++)
+                    for (size_t i = 0; i < rule.pattern.num_free_vars; i++)
                     {
-                        printf("%s -> ", matchings[k].mapped_vars[i]);
+                        printf("%s -> ", rule.pattern.free_vars[i]);
                         for (size_t j = 0; j < matchings[k].mapped_nodes[i].size; j++)
                         {
                             print_tree(matchings[k].mapped_nodes[i].nodes[j], true);
@@ -118,8 +118,8 @@ bool cmd_playground_exec(char *input, int code)
         }
 
         cleanup:
-        free(pattern_str);
-        free_tree(pattern);
+        free(rule_str);
+        free_rule(rule);
         free(tree_str);
         free_tree(tree);
         printf("\n");

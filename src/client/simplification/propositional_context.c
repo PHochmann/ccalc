@@ -1,7 +1,10 @@
+#include "../../engine/util/console_util.h"
 #include "../core/arith_context.h"
 #include "propositional_context.h"
 
-#define NUM_PROPOSITIONAL_OPS 12
+#define NUM_PROPOSITIONAL_OPS 14
+
+ParsingContext __g_propositional_ctx;
 
 void init_propositional_ctx()
 {
@@ -19,7 +22,8 @@ void init_propositional_ctx()
         op_get_infix("<=", 3, OP_ASSOC_LEFT),
         op_get_infix("OR", 2, OP_ASSOC_LEFT),
         op_get_constant("TRUE"),
-        op_get_constant("FALSE")))
+        op_get_constant("FALSE"),
+        op_get_function("history", 1)))
     {
         software_defect("[Prop] Inconsistent operator set.\n");
     }

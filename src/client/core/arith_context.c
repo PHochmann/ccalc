@@ -84,10 +84,11 @@ ParsingContext get_arith_ctx()
         op_get_constant("clight"),
         op_get_constant("csound")))
     {
-        software_defect("Inconsistent operator set.\n");
+        software_defect("[Arith] Inconsistent operator set.\n");
     }
     // Set multiplication as glue-op
     ctx_set_glue_op(&res, ctx_lookup_op(&res, "*", OP_PLACE_INFIX));
+    return res;
 }
 
 void unload_arith_ctx()
