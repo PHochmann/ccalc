@@ -26,7 +26,7 @@ Summary: Sets arithmetic context stored in global variable
 ParsingContext get_arith_ctx()
 {
     ParsingContext res = ctx_create();
-    if (!ctx_add_ops(&res, NUM_PREDEFINED_OPS,
+    if (!ctx_add_ops(&res, NUM_ARITH_OPS,
         op_get_prefix("$", 0),
         op_get_prefix("@", 8),
         op_get_postfix("'", 7),

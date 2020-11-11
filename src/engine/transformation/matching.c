@@ -14,7 +14,7 @@
 // On heap during matching
 typedef struct {
     Pattern *pattern;
-    TreeListener listener;
+    ConstraintChecker checker;
 } MatchingContext;
 
 // A suffix-tree is used to lookup common prefixes of matchings
@@ -241,21 +241,14 @@ static void extend_matching(
                 // Check constraints if its okay to bind
                 for (size_t i = 0; i < ctx->pattern->num_constraints[id]; i++)
                 {
-                    Node *cpy_l = tree_copy(ctx->pattern->constraints[id][i].lhs);
-                    Node *cpy_r = tree_copy(ctx->pattern->constraints[id][i].rhs);
-                    transform_by_matching(cpy_l, &matching);
-                    transform_by_matching(cpy_r, &matching);
-                    tree_replace_constant_subtrees(&cpy_l, ctx->eval, 0, NULL);
-                    tree_replace_constant_subtrees(&cpy_r, ctx->eval, 0, NULL);
-                    bool res = tree_equals(cpy_l, cpy_r);
-                    free_tree(cpy_l);
-                    free_tree(cpy_r);
+                    Node *constr_cpy = tree_copy(ctx->pattern->constraints[id][i]);
+                    transform_by_matching(constr_cpy, &matching);
+                    bool res = ctx->checker(&constr_cpy, ctx->pattern, &matching);
+                    free_tree(constr_cpy);
                     if (!res) return;
                 }
 
-                matching.mapped_vars[id]  = var_name;
                 matching.mapped_nodes[id] = tree_list;
-                matching.num_mapped++;
                 vec_push(out_matchings, &matching);
                 return;
             }
@@ -290,7 +283,20 @@ static void extend_matching(
     }
 }
 
-size_t get_all_matchings(const Node **tree, const Pattern *pattern, TreeListener listener, Matching **out_matchings)
+void map_additional_variable(Matching *matching, const char *var, NodeList node)
+{
+    if (matching->num_mapped == MAX_MAPPED_VARS)
+    {
+        software_defect("A ConstraintChecker mapped too many variables. Increase MAX_MAPPED_VARS.\n");
+    }
+
+    matching->mapped_vars[matching->num_mapped] = var;
+    matching->mapped_nodes[matching->num_mapped] = node;
+    matching->num_mapped++;
+}
+
+// Does not prepare matchings by copying variable names over!
+size_t get_all_matchings(const Node **tree, const Pattern *pattern, ConstraintChecker checker, Matching **out_matchings)
 {
     if (tree == NULL || pattern == NULL || out_matchings == NULL) return false;
 
@@ -300,15 +306,18 @@ size_t get_all_matchings(const Node **tree, const Pattern *pattern, TreeListener
     // Create context object and put it on heap, this saves stack space during recursion
     MatchingContext ctx = (MatchingContext){
         .pattern = pattern,
-        .eval = eval
+        .checker = checker
     };
 
+    // num_mapped starts with number of variables that are guaranteed to be mapped by the pattern
+    // Every additional variable is mapped by a ConstraintChecker
     extend_matching(
         &ctx,
-        (Matching){ .num_mapped = 0 },
+        (Matching){ .num_mapped = pattern->num_free_vars }, // Lists are initialized to .size = 0, .nodes = NULL
         pattern,
         (NodeList){ .size = 1, .nodes = tree },
         &result);
+    
     *out_matchings = (Matching*)result.buffer;
     return result.elem_count;
 }
@@ -317,16 +326,22 @@ size_t get_all_matchings(const Node **tree, const Pattern *pattern, TreeListener
 Summary: suffixess to match "tree" against "pattern" (only in root)
 Returns: True, if matching is found, false if NULL-pointers given in arguments or no matching found
 */
-bool get_matching(const Node **tree, const Pattern *pattern, TreeListener listener, Matching *out_matching)
+bool get_matching(const Node **tree, const Pattern *pattern, ConstraintChecker checker, Matching *out_matching)
 {
     if (tree == NULL || pattern == NULL || out_matching == NULL) return false;
 
     Matching *matchings;
-    size_t num_matchings = get_all_matchings(tree, pattern, listener, &matchings);
+    size_t num_matchings = get_all_matchings(tree, pattern, checker, &matchings);
 
     // Return first matching if any
     if (num_matchings > 0)
     {
+        // Copy variable names over
+        for (size_t i = 0; i < pattern->num_free_vars; i++)
+        {
+            matchings[0].mapped_vars[i] = pattern->free_vars[i];
+        }
+
         *out_matching = matchings[0];
         free(matchings);
         return true;
@@ -341,14 +356,14 @@ bool get_matching(const Node **tree, const Pattern *pattern, TreeListener listen
 /*
 Summary: Looks for matching in tree, i.e. suffixess to construct matching in each node until matching is found (Top-Down)
 */
-Node **find_matching(const Node **tree, const Pattern *pattern, TreeListener listener, Matching *out_matching)
+Node **find_matching(const Node **tree, const Pattern *pattern, ConstraintChecker checker, Matching *out_matching)
 {
-    if (get_matching(tree, pattern, listener, out_matching)) return (Node**)tree;
+    if (get_matching(tree, pattern, checker, out_matching)) return (Node**)tree;
     if (get_type(*tree) == NTYPE_OPERATOR)
     {
         for (size_t i = 0; i < get_num_children(*tree); i++)
         {
-            Node **res = find_matching((const Node**)get_child_addr(*tree, i), pattern, listener, out_matching);
+            Node **res = find_matching((const Node**)get_child_addr(*tree, i), pattern, checker, out_matching);
             if (res != NULL) return res;
         }
     }
@@ -358,10 +373,10 @@ Node **find_matching(const Node **tree, const Pattern *pattern, TreeListener lis
 /*
 Summary: Basically the same as find_matching, but discards matching
 */
-bool does_match(const Node *tree, const Pattern *pattern, TreeListener listener)
+bool does_match(const Node *tree, const Pattern *pattern, ConstraintChecker checker)
 {
     Matching matching;
-    if (find_matching((const Node**)&tree, pattern, listener, &matching) != NULL)
+    if (find_matching((const Node**)&tree, pattern, checker, &matching) != NULL)
     {
         return true;
     }
@@ -375,10 +390,11 @@ bool does_match(const Node *tree, const Pattern *pattern, TreeListener listener)
 Summary: - Sets ids of variable nodes for faster lookup while matching
          - Computes trigger-indices for constraints
 */
-Pattern pattern_create(Node *tree, size_t num_constraints, Node **constr_l, Node **constr_r)
+Pattern pattern_create(Node *tree, size_t num_constraints, Node **constrs)
 {
     Pattern res = (Pattern){
         .pattern         = tree,
+        .num_free_vars   = 0,
         .num_constraints = { 0 }
     };
 
@@ -387,41 +403,39 @@ Pattern pattern_create(Node *tree, size_t num_constraints, Node **constr_l, Node
     size_t num_vars_distinct = list_variables(tree, num_vars, vars);
 
     // Step 1: Set id in pattern tree
-    size_t curr_id = 0;
     for (size_t i = 0; i < num_vars_distinct; i++)
     {
         if (vars[i][0] != MATCHING_WILDCARD
             && (vars[i][0] != MATCHING_LIST_PREFIX || vars[i][1] != MATCHING_WILDCARD))
         {
-            if (curr_id == MAX_MAPPED_VARS)
+            if (res.num_free_vars == MAX_MAPPED_VARS)
             {
                 software_defect("Trying to preprocess a pattern with too many distinct variables. Increase MAX_MAPPED_VARS.\n");
             }
 
+            res.free_vars[res.num_free_vars] = vars[i];
             Node **nodes[num_vars];
             size_t num_nodes = get_variable_nodes((const Node**)&tree, vars[i], nodes);
             for (size_t j = 0; j < num_nodes; j++)
             {
-                set_id(*(nodes[j]), curr_id);
+                set_id(*(nodes[j]), res.num_free_vars);
             }
-            curr_id++;
+            res.num_free_vars++;
         }
     }
-
 
     // Step 2: Compute contraints that should be checked when variable with this id is bound
     // This involves computing the variable with the highest id that occurs in the constraint
     for (size_t i = 0; i < num_constraints; i++)
     {
         size_t max_id = 0;
-        curr_id = 0;
+        size_t curr_id = 0;
         for (size_t i = 0; i < num_vars_distinct; i++)
         {
             if (vars[i][0] != MATCHING_WILDCARD
                 && (vars[i][0] != MATCHING_LIST_PREFIX || vars[i][1] != MATCHING_WILDCARD))
             {
-                if (get_variable_nodes(constr_l + i, vars[curr_id], NULL) != 0
-                    || get_variable_nodes(constr_r + i, vars[curr_id], NULL) != 0)
+                if (get_variable_nodes(constrs + i, vars[curr_id], NULL) != 0)
                 {
                     max_id = curr_id;
                 }
@@ -429,11 +443,13 @@ Pattern pattern_create(Node *tree, size_t num_constraints, Node **constr_l, Node
             }
         }
 
+        if (res.num_constraints == MATCHING_MAX_CONSTRAINTS)
+        {
+            software_defect("Trying to preprocess a pattern with too many constraints. Increase MATCHING_MAX_CONSTRAINTS.\n");
+        }
+
         // max_id contains trigger index
-        res.constraints[max_id][res.num_constraints[max_id]] = (PatternConstraint){
-            .lhs = constr_l[i],
-            .rhs = constr_r[i]
-        };
+        res.constraints[max_id][res.num_constraints[max_id]] = constrs[i];
         res.num_constraints[max_id]++;
     }
 
@@ -447,8 +463,7 @@ void free_pattern(Pattern *pattern)
     {
         for (size_t j = 0; j < pattern->num_constraints[i]; j++)
         {
-            free_tree(pattern->constraints[i][j].lhs);
-            free_tree(pattern->constraints[i][j].rhs);
+            free_tree(pattern->constraints[i][j]);
         }
     }
 }

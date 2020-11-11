@@ -9,7 +9,7 @@
 #include "arith_evaluation.h"
 
 #define ERROR_NOT_SET       "Error: This part of the history is not set yet.\n"
-#define ERROR_NOT_CONSTANT  "Error: In @x, x must contain no variable.\n"
+#define ERROR_NOT_CONSTANT  "Error: In @x, x must be a constant.\n"
 #define ERROR_OUT_OF_BOUNDS "Error: In @x, x must be >= 0.\n"
 #define ANS_VAR             "ans"
 
@@ -48,13 +48,13 @@ bool core_replace_history(Node **tree)
     Node **hist_subtree;
     while ((hist_subtree = find_op((const Node**)tree, history_op)) != NULL)
     {
-        if (count_all_variable_nodes(*hist_subtree) > 0)
+        if (get_type(get_child(*hist_subtree, 0)) != NTYPE_CONSTANT)
         {
             report_error(ERROR_NOT_CONSTANT);
             return false;
         }
 
-        int index = (int)arith_evaluate(get_child(*hist_subtree, 0));
+        int index = (int)get_const_value(get_child(*hist_subtree, 0));
 
         if (index < 0)
         {

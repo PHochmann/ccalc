@@ -9,32 +9,29 @@
 
 typedef struct
 {
-    Node *lhs;
-    Node *rhs;
-} PatternConstraint;
-
-typedef struct
-{
     Node *pattern;
+    size_t num_free_vars;
+    const char *free_vars[MAX_MAPPED_VARS];
     size_t num_constraints[MAX_MAPPED_VARS];
-    PatternConstraint constraints[MAX_MAPPED_VARS][MATCHING_MAX_CONSTRAINTS];
+    Node *constraints[MAX_MAPPED_VARS][MATCHING_MAX_CONSTRAINTS];
 } Pattern;
 
 /*
-Summary: Contains successful or intermediate matching
+Summary: Contains successful matching
 */
 typedef struct
 {
-    size_t num_mapped;                        // Size of mapped_vars and mapped_nodes
-    const char *mapped_vars[MAX_MAPPED_VARS]; // Variables in pattern, not copied, thus lifetime coupled to RewriteRule or whatever supplied the pattern
+    size_t num_mapped;
+    const char *mapped_vars[MAX_MAPPED_VARS];
     NodeList mapped_nodes[MAX_MAPPED_VARS];   // Subtrees in matched_tree that need to replace each mapped_var
 } Matching;
 
-NodeList *lookup_mapped_var(const Matching *matching, const char *var);
-size_t get_all_matchings(const Node **tree, const Pattern *pattern, TreeListener listener, Matching **out_matchings);
-bool get_matching(const Node **tree, const Pattern *pattern, TreeListener listener, Matching *out_matching);
-Node **find_matching(const Node **tree, const Pattern *pattern, TreeListener listener, Matching *out_matching);
-bool does_match(const Node *tree, const Pattern *pattern, TreeListener listener);
+typedef bool (*ConstraintChecker)(Node **tree, Pattern *pattern, Matching *matching);
 
-Pattern get_pattern(Node *tree, size_t num_constraints, PatternConstraint *constrs);
+NodeList *lookup_mapped_var(const Matching *matching, const char *var);
+bool get_matching(const Node **tree, const Pattern *pattern, ConstraintChecker checker, Matching *out_matching);
+Node **find_matching(const Node **tree, const Pattern *pattern, ConstraintChecker checker, Matching *out_matching);
+bool does_match(const Node *tree, const Pattern *pattern, ConstraintChecker checker);
+
+Pattern get_pattern(Node *tree, size_t num_constraints, Node **constrs);
 void free_pattern(Pattern *pattern);

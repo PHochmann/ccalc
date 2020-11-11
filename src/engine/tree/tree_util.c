@@ -80,6 +80,38 @@ void tree_replace(Node **tree_to_replace, Node *tree_to_insert)
 }
 
 /*
+Nodes from list are copied, the others are not
+*/
+void tree_replace_by_list(Node **parent, size_t child_to_replace, NodeList list)
+{
+    if (list.size != 1) // Parent needs to be replaced (but not via tree_replace because most children are preserved)
+    {
+        free_tree(get_child(*parent, child_to_replace));
+        Node *new_parent = malloc_operator_node(get_op(*parent), get_num_children(*parent) - 1 + list.size);
+        for (size_t i = 0; i < child_to_replace; i++)
+        {
+            set_child(new_parent, i, get_child(*parent, i));
+        }
+        for (size_t i = 0; i < list.size; i++)
+        {
+            set_child(new_parent, child_to_replace + i, tree_copy(list.nodes[i]));
+        }
+        for (size_t i = 0; i < get_num_children(*parent) - child_to_replace - 1; i++)
+        {
+            set_child(new_parent,
+                child_to_replace + list.size + i,
+                get_child(*parent, child_to_replace + i + 1));
+        }
+        free(*parent);
+        *parent = new_parent;
+    }
+    else
+    {
+        tree_replace(get_child_addr(*parent, child_to_replace), tree_copy(list.nodes[0]));
+    }
+}
+
+/*
 Returns: Total number of variable nodes in tree.
     Can be used as an upper bound for the needed size of a buffer to supply to get_variable_nodes
 */
@@ -239,6 +271,8 @@ size_t replace_variable_nodes(Node **tree, const Node *tree_to_copy, const char 
     return num_instances;
 }
 
+/* ~ ~ ~ ~ ~ ~ ~ ~ ~ Traversal ~ ~ ~ ~ ~ ~ ~ ~ ~ */
+
 /*
 Summary: Evaluates operator tree
 Returns: True if reduction could be applied, i.e. no variable in tree and reduction-function did not return false
@@ -323,49 +357,19 @@ void tree_replace_constant_subtrees(Node **tree, TreeListener listener, size_t n
     }
 }
 
-void tree_visit(TreeVisitor *visitor, Node **tree)
+bool tree_visit_ops(Node **tree, const Operator *op, OpCallback callback)
 {
-    switch (get_type(tree))
+    if (get_type(*tree) == NTYPE_OPERATOR)
     {
-        case NTYPE_CONSTANT:
-            visitor->const_visitor(tree, get_const_value(tree));
-            break;
-        case NTYPE_OPERATOR:
-            visitor->op_visitor(visitor, tree, get_op(tree), get_num_children(tree), get_child_addr(tree, 0));
-            break;
-        case NTYPE_VARIABLE:
-            visitor->var_visitor(tree, get_var_name(tree));
-    }
-}
+        for (size_t i = 0; i < get_num_children(*tree); i++)
+        {
+            tree_visit_ops(get_child_addr(*tree, i), op, callback);
+        }
 
-/*
-Nodes from list are copied, the others are not
-*/
-void tree_replace_by_list(Node **parent, size_t child_to_replace, NodeList list)
-{
-    if (list.size != 1) // Parent needs to be replaced (but not via tree_replace because most children are preserved)
-    {
-        free_tree(get_child(*parent, child_to_replace));
-        Node *new_parent = malloc_operator_node(get_op(*parent), get_num_children(*parent) - 1 + list.size);
-        for (size_t i = 0; i < child_to_replace; i++)
+        if (get_op(*tree) == op)
         {
-            set_child(new_parent, i, get_child(*parent, i));
+            return callback(tree, get_num_children(*tree), get_child_addr(*tree, 0));
         }
-        for (size_t i = 0; i < list.size; i++)
-        {
-            set_child(new_parent, child_to_replace + i, tree_copy(list.nodes[i]));
-        }
-        for (size_t i = 0; i < get_num_children(*parent) - child_to_replace - 1; i++)
-        {
-            set_child(new_parent,
-                child_to_replace + list.size + i,
-                get_child(*parent, child_to_replace + i + 1));
-        }
-        free(*parent);
-        *parent = new_parent;
     }
-    else
-    {
-        tree_replace(get_child_addr(*parent, child_to_replace), tree_copy(list.nodes[0]));
-    }
+    return false;
 }

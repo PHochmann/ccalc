@@ -8,7 +8,6 @@
 
 #define ARROW  "->"
 #define WHERE  " WHERE "
-#define EQUALS "="
 #define AND    " AND "
 
 bool parse_rule(char *string, ParsingContext *ctx, Vector *ruleset)
@@ -32,23 +31,13 @@ bool parse_rule(char *string, ParsingContext *ctx, Vector *ruleset)
     arrow_pos += strlen(ARROW);
 
     size_t num_constrs = 0;
-    PatternConstraint constrs[MATCHING_MAX_CONSTRAINTS];
+    Node *constrs[MATCHING_MAX_CONSTRAINTS];
 
     // 2. Parse contraints of form ".... WHERE x=y ; a=b"
     while (next_constr != NULL)
     {
         *next_constr = '\0';
         next_constr += strlen(WHERE);
-
-        char *next_equals = strstr(next_constr, EQUALS);
-        if (next_equals == NULL)
-        {
-            printf("No equals found.\n");
-            return false;
-        }
-
-        *next_equals = '\0';
-        next_equals += strlen(EQUALS);
 
         char *next_and = strstr(next_constr, AND);
         if (next_and != NULL)
@@ -57,10 +46,7 @@ bool parse_rule(char *string, ParsingContext *ctx, Vector *ruleset)
             next_and += strlen(AND);
         }
 
-        constrs[num_constrs] = (PatternConstraint){
-            .lhs = parse_conveniently(ctx, next_constr),
-            .rhs = parse_conveniently(ctx, next_equals)
-        };
+        constrs[num_constrs] = parse_conveniently(ctx, next_constr);
         num_constrs++;
         next_constr = next_and;
     }
@@ -82,9 +68,9 @@ bool parse_rule(char *string, ParsingContext *ctx, Vector *ruleset)
     return true;
 }
 
-bool parse_ruleset_from_string(char *string, ParsingContext *ctx, Vector *out_ruleset)
+bool parse_ruleset_from_string(const char *string, ParsingContext *ctx, Vector *out_ruleset)
 {
-    // String is likely to be readonly - copy it
+    // String is likely to be readonly - copy it (made explicit in signature)
     char *copy = malloc_wrapper(strlen(string) + 1);
     strcpy(copy, string);
 

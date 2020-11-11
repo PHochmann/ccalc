@@ -295,7 +295,7 @@ bool op_evaluate(const Operator *op, size_t num_args, const double *args, double
             return true;
     }
 
-    software_defect("Software defect: No reduction possible for operator %s.\n", op->name);
+    software_defect("Software defect: [Arith] No reduction possible for operator %s.\n", op->name);
     return false;
 }
 
