@@ -2,9 +2,9 @@
 #include <stdio.h>
 
 #include "test_tree_util.h"
-#include "../src/tree/operator.h"
-#include "../src/tree/tree_util.h"
-#include "../src/tree/tree_to_string.h"
+#include "../src/engine/tree/operator.h"
+#include "../src/engine/tree/tree_util.h"
+#include "../src/engine/tree/tree_to_string.h"
 
 bool tree_util_test(StringBuilder *error_builder)
 {

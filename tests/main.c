@@ -2,6 +2,10 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#include "../src/engine/util/string_builder.h"
+#include "../src/engine/table/table.h"
+#include "../src/client/commands/commands.h"
+
 #include "test.h"
 #include "test_tree_util.h"
 #include "test_parser.h"
@@ -10,9 +14,6 @@
 #include "test_table.h"
 #include "test_simplification.h"
 #include "test_data_structures.h"
-#include "../src/util/string_builder.h"
-#include "../src/commands/commands.h"
-#include "../src/table/table.h"
 
 /*
 These tests should not have any memory leaks when they are passed

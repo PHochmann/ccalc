@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../src/parsing/context.h"
-#include "../src/parsing/parser.h"
-#include "../src/tree/node.h"
-#include "../src/tree/tree_to_string.h"
-#include "../src/core/arith_context.h"
+#include "../src/engine/parsing/context.h"
+#include "../src/engine/parsing/parser.h"
+#include "../src/engine/tree/node.h"
+#include "../src/engine/tree/tree_to_string.h"
+#include "../src/client/core/arith_context.h"
 #include "test_tree_to_string.h"
 
 struct TreeToStringTest {

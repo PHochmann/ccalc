@@ -1,16 +1,20 @@
+#define _GNU_SOURCE
+#include <stdio.h>
 #include <string.h>
 
-#include "../../engine/util/alloc_wrappers.h"
-#include "../../engine/util/console_util.h"
-#include "../../engine/tree/node.h"
-#include "../../engine/transformation/matching.h"
-#include "../../engine/transformation/rewrite_rule.h"
-#include "../../engine/parsing/parser.h"
+#include "../util/alloc_wrappers.h"
+#include "../util/console_util.h"
+#include "../util/string_util.h"
+#include "../tree/node.h"
+#include "../parsing/parser.h"
 #include "rule_parsing.h"
+#include "matching.h"
 
-#define ARROW  "->"
-#define WHERE  " WHERE "
-#define AND    " ; "
+#define COMMENT_PREFIX "#"
+#define RULESET        "RULESET"
+#define ARROW          "->"
+#define WHERE          " WHERE "
+#define AND            " ; "
 
 bool parse_rule(char *string, ParsingContext *main_ctx, ParsingContext *extended_ctx, RewriteRule *out_rule)
 {
@@ -68,37 +72,46 @@ bool parse_rule(char *string, ParsingContext *main_ctx, ParsingContext *extended
     return true;
 }
 
-bool parse_ruleset_from_string(const char *string, ParsingContext *main_ctx, ParsingContext *extended_ctx, Vector *out_ruleset)
+size_t parse_rulesets_from_file(FILE *file,
+    ParsingContext *main_ctx,
+    ParsingContext *extended_ctx,
+    size_t max_rulesets,
+    Vector *out_rulesets)
 {
-    // String is likely to be readonly - copy it (made explicit in signature)
-    char *copy = malloc_wrapper(strlen(string) + 1);
-    strcpy(copy, string);
+    ssize_t curr_ruleset = -1;
+    size_t line_index = 0;
+    char *line_start = NULL;
+    size_t line_length = 0;
 
-    size_t line_no = 0;
-    char *line = copy;
-    while (line != NULL)
+    while (getline(&line_start, &line_length, file) != EOF)
     {
-        line_no++;
-        char *next_line = strstr(line, "\n");
-        if (next_line != NULL)
+        line_index++;
+        char *line = line_start;
+
+        line[strlen(line) - 1] = '\0'; // Overwrite newline char
+        while (*line == ' ') line++;   // Strip leading spaces
+
+        if (begins_with(RULESET, line))
         {
-            next_line[0] = '\0';
+            curr_ruleset++;
+            break;
+        }
+        if (curr_ruleset == (ssize_t)max_rulesets) break; // Buffer is full
+
+        if (begins_with(COMMENT_PREFIX, line)) continue;
+        if (line[0] == '\0') continue;
+
+        if (curr_ruleset == -1)
+        {
+            report_error("Ignored non-comment line outside of ruleset.\n");
         }
 
-        if (line[0] != '\0') // Allow for empty lines - just ignore them
+        if (!parse_rule(line, main_ctx, extended_ctx, vec_push_empty(&out_rulesets[curr_ruleset])))
         {
-            if (!parse_rule(line, main_ctx, extended_ctx, vec_push_empty(out_ruleset)))
-            {
-                report_error("Failed parsing ruleset in line %zu.\n", line_no);
-                return false;
-            }
+            report_error("Error occurred in line %zu.\n", line_index);
         }
-
-        line = next_line;
-        if (line != NULL) line++; // Skip terminator char
     }
 
-    vec_trim(out_ruleset);
-    free(copy);
-    return true;
+    free(line_start);
+    return curr_ruleset + 1;
 }

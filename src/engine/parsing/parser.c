@@ -412,7 +412,7 @@ Node *parse_conveniently(const ParsingContext *ctx, const char *input)
     ParserError error = parse_input(ctx, input, &result);
     if (result == NULL)
     {
-        software_defect("Convenient parsing failed: %s\n", perr_to_string(error));
+        report_error("Syntax error: %s\n", perr_to_string(error));
     }
     return result;
 }

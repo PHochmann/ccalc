@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "../src/parsing/parser.h"
-#include "../src/parsing/context.h"
-#include "../src/tree/node.h"
-#include "../src/core/arith_context.h"
-#include "../src/core/evaluation.h"
+#include "../src/engine/parsing/parser.h"
+#include "../src/engine/parsing/context.h"
+#include "../src/engine/tree/node.h"
+#include "../src/client/core/arith_context.h"
+#include "../src/client/core/arith_evaluation.h"
 #include "test_parser.h"
 
 // To check if parsed tree evaluates to expected value

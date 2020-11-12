@@ -18,7 +18,7 @@
 #include "cmd_playground.h"
 
 #define INTERACTIVE_ASK_PREFIX "> "
-#define COMMENT_PREFIX         '\''
+#define COMMENT_PREFIX         '#'
 
 // Is set to true when a command reported an error, affects exit code
 bool error;

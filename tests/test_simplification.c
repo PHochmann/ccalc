@@ -2,13 +2,14 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "../src/engine/tree/operator.h"
+#include "../src/engine/tree/tree_util.h"
+#include "../src/engine/tree/tree_to_string.h"
+#include "../src/engine/parsing/parser.h"
+#include "../src/client/core/arith_context.h"
+#include "../src/client/simplification/simplification.h"
+
 #include "test_simplification.h"
-#include "../src/tree/operator.h"
-#include "../src/tree/tree_util.h"
-#include "../src/tree/tree_to_string.h"
-#include "../src/core/arith_context.h"
-#include "../src/core/simplification.h"
-#include "../src/parsing/parser.h"
 
 static const size_t NUM_CASES = 15;
 char *cases[] = {

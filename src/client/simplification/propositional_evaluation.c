@@ -52,6 +52,9 @@ bool prop_op_evaluate(const Operator *op, size_t num_args, const double *args, d
         case NUM_ARITH_OPS + 12: // FALSE
             *out = EVAL_FALSE;
             return true;
+        case NUM_ARITH_OPS + 13: // !
+            *out = (args[0] == EVAL_FALSE) ? EVAL_TRUE : EVAL_FALSE;
+            return true;
     }
 
     software_defect("Software defect: [Prop] No reduction possible for operator %s.\n", op->name);

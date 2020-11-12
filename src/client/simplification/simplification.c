@@ -1,35 +1,36 @@
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
+#include <unistd.h>
 
-#include "../tree/tree_util.h"
-#include "../tree/tree_to_string.h"
-#include "../transformation/rewrite_rule.h"
-#include "../parsing/parser.h"
-#include "../util/console_util.h"
-#include "../util/linked_list.h"
+#include "../../engine/tree/tree_util.h"
+#include "../../engine/tree/tree_to_string.h"
+#include "../../engine/transformation/rewrite_rule.h"
+#include "../../engine/transformation/rule_parsing.h"
+#include "../../engine/parsing/parser.h"
+#include "../../engine/util/console_util.h"
+#include "../../engine/util/linked_list.h"
 
 #include "../core/arith_context.h"
 #include "../core/arith_evaluation.h"
 #include "simplification.h"
 #include "propositional_context.h"
 #include "propositional_evaluation.h"
-#include "rule_parsing.h"
-#include "rules.h"
 
 #define P(x) parse_conveniently(g_ctx, x)
 
-#define CAP             1000 // To protect against endless loops
-#define NUM_DONT_REDUCE 4
-const Operator *dont_reduce[NUM_DONT_REDUCE];
+#define RULESET_FILENAME "rules.rr"
+#define ITERATION_CAP    1000
+#define NUM_DONT_REDUCE  4
+#define NUM_RULESETS     7
 
+bool initialized = false;
+Vector rulesets[NUM_RULESETS];
+const Operator *dont_reduce[NUM_DONT_REDUCE];
 Pattern deriv_before;
 Node *deriv_after;
 Pattern malformed_derivA;
 Pattern malformed_derivB;
-
-// Contains parsed and compiled rules
-Vector rulesets[NUM_RULESETS];
 
 void replace_negative_consts(Node **tree)
 {
@@ -56,24 +57,23 @@ void replace_negative_consts(Node **tree)
 
 void init_simplification()
 {
+    if (access(RULESET_FILENAME, R_OK) == -1)
+    {
+        report_error("Simplification deactivated since ruleset not found or readable.\n");
+        return;
+    }
+
     init_propositional_ctx();
+    FILE *ruleset_file = fopen(RULESET_FILENAME, "r");
     for (size_t i = 0; i < NUM_RULESETS; i++)
     {
         rulesets[i] = get_empty_ruleset();
-        if (!parse_ruleset_from_string(g_rulestrings[i], g_ctx, g_propositional_ctx, rulesets + i))
-        {
-            software_defect("Failed parsing ruleset index %zu.\n", i);
-        }
     }
-
-    // Speciality for pretty-ruleset: Replace xC with unary minus operator with corresponding double in rules
-    // This allows for an ordering of constants < variables < operators since e.g. "-1" is no operator but a constant
-    /*for (size_t i = 0; i < vec_count(rulesets + 5); i++)
+    if (parse_rulesets_from_file(ruleset_file, g_ctx, g_propositional_ctx, NUM_RULESETS, rulesets) == NUM_RULESETS)
     {
-        RewriteRule *rule = (RewriteRule*)vec_get(rulesets + 5, i);
-        tree_reduce_constant_subtrees(&rule->after, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
-        tree_reduce_constant_subtrees(&rule->before, op_evaluate, NUM_DONT_REDUCE, dont_reduce);
-    }*/
+        report_error("Too few simplification rulesets defined in %s.\n", RULESET_FILENAME);
+    }
+    fclose(ruleset_file);
 
     deriv_before = get_pattern(P("x'"), 0, NULL);
     deriv_after = P("deriv(x, z)");
@@ -83,6 +83,8 @@ void init_simplification()
     dont_reduce[1] = ctx_lookup_op(g_ctx, "e", OP_PLACE_FUNCTION);
     dont_reduce[2] = ctx_lookup_op(g_ctx, "rand", OP_PLACE_FUNCTION);
     dont_reduce[3] = ctx_lookup_op(g_ctx, "$", OP_PLACE_PREFIX); // There are no evaluation cases before +
+
+    initialized = true;
 }
 
 void unload_simplification()
@@ -96,6 +98,7 @@ void unload_simplification()
         free_ruleset(&rulesets[i]);
     }
     unload_propositional_ctx();
+    initialized = false;
 }
 
 /*
@@ -104,6 +107,8 @@ Returns: True when transformations could be applied, False otherwise
 */
 bool core_simplify(Node **tree)
 {
+    if (!initialized) return true;
+
     // Replace avg(x,y,z...) by sum(x,y,z...)/num_children
     Node **avg_node;
     while ((avg_node = find_op((const Node**)tree, ctx_lookup_op(g_ctx, "avg", OP_PLACE_FUNCTION))) != NULL)
@@ -122,7 +127,7 @@ bool core_simplify(Node **tree)
     }
 
     // Apply elimination rules
-    apply_ruleset(tree, &rulesets[0], propositional_checker, CAP);
+    apply_ruleset(tree, &rulesets[0], propositional_checker, ITERATION_CAP);
 
     Matching matching;
     Node **matched;

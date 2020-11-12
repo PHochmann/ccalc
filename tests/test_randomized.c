@@ -2,11 +2,11 @@
 #include <string.h>
 
 #include "test_randomized.h"
-#include "../src/parsing/parser.h"
-#include "../src/core/arith_context.h"
-#include "../src/tree/tree_util.h"
-#include "../src/tree/tree_to_string.h"
-#include "../src/util/string_util.h"
+#include "../src/engine/parsing/parser.h"
+#include "../src/engine/tree/tree_util.h"
+#include "../src/engine/tree/tree_to_string.h"
+#include "../src/engine/util/string_util.h"
+#include "../src/client/core/arith_context.h"
 
 #define SEED                  21
 #define NUM_CASES            100
