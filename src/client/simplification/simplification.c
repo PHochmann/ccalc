@@ -21,16 +21,14 @@
 
 #define RULESET_FILENAME "rules.rr"
 #define ITERATION_CAP    1000
-#define NUM_DONT_REDUCE  4
 #define NUM_RULESETS     7
 
 bool initialized = false;
 Vector rulesets[NUM_RULESETS];
-const Operator *dont_reduce[NUM_DONT_REDUCE];
+
 Pattern deriv_before;
 Node *deriv_after;
-Pattern malformed_derivA;
-Pattern malformed_derivB;
+Pattern malformed_deriv;
 
 void replace_negative_consts(Node **tree)
 {
@@ -69,7 +67,7 @@ void init_simplification()
     {
         rulesets[i] = get_empty_ruleset();
     }
-    if (parse_rulesets_from_file(ruleset_file, g_ctx, g_propositional_ctx, NUM_RULESETS, rulesets) == NUM_RULESETS)
+    if (parse_rulesets_from_file(ruleset_file, g_ctx, g_propositional_ctx, NUM_RULESETS, rulesets) != NUM_RULESETS)
     {
         report_error("Too few simplification rulesets defined in %s.\n", RULESET_FILENAME);
     }
@@ -77,12 +75,10 @@ void init_simplification()
 
     deriv_before = get_pattern(P("x'"), 0, NULL);
     deriv_after = P("deriv(x, z)");
-    malformed_derivA = get_pattern(P("deriv(x, cX)"), 0, NULL);
-    malformed_derivB = get_pattern(P("deriv(x, oX)"), 0, NULL);
-    dont_reduce[0] = ctx_lookup_op(g_ctx, "pi", OP_PLACE_FUNCTION);
-    dont_reduce[1] = ctx_lookup_op(g_ctx, "e", OP_PLACE_FUNCTION);
-    dont_reduce[2] = ctx_lookup_op(g_ctx, "rand", OP_PLACE_FUNCTION);
-    dont_reduce[3] = ctx_lookup_op(g_ctx, "$", OP_PLACE_PREFIX); // There are no evaluation cases before +
+    if (!parse_pattern("deriv(x, y) WHERE !(type(cx) == VAR)", g_ctx, g_propositional_ctx, &malformed_deriv))
+    {
+        software_defect("malformed deriv pattern parser error\n");
+    }
 
     initialized = true;
 }
@@ -91,8 +87,7 @@ void unload_simplification()
 {
     free_pattern(&deriv_before);
     free_tree(deriv_after);
-    free_pattern(&malformed_derivA);
-    free_pattern(&malformed_derivB);
+    free_pattern(&malformed_deriv);
     for (size_t i = 0; i < NUM_RULESETS; i++)
     {
         free_ruleset(&rulesets[i]);
@@ -151,11 +146,7 @@ bool core_simplify(Node **tree)
         tree_replace(matched, replacement);
     }
 
-    print_tree(malformed_derivA.pattern, true);
-    printf("\n");
-
-    if (does_match(*tree, &malformed_derivA, propositional_checker)
-        || does_match(*tree, &malformed_derivB, propositional_checker))
+    if (does_match(*tree, &malformed_deriv, propositional_checker))
     {
         report_error("Second operand of function 'deriv' must be variable.\n");
         return false;
@@ -168,7 +159,7 @@ bool core_simplify(Node **tree)
     while (apply_ruleset_by_iterator(tree, (Iterator*)&deriv_it, propositional_checker, 1) != 0)
     {
         iterator_reset((Iterator*)&deriv_it);
-        tree_reduce_constant_subtrees(tree, arith_op_evaluate, NUM_DONT_REDUCE, dont_reduce);
+        tree_reduce_constant_subtrees(tree, arith_op_evaluate);
     };
 
     // If the tree still contains deriv-operators, the user attempted to derivate 
@@ -180,13 +171,13 @@ bool core_simplify(Node **tree)
         return false;
     }
 
-    tree_reduce_constant_subtrees(tree, arith_op_evaluate, NUM_DONT_REDUCE, dont_reduce);
+    tree_reduce_constant_subtrees(tree, arith_op_evaluate);
     replace_negative_consts(tree);
 
     //printf("\n\nBeginning with flattening...\n");
 
     apply_ruleset(tree, &rulesets[2], propositional_checker, SIZE_MAX); // Normal form rules
-    tree_reduce_constant_subtrees(tree, arith_op_evaluate, NUM_DONT_REDUCE, dont_reduce);
+    tree_reduce_constant_subtrees(tree, arith_op_evaluate);
 
     //printf("\n\nBeginning with main simplification...\n");
 
@@ -194,28 +185,25 @@ bool core_simplify(Node **tree)
     size_t simp_cap = 100;
     while (apply_ruleset(tree, &rulesets[3], propositional_checker, 10) != 0 && simp_cap-- != 0)
     {
-        tree_reduce_constant_subtrees(tree, arith_op_evaluate, NUM_DONT_REDUCE, dont_reduce);
+        tree_reduce_constant_subtrees(tree, arith_op_evaluate);
     }
     replace_negative_consts(tree);
-
-    //print_tree(*tree, true);
-    //printf("\n");
 
     //printf("\n\nBeginning with folding...\n");
 
     apply_ruleset(tree, &rulesets[4], propositional_checker, SIZE_MAX); // Remove sum() and prod()
-    tree_reduce_constant_subtrees(tree, arith_op_evaluate, NUM_DONT_REDUCE, dont_reduce);
+    tree_reduce_constant_subtrees(tree, arith_op_evaluate);
     replace_negative_consts(tree);
 
     //printf("\n\nBeginning with pretty printing...\n");
 
     apply_ruleset(tree, &rulesets[5], propositional_checker, SIZE_MAX); // Pretty printing
-    tree_reduce_constant_subtrees(tree, arith_op_evaluate, NUM_DONT_REDUCE, dont_reduce);
+    tree_reduce_constant_subtrees(tree, arith_op_evaluate);
 
     //printf("\n\nBeginning with ordering...\n");
 
     apply_ruleset(tree, &rulesets[6], propositional_checker, SIZE_MAX); // Ordering
-    tree_reduce_constant_subtrees(tree, arith_op_evaluate, NUM_DONT_REDUCE, dont_reduce);
+    tree_reduce_constant_subtrees(tree, arith_op_evaluate);
     replace_negative_consts(tree);
 
     return true;

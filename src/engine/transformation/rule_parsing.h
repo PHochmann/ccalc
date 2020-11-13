@@ -6,7 +6,8 @@
 #include "../parsing/context.h"
 #include "rewrite_rule.h"
 
-bool parse_rule(char *string, ParsingContext *main_ctx, ParsingContext *extended_ctx, RewriteRule *out_rule);
+bool parse_pattern(const char *string, ParsingContext *main_ctx, ParsingContext *extended_ctx, Pattern *out_pattern);
+bool parse_rule(const char *string, ParsingContext *main_ctx, ParsingContext *extended_ctx, RewriteRule *out_rule);
 size_t parse_rulesets_from_file(FILE *file,
     ParsingContext *main_ctx,
     ParsingContext *extended_ctx,

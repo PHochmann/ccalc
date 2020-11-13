@@ -1,5 +1,6 @@
 # Operator elimination (de-sugar)
 RULESET
+    x-x        -> 0
     +x         -> x
     $x         -> x
     --x        -> x
@@ -78,8 +79,7 @@ RULESET
     prod([xs], x^y, [ys], sum([yys]), [zs]) -> prod([xs], sum([yys]), [ys], x^y, [zs])
 
     # Multiplication of constants
-    prod(cx, [xs], sum(cy, [xxs]), [zs])    -> prod([xs], sum(cx*cy, prod(cx, sum([xxs]))), [zs])
-            WHERE type(cx)==CONST ; type(cy)==CONST
+    prod(cx, [xs], sum(cy, [xxs]), [zs])    -> prod([xs], sum(cx*cy, prod(cx, sum([xxs]))), [zs]) WHERE type(cx)==CONST ; type(cy)==CONST
 
     # Simplify sums
     sum([xs], x, [ys], -x, [zs]) -> sum([xs], [ys], [zs])
@@ -96,24 +96,7 @@ RULESET
     # Sum of two equal values
     sum([xs], x, [ys], x, [zs]) -> sum([xs], prod(2,x), [ys], [zs])
     # Two products with common element (Zusammenfassen)
-    sum([xs], prod([xxs], x, [yys]), [ys], prod([xxxs], x, [yyys]), [zs])
-        -> sum([xs], prod(sum(prod([xxs], [yys]), prod([xxxs], [yyys])), x), [ys], [zs])
-
-    # Sums within products
-
-    # The following three rules pull a value of a common base into a product
-    # e.g.: x + a*x^z -> (a+z^(1-z))*x^z
-    /*sum([xs], prod([xxs], x^z, [yys]), [ys], x^y, [zs]) ->
-            sum([xs], prod(sum(prod([xxs], [yys]), x^sum(y, -z)), x^z), [ys], [zs])
-
-    sum([xs], prod([xxs], x^z, [yys]), [ys], x, [zs]) ->
-            sum([xs], prod(sum(prod([xxs], [yys]), x^sum(1, -z)), x^z), [ys], [zs])
-
-    sum([xs], x, [ys], prod([xxs], x^z, [yys]), [zs]) ->
-            sum([xs], prod(sum(prod([xxs], [yys]), x^sum(1, -z)), x^z), [ys], [zs])
-
-    sum([xs], prod([xxs], x, [yys]), [ys], x^y, [zs]) ->
-            sum([xs], prod(sum(prod([xxs], [yys]), x^sum(y, -1)), x), [ys], [zs])*/
+    sum([xs], prod([xxs], x, [yys]), [ys], prod([xxxs], x, [yyys]), [zs]) -> sum([xs], prod(sum(prod([xxs], [yys]), prod([xxxs], [yyys])), x), [ys], [zs])
 
     # Binomische Formel rückwärts
     sum(prod(2, x, y), x^2, y^2) -> sum(x, y)^2
@@ -124,9 +107,8 @@ RULESET
     x^1                              -> x
     (x^y)^z                          -> x^prod(y, z)
 
-    prod([xs], x^cy, [ys], x^cz, [zs]) -> prod([xs], x^sum(cy,cz), [ys], [zs])
-            WHERE type(cy)=CONST ; type(cz)=CONST
-    prod([xs], dY^x, [ys], dZ^x, [zs]) -> prod([xs], prod(dY, dZ)^x, [ys], [zs])
+    prod([xs], x^cy, [ys], x^cz, [zs]) -> prod([xs], x^sum(cy,cz), [ys], [zs]) WHERE type(cy)=CONST ; type(cz)=CONST
+    prod([xs], cy^x, [ys], cz^x, [zs]) -> prod([xs], (cy*cz)^x, [ys], [zs]) WHERE type(cy)=CONST ; type(cz)=CONST
     prod([xs], x, [ys], x, [zs])     -> prod([xs], x^2, [ys], [zs])
     prod([xs], x, [ys], x^y, [zs])   -> prod([xs], x^sum(y,1), [ys], [zs])
     prod(x, y)^z                     -> prod(x^z, y^z)
@@ -140,18 +122,19 @@ RULESET
     sum([xs], sin(x)^2, [ys], cos(x)^2, [zs])   -> sum(1, [xs], [ys], [zs])
     prod([xs], sin(x), [ys], cos(x)^-1, [zs])   -> prod([xs], tan(x), [ys], [zs])
     prod([xs], sin(x)^y, [ys], cos(x)^-y, [zs]) -> prod([xs], tan(x)^y, [ys], [zs])
+
     # Some special ops
     min(x, x)     -> x
     max(x, x)     -> x
 
     # Ordering trick: Move constants to the left and fold them again in a + or * term
     # Since this RULESET will not affect + and *, the term will be evaluated eventually
-    sum([xs],cX,[ys],cY,[zs])  -> sum(cX+cY,[xs],[ys],[zs])
-    sum(x+y,[xs],cX,[ys])      -> sum(x+y+cX,[xs],[ys])
-    sum(x,[xs],cX,[ys])        -> sum(cX,x,[xs],[ys])
-    prod([xs],cX,[ys],cY,[zs]) -> prod(cX*cY,[xs],[ys],[zs])
-    prod(x*y,[xs],cX,[ys])     -> prod(x*y*cX,[xs],[ys])
-    prod(x,[xs],cX,[ys])       -> prod(cX,x,[xs],[ys])
+    sum([xs],cX,[ys],cY,[zs])  -> sum(cX+cY,[xs],[ys],[zs])   WHERE type(cX)==CONST ; type(cY)==CONST
+    sum(x+y,[xs],cX,[ys])      -> sum(x+y+cX,[xs],[ys])       WHERE type(cX)==CONST
+    sum(x,[xs],cX,[ys])        -> sum(cX,x,[xs],[ys])         WHERE type(cX)==CONST
+    prod([xs],cX,[ys],cY,[zs]) -> prod(cX*cY,[xs],[ys],[zs])  WHERE type(cX)==CONST ; type(cY)==CONST
+    prod(x*y,[xs],cX,[ys])     -> prod(x*y*cX,[xs],[ys])      WHERE type(cX)==CONST
+    prod(x,[xs],cX,[ys])       -> prod(cX,x,[xs],[ys])        WHERE type(cX)==CONST
 
 # Fold flattened operators again
 RULESET
@@ -165,7 +148,6 @@ RULESET
     prod([xs], x)                           -> prod([xs])*x
 
     sum([xs], prod([xxs], -x, [yys]), [ys]) -> sum([xs], [ys]) - prod([xxs],x,[yys])
-    prod([xs], x)^cY                        -> prod([xs])^cY * x^cY
     prod()                                  -> 1
     sum()                                   -> 0
 

@@ -373,6 +373,7 @@ bool does_match(const Node *tree, const Pattern *pattern, ConstraintChecker chec
 Summary: - Sets ids of variable nodes for faster lookup while matching
          - Computes trigger-indices for constraints
 */
+#include "../tree/tree_to_string.h"
 Pattern get_pattern(Node *tree, size_t num_constraints, Node **constrs)
 {
     assert(tree != NULL);
@@ -395,6 +396,8 @@ Pattern get_pattern(Node *tree, size_t num_constraints, Node **constrs)
         {
             if (res.num_free_vars == MAX_MAPPED_VARS)
             {
+                print_tree(tree, true);
+                printf("\n");
                 software_defect("Trying to preprocess a pattern with too many distinct variables. Increase MAX_MAPPED_VARS.\n");
             }
 

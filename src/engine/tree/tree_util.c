@@ -318,28 +318,10 @@ Summary: Replaces reducible subtrees by a ConstantNode
 Params:
     tree:            Tree that will be changed
     listener:        Compositional evaluation function
-    num_dont_reduce: Length of dont_reduce
-    dont_reduce:     Array of operators that will not be reduced.
-                     NULL can be passed if num_dont_reduce is 0
 */
-void tree_reduce_constant_subtrees(Node **tree, TreeListener listener, size_t num_dont_reduce, const Operator **dont_reduce)
+void tree_reduce_constant_subtrees(Node **tree, TreeListener listener)
 {
-    bool is_constant = (count_all_variable_nodes(*tree) == 0);
-    bool no_dont_reduce = true;
-
-    if (is_constant)
-    {
-        for (size_t i = 0; i < num_dont_reduce; i++)
-        {
-            if (find_op((const Node**)tree, dont_reduce[i]) != NULL)
-            {
-                no_dont_reduce = false;
-                break;
-            }
-        }
-    }
-
-    if (is_constant && no_dont_reduce)
+    if (count_all_variable_nodes(*tree) == 0)
     {
         double res;
         tree_reduce(*tree, listener, &res);
@@ -351,7 +333,7 @@ void tree_reduce_constant_subtrees(Node **tree, TreeListener listener, size_t nu
         {
             for (size_t i = 0; i < get_num_children(*tree); i++)
             {
-                tree_reduce_constant_subtrees(get_child_addr(*tree, i), listener, num_dont_reduce, dont_reduce);
+                tree_reduce_constant_subtrees(get_child_addr(*tree, i), listener);
             }
         }
     }

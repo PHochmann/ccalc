@@ -97,6 +97,9 @@ bool arith_op_evaluate(const Operator *op, size_t num_args, const double *args, 
 {
     switch (op->id)
     {
+        case 0: // $x
+            *out = args[0];
+            return true;
         case 4: // x+y
             *out = args[0] + args[1];
             return true;

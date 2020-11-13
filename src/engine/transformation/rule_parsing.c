@@ -16,60 +16,129 @@
 #define WHERE          " WHERE "
 #define AND            " ; "
 
-bool parse_rule(char *string, ParsingContext *main_ctx, ParsingContext *extended_ctx, RewriteRule *out_rule)
+// string: without "WHERE"
+bool parse_constraints(const char *string,
+    ParsingContext *extended_ctx,
+    size_t *num_constraints, // In-Out, like in readline
+    Node **out_constraints)
 {
-    char *arrow_pos = strstr(string, ARROW);
-    char *next_constr = strstr(string, WHERE); // Optional
-
-    if (arrow_pos == NULL)
+    if (string == NULL)
     {
-        report_error("No arrow found.\n");
-        return false;
+        *num_constraints = 0;
+        return true;
     }
 
-    // 1. Step: Overwrite "->" and "WHERE" with 0-terminators
-    arrow_pos[0] = '\0';
-    arrow_pos += strlen(ARROW);
+    char *str_cpy = malloc_wrapper(strlen(string) + 1);
+    char *str = str_cpy;
+    strcpy(str, string);    
 
-    if (next_constr != NULL)
+    size_t buffer_size = *num_constraints;
+    *num_constraints = 0;
+    while (str != NULL)
     {
-        *next_constr = '\0';
-        next_constr += strlen(WHERE);
-    }
-
-    size_t num_constrs = 0;
-    Node *constrs[MATCHING_MAX_CONSTRAINTS];
-
-    // 2. Parse contraints of form ".... WHERE x=y ; a=b"
-    while (next_constr != NULL)
-    {
-        char *next_and = strstr(next_constr, AND);
+        char *next_and = strstr(str, AND);
         if (next_and != NULL)
         {
             *next_and = '\0';
             next_and += strlen(AND);
         }
 
-        constrs[num_constrs] = parse_conveniently(extended_ctx, next_constr);
-        num_constrs++;
-        next_constr = next_and;
+        out_constraints[*num_constraints] = parse_conveniently(extended_ctx, str);
+        if (out_constraints[*num_constraints] == NULL) goto error;
+        (*num_constraints)++;
+        if (*num_constraints == buffer_size) goto success;
+        str = next_and;
     }
 
-    Node *left_n = parse_conveniently(main_ctx, string); // Gives error message
+    success:
+    free(str_cpy);
+    return true;
+    error:
+    free(str_cpy);
+    return false;
+}
+
+bool parse_pattern(const char *string, ParsingContext *main_ctx, ParsingContext *extended_ctx, Pattern *out_pattern)
+{
+    char *str_cpy = malloc_wrapper(strlen(string) + 1);
+    char *str = str_cpy;
+    strcpy(str_cpy, string);
+
+    char *where_pos = strstr(str, WHERE); // Optional
+    size_t num_constrs = MATCHING_MAX_CONSTRAINTS;
+    Node *constrs[MATCHING_MAX_CONSTRAINTS];
+    if (where_pos != NULL)
+    {
+        *where_pos = '\0';
+        where_pos += strlen(WHERE);
+    }
+    if (!parse_constraints(where_pos, extended_ctx, &num_constrs, constrs))
+    {
+        goto error;
+    }
+
+    Node *pattern = parse_conveniently(main_ctx, str); // Gives error message
+    if (pattern == NULL)
+    {
+        goto error;
+    }
+
+    *out_pattern = get_pattern(pattern, num_constrs, constrs);
+    free(str_cpy);
+    return true;
+
+    error:
+    free(str_cpy);
+    return false;
+}
+
+bool parse_rule(const char *string, ParsingContext *main_ctx, ParsingContext *extended_ctx, RewriteRule *out_rule)
+{
+    char *str = malloc_wrapper(strlen(string) + 1);
+    strcpy(str, string);
+
+    char *arrow_pos = strstr(str, ARROW);
+    char *where_pos = strstr(str, WHERE); // Optional
+
+    if (arrow_pos == NULL)
+    {
+        report_error("No arrow found.\n");
+        goto error;
+    }
+
+    // 1. Step: Overwrite "->" and "WHERE" with 0-terminators
+    arrow_pos[0] = '\0';
+    arrow_pos += strlen(ARROW);
+
+    size_t num_constrs = MATCHING_MAX_CONSTRAINTS;
+    Node *constrs[MATCHING_MAX_CONSTRAINTS];
+    if (where_pos != NULL)
+    {
+        *where_pos = '\0';
+        where_pos += strlen(WHERE);
+    }
+    if (!parse_constraints(where_pos, extended_ctx, &num_constrs, constrs)) goto error;
+
+    Node *left_n = parse_conveniently(main_ctx, str); // Gives error message
     if (left_n == NULL)
     {
-        return false;
+        goto error;
     }
 
     Node *right_n = parse_conveniently(main_ctx, arrow_pos);
     if (right_n == NULL)
     {
         free_tree(left_n);
-        return false;
+        goto error;
     }
 
     *out_rule = get_rule(get_pattern(left_n, num_constrs, constrs), right_n);
+    free(str);
     return true;
+
+    error:
+    free(str);
+    return false;
 }
 
 size_t parse_rulesets_from_file(FILE *file,
@@ -94,9 +163,13 @@ size_t parse_rulesets_from_file(FILE *file,
         if (begins_with(RULESET, line))
         {
             curr_ruleset++;
-            break;
+            continue;
         }
-        if (curr_ruleset == (ssize_t)max_rulesets) break; // Buffer is full
+
+        if (curr_ruleset == (ssize_t)max_rulesets)
+        {
+            break; // Buffer is full
+        }
 
         if (begins_with(COMMENT_PREFIX, line)) continue;
         if (line[0] == '\0') continue;
