@@ -1,6 +1,6 @@
 #pragma once
 #include <stdbool.h>
-#include "../tree/node.h"
+#include "../../engine/tree/node.h"
 
 void init_simplification();
 void unload_simplification();

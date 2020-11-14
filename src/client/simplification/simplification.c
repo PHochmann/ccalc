@@ -167,7 +167,14 @@ bool core_simplify(Node **tree)
     Node **unresolved_derivation = find_op((const Node**)tree, get_op(deriv_after));
     if (unresolved_derivation != NULL)
     {
-        report_error("Can't derivate operator '%s'.\n", get_op(get_child((*unresolved_derivation), 0))->name);
+        if (get_type(get_child(*unresolved_derivation, 0)) != NTYPE_OPERATOR)
+        {
+            software_defect("Derivation failed.\n");
+        }
+        else
+        {
+            report_error("Can't derivate operator '%s'.\n", get_op(get_child(*unresolved_derivation, 0))->name);
+        }
         return false;
     }
 

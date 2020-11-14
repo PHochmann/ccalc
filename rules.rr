@@ -22,9 +22,9 @@ RULESET
     x*1                 -> x
 
     deriv(x, x)         -> 1
-    deriv(cv, z)        -> 0              WHERE type(cv)==CONST OR type(cv)==VAR
-    deriv(cx*y, y)      -> cx             WHERE type(cx)==CONST
-    deriv(cx * z^cy, z) -> cx*cy*z^(cy-1) WHERE type(cx)==CONST ; type(cy)==CONST
+    deriv(cv, z)        -> 0               WHERE !(type(cv) == OP)
+    deriv(cx*y, y)      -> cx              WHERE type(cx) == CONST
+    deriv(cx * z^cy, z) -> cx*cy*z^(cy-1)  WHERE type(cx) == CONST ; type(cy) == CONST
     deriv(-x, z)        -> -deriv(x, z)
     deriv(x + y, z)     -> deriv(x, z) + deriv(y, z)
     deriv(x - y, z)     -> deriv(x, z) - deriv(y, z)
@@ -93,6 +93,8 @@ RULESET
     prod(y, [xs], -x, [zs])      -> prod(-y, [xs], x, [zs])
 
     # Products within sum
+    sum([xs], prod(cx, y), [ys], y, [zs]) -> sum([xs], prod(cx + 1, y), [ys], [zs])  WHERE type(cx)==CONST
+    sum([xs], prod(cx, y), [ys], -y, [zs]) -> sum([xs], prod(cx - 1, y), [ys], [zs])  WHERE type(cx)==CONST
     # Sum of two equal values
     sum([xs], x, [ys], x, [zs]) -> sum([xs], prod(2,x), [ys], [zs])
     # Two products with common element (Zusammenfassen)
@@ -126,6 +128,8 @@ RULESET
     # Some special ops
     min(x, x)     -> x
     max(x, x)     -> x
+
+    (-x)^y -> x^y WHERE  (y mod 2) == 0
 
     # Ordering trick: Move constants to the left and fold them again in a + or * term
     # Since this RULESET will not affect + and *, the term will be evaluated eventually
