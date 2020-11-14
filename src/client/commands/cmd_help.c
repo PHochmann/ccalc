@@ -40,7 +40,7 @@ static const char *COMMAND_TABLE[NUM_COMMANDS][2] = {
     { "<func|const> = <after>",                  "Adds function or constant" },
     { "table <expr> ; <from> ; <to> ; <step>  \n"
       "   [fold <expr> ; <init>]",               "Prints table of values" },
-    { "load <path>",                             "Executes commands of file" },
+    { "load [simplification] <path>",            "Executes commands or loads simplification ruleset in file" },
     { "clear [<func>]",                          "Clears all or one function or constant" },
     { "simplify <expr>",                         "Attempts to simplify an expression (beta)" },
     { "help [operators]",                        "Shows this message or a verbose list of all operators" },

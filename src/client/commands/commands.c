@@ -7,6 +7,7 @@
 #include "../core/arith_context.h"
 #include "../core/history.h"
 #include "../simplification/simplification.h"
+#include "../simplification/propositional_context.h"
 
 #include "commands.h"
 #include "cmd_evaluation.h"
@@ -76,6 +77,7 @@ void unload_commands()
     unload_console_util();
     unload_history();
     unload_arith_ctx();
+    unload_propositional_ctx();
 }
 
 /*
@@ -84,7 +86,8 @@ Summary: Sets parsing context and initializes commands
 void init_commands()
 {
     init_arith_ctx();
-    init_simplification();
+    init_propositional_ctx();
+    init_simplification(NULL);
     init_console_util();
     init_history();
     error = false;

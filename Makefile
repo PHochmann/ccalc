@@ -1,10 +1,10 @@
-TARGET_EXEC := ccalc
-BUILD_DIR   := ./bin/release
-SRC_DIRS    := ./src
+bin_PROGRAMS = ccalc
+BUILD_DIR    = ./bin/release
+SRC_DIRS     = ./src
 
-CC          := gcc
-CFLAGS      := -MMD -MP -std=c99 -Wall -Wextra -Werror -pedantic
-LDFLAGS     := -lm
+CC           = gcc
+CFLAGS       = -MMD -MP -std=c99 -Wall -Wextra -Werror -pedantic
+LDFLAGS      = -lm
 
 ifeq (,$(filter $(MAKECMDGOALS),tests))
 	ifeq ($(NOREADLINE),)
@@ -26,7 +26,7 @@ ifneq (,$(filter $(MAKECMDGOALS),tests))
 	BUILD_DIR := ./bin/tests
 	SRC_DIRS += ./tests
 	SRCS = $(shell find $(SRC_DIRS) -name *.c ! -wholename "./src/client/main.c")
-	TARGET_EXEC := test
+	bin_PROGRAMS := test
 else
 	SRCS := $(shell find $(SRC_DIRS) -name *.c)
 endif
@@ -37,16 +37,16 @@ DEPS := $(OBJS:.o=.d)
 INC_DIRS := $(shell find $(SRC_DIRS) -type d)
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
-all: $(BUILD_DIR)/$(TARGET_EXEC)
+all: $(BUILD_DIR)/$(bin_PROGRAMS)
 
-debug: $(BUILD_DIR)/$(TARGET_EXEC)
+debug: $(BUILD_DIR)/$(bin_PROGRAMS)
 
-tests: $(BUILD_DIR)/$(TARGET_EXEC)
-	@./$(BUILD_DIR)/$(TARGET_EXEC)
+tests: $(BUILD_DIR)/$(bin_PROGRAMS)
+	@./$(BUILD_DIR)/$(bin_PROGRAMS)
 
-$(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
+$(BUILD_DIR)/$(bin_PROGRAMS): $(OBJS)
 	@$(CC) $(OBJS) -o $@ $(LDFLAGS)
-	@echo Done. Placed executable at $(BUILD_DIR)/$(TARGET_EXEC)
+	@echo Done. Placed executable at $(BUILD_DIR)/$(bin_PROGRAMS)
 
 $(BUILD_DIR)/%.c.o: %.c
 	@mkdir -p $(dir $@)

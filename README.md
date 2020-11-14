@@ -26,16 +26,16 @@ When starting the calculator normally, you can enter expressions and commands in
 * Use ```$``` to parse the rest of the expression as if it was put in parentheses, like in Haskell.
 
 ### Available commands
-| Command                       | Description                                                               |
-| ---                           | ---                                                                       |
-| ```<func\|const> = <after>``` | Adds function or constant.                                                |
+| Command                            | Description                                                          |
+| ---                                | ---                                                                  |
+| ```<func\|const> = <after>```      | Adds function or constant.                                           |
 | ```table <expr> ; <from> ; <to> ; <step> [fold <expr> ; <init>]``` | Prints table of values and optionally folds them. In fold expression, ```x``` is replaced with the intermediate result (init in first step), ```y``` is replaced with the current value. Result of fold is stored in history. |
-| ```load <path>```             | Loads file as if its content had been typed in.                           |
-| ```help [operators]```        | Lists available commands and operators.                                   |
-| ```clear [<func>]```          | Clears all or one function or constant.                                   |
-| ```simplify <expr>```         | Attempts to simplify an expression (beta)                                 |
-| ```license```                 | Shows information about ccalc's license.                                  |
-| ```quit```                    | Closes application.                                                       |
+| ```load [simplification] <path>``` | Loads file as if its content had been typed in or loads simplification rules. |
+| ```help [operators]```             | Lists available commands and operators.                              |
+| ```clear [<func>]```               | Clears all or one function or constant.                              |
+| ```simplify <expr>```              | Attempts to simplify an expression (beta)                            |
+| ```license```                      | Shows information about ccalc's license.                             |
+| ```quit```                         | Closes application.                                                  |
 
 ### Infix operators
 | Name      | Associativity | Precedence | Description          |

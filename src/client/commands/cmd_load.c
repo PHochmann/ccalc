@@ -6,10 +6,12 @@
 
 #include "../../engine/util/console_util.h"
 #include "../../engine/util/string_util.h"
+#include "../simplification/simplification.h"
 #include "cmd_load.h"
 #include "commands.h"
 
 #define COMMAND "load "
+#define LOAD_SIMPLFICATION "load simplification "
 
 int cmd_load_check(const char *input)
 {
@@ -21,18 +23,38 @@ Summary: Opens file and processes its content as from stdin
 */
 bool cmd_load_exec(char *input, __attribute__((unused)) int code)
 {
-    FILE *file = fopen(input + strlen(COMMAND), "r");
-
-    if (file == NULL)
+    if (begins_with(LOAD_SIMPLFICATION, input))
     {
-        report_error("Error loading file: %s.\n", strerror(errno));
-        return false;
+        input += strlen(LOAD_SIMPLFICATION);
+        unload_simplification();
+        ssize_t count = init_simplification(input);
+        if (count == -1)
+        {
+            report_error("File not found or readable.\n");
+            return false;
+        }
+        else
+        {
+            whisper("Successfully loaded simplification (%d rules)\n", count);
+            return true;
+        }
     }
-    
-    // Set g_interactive to false to read with getline from file
-    bool interactive = set_interactive(false);
-    process_input(file);
-    set_interactive(interactive);
-    fclose(file);
-    return true;
+    else
+    {
+        // Normal load command
+        FILE *file = fopen(input + strlen(COMMAND), "r");
+
+        if (file == NULL)
+        {
+            report_error("Error loading file: %s.\n", strerror(errno));
+            return false;
+        }
+        
+        // Set g_interactive to false to read with getline from file
+        bool interactive = set_interactive(false);
+        process_input(file);
+        set_interactive(interactive);
+        fclose(file);
+        return true;
+    }
 }

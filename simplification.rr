@@ -1,6 +1,10 @@
+# Ideas:
+# avg([xs]) -> sum([xs])/count([xs])
+# @x        -> y  WHERE y := history(x)
+
+
 # Operator elimination (de-sugar)
 RULESET
-    x-x        -> 0
     +x         -> x
     $x         -> x
     --x        -> x
@@ -166,10 +170,10 @@ RULESET
     -(x+y)        -> x-y
     (-1)*x        -> -x
 
-    x*(y/z)      -> (y*x)/z           WHERE type(y)==CONST
+    x*(y/z)       -> (y*x)/z           WHERE type(y)==CONST
     x+((-y)/z)    -> x-(y/z)
     x+(-y*z)      -> x-y*z
-    z*(x+y)      -> z*x + z*y         WHERE type(z)==CONST
+    z*(x+y)       -> z*x + z*y         WHERE type(z)==CONST
     --x           -> x
     (-1)*x        -> -x
     x+(-y)        -> x-y

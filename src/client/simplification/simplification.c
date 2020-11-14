@@ -19,7 +19,7 @@
 
 #define P(x) parse_conveniently(g_ctx, x)
 
-#define RULESET_FILENAME "rules.rr"
+#define DEFAULT_FILENAME "simplification.rr"
 #define ITERATION_CAP    1000
 #define NUM_RULESETS     7
 
@@ -53,38 +53,40 @@ void replace_negative_consts(Node **tree)
     }
 }
 
-void init_simplification()
+ssize_t init_simplification(char *file)
 {
-    if (access(RULESET_FILENAME, R_OK) == -1)
-    {
-        report_error("Simplification deactivated since ruleset not found or readable.\n");
-        return;
-    }
+    if (file == NULL) file = DEFAULT_FILENAME;
+    if (access(file, R_OK) == -1) return -1;
 
-    init_propositional_ctx();
-    FILE *ruleset_file = fopen(RULESET_FILENAME, "r");
+    FILE *ruleset_file = fopen(file, "r");
     for (size_t i = 0; i < NUM_RULESETS; i++)
     {
         rulesets[i] = get_empty_ruleset();
     }
     if (parse_rulesets_from_file(ruleset_file, g_ctx, g_propositional_ctx, NUM_RULESETS, rulesets) != NUM_RULESETS)
     {
-        report_error("Too few simplification rulesets defined in %s.\n", RULESET_FILENAME);
+        report_error("Too few simplification rulesets defined in %s.\n", file);
+        return -1;
     }
     fclose(ruleset_file);
 
     deriv_before = get_pattern(P("x'"), 0, NULL);
     deriv_after = P("deriv(x, z)");
-    if (!parse_pattern("deriv(x, y) WHERE !(type(cx) == VAR)", g_ctx, g_propositional_ctx, &malformed_deriv))
-    {
-        software_defect("malformed deriv pattern parser error\n");
-    }
+    parse_pattern("deriv(x, y) WHERE !(type(cx) == VAR)", g_ctx, g_propositional_ctx, &malformed_deriv);
 
     initialized = true;
+
+    ssize_t res = 0;
+    for (size_t i = 0; i < NUM_RULESETS; i++)
+    {
+        res += vec_count(rulesets + i);
+    }
+    return res;
 }
 
 void unload_simplification()
 {
+    if (!initialized) return;
     free_pattern(&deriv_before);
     free_tree(deriv_after);
     free_pattern(&malformed_deriv);
@@ -92,8 +94,18 @@ void unload_simplification()
     {
         free_ruleset(&rulesets[i]);
     }
-    unload_propositional_ctx();
     initialized = false;
+}
+
+void apply_simplification(Node **tree, Vector *ruleset)
+{
+    VectorIterator it = vec_get_iterator(ruleset);
+    while (apply_ruleset_by_iterator(tree, (Iterator*)&it, propositional_checker, 1) != 0)
+    {
+        iterator_reset((Iterator*)&it);
+        tree_reduce_constant_subtrees(tree, arith_op_evaluate);
+    };
+    replace_negative_consts(tree);
 }
 
 /*
@@ -103,6 +115,9 @@ Returns: True when transformations could be applied, False otherwise
 bool core_simplify(Node **tree)
 {
     if (!initialized) return true;
+
+    // Apply elimination rules
+    apply_simplification(tree, rulesets + 0);
 
     // Replace avg(x,y,z...) by sum(x,y,z...)/num_children
     Node **avg_node;
@@ -120,9 +135,6 @@ bool core_simplify(Node **tree)
         }
         *avg_node = replacement;
     }
-
-    // Apply elimination rules
-    apply_ruleset(tree, &rulesets[0], propositional_checker, ITERATION_CAP);
 
     Matching matching;
     Node **matched;
@@ -153,14 +165,7 @@ bool core_simplify(Node **tree)
     }
 
     // Eliminiate deriv(x,y)
-    // Since the deriv-ruleset is extremely expansive in nature,
-    // aggressively replace constant subtrees
-    VectorIterator deriv_it = vec_get_iterator(&rulesets[1]);
-    while (apply_ruleset_by_iterator(tree, (Iterator*)&deriv_it, propositional_checker, 1) != 0)
-    {
-        iterator_reset((Iterator*)&deriv_it);
-        tree_reduce_constant_subtrees(tree, arith_op_evaluate);
-    };
+    apply_simplification(tree, rulesets + 1);
 
     // If the tree still contains deriv-operators, the user attempted to derivate 
     // a subtree for which no reduction rule exists.
@@ -178,40 +183,11 @@ bool core_simplify(Node **tree)
         return false;
     }
 
-    tree_reduce_constant_subtrees(tree, arith_op_evaluate);
-    replace_negative_consts(tree);
-
-    //printf("\n\nBeginning with flattening...\n");
-
-    apply_ruleset(tree, &rulesets[2], propositional_checker, SIZE_MAX); // Normal form rules
-    tree_reduce_constant_subtrees(tree, arith_op_evaluate);
-
-    //printf("\n\nBeginning with main simplification...\n");
-
-    // Simplification - don't hang forever
-    size_t simp_cap = 100;
-    while (apply_ruleset(tree, &rulesets[3], propositional_checker, 10) != 0 && simp_cap-- != 0)
-    {
-        tree_reduce_constant_subtrees(tree, arith_op_evaluate);
-    }
-    replace_negative_consts(tree);
-
-    //printf("\n\nBeginning with folding...\n");
-
-    apply_ruleset(tree, &rulesets[4], propositional_checker, SIZE_MAX); // Remove sum() and prod()
-    tree_reduce_constant_subtrees(tree, arith_op_evaluate);
-    replace_negative_consts(tree);
-
-    //printf("\n\nBeginning with pretty printing...\n");
-
-    apply_ruleset(tree, &rulesets[5], propositional_checker, SIZE_MAX); // Pretty printing
-    tree_reduce_constant_subtrees(tree, arith_op_evaluate);
-
-    //printf("\n\nBeginning with ordering...\n");
-
-    apply_ruleset(tree, &rulesets[6], propositional_checker, SIZE_MAX); // Ordering
-    tree_reduce_constant_subtrees(tree, arith_op_evaluate);
-    replace_negative_consts(tree);
+    apply_simplification(tree, rulesets + 2);
+    apply_simplification(tree, rulesets + 3);
+    apply_simplification(tree, rulesets + 4);
+    apply_simplification(tree, rulesets + 5);
+    apply_simplification(tree, rulesets + 6);
 
     return true;
 }
