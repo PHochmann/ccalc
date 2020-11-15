@@ -4,7 +4,7 @@
 #include "../../engine/tree/node.h"
 #include "../../engine/transformation/rewrite_rule.h"
 
-#define NUM_ARITH_OPS 56
+#define NUM_ARITH_OPS 57
 #define g_ctx (&__g_ctx)
 #define g_composite_functions (&__g_composite_functions)
 

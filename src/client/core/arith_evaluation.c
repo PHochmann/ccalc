@@ -7,6 +7,7 @@
 #include "../../engine/tree/tree_util.h"
 #include "../../engine/util/console_util.h"
 
+#include "history.h"
 #include "arith_evaluation.h"
 #include "arith_context.h"
 
@@ -100,6 +101,8 @@ bool arith_op_evaluate(const Operator *op, size_t num_args, const double *args, 
         case 0: // $x
             *out = args[0];
             return true;
+        case 1: // @x
+            return history_get((int)args[0], out);
         case 4: // x+y
             *out = args[0] + args[1];
             return true;
@@ -296,6 +299,8 @@ bool arith_op_evaluate(const Operator *op, size_t num_args, const double *args, 
         case 55: // csound (m/s)
             *out = 343.2;
             return true;
+        case 56: // ans
+            return history_get(0, out);
     }
 
     software_defect("Software defect: [Arith] No reduction possible for operator %s.\n", op->name);

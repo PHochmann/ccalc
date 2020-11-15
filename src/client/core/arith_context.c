@@ -82,7 +82,8 @@ ParsingContext get_arith_ctx()
         op_get_constant("e"),
         op_get_constant("phi"),
         op_get_constant("clight"),
-        op_get_constant("csound")))
+        op_get_constant("csound"),
+        op_get_constant("ans")))
     {
         software_defect("[Arith] Inconsistent operator set.\n");
     }
@@ -201,7 +202,7 @@ bool arith_postprocess(Node **tree)
 {
     LinkedListIterator iterator = list_get_iterator(g_composite_functions);
     apply_ruleset_by_iterator(tree, (Iterator*)&iterator, NULL, SIZE_MAX);
-    if (!core_replace_history(tree) || !core_simplify(tree))
+    if (!core_simplify(tree))
     {
         return false;
     }

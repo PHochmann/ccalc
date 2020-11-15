@@ -18,10 +18,7 @@
 #include "propositional_evaluation.h"
 
 #define P(x) parse_conveniently(g_ctx, x)
-
-#define DEFAULT_FILENAME "simplification.rr"
-#define ITERATION_CAP    1000
-#define NUM_RULESETS     7
+#define NUM_RULESETS 7
 
 bool initialized = false;
 Vector rulesets[NUM_RULESETS];
@@ -30,7 +27,7 @@ Pattern deriv_before;
 Node *deriv_after;
 Pattern malformed_deriv;
 
-void replace_negative_consts(Node **tree)
+static void replace_negative_consts(Node **tree)
 {
     if (get_type(*tree) == NTYPE_CONSTANT)
     {
@@ -55,7 +52,6 @@ void replace_negative_consts(Node **tree)
 
 ssize_t init_simplification(char *file)
 {
-    if (file == NULL) file = DEFAULT_FILENAME;
     if (access(file, R_OK) == -1) return -1;
 
     FILE *ruleset_file = fopen(file, "r");
@@ -97,7 +93,7 @@ void unload_simplification()
     initialized = false;
 }
 
-void apply_simplification(Node **tree, Vector *ruleset)
+static void apply_simplification(Node **tree, Vector *ruleset)
 {
     VectorIterator it = vec_get_iterator(ruleset);
     while (apply_ruleset_by_iterator(tree, (Iterator*)&it, propositional_checker, 1) != 0)
@@ -114,6 +110,7 @@ Returns: True when transformations could be applied, False otherwise
 */
 bool core_simplify(Node **tree)
 {
+    tree_reduce_constant_subtrees(tree, arith_op_evaluate);
     if (!initialized) return true;
 
     // Apply elimination rules

@@ -48,7 +48,7 @@ static const char *COMMAND_TABLE[NUM_COMMANDS][2] = {
     { "quit",                                    "Closes application" }
 };
 
-static const char *OP_DESCRIPTIONS[56] = {
+static const char *OP_DESCRIPTIONS[NUM_ARITH_OPS] = {
     " Max. precedence parsing ",
     " History operator ",
     " Derivative shorthand ",
@@ -104,7 +104,8 @@ static const char *OP_DESCRIPTIONS[56] = {
     " Euler's number ",
     " Golden ratio ",
     " Speed of light [m/s] ",
-    " Speed of sound in air at 20 °C [m/s] "
+    " Speed of sound in air at 20 °C [m/s] ",
+    " Last result "
 };
 
 static const size_t PSEUDO_IND =  0; // Index of first pseudo operator ($, @, ', deriv)
@@ -112,7 +113,7 @@ static const size_t BASIC_IND  =  4; // Index of first basic operator
 static const size_t TRIG_IND   = 22; // Index of first trigonometric function
 static const size_t MISC_IND   = 34; // Index of first misc. function
 static const size_t CONST_IND  = 51; // Index of first constant
-static const size_t LAST_IND   = 56; // Index of last constant
+static const size_t LAST_IND   = 57; // Index of last constant
 
 int cmd_help_check(const char *input)
 {
@@ -245,9 +246,15 @@ static void print_op_table(OpPlacement place, bool assoc, bool precedence, bool 
             if (value)
             {
                 double const_val;
-                arith_op_evaluate(op, 0, NULL, &const_val);
                 override_alignment(table, ALIGN_NUMBERS);
-                add_cell_fmt(table, " " CONSTANT_TYPE_FMT " ", const_val);
+                if (arith_op_evaluate(op, 0, NULL, &const_val))
+                {
+                    add_cell_fmt(table, " " CONSTANT_TYPE_FMT " ", const_val);
+                }
+                else
+                {
+                    add_empty_cell(table);
+                }
             }
             
             add_cell(table, OP_DESCRIPTIONS[index]);

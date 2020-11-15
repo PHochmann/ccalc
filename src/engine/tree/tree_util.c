@@ -324,8 +324,10 @@ void tree_reduce_constant_subtrees(Node **tree, TreeListener listener)
     if (count_all_variable_nodes(*tree) == 0)
     {
         double res;
-        tree_reduce(*tree, listener, &res);
-        tree_replace(tree, malloc_constant_node(res));
+        if (tree_reduce(*tree, listener, &res))
+        {
+            tree_replace(tree, malloc_constant_node(res));
+        }
     }
     else
     {

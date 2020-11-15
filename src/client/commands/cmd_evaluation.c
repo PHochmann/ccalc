@@ -24,12 +24,12 @@ Summary: The evaluation command is executed when input is no other command (henc
 */
 bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
 {
-    Node *res;
-    if (arith_parse_and_postprocess(input, ERROR_FMT, &res))
+    Node *tree;
+    if (arith_parse_and_postprocess(input, ERROR_FMT, &tree))
     {
         // Make expression constant by asking for values and binding them to variables
-        const char *vars[count_all_variable_nodes(res)];
-        size_t num_vars = list_variables(res, __SIZE_MAX__, vars);
+        const char *vars[count_all_variable_nodes(tree)];
+        size_t num_vars = list_variables(tree, SIZE_MAX, vars);
 
         /*
         * Ask for variables interactively when we are connected to a terminal
@@ -43,8 +43,8 @@ bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
             char *input;
             if (ask_input(stdin, &input, ASK_VARIABLE_FMT, vars[i]))
             {
-                Node *res_var;
-                if (!arith_parse_and_postprocess(input, ERROR_FMT, &res_var))
+                Node *tree_var;
+                if (!arith_parse_and_postprocess(input, ERROR_FMT, &tree_var))
                 {
                     // Error while parsing - ask again
                     free(input);
@@ -53,24 +53,25 @@ bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
                 }
                 free(input);
                 
-                if (count_all_variable_nodes(res_var) > 0)
+                if (count_all_variable_nodes(tree_var) > 0)
                 {
-                    // Not a constant given - ask again
-                    report_error("Not a constant expression.\n");
-                    free_tree(res_var);
-                    i--;
-                    continue;
+                    // Not a constant given
+                    report_error("Error: Not a constant expression.\n");
+                    free_tree(tree_var);
+                    free_tree(tree);
+                    set_interactive(temp);
+                    return false;
                 }
                 
-                replace_variable_nodes(&res, res_var, vars[i]);
-                free_tree(res_var);
+                replace_variable_nodes(&tree, tree_var, vars[i]);
+                free_tree(tree_var);
             }
             else
             {
                 // EOF when asked for constant
                 printf("\n");
                 set_interactive(temp);
-                free_tree(res);
+                free_tree(tree);
                 return false;
             }
         }
@@ -78,13 +79,20 @@ bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
         set_interactive(temp);
 
         // Print result
-        double result = arith_evaluate(res);
-        whisper("= ");
-        printf(CONSTANT_TYPE_FMT "\n", result);
-        core_add_history(result);
-        free_tree(res);
-        
-        return true;
+        double result = 0;
+        if (tree_reduce(tree, arith_op_evaluate, &result))
+        {
+            whisper("= ");
+            printf(CONSTANT_TYPE_FMT "\n", result);
+            history_add(result);
+            free_tree(tree);
+            return true;
+        }
+        else
+        {
+            free_tree(tree);
+            return false;
+        }
     }
     else
     {

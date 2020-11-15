@@ -20,6 +20,7 @@
 
 #define INTERACTIVE_ASK_PREFIX "> "
 #define COMMENT_PREFIX         '#'
+#define SIMPLIFICATION_DEFAULT_FILENAME "simplification.ruleset"
 
 // Is set to true when a command reported an error, affects exit code
 bool error;
@@ -87,7 +88,7 @@ void init_commands()
 {
     init_arith_ctx();
     init_propositional_ctx();
-    init_simplification(NULL);
+    init_simplification(SIMPLIFICATION_DEFAULT_FILENAME);
     init_console_util();
     init_history();
     error = false;

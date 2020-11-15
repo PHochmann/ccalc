@@ -4,5 +4,5 @@
 
 void init_history();
 void unload_history();
-void core_add_history(double value);
-bool core_replace_history(Node **tree);
+void history_add(double value);
+bool history_get(size_t index, double *out);
