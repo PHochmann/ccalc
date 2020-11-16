@@ -20,7 +20,7 @@ int cmd_evaluation_check(__attribute__((unused)) const char *input)
 }
 
 /*
-Summary: The evaluation command is executed when input is no other command (hence last in command array at commands.c)
+Summary: The evaluation command is executed when input is no other command (hence last in command array in commands.c)
 */
 bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
 {

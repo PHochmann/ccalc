@@ -1,7 +1,5 @@
 # Ideas:
 # avg([xs]) -> sum([xs])/count([xs])
-# @x        -> y  WHERE y := history(x)
-
 
 # Operator elimination (de-sugar)
 RULESET

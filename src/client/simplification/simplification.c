@@ -110,8 +110,13 @@ Returns: True when transformations could be applied, False otherwise
 */
 bool core_simplify(Node **tree)
 {
+    bool tmp = set_show_errors(false);
     tree_reduce_constant_subtrees(tree, arith_op_evaluate);
-    if (!initialized) return true;
+    if (!initialized)
+    {
+        set_show_errors(tmp);
+        return true;
+    }
 
     // Apply elimination rules
     apply_simplification(tree, rulesets + 0);
@@ -142,6 +147,7 @@ bool core_simplify(Node **tree)
         size_t var_count = list_variables(*matched, 2, vars);
         if (var_count > 1)
         {
+            set_show_errors(tmp);
             report_error("You can only use expr' when there is not more than one variable in expr.\n");
             return false;
         }
@@ -157,6 +163,7 @@ bool core_simplify(Node **tree)
 
     if (does_match(*tree, &malformed_deriv, propositional_checker))
     {
+        set_show_errors(tmp);
         report_error("Second operand of function 'deriv' must be variable.\n");
         return false;
     }
@@ -169,6 +176,7 @@ bool core_simplify(Node **tree)
     Node **unresolved_derivation = find_op((const Node**)tree, get_op(deriv_after));
     if (unresolved_derivation != NULL)
     {
+        set_show_errors(tmp);
         if (get_type(get_child(*unresolved_derivation, 0)) != NTYPE_OPERATOR)
         {
             software_defect("Derivation failed.\n");
@@ -186,5 +194,6 @@ bool core_simplify(Node **tree)
     apply_simplification(tree, rulesets + 5);
     apply_simplification(tree, rulesets + 6);
 
+    set_show_errors(tmp);
     return true;
 }

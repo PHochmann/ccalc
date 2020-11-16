@@ -13,7 +13,7 @@ static ListNode *malloc_node(size_t elem_size, void *data)
 }
 
 /*
-Summary: Creates a new linked list without any items 
+Summary: Creates a new, empty linked list
 */
 LinkedList list_create(size_t elem_size)
 {

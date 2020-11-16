@@ -110,12 +110,8 @@ bool process_input(FILE *file)
         }
         free(input);
     }
-
-    if (g_interactive)
-    {
-        // Loop was exited because input was EOF
-        printf("\n");
-    }
+    // Loop was exited because input was EOF
+    whisper("\n");
     return !error;
 }
 

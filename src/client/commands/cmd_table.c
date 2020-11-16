@@ -121,28 +121,23 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
 
     Table *table = get_empty_table();
     
-    // Header
-    if (g_interactive)
+    add_empty_cell(table);
+    if (num_vars != 0)
+    {
+        add_cell_fmt(table, VAR_COLOR " %s " COL_RESET, vars[0]);
+    }
+    else
     {
         add_empty_cell(table);
-        if (num_vars != 0)
-        {
-            add_cell_fmt(table, VAR_COLOR " %s " COL_RESET, vars[0]);
-        }
-        else
-        {
-            add_empty_cell(table);
-        }
-
-        Vector builder = strbuilder_create(STRBUILDER_STARTSIZE);
-        strbuilder_append(&builder, " ");
-        tree_to_strbuilder(&builder, expr, true);
-        strbuilder_append(&builder, " ");
-        add_cell_gc(table, builder.buffer);
-        override_alignment_of_row(table, ALIGN_LEFT);
-        next_row(table);
-        //set_hline(table, BORDER_SINGLE);
     }
+
+    Vector builder = strbuilder_create(STRBUILDER_STARTSIZE);
+    strbuilder_append(&builder, " ");
+    tree_to_strbuilder(&builder, expr, true);
+    strbuilder_append(&builder, " ");
+    add_cell_gc(table, builder.buffer);
+    override_alignment_of_row(table, ALIGN_LEFT);
+    next_row(table);
 
     // Loop through all values and add them to table
     for (size_t i = 1; step_val > 0 ? start_val <= end_val : start_val >= end_val; i++)
@@ -174,12 +169,6 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
         next_row(table);
         start_val += step_val;
     }
-
-    /*if (g_interactive)
-    {
-        make_boxed(table, BORDER_SINGLE);
-        set_all_vlines(table, BORDER_SINGLE);
-    }*/
 
     set_default_alignments(table, 3, (TextAlignment[]){ ALIGN_RIGHT, ALIGN_NUMBERS, ALIGN_NUMBERS });
     print_table(table);

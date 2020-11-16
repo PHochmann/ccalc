@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "../../engine/util/string_util.h"
+#include "../../engine/util/console_util.h"
 #include "../../engine/tree/operator.h"
 #include "../../engine/tree/tree_to_string.h"
 #include "../../engine/table/table.h"
@@ -333,7 +334,9 @@ bool cmd_help_exec(__attribute__((unused)) char *input, int code)
             printf("\nFunctions:\n");
             print_op_table(OP_PLACE_FUNCTION, false, false, true, false);
             printf("\nConstants:\n");
+            bool tmp = set_show_errors(false);
             print_op_table(OP_PLACE_FUNCTION, false, false, false, true);
+            set_show_errors(tmp);
         }
     }
     return true;

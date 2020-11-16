@@ -10,7 +10,8 @@
 #include "console_util.h"
 #include "string_builder.h"
 
-bool g_interactive;
+bool show_errors;
+bool interactive;
 
 void unload_console_util()
 {
@@ -21,11 +22,19 @@ void unload_console_util()
 
 void init_console_util()
 {
-    g_interactive = false;
+    interactive = false;
+    show_errors = true;
 #ifdef USE_READLINE
     // Disable tab completion
     rl_bind_key('\t', rl_insert);
 #endif
+}
+
+bool set_show_errors(bool value)
+{
+    bool res = show_errors;
+    show_errors = value;
+    return res;
 }
 
 /*
@@ -34,8 +43,8 @@ Summary: Sets interactive mode
 */
 bool set_interactive(bool value)
 {
-    bool res = g_interactive;
-    g_interactive = value;
+    bool res = interactive;
+    interactive = value;
     return res;
 }
 
@@ -44,7 +53,7 @@ Summary: printf-wrapper that filters unimportant prints in non-interactive mode
 */
 void whisper(const char *format, ...)
 {
-    if (g_interactive)
+    if (interactive)
     {
         va_list args;
         va_start(args, format);
@@ -55,7 +64,7 @@ void whisper(const char *format, ...)
 
 bool ask_input_getline(FILE *file, char **out_input, const char *prompt_fmt, va_list args)
 {
-    if (g_interactive)
+    if (interactive)
     {
         vprintf(prompt_fmt, args);
     }
@@ -83,7 +92,7 @@ Params
 */
 #ifdef USE_READLINE
 
-// File is stdin, g_interactive is true
+// File is stdin, interactive is true
 bool ask_input_readline(char **out_input, const char *prompt_fmt, va_list args)
 {
     Vector strbuilder = strbuilder_create(3);
@@ -102,7 +111,7 @@ bool ask_input_readline(char **out_input, const char *prompt_fmt, va_list args)
 bool vask_input(FILE *file, char **out_input, const char *prompt_fmt, va_list args)
 {
     // Use readline when interactive
-    if (g_interactive)
+    if (interactive)
     {
         return ask_input_readline(out_input, prompt_fmt, args);
     }
@@ -133,10 +142,13 @@ bool ask_input(FILE *file, char **out_input, const char *prompt_fmt, ...)
 
 void report_error(const char *fmt, ...)
 {
-    va_list args;
-    va_start(args, fmt);
-    vfprintf(stderr, fmt, args);
-    va_end(args);
+    if (show_errors)
+    {
+        va_list args;
+        va_start(args, fmt);
+        vfprintf(stderr, fmt, args);
+        va_end(args);
+    }
 }
 
 void software_defect(const char *fmt, ...)
