@@ -74,6 +74,7 @@ bool ask_input_getline(FILE *file, char **out_input, const char *prompt_fmt, va_
     if (getline(out_input, &size, file) == EOF)
     {
         free(*out_input);
+        *out_input = NULL;
         return false;
     }
 

@@ -99,6 +99,8 @@ bool parse_rule(const char *string, ParsingContext *main_ctx, ParsingContext *ex
 
     char *arrow_pos = strstr(str, ARROW);
     char *where_pos = strstr(str, WHERE); // Optional
+    Node *left_n = NULL;
+    Node *right_n = NULL;
 
     if (arrow_pos == NULL)
     {
@@ -119,25 +121,32 @@ bool parse_rule(const char *string, ParsingContext *main_ctx, ParsingContext *ex
     }
     if (!parse_constraints(where_pos, extended_ctx, &num_constrs, constrs)) goto error;
 
-    Node *left_n = parse_conveniently(main_ctx, str); // Gives error message
+    left_n = parse_conveniently(main_ctx, str); // Gives error message
     if (left_n == NULL)
     {
         goto error;
     }
 
-    Node *right_n = parse_conveniently(main_ctx, arrow_pos);
+    right_n = parse_conveniently(main_ctx, arrow_pos);
     if (right_n == NULL)
     {
-        free_tree(left_n);
         goto error;
     }
 
-    *out_rule = get_rule(get_pattern(left_n, num_constrs, constrs), right_n);
+    // Error message given by get_rule
+    if (!get_rule(get_pattern(left_n, num_constrs, constrs), right_n, out_rule))
+    {
+        goto error;
+    }
+
     free(str);
     return true;
 
     error:
     free(str);
+    free_tree(left_n);
+    free_tree(right_n);
+    for (size_t i = 0; i < num_constrs; i++) free_tree(constrs[i]);
     return false;
 }
 

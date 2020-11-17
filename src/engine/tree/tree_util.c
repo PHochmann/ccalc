@@ -292,17 +292,24 @@ bool tree_reduce(const Node *tree, TreeListener listener, double *out)
         case NTYPE_OPERATOR:
         {
             size_t num_args = get_num_children(tree);
-            double args[num_args];
-            for (size_t i = 0; i < num_args; i++)
+            if (num_args > 0)
             {
-                if (!tree_reduce(get_child(tree, i), listener, &args[i]))
+                double args[num_args];
+                for (size_t i = 0; i < num_args; i++)
+                {
+                    if (!tree_reduce(get_child(tree, i), listener, &args[i]))
+                    {
+                        return false;
+                    }
+                }
+                if (!listener(get_op(tree), num_args, args, out))
                 {
                     return false;
                 }
             }
-            if (!listener(get_op(tree), num_args, args, out))
+            else
             {
-                return false;
+                if (!listener(get_op(tree), 0, NULL, out)) return false;
             }
             return true;
         }

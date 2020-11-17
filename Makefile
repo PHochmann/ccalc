@@ -3,8 +3,8 @@ BUILD_DIR    = ./bin/release
 SRC_DIRS     = ./src
 
 CC           = gcc
-CFLAGS       = -MMD -MP -std=c99 -Wall -Wextra -Werror -pedantic
-LDFLAGS      = -lm
+CFLAGS       = -MMD -MP -std=c99 -Wall -Wextra -Werror -pedantic -fsanitize=undefined
+LDFLAGS      = -lm -fsanitize=undefined
 
 ifeq (,$(filter $(MAKECMDGOALS),tests))
 	ifeq ($(NOREADLINE),)

@@ -385,60 +385,63 @@ Pattern get_pattern(Node *tree, size_t num_constraints, Node **constrs)
     };
 
     size_t num_vars = count_all_variable_nodes(tree);
-    const char *vars[num_vars];
-    size_t num_vars_distinct = list_variables(tree, num_vars, vars);
-
-    // Step 1: Set id in pattern tree
-    for (size_t i = 0; i < num_vars_distinct; i++)
+    if (num_vars > 0)
     {
-        if (vars[i][0] != MATCHING_WILDCARD
-            && (vars[i][0] != MATCHING_LIST_PREFIX || vars[i][1] != MATCHING_WILDCARD))
-        {
-            if (res.num_free_vars == MAX_MAPPED_VARS)
-            {
-                print_tree(tree, true);
-                printf("\n");
-                software_defect("Trying to preprocess a pattern with too many distinct variables. Increase MAX_MAPPED_VARS.\n");
-            }
+        const char *vars[num_vars];
+        size_t num_vars_distinct = list_variables(tree, num_vars, vars);
 
-            res.free_vars[res.num_free_vars] = vars[i];
-            Node **nodes[num_vars];
-            size_t num_nodes = get_variable_nodes((const Node**)&tree, vars[i], nodes);
-            for (size_t j = 0; j < num_nodes; j++)
-            {
-                set_id(*(nodes[j]), res.num_free_vars);
-            }
-            res.num_free_vars++;
-        }
-    }
-
-    // Step 2: Compute contraints that should be checked when variable with this id is bound
-    // This involves computing the variable with the highest id that occurs in the constraint
-    for (size_t i = 0; i < num_constraints; i++)
-    {
-        size_t max_id = 0;
-        size_t curr_id = 0;
-        for (size_t j = 0; j < num_vars_distinct; j++)
+        // Step 1: Set id in pattern tree
+        for (size_t i = 0; i < num_vars_distinct; i++)
         {
-            if (vars[j][0] != MATCHING_WILDCARD
-                && (vars[j][0] != MATCHING_LIST_PREFIX || vars[j][1] != MATCHING_WILDCARD))
+            if (vars[i][0] != MATCHING_WILDCARD
+                && (vars[i][0] != MATCHING_LIST_PREFIX || vars[i][1] != MATCHING_WILDCARD))
             {
-                if (get_variable_nodes((const Node**)&constrs[i], vars[j], NULL) != 0)
+                if (res.num_free_vars == MAX_MAPPED_VARS)
                 {
-                    max_id = curr_id;
+                    print_tree(tree, true);
+                    printf("\n");
+                    software_defect("Trying to preprocess a pattern with too many distinct variables. Increase MAX_MAPPED_VARS.\n");
                 }
-                curr_id++;
+
+                res.free_vars[res.num_free_vars] = vars[i];
+                Node **nodes[num_vars];
+                size_t num_nodes = get_variable_nodes((const Node**)&tree, vars[i], nodes);
+                for (size_t j = 0; j < num_nodes; j++)
+                {
+                    set_id(*(nodes[j]), res.num_free_vars);
+                }
+                res.num_free_vars++;
             }
         }
 
-        if (res.num_constraints[max_id] == MATCHING_MAX_CONSTRAINTS)
+        // Step 2: Compute contraints that should be checked when variable with this id is bound
+        // This involves computing the variable with the highest id that occurs in the constraint
+        for (size_t i = 0; i < num_constraints; i++)
         {
-            software_defect("Trying to preprocess a pattern with too many constraints. Increase MATCHING_MAX_CONSTRAINTS.\n");
-        }
+            size_t max_id = 0;
+            size_t curr_id = 0;
+            for (size_t j = 0; j < num_vars_distinct; j++)
+            {
+                if (vars[j][0] != MATCHING_WILDCARD
+                    && (vars[j][0] != MATCHING_LIST_PREFIX || vars[j][1] != MATCHING_WILDCARD))
+                {
+                    if (get_variable_nodes((const Node**)&constrs[i], vars[j], NULL) != 0)
+                    {
+                        max_id = curr_id;
+                    }
+                    curr_id++;
+                }
+            }
 
-        // max_id contains trigger index
-        res.constraints[max_id][res.num_constraints[max_id]] = constrs[i];
-        res.num_constraints[max_id]++;
+            if (res.num_constraints[max_id] == MATCHING_MAX_CONSTRAINTS)
+            {
+                software_defect("Trying to preprocess a pattern with too many constraints. Increase MATCHING_MAX_CONSTRAINTS.\n");
+            }
+
+            // max_id contains trigger index
+            res.constraints[max_id][res.num_constraints[max_id]] = constrs[i];
+            res.num_constraints[max_id]++;
+        }
     }
 
     return res;

@@ -167,7 +167,12 @@ static bool add_function(char *name, char *left, char *right)
     }
 
     // Add rule to eliminate operator before evaluation
-    add_composite_function(get_rule(get_pattern(left_n, 0, NULL), right_n));
+    RewriteRule rule;
+    if (!get_rule(get_pattern(left_n, 0, NULL), right_n, &rule))
+    {
+        goto error;
+    }
+    add_composite_function(rule);
     return true;
 
     error:

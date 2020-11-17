@@ -65,6 +65,7 @@ bool cmd_playground_exec(char *input, int code)
             if (!parse_rule(rule_str, g_ctx, g_propositional_ctx, &rule))
             {
                 free(rule_str);
+                rule_str = NULL;
                 continue;
             }
             break;
@@ -104,9 +105,10 @@ bool cmd_playground_exec(char *input, int code)
             tree = NULL;
         }
 
+        free_rule(rule);
+
         cleanup:
         free(rule_str);
-        free_rule(rule);
         free(tree_str);
         free_tree(tree);
         printf("\n");

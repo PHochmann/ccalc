@@ -13,26 +13,30 @@
 /*
 Summary: Constructs new rule. Warning: "before" and "after" are not copied, so don't free them!
 */
-RewriteRule get_rule(Pattern pattern, Node *after)
+bool get_rule(Pattern pattern, Node *after, RewriteRule *out_rule)
 {
-    const char *after_vars[count_all_variable_nodes(after)];
-    size_t num_vars_distinct = list_variables(after, SIZE_MAX, after_vars);
-    for (size_t i = 0; i < num_vars_distinct; i++)
+    // If variables in 'after' a present, check if all of them occur in 'before'
+    // If not, a syntax error is present in rule
+    size_t num_var_nodes = count_all_variable_nodes(after);
+    if (num_var_nodes > 0)
     {
-        if (get_variable_nodes((const Node**)&pattern.pattern, after_vars[i], NULL) == 0)
+        const char *after_vars[count_all_variable_nodes(after)];
+        size_t num_vars_distinct = list_variables(after, SIZE_MAX, after_vars);
+        for (size_t i = 0; i < num_vars_distinct; i++)
         {
-            print_tree(pattern.pattern, true);
-            printf("\n");
-            print_tree(after, true);
-            printf("\n");
-            software_defect("Trying to create a rule that introduces a new variable after appliance.\n");
+            if (get_variable_nodes((const Node**)&pattern.pattern, after_vars[i], NULL) == 0)
+            {
+                report_error("Trying to create a rule that introduces a new variable after appliance.\n");
+                return false;
+            }
         }
     }
 
-    return (RewriteRule){
+    *out_rule = (RewriteRule){
         .pattern = pattern,
         .after  = after,
     };
+    return true;
 }
 
 /*
