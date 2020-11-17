@@ -11,7 +11,7 @@ typedef struct
 } RewriteRule;
 
 bool get_rule(Pattern pattern, Node *after, RewriteRule *out_rule);
-void free_rule(RewriteRule rule);
+void free_rule(RewriteRule *rule);
 bool apply_rule(Node **tree, const RewriteRule *rule, ConstraintChecker checker);
 
 Vector get_empty_ruleset();

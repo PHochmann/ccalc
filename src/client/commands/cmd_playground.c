@@ -105,7 +105,7 @@ bool cmd_playground_exec(char *input, int code)
             tree = NULL;
         }
 
-        free_rule(rule);
+        free_rule(&rule);
 
         cleanup:
         free(rule_str);

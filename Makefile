@@ -1,11 +1,12 @@
-bin_PROGRAMS = ccalc
+TARGET_EXEC  = ccalc
 BUILD_DIR    = ./bin/release
 SRC_DIRS     = ./src
 
 CC           = gcc
-CFLAGS       = -MMD -MP -std=c99 -Wall -Wextra -Werror -pedantic -fsanitize=undefined
-LDFLAGS      = -lm -fsanitize=undefined
+CFLAGS       = -MMD -MP -std=c99 -Wall -Wextra -Werror -pedantic
+LDFLAGS      = -lm
 
+# Compile with readline if no opt-out and target is not test
 ifeq (,$(filter $(MAKECMDGOALS),tests))
 	ifeq ($(NOREADLINE),)
 		CFLAGS += -DUSE_READLINE
@@ -13,20 +14,18 @@ ifeq (,$(filter $(MAKECMDGOALS),tests))
 	endif
 endif
 
+# Compile with debugging flags if target is debug
 ifneq (,$(filter $(MAKECMDGOALS),debug))
 	BUILD_DIR := ./bin/debug
-	CFLAGS += -DDEBUG -g3 -O0
+	CFLAGS += -DDEBUG -g3 -O0 -fsanitize=undefined
+	LDFLAGS += fsanitize=undefined
 endif
 
-ifneq (,$(filter $(MAKECMDGOALS),noreadline))
-	BUILD_DIR := ./bin/noreadline
-endif
-
+# Compile additional test sources 
 ifneq (,$(filter $(MAKECMDGOALS),tests))
 	BUILD_DIR := ./bin/tests
 	SRC_DIRS += ./tests
 	SRCS = $(shell find $(SRC_DIRS) -name *.c ! -wholename "./src/client/main.c")
-	bin_PROGRAMS := test
 else
 	SRCS := $(shell find $(SRC_DIRS) -name *.c)
 endif
@@ -37,16 +36,17 @@ DEPS := $(OBJS:.o=.d)
 INC_DIRS := $(shell find $(SRC_DIRS) -type d)
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
-all: $(BUILD_DIR)/$(bin_PROGRAMS)
+all: $(BUILD_DIR)/$(TARGET_EXEC)
 
-debug: $(BUILD_DIR)/$(bin_PROGRAMS)
+debug: $(BUILD_DIR)/$(TARGET_EXEC)
 
-tests: $(BUILD_DIR)/$(bin_PROGRAMS)
-	@./$(BUILD_DIR)/$(bin_PROGRAMS)
+tests: $(BUILD_DIR)/$(TARGET_EXEC)
+	@echo Running tests...
+	@./$(BUILD_DIR)/$(TARGET_EXEC)
 
-$(BUILD_DIR)/$(bin_PROGRAMS): $(OBJS)
+$(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
 	@$(CC) $(OBJS) -o $@ $(LDFLAGS)
-	@echo Done. Placed executable at $(BUILD_DIR)/$(bin_PROGRAMS)
+	@echo Done. Placed executable at $(BUILD_DIR)/$(TARGET_EXEC)
 
 $(BUILD_DIR)/%.c.o: %.c
 	@mkdir -p $(dir $@)

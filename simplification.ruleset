@@ -131,7 +131,7 @@ RULESET
     min(x, x)     -> x
     max(x, x)     -> x
 
-    (-x)^y -> x^y WHERE  (y mod 2) == 0
+    (-x)^y -> x^y WHERE (y mod 2) == 0
 
     # Ordering trick: Move constants to the left and fold them again in a + or * term
     # Since this RULESET will not affect + and *, the term will be evaluated eventually

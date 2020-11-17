@@ -114,7 +114,7 @@ static void remove_node(ListNode *node)
     // Free its name since it is malloced by the tokenizer in definition-command
     free(temp);
     // Free elimination rule
-    free_rule(*(RewriteRule*)node->data);
+    free_rule((RewriteRule*)node->data);
     // Remove from linked list
     list_delete_node(g_composite_functions, node);
 }

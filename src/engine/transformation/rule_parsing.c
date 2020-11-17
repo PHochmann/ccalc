@@ -18,7 +18,7 @@
 
 // string: without "WHERE"
 bool parse_constraints(const char *string,
-    ParsingContext *extended_ctx,
+    const ParsingContext *extended_ctx,
     size_t *num_constraints, // In-Out, like in readline
     Node **out_constraints)
 {
@@ -58,7 +58,7 @@ bool parse_constraints(const char *string,
     return false;
 }
 
-bool parse_pattern(const char *string, ParsingContext *main_ctx, ParsingContext *extended_ctx, Pattern *out_pattern)
+bool parse_pattern(const char *string, const ParsingContext *main_ctx, const ParsingContext *extended_ctx, Pattern *out_pattern)
 {
     char *str_cpy = malloc_wrapper(strlen(string) + 1);
     char *str = str_cpy;
@@ -92,7 +92,7 @@ bool parse_pattern(const char *string, ParsingContext *main_ctx, ParsingContext 
     return false;
 }
 
-bool parse_rule(const char *string, ParsingContext *main_ctx, ParsingContext *extended_ctx, RewriteRule *out_rule)
+bool parse_rule(const char *string, const ParsingContext *main_ctx, const ParsingContext *extended_ctx, RewriteRule *out_rule)
 {
     char *str = malloc_wrapper(strlen(string) + 1);
     strcpy(str, string);
@@ -151,8 +151,8 @@ bool parse_rule(const char *string, ParsingContext *main_ctx, ParsingContext *ex
 }
 
 size_t parse_rulesets_from_file(FILE *file,
-    ParsingContext *main_ctx,
-    ParsingContext *extended_ctx,
+    const ParsingContext *main_ctx,
+    const ParsingContext *extended_ctx,
     size_t max_rulesets,
     Vector *out_rulesets)
 {

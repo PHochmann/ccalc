@@ -20,23 +20,8 @@
 
 #define INTERACTIVE_ASK_PREFIX "> "
 #define COMMENT_PREFIX         '#'
+#define QUIT_COMMAND           "quit"
 #define SIMPLIFICATION_DEFAULT_FILENAME "simplification.ruleset"
-
-// Is set to true when a command reported an error, affects exit code
-bool error;
-
-// Quit command:
-
-int cmd_quit_check(const char *input)
-{
-    return strcmp(input, "quit") == 0;
-}
-
-bool cmd_quit_exec(__attribute__((unused)) char *input, __attribute__((unused)) int check_code)
-{
-    exit(error ? EXIT_FAILURE : EXIT_SUCCESS);
-    return true;
-}
 
 struct Command
 {
@@ -55,9 +40,8 @@ struct Command
     bool (*exec_handler)(char* input, int check_code);
 };
 
-static const size_t NUM_COMMANDS = 8;
+static const size_t NUM_COMMANDS = 7;
 static const struct Command commands[] = {
-    { cmd_quit_check,       cmd_quit_exec },
     { cmd_help_check,       cmd_help_exec },
     { cmd_table_check,      cmd_table_exec },
     { cmd_definition_check, cmd_definition_exec },
@@ -91,7 +75,6 @@ void init_commands()
     init_simplification(SIMPLIFICATION_DEFAULT_FILENAME);
     init_console_util();
     init_history();
-    error = false;
 }
 
 /*
@@ -101,36 +84,42 @@ Returns: True when no command exited with an error, false otherwise
 */
 bool process_input(FILE *file)
 {
+    bool res = true;
     char *input = NULL;
     while (ask_input(file, &input, INTERACTIVE_ASK_PREFIX))
     {
+        if (strcmp(input, QUIT_COMMAND) == 0)
+        {
+            free(input);
+            exit(res ? EXIT_SUCCESS : EXIT_FAILURE);
+        }
         if (input[0] != '\0' && input[0] != COMMENT_PREFIX)
         {
-            exec_command(input);
+            if (!exec_command(input))
+            {
+                res = false;
+            }
         }
         free(input);
     }
     // Loop was exited because input was EOF
     whisper("\n");
-    return !error;
+    return res;
 }
 
 /*
 Summary: Tries to apply a command to input.
     First command whose check-function does not return 0 is executed.
 */
-void exec_command(char *input)
+bool exec_command(char *input)
 {
     for (size_t i = 0; i < NUM_COMMANDS; i++)
     {
         int check_code = commands[i].check_handler(input);
         if (check_code != 0)
         {
-            if (!commands[i].exec_handler(input, check_code))
-            {
-                error = true;
-            }
-            return;
+            return commands[i].exec_handler(input, check_code);
         }
     }
+    return false; // To make compiler happy
 }

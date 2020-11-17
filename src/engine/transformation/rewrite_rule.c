@@ -42,10 +42,10 @@ bool get_rule(Pattern pattern, Node *after, RewriteRule *out_rule)
 /*
 Summary: Frees trees "before" and "after"
 */
-void free_rule(RewriteRule rule)
+void free_rule(RewriteRule *rule)
 {
-    free_pattern(&rule.pattern);
-    free_tree(rule.after);
+    free_pattern(&(rule->pattern));
+    free_tree(rule->after);
 }
 
 /*
@@ -81,7 +81,7 @@ void free_ruleset(Vector *rules)
 {
     for (size_t i = 0; i < vec_count(rules); i++)
     {
-        free_rule(*(RewriteRule*)vec_get(rules, i));
+        free_rule((RewriteRule*)vec_get(rules, i));
     }
     vec_destroy(rules);
 }

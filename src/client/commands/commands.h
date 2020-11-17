@@ -5,4 +5,4 @@
 void init_commands();
 void unload_commands();
 bool process_input(FILE *file);
-void exec_command(char *input);
+bool exec_command(char *input);
