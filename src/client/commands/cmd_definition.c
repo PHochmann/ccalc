@@ -121,9 +121,10 @@ static bool add_function(char *name, char *left, char *right)
     }
 
     // Since right expression was parsed raw to detect recursive definitions, do postprocessing
-    if (!arith_postprocess(&right_n))
+    ListenerError l_err = arith_postprocess(&right_n);
+    if (l_err != LISTENERERR_SUCCESS)
     {
-        // Error message given by arith_postprocess
+        report_error(FMT_ERROR_RIGHT, listenererr_to_str(l_err));
         goto error;
     }
 

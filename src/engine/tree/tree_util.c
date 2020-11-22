@@ -281,13 +281,13 @@ Params
     reduction: Function that takes an operator, number of children, and pointer to number of children many child values
     out:       Reduction result
 */
-bool tree_reduce(const Node *tree, TreeListener listener, double *out)
+ListenerError tree_reduce(const Node *tree, TreeListener listener, double *out)
 {
     switch (get_type(tree))
     {
         case NTYPE_CONSTANT:
             *out = get_const_value(tree);
-            return true;
+            return LISTENERERR_SUCCESS;
 
         case NTYPE_OPERATOR:
         {
@@ -295,29 +295,28 @@ bool tree_reduce(const Node *tree, TreeListener listener, double *out)
             if (num_args > 0)
             {
                 double args[num_args];
-                for (size_t i = 0; i < num_args; i++)
+                for (size_t i = LISTENERERR_SUCCESS; i < num_args; i++)
                 {
-                    if (!tree_reduce(get_child(tree, i), listener, &args[i]))
-                    {
-                        return false;
-                    }
+                    ListenerError err = tree_reduce(get_child(tree, i), listener, &args[i]);
+                    if (err != LISTENERERR_SUCCESS) return err;
                 }
-                if (!listener(get_op(tree), num_args, args, out))
-                {
-                    return false;
-                }
+                ListenerError err = listener(get_op(tree), num_args, args, out);
+                if (err != LISTENERERR_SUCCESS) return err;
             }
             else
             {
-                if (!listener(get_op(tree), 0, NULL, out)) return false;
+                ListenerError err = listener(get_op(tree), 0, NULL, out);
+                if (err != LISTENERERR_SUCCESS) return err;
             }
-            return true;
+            return 0;
         }
 
         case NTYPE_VARIABLE:
-            return false;
+            return LISTENERERR_VARIABLE_ENCOUNTERED;
+
+        default:
+            return -42; // This should never happen
     }
-    return false;
 }
 
 /*
@@ -326,15 +325,14 @@ Params:
     tree:            Tree that will be changed
     listener:        Compositional evaluation function
 */
-void tree_reduce_constant_subtrees(Node **tree, TreeListener listener)
+ListenerError tree_reduce_constant_subtrees(Node **tree, TreeListener listener)
 {
     if (count_all_variable_nodes(*tree) == 0)
     {
         double res;
-        if (tree_reduce(*tree, listener, &res))
-        {
-            tree_replace(tree, malloc_constant_node(res));
-        }
+        ListenerError err = tree_reduce(*tree, listener, &res);
+        if (err != LISTENERERR_SUCCESS) return err;
+        tree_replace(tree, malloc_constant_node(res));
     }
     else
     {
@@ -342,12 +340,17 @@ void tree_reduce_constant_subtrees(Node **tree, TreeListener listener)
         {
             for (size_t i = 0; i < get_num_children(*tree); i++)
             {
-                tree_reduce_constant_subtrees(get_child_addr(*tree, i), listener);
+                ListenerError err = tree_reduce_constant_subtrees(get_child_addr(*tree, i), listener);
+                if (err != LISTENERERR_SUCCESS) return err;
             }
         }
     }
+    return LISTENERERR_SUCCESS;
 }
 
+/*
+Summary: For non-compositional evaluation of operators
+*/
 void tree_reduce_ops(Node **tree, const Operator *op, OpEval callback)
 {
     if (get_type(*tree) == NTYPE_OPERATOR)

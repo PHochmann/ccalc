@@ -1,7 +1,11 @@
 #pragma once
 #include "node.h"
 
-typedef bool (*TreeListener)(const Operator *op, size_t num_children, const double *children, double *out);
+#define LISTENERERR_SUCCESS                0
+#define LISTENERERR_VARIABLE_ENCOUNTERED -50
+
+typedef int ListenerError;
+typedef ListenerError (*TreeListener)(const Operator *op, size_t num_children, const double *children, double *out);
 typedef double (*OpEval)(size_t num_children, Node **children);
 
 // Data handling
@@ -18,6 +22,6 @@ Node **find_op(const Node **tree, const Operator *op);
 
 // Traversal
 size_t replace_variable_nodes(Node **tree, const Node *tree_to_copy, const char *var_name);
-bool tree_reduce(const Node *tree, TreeListener listener, double *out);
-void tree_reduce_constant_subtrees(Node **tree, TreeListener listener);
+ListenerError tree_reduce(const Node *tree, TreeListener listener, double *out);
+ListenerError tree_reduce_constant_subtrees(Node **tree, TreeListener listener);
 void tree_reduce_ops(Node **tree, const Operator *op, OpEval eval);

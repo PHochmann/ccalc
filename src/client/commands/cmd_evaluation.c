@@ -80,7 +80,8 @@ bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
 
         // Print result
         double result = 0;
-        if (tree_reduce(tree, arith_op_evaluate, &result))
+        ListenerError l_err = tree_reduce(tree, arith_op_evaluate, &result);
+        if (l_err == LISTENERERR_SUCCESS)
         {
             whisper("= ");
             printf(CONSTANT_TYPE_FMT "\n", result);
@@ -90,6 +91,7 @@ bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
         }
         else
         {
+            report_error("Error: %s\n", listenererr_to_str(l_err));
             free_tree(tree);
             return false;
         }

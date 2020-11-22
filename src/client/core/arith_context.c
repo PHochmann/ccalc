@@ -8,6 +8,7 @@
 
 #include "../simplification/simplification.h"
 #include "arith_context.h"
+#include "arith_evaluation.h"
 #include "history.h"
 
 ParsingContext __g_ctx;
@@ -185,8 +186,10 @@ bool arith_parse_and_postprocess(char *input, char *error_fmt, Node **out_res)
 {
     if (arith_parse_raw(input, error_fmt, out_res))
     {
-        if (!arith_postprocess(out_res))
+        ListenerError l_err = arith_postprocess(out_res);
+        if (l_err != LISTENERERR_SUCCESS)
         {
+            report_error(error_fmt, listenererr_to_str(l_err));
             free_tree(*out_res);
             return false;
         }
@@ -198,13 +201,32 @@ bool arith_parse_and_postprocess(char *input, char *error_fmt, Node **out_res)
     }
 }
 
-bool arith_postprocess(Node **tree)
+ListenerError arith_postprocess(Node **tree)
 {
     LinkedListIterator iterator = list_get_iterator(g_composite_functions);
     apply_ruleset_by_iterator(tree, (Iterator*)&iterator, NULL, SIZE_MAX);
-    if (!core_simplify(tree))
+    return simplify(tree);
+}
+
+const char *listenererr_to_str(ListenerError error)
+{
+    switch (error)
     {
-        return false;
+        case LISTENERERR_SUCCESS:
+            return "No error";
+        case LISTENERERR_VARIABLE_ENCOUNTERED:
+            return "Expression not constant";
+        case LISTENERERR_HISTORY_NOT_SET:
+            return "This part of the history is not set yet";
+        case LISTENERERR_IMPOSSIBLE_DERIV:
+            return "Derivation not possible";
+        case LISTENERERR_MALFORMED_DERIV_A:
+            return "You can only use expr' when there is not more than one variable in expr.";
+        case LISTENERERR_MALFORMED_DERIV_B:
+            return "Second operand of function 'deriv' must be variable.";
+        case LISTENERERR_UNKNOWN_OP:
+            return "No evaluation of operator possible";
+        default:
+            return "Unknown error";
     }
-    return true;
 }

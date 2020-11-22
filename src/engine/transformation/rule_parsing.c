@@ -19,7 +19,7 @@
 // string: without "WHERE"
 bool parse_constraints(const char *string,
     const ParsingContext *extended_ctx,
-    size_t *num_constraints, // In-Out, like in readline
+    size_t *num_constraints, // In-Out, like in getline
     Node **out_constraints)
 {
     if (string == NULL)
@@ -101,6 +101,7 @@ bool parse_rule(const char *string, const ParsingContext *main_ctx, const Parsin
     char *where_pos = strstr(str, WHERE); // Optional
     Node *left_n = NULL;
     Node *right_n = NULL;
+    size_t num_constrs = 0;
 
     if (arrow_pos == NULL)
     {
@@ -112,13 +113,14 @@ bool parse_rule(const char *string, const ParsingContext *main_ctx, const Parsin
     arrow_pos[0] = '\0';
     arrow_pos += strlen(ARROW);
 
-    size_t num_constrs = MATCHING_MAX_CONSTRAINTS;
     Node *constrs[MATCHING_MAX_CONSTRAINTS];
     if (where_pos != NULL)
     {
         *where_pos = '\0';
         where_pos += strlen(WHERE);
     }
+
+    num_constrs = MATCHING_MAX_CONSTRAINTS;
     if (!parse_constraints(where_pos, extended_ctx, &num_constrs, constrs)) goto error;
 
     left_n = parse_conveniently(main_ctx, str); // Gives error message

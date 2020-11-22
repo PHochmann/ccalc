@@ -248,7 +248,7 @@ static void print_op_table(OpPlacement place, bool assoc, bool precedence, bool 
             {
                 double const_val;
                 override_alignment(table, ALIGN_NUMBERS);
-                if (arith_op_evaluate(op, 0, NULL, &const_val))
+                if (arith_op_evaluate(op, 0, NULL, &const_val) == LISTENERERR_SUCCESS)
                 {
                     add_cell_fmt(table, " " CONSTANT_TYPE_FMT " ", const_val);
                 }

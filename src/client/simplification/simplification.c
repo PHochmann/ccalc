@@ -108,16 +108,13 @@ static void apply_simplification(Node **tree, Vector *ruleset)
 Summary: Applies all pre-defined rewrite rules to tree
 Returns: True when transformations could be applied, False otherwise
 */
-bool core_simplify(Node **tree)
+ListenerError simplify(Node **tree)
 {
-    bool tmp = set_show_errors(false);
-    tree_reduce_constant_subtrees(tree, arith_op_evaluate);
-    if (!initialized)
-    {
-        set_show_errors(tmp);
-        return true;
-    }
+    ListenerError err = tree_reduce_constant_subtrees(tree, arith_op_evaluate);
+    if (err != LISTENERERR_SUCCESS) return err;
+    if (!initialized) return LISTENERERR_SUCCESS;
 
+    bool tmp = set_show_errors(false);
     // Apply elimination rules
     apply_simplification(tree, rulesets + 0);
 
@@ -148,8 +145,7 @@ bool core_simplify(Node **tree)
         if (var_count > 1)
         {
             set_show_errors(tmp);
-            report_error("You can only use expr' when there is not more than one variable in expr.\n");
-            return false;
+            return LISTENERERR_MALFORMED_DERIV_A;
         }
 
         Node *replacement = tree_copy(deriv_after);
@@ -164,12 +160,19 @@ bool core_simplify(Node **tree)
     if (does_match(*tree, &malformed_deriv, propositional_checker))
     {
         set_show_errors(tmp);
-        report_error("Second operand of function 'deriv' must be variable.\n");
-        return false;
+        return LISTENERERR_MALFORMED_DERIV_B;
     }
 
-    // Eliminiate deriv(x,y)
-    apply_simplification(tree, rulesets + 1);
+    // Do it twice because operators that can't be derivated could maybe be reduced
+    for (size_t i = 0; i < 2; i++)
+    {
+        apply_simplification(tree, rulesets + 1);
+        apply_simplification(tree, rulesets + 2);
+        apply_simplification(tree, rulesets + 3);
+        apply_simplification(tree, rulesets + 4);
+        apply_simplification(tree, rulesets + 5);
+        apply_simplification(tree, rulesets + 6);
+    }
 
     // If the tree still contains deriv-operators, the user attempted to derivate 
     // a subtree for which no reduction rule exists.
@@ -179,21 +182,11 @@ bool core_simplify(Node **tree)
         set_show_errors(tmp);
         if (get_type(get_child(*unresolved_derivation, 0)) != NTYPE_OPERATOR)
         {
-            software_defect("Derivation failed.\n");
+            software_defect("[Simplification] Derivation failed.\n");
         }
-        else
-        {
-            report_error("Can't derivate operator '%s'.\n", get_op(get_child(*unresolved_derivation, 0))->name);
-        }
-        return false;
+        return LISTENERERR_IMPOSSIBLE_DERIV;
     }
 
-    apply_simplification(tree, rulesets + 2);
-    apply_simplification(tree, rulesets + 3);
-    apply_simplification(tree, rulesets + 4);
-    apply_simplification(tree, rulesets + 5);
-    apply_simplification(tree, rulesets + 6);
-
     set_show_errors(tmp);
-    return true;
+    return LISTENERERR_SUCCESS;
 }

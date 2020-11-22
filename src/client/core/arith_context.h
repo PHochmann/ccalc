@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include "../../engine/parsing/context.h"
 #include "../../engine/tree/node.h"
+#include "../../engine/tree/tree_util.h"
 #include "../../engine/transformation/rewrite_rule.h"
 
 #define NUM_ARITH_OPS 57
@@ -21,4 +22,5 @@ void clear_composite_functions();
 RewriteRule *get_composite_function(Operator *op);
 bool arith_parse_raw(char *input, char *error_fmt, Node **out_res);
 bool arith_parse_and_postprocess(char *input, char *error_fmt, Node **out_res);
-bool arith_postprocess(Node **tree);
+ListenerError arith_postprocess(Node **tree);
+const char *listenererr_to_str(ListenerError error);

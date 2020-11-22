@@ -12,5 +12,5 @@ bool is_delimiter(const char *c);
 bool begins_with(const char *prefix, const char *str);
 size_t str_split(char *str, char **out_strs, size_t num_delimiters, ...);
 size_t get_line_of_string(const char *string, size_t line_index, char **out_start);
-char *perr_to_string(ParserError perr);
+const char *perr_to_string(ParserError perr);
 char *skip_ansi(const char *str);

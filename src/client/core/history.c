@@ -8,8 +8,6 @@
 #include "arith_context.h"
 #include "arith_evaluation.h"
 
-#define ERROR_NOT_SET "Error: This part of the history is not set yet.\n"
-
 Vector ans_vec; // Results of last evaluations (doubles)
 
 void init_history()
@@ -30,7 +28,6 @@ bool history_get(size_t index, double *out)
 {
     if (vec_count(&ans_vec) <= index)
     {
-        report_error(ERROR_NOT_SET);
         return false;
     }
     *out = *(double*)vec_get(&ans_vec, vec_count(&ans_vec) - 1 - index);

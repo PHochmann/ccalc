@@ -12,7 +12,7 @@
 #define EVAL_TRUE       1
 #define EVAL_FALSE      0
 
-bool prop_op_evaluate(const Operator *op, size_t num_args, const double *args, double *out)
+ListenerError prop_op_evaluate(const Operator *op, size_t num_args, const double *args, double *out)
 {
     // Propositional context is an extension of the arithmetic context
     if (op->id < NUM_ARITH_OPS) return arith_op_evaluate(op, num_args, args, out);
@@ -21,44 +21,44 @@ bool prop_op_evaluate(const Operator *op, size_t num_args, const double *args, d
     {
         case NUM_ARITH_OPS + 2: // CONST
             *out = EVAL_TYPE_CONST;
-            return true;
+            return LISTENERERR_SUCCESS;
         case NUM_ARITH_OPS + 3: // VAR
             *out = EVAL_TYPE_VAR;
-            return true;
+            return LISTENERERR_SUCCESS;
         case NUM_ARITH_OPS + 4: // OP
             *out = EVAL_TYPE_OP;
-            return true;
+            return LISTENERERR_SUCCESS;
         case NUM_ARITH_OPS + 5: // ==
             *out = (args[0] == args[1]) ? EVAL_TRUE : EVAL_FALSE;
-            return true;
+            return LISTENERERR_SUCCESS;
         case NUM_ARITH_OPS + 6: // >
             *out = (args[0] > args[1]) ? EVAL_TRUE : EVAL_FALSE;
-            return true;
+            return LISTENERERR_SUCCESS;
         case NUM_ARITH_OPS + 7: // <
             *out = (args[0] < args[1]) ? EVAL_TRUE : EVAL_FALSE;
-            return true;
+            return LISTENERERR_SUCCESS;
         case NUM_ARITH_OPS + 8: // >=
             *out = (args[0] >= args[1]) ? EVAL_TRUE : EVAL_FALSE;
-            return true;
+            return LISTENERERR_SUCCESS;
         case NUM_ARITH_OPS + 9: // <=
             *out = (args[0] <= args[1]) ? EVAL_TRUE : EVAL_FALSE;
-            return true;
+            return LISTENERERR_SUCCESS;
         case NUM_ARITH_OPS + 10: // OR
             *out = (args[0] == EVAL_TRUE || args[1] == EVAL_TRUE) ? EVAL_TRUE : EVAL_FALSE;
-            return true;
+            return LISTENERERR_SUCCESS;
         case NUM_ARITH_OPS + 11: // TRUE
             *out = EVAL_TRUE;
-            return true;
+            return LISTENERERR_SUCCESS;
         case NUM_ARITH_OPS + 12: // FALSE
             *out = EVAL_FALSE;
-            return true;
+            return LISTENERERR_SUCCESS;
         case NUM_ARITH_OPS + 13: // !
             *out = (args[0] == EVAL_FALSE) ? EVAL_TRUE : EVAL_FALSE;
-            return true;
+            return LISTENERERR_SUCCESS;
     }
 
     software_defect("Software defect: [Prop] No reduction possible for operator %s.\n", op->name);
-    return false;
+    return LISTENERERR_UNKNOWN_OP;
 }
 
 double equals_eval(__attribute__((unused)) size_t num_children, Node **children)
@@ -91,7 +91,7 @@ bool propositional_checker(Node **tree)
 
     // Step 3: Reduce everything else
     double reduced = 0;
-    if (!tree_reduce(*tree, prop_op_evaluate, &reduced))
+    if (tree_reduce(*tree, prop_op_evaluate, &reduced) != LISTENERERR_SUCCESS)
     {
         return false;
     }

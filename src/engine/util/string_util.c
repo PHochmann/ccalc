@@ -131,7 +131,7 @@ size_t get_line_of_string(const char *string, size_t line_index, char **out_star
 /*
 Returns: String representation of ParserError
 */
-char *perr_to_string(ParserError perr)
+const char *perr_to_string(ParserError perr)
 {
     switch (perr)
     {

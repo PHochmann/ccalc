@@ -18,7 +18,7 @@ endif
 ifneq (,$(filter $(MAKECMDGOALS),debug))
 	BUILD_DIR := ./bin/debug
 	CFLAGS += -DDEBUG -g3 -O0 -fsanitize=undefined
-	LDFLAGS += fsanitize=undefined
+	LDFLAGS += -fsanitize=undefined
 endif
 
 # Compile additional test sources 

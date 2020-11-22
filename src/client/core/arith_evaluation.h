@@ -3,5 +3,11 @@
 #include "../../engine/tree/operator.h"
 #include "../../engine/tree/node.h"
 
-bool arith_op_evaluate(const Operator *op, size_t num_args, const double *args, double *out);
+#define LISTENERERR_HISTORY_NOT_SET   1
+#define LISTENERERR_IMPOSSIBLE_DERIV  2
+#define LISTENERERR_MALFORMED_DERIV_A 3
+#define LISTENERERR_MALFORMED_DERIV_B 4
+#define LISTENERERR_UNKNOWN_OP        5
+
+ListenerError arith_op_evaluate(const Operator *op, size_t num_args, const double *args, double *out);
 double arith_evaluate(const Node *node);
