@@ -46,7 +46,7 @@ bool simplification_test(StringBuilder *error_builder)
         {
             ERROR("Syntax error in right side of test case %zu.\n", i);
         }
-        if (!core_simplify(&left))
+        if (simplify(&left) != LISTENERERR_SUCCESS)
         {
             ERROR("core_simplify returned false in test case %zu.\n", i);
         }
