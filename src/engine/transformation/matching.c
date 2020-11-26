@@ -302,7 +302,7 @@ size_t get_all_matchings(const Node **tree, const Pattern *pattern, ConstraintCh
     // Every additional variable is mapped by a ConstraintChecker
     extend_matching(
         &ctx,
-        (Matching){ 0 }, // Lists are initialized to .size = 0, .nodes = NULL
+        (Matching){ .mapped_nodes = { { .size = 0 } } }, // Lists are initialized to .size = 0, .nodes = NULL
         pattern->pattern,
         (NodeList){ .size = 1, .nodes = tree },
         &result);

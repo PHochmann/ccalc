@@ -2,7 +2,6 @@ TARGET_EXEC  = ccalc
 BUILD_DIR    = ./bin/release
 SRC_DIRS     = ./src
 
-CC           = gcc
 CFLAGS       = -MMD -MP -std=c99 -Wall -Wextra -Werror -pedantic
 LDFLAGS      = -lm
 
