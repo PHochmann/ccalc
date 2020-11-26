@@ -10,7 +10,6 @@
 #include "console_util.h"
 #include "string_builder.h"
 
-bool show_errors;
 bool interactive;
 
 void unload_console_util()
@@ -23,18 +22,10 @@ void unload_console_util()
 void init_console_util()
 {
     interactive = false;
-    show_errors = true;
 #ifdef USE_READLINE
     // Disable tab completion
     rl_bind_key('\t', rl_insert);
 #endif
-}
-
-bool set_show_errors(bool value)
-{
-    bool res = show_errors;
-    show_errors = value;
-    return res;
 }
 
 /*
@@ -143,13 +134,10 @@ bool ask_input(FILE *file, char **out_input, const char *prompt_fmt, ...)
 
 void report_error(const char *fmt, ...)
 {
-    if (show_errors)
-    {
-        va_list args;
-        va_start(args, fmt);
-        vfprintf(stderr, fmt, args);
-        va_end(args);
-    }
+    va_list args;
+    va_start(args, fmt);
+    vfprintf(stderr, fmt, args);
+    va_end(args);
 }
 
 void software_defect(const char *fmt, ...)

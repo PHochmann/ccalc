@@ -6,8 +6,8 @@
 #include "propositional_evaluation.h"
 #include "propositional_context.h"
 
-#define EVAL_TYPE_CONST 1
-#define EVAL_TYPE_VAR   2
+#define EVAL_TYPE_CONST 2
+#define EVAL_TYPE_VAR   3
 #define EVAL_TYPE_OP    4
 #define EVAL_TRUE       1
 #define EVAL_FALSE      0
@@ -85,11 +85,9 @@ bool propositional_checker(Node **tree)
 {
     // Step 1: Reduce type(x)
     tree_reduce_ops(tree, ctx_lookup_op(g_propositional_ctx, "type", OP_PLACE_FUNCTION), type_eval);
-
-    // Step 2: Reduce =
+    // Step 3: Reduce =
     tree_reduce_ops(tree, ctx_lookup_op(g_propositional_ctx, "=", OP_PLACE_INFIX), equals_eval);
-
-    // Step 3: Reduce everything else
+    // Step 4: Reduce everything else
     double reduced = 0;
     if (tree_reduce(*tree, prop_op_evaluate, &reduced) != LISTENERERR_SUCCESS)
     {

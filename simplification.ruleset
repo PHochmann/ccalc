@@ -1,17 +1,18 @@
-# Ideas:
-# avg([xs]) -> sum([xs])/count([xs])
-
 # Operator elimination (de-sugar)
 RULESET
-    +x         -> x
-    $x         -> x
-    --x        -> x
-    x%         -> x/100
-    x/y        -> x*y^(-1)
-    log(x, e)  -> ln(x)
-    tan(x)     -> sin(x)/cos(x)
-    sqrt(x)    -> x^0.5
-    root(x, y) -> x^(1/y)
+    count()       -> 0
+    count(x,[xs]) -> 1 + count([xs])
+    +x            -> x
+    $x            -> x
+    --x           -> x
+    x%            -> x/100
+    (x/y)/z       -> x/(y*z)
+    x/y           -> x*y^(-1)
+    log(x, e)     -> ln(x)
+    tan(x)        -> sin(x)/cos(x)
+    sqrt(x)       -> x^0.5
+    root(x, y)    -> x^(1/y)
+    avg([xs])     -> sum([xs])/count([xs])
 
 # Deriv elimination
 RULESET
@@ -34,11 +35,12 @@ RULESET
     deriv(sin(x), z)    -> cos(x) * deriv(x, z)
     deriv(cos(x), z)    -> -sin(x) * deriv(x, z)
     deriv(tan(x), z)    -> deriv(x, z) * cos(x)^-2
+    deriv(asin(x), z)   -> deriv(x, z) / sqrt(1 - x^2)
+    deriv(acos(x), z)   -> -deriv(x, z) / sqrt(1 - x^2)
+    deriv(atan(x), z)   -> deriv(x, z) / (x^2 + 1)
     deriv(e^y, z)       -> deriv(y, z)*e^y
     deriv(x^y, z)       -> (y * deriv(x, z) * x^-1 + deriv(y, z) * ln(x)) * x^y
     deriv(ln(x), z)     -> deriv(x, z)*x^(-1)
-    deriv(e, _)         -> 0
-    deriv(pi, _)        -> 0
 
 # Normal form
 RULESET

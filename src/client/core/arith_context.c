@@ -84,7 +84,8 @@ ParsingContext get_arith_ctx()
         op_get_constant("phi"),
         op_get_constant("clight"),
         op_get_constant("csound"),
-        op_get_constant("ans")))
+        op_get_constant("ans"),
+        op_get_function("count", OP_DYNAMIC_ARITY)))
     {
         software_defect("[Arith] Inconsistent operator set.\n");
     }

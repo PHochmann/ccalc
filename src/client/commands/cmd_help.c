@@ -334,9 +334,7 @@ bool cmd_help_exec(__attribute__((unused)) char *input, int code)
             printf("\nFunctions:\n");
             print_op_table(OP_PLACE_FUNCTION, false, false, true, false);
             printf("\nConstants:\n");
-            bool tmp = set_show_errors(false);
             print_op_table(OP_PLACE_FUNCTION, false, false, false, true);
-            set_show_errors(tmp);
         }
     }
     return true;

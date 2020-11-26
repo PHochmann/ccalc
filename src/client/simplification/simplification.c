@@ -112,28 +112,11 @@ ListenerError simplify(Node **tree)
 {
     ListenerError err = tree_reduce_constant_subtrees(tree, arith_op_evaluate);
     if (err != LISTENERERR_SUCCESS) return err;
+
     if (!initialized) return LISTENERERR_SUCCESS;
 
-    bool tmp = set_show_errors(false);
     // Apply elimination rules
     apply_simplification(tree, rulesets + 0);
-
-    // Replace avg(x,y,z...) by sum(x,y,z...)/num_children
-    Node **avg_node;
-    while ((avg_node = find_op((const Node**)tree, ctx_lookup_op(g_ctx, "avg", OP_PLACE_FUNCTION))) != NULL)
-    {
-        set_op(*avg_node, ctx_lookup_op(g_ctx, "sum", OP_PLACE_FUNCTION));
-        Node *replacement = malloc_operator_node(ctx_lookup_op(g_ctx, "/", OP_PLACE_INFIX), 2);
-        set_child(replacement, 0, *avg_node);
-        set_child(replacement, 1, malloc_constant_node(get_num_children(*avg_node)));
-        // Now some careful pointer bending from one tree to the other
-        // Note: Usually, pointer spaghetti is discouraged
-        for (size_t i = 0; i < get_num_children(*avg_node); i++)
-        {
-            set_child(get_child(replacement, 0), i, get_child(*avg_node, i));
-        }
-        *avg_node = replacement;
-    }
 
     Matching matching;
     Node **matched;
@@ -144,7 +127,6 @@ ListenerError simplify(Node **tree)
         size_t var_count = list_variables(*matched, 2, vars);
         if (var_count > 1)
         {
-            set_show_errors(tmp);
             return LISTENERERR_MALFORMED_DERIV_A;
         }
 
@@ -159,7 +141,6 @@ ListenerError simplify(Node **tree)
 
     if (does_match(*tree, &malformed_deriv, propositional_checker))
     {
-        set_show_errors(tmp);
         return LISTENERERR_MALFORMED_DERIV_B;
     }
 
@@ -179,7 +160,6 @@ ListenerError simplify(Node **tree)
     Node **unresolved_derivation = find_op((const Node**)tree, get_op(deriv_after));
     if (unresolved_derivation != NULL)
     {
-        set_show_errors(tmp);
         if (get_type(get_child(*unresolved_derivation, 0)) != NTYPE_OPERATOR)
         {
             software_defect("[Simplification] Derivation failed.\n");
@@ -187,6 +167,5 @@ ListenerError simplify(Node **tree)
         return LISTENERERR_IMPOSSIBLE_DERIV;
     }
 
-    set_show_errors(tmp);
     return LISTENERERR_SUCCESS;
 }

@@ -5,7 +5,7 @@
 #include "../../engine/tree/tree_util.h"
 #include "../../engine/transformation/rewrite_rule.h"
 
-#define NUM_ARITH_OPS 57
+#define NUM_ARITH_OPS 58
 #define g_ctx (&__g_ctx)
 #define g_composite_functions (&__g_composite_functions)
 
