@@ -7,17 +7,14 @@
 #include "rewrite_rule.h"
 
 bool parse_pattern(const char *string,
-    const ParsingContext *main_ctx,
-    const ParsingContext *extended_ctx,
+    const ParsingContext *ctx,
     Pattern *out_pattern);
 
 bool parse_rule(const char *string,
-    const ParsingContext *main_ctx,
-    const ParsingContext *extended_ctx,
+    const ParsingContext *ctx,
     RewriteRule *out_rule);
 
 size_t parse_rulesets_from_file(FILE *file,
-    const ParsingContext *main_ctx,
-    const ParsingContext *extended_ctx,
+    const ParsingContext *ctx,
     size_t max_rulesets,
     Vector *out_rulesets);

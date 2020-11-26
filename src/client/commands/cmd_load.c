@@ -35,7 +35,7 @@ bool cmd_load_exec(char *input, __attribute__((unused)) int code)
         }
         else
         {
-            whisper("Successfully loaded simplification (%d rules)\n", count);
+            whisper("Successfully loaded simplification (%ld rules)\n", count);
             return true;
         }
     }

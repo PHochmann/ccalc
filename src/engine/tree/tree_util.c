@@ -37,7 +37,7 @@ Node *tree_copy(const Node *tree)
 
 /*
 Summary: Checks if two trees represent exactly the same expression
-Returns: First node (in-order traversal) in 'a' that is not equal to respective node in 'b', NULL otherwise
+Returns: True iff trees are equal
 */
 bool tree_equals(const Node *a, const Node *b)
 {
@@ -55,7 +55,7 @@ bool tree_equals(const Node *a, const Node *b)
             break;
 
         case NTYPE_OPERATOR:
-            if (get_op(a) != get_op(b) || get_num_children(a) != get_num_children(b))
+            if (get_op(a)->id != get_op(b)->id || get_num_children(a) != get_num_children(b))
             {
                 return false;
             }

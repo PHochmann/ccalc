@@ -18,7 +18,7 @@
 
 // string: without "WHERE"
 bool parse_constraints(const char *string,
-    const ParsingContext *extended_ctx,
+    const ParsingContext *ctx,
     size_t *num_constraints, // In-Out, like in getline
     Node **out_constraints)
 {
@@ -43,7 +43,7 @@ bool parse_constraints(const char *string,
             next_and += strlen(AND);
         }
 
-        out_constraints[*num_constraints] = parse_conveniently(extended_ctx, str);
+        out_constraints[*num_constraints] = parse_conveniently(ctx, str);
         if (out_constraints[*num_constraints] == NULL) goto error;
         (*num_constraints)++;
         if (*num_constraints == buffer_size) goto success;
@@ -58,7 +58,7 @@ bool parse_constraints(const char *string,
     return false;
 }
 
-bool parse_pattern(const char *string, const ParsingContext *main_ctx, const ParsingContext *extended_ctx, Pattern *out_pattern)
+bool parse_pattern(const char *string, const ParsingContext *ctx, Pattern *out_pattern)
 {
     char *str_cpy = malloc_wrapper(strlen(string) + 1);
     char *str = str_cpy;
@@ -72,12 +72,12 @@ bool parse_pattern(const char *string, const ParsingContext *main_ctx, const Par
         *where_pos = '\0';
         where_pos += strlen(WHERE);
     }
-    if (!parse_constraints(where_pos, extended_ctx, &num_constrs, constrs))
+    if (!parse_constraints(where_pos, ctx, &num_constrs, constrs))
     {
         goto error;
     }
 
-    Node *pattern = parse_conveniently(main_ctx, str); // Gives error message
+    Node *pattern = parse_conveniently(ctx, str); // Gives error message
     if (pattern == NULL)
     {
         goto error;
@@ -92,7 +92,7 @@ bool parse_pattern(const char *string, const ParsingContext *main_ctx, const Par
     return false;
 }
 
-bool parse_rule(const char *string, const ParsingContext *main_ctx, const ParsingContext *extended_ctx, RewriteRule *out_rule)
+bool parse_rule(const char *string, const ParsingContext *ctx, RewriteRule *out_rule)
 {
     char *str = malloc_wrapper(strlen(string) + 1);
     strcpy(str, string);
@@ -121,15 +121,15 @@ bool parse_rule(const char *string, const ParsingContext *main_ctx, const Parsin
     }
 
     num_constrs = MATCHING_MAX_CONSTRAINTS;
-    if (!parse_constraints(where_pos, extended_ctx, &num_constrs, constrs)) goto error;
+    if (!parse_constraints(where_pos, ctx, &num_constrs, constrs)) goto error;
 
-    left_n = parse_conveniently(main_ctx, str); // Gives error message
+    left_n = parse_conveniently(ctx, str); // Gives error message
     if (left_n == NULL)
     {
         goto error;
     }
 
-    right_n = parse_conveniently(main_ctx, arrow_pos);
+    right_n = parse_conveniently(ctx, arrow_pos);
     if (right_n == NULL)
     {
         goto error;
@@ -153,8 +153,7 @@ bool parse_rule(const char *string, const ParsingContext *main_ctx, const Parsin
 }
 
 size_t parse_rulesets_from_file(FILE *file,
-    const ParsingContext *main_ctx,
-    const ParsingContext *extended_ctx,
+    const ParsingContext *ctx,
     size_t max_rulesets,
     Vector *out_rulesets)
 {
@@ -190,7 +189,7 @@ size_t parse_rulesets_from_file(FILE *file,
             report_error("Ignored non-comment line outside of ruleset.\n");
         }
 
-        if (!parse_rule(line, main_ctx, extended_ctx, vec_push_empty(&out_rulesets[curr_ruleset])))
+        if (!parse_rule(line, ctx, vec_push_empty(&out_rulesets[curr_ruleset])))
         {
             report_error("Error occurred in line %zu.\n", line_index);
         }

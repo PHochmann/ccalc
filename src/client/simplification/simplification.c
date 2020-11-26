@@ -59,7 +59,7 @@ ssize_t init_simplification(char *file)
     {
         rulesets[i] = get_empty_ruleset();
     }
-    if (parse_rulesets_from_file(ruleset_file, g_ctx, g_propositional_ctx, NUM_RULESETS, rulesets) != NUM_RULESETS)
+    if (parse_rulesets_from_file(ruleset_file, g_propositional_ctx, NUM_RULESETS, rulesets) != NUM_RULESETS)
     {
         report_error("Too few simplification rulesets defined in %s.\n", file);
         return -1;
@@ -68,7 +68,7 @@ ssize_t init_simplification(char *file)
 
     deriv_before = get_pattern(P("x'"), 0, NULL);
     deriv_after = P("deriv(x, z)");
-    parse_pattern("deriv(x, y) WHERE !(type(cx) == VAR)", g_ctx, g_propositional_ctx, &malformed_deriv);
+    parse_pattern("deriv(x, y) WHERE !(type(cx) == VAR)", g_propositional_ctx, &malformed_deriv);
 
     initialized = true;
 

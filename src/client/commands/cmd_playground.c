@@ -62,7 +62,7 @@ bool cmd_playground_exec(char *input, int code)
                 goto cleanup;
             }
 
-            if (!parse_rule(rule_str, g_ctx, g_propositional_ctx, &rule))
+            if (!parse_rule(rule_str, g_propositional_ctx, &rule))
             {
                 free(rule_str);
                 rule_str = NULL;

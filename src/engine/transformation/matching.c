@@ -271,7 +271,7 @@ static void extend_matching(
         {
             if (tree_list.size == 1
                 && get_type(tree_list.nodes[0]) == NTYPE_OPERATOR
-                && get_op(pattern) == get_op(tree_list.nodes[0]))
+                && get_op(pattern)->id == get_op(tree_list.nodes[0])->id)
             {
                 match_parameter_lists(ctx,
                     matching,
