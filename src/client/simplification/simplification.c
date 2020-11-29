@@ -68,7 +68,7 @@ ssize_t init_simplification(char *file)
 
     deriv_before = get_pattern(P("x'"), 0, NULL);
     deriv_after = P("deriv(x, z)");
-    parse_pattern("deriv(x, y) WHERE !(type(cx) == VAR)", g_propositional_ctx, &malformed_deriv);
+    parse_pattern("deriv(x, y) WHERE !(type(y) == VAR)", g_propositional_ctx, &malformed_deriv);
 
     initialized = true;
 
@@ -110,14 +110,20 @@ Returns: True when transformations could be applied, False otherwise
 */
 ListenerError simplify(Node **tree)
 {
-    ListenerError err = tree_reduce_constant_subtrees(tree, arith_op_evaluate);
-    if (err != LISTENERERR_SUCCESS) return err;
-
+    tree_reduce_constant_subtrees(tree, arith_op_evaluate);
+    // It's okay if simplification module is not initialized, just return without doing much
     if (!initialized) return LISTENERERR_SUCCESS;
 
     // Apply elimination rules
     apply_simplification(tree, rulesets + 0);
 
+    // Check for deriv(x, y) WHERE !(type(y) == VAR)
+    if (get_matching((const Node**)tree, &malformed_deriv, propositional_checker, NULL))
+    {
+        return LISTENERERR_MALFORMED_DERIV_B;
+    }
+
+    // Transform shorthand derivative to deriv(expr, x)
     Matching matching;
     Node **matched;
     while ((matched = find_matching((const Node**)tree, &deriv_before, NULL, &matching)) != NULL)
@@ -125,34 +131,23 @@ ListenerError simplify(Node **tree)
         // Check if there is more than one variable in within derivative shorthand
         const char *vars[2];
         size_t var_count = list_variables(*matched, 2, vars);
-        if (var_count > 1)
-        {
-            return LISTENERERR_MALFORMED_DERIV_A;
-        }
+        if (var_count > 1) return LISTENERERR_MALFORMED_DERIV_A;
 
         Node *replacement = tree_copy(deriv_after);
+
         if (var_count == 1)
         {
             tree_replace(get_child_addr(replacement, 1), malloc_variable_node(vars[0], 0));
         }
+
         tree_replace(get_child_addr(replacement, 0), tree_copy(matching.mapped_nodes[0].nodes[0]));
         tree_replace(matched, replacement);
     }
 
-    if (does_match(*tree, &malformed_deriv, propositional_checker))
+    // Simplify again, now with expanded derivation
+    for (size_t j = 1; j < NUM_RULESETS - 1; j++)
     {
-        return LISTENERERR_MALFORMED_DERIV_B;
-    }
-
-    // Do it twice because operators that can't be derivated could maybe be reduced
-    for (size_t i = 0; i < 2; i++)
-    {
-        apply_simplification(tree, rulesets + 1);
-        apply_simplification(tree, rulesets + 2);
-        apply_simplification(tree, rulesets + 3);
-        apply_simplification(tree, rulesets + 4);
-        apply_simplification(tree, rulesets + 5);
-        apply_simplification(tree, rulesets + 6);
+        apply_simplification(tree, rulesets + j);
     }
 
     // If the tree still contains deriv-operators, the user attempted to derivate 
@@ -160,12 +155,11 @@ ListenerError simplify(Node **tree)
     Node **unresolved_derivation = find_op((const Node**)tree, get_op(deriv_after));
     if (unresolved_derivation != NULL)
     {
-        if (get_type(get_child(*unresolved_derivation, 0)) != NTYPE_OPERATOR)
-        {
-            software_defect("[Simplification] Derivation failed.\n");
-        }
         return LISTENERERR_IMPOSSIBLE_DERIV;
     }
+
+    // Prettify
+    apply_simplification(tree, &rulesets[NUM_RULESETS - 1]);
 
     return LISTENERERR_SUCCESS;
 }

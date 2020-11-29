@@ -30,7 +30,6 @@ NodeList *lookup_mapped_var(const Matching *matching, const char *var);
 size_t get_all_matchings(const Node **tree, const Pattern *pattern, ConstraintChecker checker, Matching **out_matchings);
 bool get_matching(const Node **tree, const Pattern *pattern, ConstraintChecker checker, Matching *out_matching);
 Node **find_matching(const Node **tree, const Pattern *pattern, ConstraintChecker checker, Matching *out_matching);
-bool does_match(const Node *tree, const Pattern *pattern, ConstraintChecker checker);
 
 Pattern get_pattern(Node *tree, size_t num_constraints, Node **constrs);
 void free_pattern(Pattern *pattern);

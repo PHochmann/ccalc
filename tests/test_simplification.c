@@ -11,7 +11,7 @@
 
 #include "test_simplification.h"
 
-static const size_t NUM_CASES = 15;
+static const size_t NUM_CASES = 18;
 char *cases[] = {
     "x-x",                 "0",
     "x+x",                 "2x",
@@ -28,8 +28,11 @@ char *cases[] = {
     "sqrt(x)/sqrt(x y)",   "1/sqrt(y)",
     
     // Derivative
+    "4'",                  "0",
     "x'",                  "1",
-    "(10x^10)'''''''''''", "0",    
+    "(10x^10)'''''''''''", "0",
+    "deriv(3*x*y, y)",     "3x",
+    "deriv((3x)'*y, y)",   "3"
 };
 
 bool simplification_test(StringBuilder *error_builder)

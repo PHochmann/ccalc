@@ -285,39 +285,56 @@ static void extend_matching(
     }
 }
 
+/*
+Summary: Generates all possible matchings
+Params
+    tree: Tree that is checked for pattern occurrence.
+    pattern: Tree and constraints that are used as pattern (including list-variables).
+    checker: Callback that is invoked when a constraint is checked.
+    out_matchings: Heap-pointer to generated matchings will be placed here. Is allowed to be NULL.
+Returns: Number of matchings found
+*/
 size_t get_all_matchings(const Node **tree, const Pattern *pattern, ConstraintChecker checker, Matching **out_matchings)
 {
-    if (tree == NULL || pattern == NULL || out_matchings == NULL) return false;
+    if (tree == NULL || pattern == NULL) return false;
 
-    // Due to exponentially many partitions, a lot of states can occur. Use heap.
-    Vector result = vec_create(sizeof(Matching), VECTOR_STARTSIZE);
-
-    // Create context object and put it on heap, this saves stack space during recursion
+    // Create context object and pass by pointer, this saves stack space during recursion
     MatchingContext ctx = (MatchingContext){
         .pattern = pattern,
         .checker = checker
     };
+    // Due to exponentially many partitions of parameter lists, a lot of partial matchings can occur. Use heap.
+    Vector result = vec_create(sizeof(Matching), VECTOR_STARTSIZE);
 
-    // num_mapped starts with number of variables that are guaranteed to be mapped by the pattern
-    // Every additional variable is mapped by a ConstraintChecker
     extend_matching(
         &ctx,
-        (Matching){ .mapped_nodes = { { .size = 0 } } }, // Lists are initialized to .size = 0, .nodes = NULL
+        (Matching){ .mapped_nodes = { { .size = 0, .nodes = NULL } } },
         pattern->pattern,
         (NodeList){ .size = 1, .nodes = tree },
         &result);
     
-    *out_matchings = (Matching*)result.buffer;
+    if (out_matchings != NULL)
+    {
+        *out_matchings = (Matching*)result.buffer;
+    }
+    else
+    {
+        vec_destroy(&result);
+    }
+    
     return result.elem_count;
 }
 
 /*
 Summary: suffixess to match "tree" against "pattern" (only in root)
-Returns: True, if matching is found, false if NULL-pointers given in arguments or no matching found
+Params
+    tree, pattern, checker: As in get_all_matchings
+    out_matching:           Location were first matching will be placed. Is allowed to be NULL.
+Returns: True, if matching is found, false if no matching found
 */
 bool get_matching(const Node **tree, const Pattern *pattern, ConstraintChecker checker, Matching *out_matching)
 {
-    if (tree == NULL || pattern == NULL || out_matching == NULL) return false;
+    if (tree == NULL || pattern == NULL) return false;
 
     Matching *matchings;
     size_t num_matchings = get_all_matchings(tree, pattern, checker, &matchings);
@@ -325,7 +342,10 @@ bool get_matching(const Node **tree, const Pattern *pattern, ConstraintChecker c
     // Return first matching if any
     if (num_matchings > 0)
     {
-        *out_matching = matchings[0];
+        if (out_matching != NULL)
+        {
+            *out_matching = matchings[0];
+        }
         free(matchings);
         return true;
     }
@@ -351,22 +371,6 @@ Node **find_matching(const Node **tree, const Pattern *pattern, ConstraintChecke
         }
     }
     return NULL;
-}
-
-/*
-Summary: Basically the same as find_matching, but discards matching
-*/
-bool does_match(const Node *tree, const Pattern *pattern, ConstraintChecker checker)
-{
-    Matching matching;
-    if (find_matching((const Node**)&tree, pattern, checker, &matching) != NULL)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
 }
 
 /*
