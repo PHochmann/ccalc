@@ -31,28 +31,31 @@ ListenerError prop_op_evaluate(const Operator *op, size_t num_args, const double
         case NUM_ARITH_OPS + 5: // ==
             *out = (args[0] == args[1]) ? EVAL_TRUE : EVAL_FALSE;
             return LISTENERERR_SUCCESS;
-        case NUM_ARITH_OPS + 6: // >
+        case NUM_ARITH_OPS + 6: // !=
+            *out = (args[0] != args[1]) ? EVAL_TRUE : EVAL_FALSE;
+            return LISTENERERR_SUCCESS;
+        case NUM_ARITH_OPS + 7: // >
             *out = (args[0] > args[1]) ? EVAL_TRUE : EVAL_FALSE;
             return LISTENERERR_SUCCESS;
-        case NUM_ARITH_OPS + 7: // <
+        case NUM_ARITH_OPS + 8: // <
             *out = (args[0] < args[1]) ? EVAL_TRUE : EVAL_FALSE;
             return LISTENERERR_SUCCESS;
-        case NUM_ARITH_OPS + 8: // >=
+        case NUM_ARITH_OPS + 9: // >=
             *out = (args[0] >= args[1]) ? EVAL_TRUE : EVAL_FALSE;
             return LISTENERERR_SUCCESS;
-        case NUM_ARITH_OPS + 9: // <=
+        case NUM_ARITH_OPS + 10: // <=
             *out = (args[0] <= args[1]) ? EVAL_TRUE : EVAL_FALSE;
             return LISTENERERR_SUCCESS;
-        case NUM_ARITH_OPS + 10: // OR
+        case NUM_ARITH_OPS + 11: // OR
             *out = (args[0] == EVAL_TRUE || args[1] == EVAL_TRUE) ? EVAL_TRUE : EVAL_FALSE;
             return LISTENERERR_SUCCESS;
-        case NUM_ARITH_OPS + 11: // TRUE
+        case NUM_ARITH_OPS + 12: // TRUE
             *out = EVAL_TRUE;
             return LISTENERERR_SUCCESS;
-        case NUM_ARITH_OPS + 12: // FALSE
+        case NUM_ARITH_OPS + 13: // FALSE
             *out = EVAL_FALSE;
             return LISTENERERR_SUCCESS;
-        case NUM_ARITH_OPS + 13: // !
+        case NUM_ARITH_OPS + 14: // !
             *out = (args[0] == EVAL_FALSE) ? EVAL_TRUE : EVAL_FALSE;
             return LISTENERERR_SUCCESS;
     }

@@ -7,11 +7,16 @@
 #include "../src/engine/tree/tree_to_string.h"
 #include "../src/engine/parsing/parser.h"
 #include "../src/client/core/arith_context.h"
+#include "../src/client/core/arith_evaluation.h"
 #include "../src/client/simplification/simplification.h"
-
+#include "fuzzer.h"
 #include "test_simplification.h"
 
-static const size_t NUM_CASES = 18;
+/*#define NUM_FUZZER_CASES 300
+#define MAX_INNER_NODES  100
+#define EPS 0.001*/
+
+static const size_t NUM_CASES = 19;
 char *cases[] = {
     "x-x",                 "0",
     "x+x",                 "2x",
@@ -26,6 +31,7 @@ char *cases[] = {
     "100x%",               "x",
     "(x^2+x^3)x^4",        "x^7+x^6",
     "sqrt(x)/sqrt(x y)",   "1/sqrt(y)",
+    "avg(a,b)",            "0.5a+0.5b",
     
     // Derivative
     "4'",                  "0",
@@ -75,6 +81,43 @@ bool simplification_test(StringBuilder *error_builder)
         free_tree(left);
         free_tree(right);
     }
+
+    // Fuzzer test to detect illegal simplification rules
+    /*for (size_t i = 0; i < NUM_FUZZER_CASES; i++)
+    {
+        Node *tree = NULL;
+        get_random_tree(MAX_INNER_NODES, &tree);
+        Node *cc = tree_copy(tree);
+        const char *variables[40];
+        Node *copy = tree_copy(tree);
+        size_t num_variables = list_variables(copy, 40, variables);
+        simplify(&tree);
+        for (size_t j = 0; j < num_variables; j++)
+        {
+            Node *replacement = malloc_constant_node(((double)(rand() % 10000) / 100));
+            replace_variable_nodes(&copy, replacement, variables[j]);
+            replace_variable_nodes(&tree, replacement, variables[j]);
+            free_tree(replacement);
+        }
+        double before_result = arith_evaluate(copy);
+        double after_result = arith_evaluate(tree);
+
+        if (before_result - after_result > EPS)
+        {
+            printf("Num variables: %zu\n", num_variables);
+            print_tree(cc, true);
+            printf("\n");
+            print_tree(tree, true);
+            printf("\n");
+            print_tree(copy, true);
+            printf("\n");
+            ERROR("Fuzzing test failed\n");
+        }
+
+        free_tree(tree);
+        free_tree(copy);
+    }*/
+
     return true;
 }
 

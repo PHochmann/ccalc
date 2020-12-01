@@ -13,7 +13,7 @@ ifeq (,$(filter $(MAKECMDGOALS),tests))
 	endif
 endif
 
-# Compile with debugging flags if target is debug
+# Compile with debugging flags if target is debug or tests
 ifneq (,$(filter $(MAKECMDGOALS),debug))
 	BUILD_DIR := ./bin/debug
 	CFLAGS += -DDEBUG -g3 -O0 -fsanitize=undefined
@@ -24,6 +24,7 @@ endif
 ifneq (,$(filter $(MAKECMDGOALS),tests))
 	BUILD_DIR := ./bin/tests
 	SRC_DIRS += ./tests
+	CFLAGS += -DDEBUG -g3 -O0
 	SRCS = $(shell find $(SRC_DIRS) -name *.c ! -wholename "./src/client/main.c")
 else
 	SRCS := $(shell find $(SRC_DIRS) -name *.c)

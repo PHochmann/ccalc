@@ -145,12 +145,19 @@ ListenerError arith_op_evaluate(const Operator *op, size_t num_args, const doubl
             return LISTENERERR_SUCCESS;
         case 13: // x!
         {
-            double res = 1;
-            for (double i = trunc(args[0]); i > 1; i--)
+            if (isinf(args[0]))
             {
-                res *= i;
+                *out = INFINITY;
             }
-            *out = res;
+            else
+            {
+                double res = 1;
+                for (double i = trunc(args[0]); i > 1; i--)
+                {
+                    res *= i;
+                }
+                *out = res;
+            }
             return LISTENERERR_SUCCESS;
         }
         case 14: // x%

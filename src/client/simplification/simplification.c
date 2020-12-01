@@ -17,8 +17,18 @@
 #include "propositional_context.h"
 #include "propositional_evaluation.h"
 
-#define P(x) parse_conveniently(g_ctx, x)
+#define P(x) (parse_conveniently(g_ctx, x))
 #define NUM_RULESETS 7
+
+/*
+Rulesets: 1. Elimination
+          2. Derivation
+          3. Normal form (e.g. flattening)
+          4. Simplification
+          5. Folding
+          6. Prettify
+          7. Ordering
+*/
 
 bool initialized = false;
 Vector rulesets[NUM_RULESETS];
@@ -144,8 +154,14 @@ ListenerError simplify(Node **tree)
         tree_replace(matched, replacement);
     }
 
+    // Simplify once, leave deriv untouched for now
+    for (size_t j = 3; j < NUM_RULESETS; j++)
+    {
+        apply_simplification(tree, rulesets + j);
+    }
+
     // Simplify again, now with expanded derivation
-    for (size_t j = 1; j < NUM_RULESETS - 1; j++)
+    for (size_t j = 0; j < NUM_RULESETS - 1; j++)
     {
         apply_simplification(tree, rulesets + j);
     }

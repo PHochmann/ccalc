@@ -2,7 +2,7 @@
 #include "../core/arith_context.h"
 #include "propositional_context.h"
 
-#define NUM_PROPOSITIONAL_OPS 15
+#define NUM_PROPOSITIONAL_OPS 16
 
 ParsingContext __g_propositional_ctx;
 
@@ -16,6 +16,7 @@ void init_propositional_ctx()
         op_get_constant("VAR"),
         op_get_constant("OP"),
         op_get_infix("==", 1, OP_ASSOC_LEFT),
+        op_get_infix("!=", 1, OP_ASSOC_LEFT),
         op_get_infix(">",  1, OP_ASSOC_LEFT),
         op_get_infix("<",  1, OP_ASSOC_LEFT),
         op_get_infix(">=", 1, OP_ASSOC_LEFT),

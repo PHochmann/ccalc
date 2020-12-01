@@ -262,7 +262,9 @@ size_t replace_variable_nodes(Node **tree, const Node *tree_to_copy, const char 
 {
     if (tree == NULL || *tree == NULL || tree_to_copy == NULL || var_name == NULL) return 0;
 
-    Node **instances[count_all_variable_nodes(*tree)];
+    size_t upper_limit = count_all_variable_nodes(*tree);
+    if (upper_limit == 0) return 0;
+    Node **instances[upper_limit];
     size_t num_instances = get_variable_nodes((const Node**)tree, var_name, instances);
     for (size_t i = 0; i < num_instances; i++)
     {

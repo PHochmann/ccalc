@@ -128,18 +128,12 @@ size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator, ConstraintChec
         iterator_reset(iterator);
         if (!applied_flag)
         {
-            #ifdef DEBUG
-            printf("Can't apply any rule. End.\n");
-            #endif
             return counter;
         }
         else
         {
             if (counter == cap)
             {
-                #ifdef DEBUG
-                printf("Iteration cap reached. End.\n");
-                #endif
                 return counter;
             }
         }

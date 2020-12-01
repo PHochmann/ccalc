@@ -9,6 +9,7 @@
 #include "../tree/tree_util.h"
 #include "../util/console_util.h"
 #include "../util/string_util.h"
+#include "../tree/tree_to_string.h"
 
 #define VECTOR_STARTSIZE 1
 
@@ -377,7 +378,6 @@ Node **find_matching(const Node **tree, const Pattern *pattern, ConstraintChecke
 Summary: - Sets ids of variable nodes for faster lookup while matching
          - Computes trigger-indices for constraints
 */
-#include "../tree/tree_to_string.h"
 Pattern get_pattern(Node *tree, size_t num_constraints, Node **constrs)
 {
     assert(tree != NULL);

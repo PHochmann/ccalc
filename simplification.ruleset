@@ -1,7 +1,7 @@
 # Operator elimination (de-sugar)
 RULESET
     count()       -> 0
-    count(x,[xs]) -> 1 + count([xs])
+    count(x,[xs]) -> 1 + count([xs])  # Comment test
     +x            -> x
     $x            -> x
     --x           -> x
@@ -12,7 +12,7 @@ RULESET
     tan(x)        -> sin(x)/cos(x)
     sqrt(x)       -> x^0.5
     root(x, y)    -> x^(1/y)
-    avg([xs])     -> sum([xs])/count([xs])
+    avg([xs])     -> sum([xs])/count([xs])   # Comment test
 
 # Deriv elimination
 RULESET
@@ -164,7 +164,7 @@ RULESET
     0*x           -> 0
     1*x           -> x
     0+x           -> x
-    x^(-y)        -> 1/x^y
+    x^(-y)        -> 1/(x^y)
     x^0.5         -> sqrt(x)
     x^1           -> x
     -(x+y)        -> x-y

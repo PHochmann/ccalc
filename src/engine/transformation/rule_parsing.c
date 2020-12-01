@@ -1,3 +1,8 @@
+/*
+Todo: Refactor, especially string copying due to unknown source of string
+Could be heap but could also be string literal that is readonly
+*/
+
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
@@ -58,6 +63,7 @@ bool parse_constraints(const char *string,
     return false;
 }
 
+// string: <expr> WHERE <expr> ; <expr>... (i.e. without '-> after')
 bool parse_pattern(const char *string, const ParsingContext *ctx, Pattern *out_pattern)
 {
     char *str_cpy = malloc_wrapper(strlen(string) + 1);
@@ -168,7 +174,9 @@ size_t parse_rulesets_from_file(FILE *file,
         char *line = line_start;
 
         line[strlen(line) - 1] = '\0'; // Overwrite newline char
-        while (*line == ' ') line++;   // Strip leading spaces
+        char *comment_start = strstr(line, COMMENT_PREFIX);
+        if (comment_start != NULL) *comment_start = '\0'; // Prune comments from the right
+        while (*line == ' ') line++; // Strip leading spaces
 
         if (begins_with(RULESET, line))
         {
@@ -181,7 +189,6 @@ size_t parse_rulesets_from_file(FILE *file,
             break; // Buffer is full
         }
 
-        if (begins_with(COMMENT_PREFIX, line)) continue;
         if (line[0] == '\0') continue;
 
         if (curr_ruleset == -1)

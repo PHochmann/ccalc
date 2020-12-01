@@ -15,6 +15,8 @@
 #include "test_simplification.h"
 #include "test_data_structures.h"
 
+#define FUZZER_SEED 21
+
 /*
 These tests should not have any memory leaks when they are passed
 Please check with valgrind when all tests pass
@@ -34,6 +36,7 @@ static Test (*test_getters[])() = {
 
 int main()
 {
+    srand(FUZZER_SEED);
     init_commands();
     Table *table = get_empty_table();
     set_default_alignments(table, 4,
