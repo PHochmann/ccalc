@@ -111,7 +111,7 @@ bool parse_rule(const char *string, const ParsingContext *ctx, RewriteRule *out_
 
     if (arrow_pos == NULL)
     {
-        report_error("No arrow found.\n");
+        report_error("No arrow found\n");
         goto error;
     }
 

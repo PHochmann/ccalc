@@ -25,7 +25,7 @@ bool cmd_clear_exec(char *input, int code)
     if (code == CLEAR_CODE)
     {
         clear_composite_functions();
-        whisper("All functions and constants cleared.\n");
+        whisper("All functions and constants cleared\n");
         return true;
     }
     else
@@ -36,7 +36,7 @@ bool cmd_clear_exec(char *input, int code)
         {
             if (remove_composite_function(function))
             {
-                whisper("Function or constant removed.\n");
+                whisper("Function or constant removed\n");
                 return true;
             }
             else
@@ -47,7 +47,7 @@ bool cmd_clear_exec(char *input, int code)
         }
         else
         {
-            report_error("Unknown function.\n");
+            report_error("Error: Unknown function '%s'\n", input);
             return false;
         }
     }

@@ -92,14 +92,15 @@ bool process_input(FILE *file)
     char *input = NULL;
     while (ask_input(file, &input, INTERACTIVE_ASK_PREFIX))
     {
-        if (strcmp(input, QUIT_COMMAND) == 0)
+        char *stripped = strip_whitespace(input);
+        if (strcmp(stripped, QUIT_COMMAND) == 0)
         {
             free(input);
             exit(res ? EXIT_SUCCESS : EXIT_FAILURE);
         }
-        if (input[0] != '\0' && input[0] != COMMENT_PREFIX)
+        if (stripped[0] != '\0' && stripped[0] != COMMENT_PREFIX)
         {
-            if (!exec_command(input))
+            if (!exec_command(stripped))
             {
                 res = false;
             }

@@ -30,7 +30,7 @@ bool cmd_load_exec(char *input, __attribute__((unused)) int code)
         ssize_t count = init_simplification(input);
         if (count == -1)
         {
-            report_error("File not found or readable.\n");
+            report_error("File not found or readable\n");
             return false;
         }
         else
@@ -46,7 +46,7 @@ bool cmd_load_exec(char *input, __attribute__((unused)) int code)
 
         if (file == NULL)
         {
-            report_error("Error loading file: %s.\n", strerror(errno));
+            report_error("Error loading file: %s\n", strerror(errno));
             return false;
         }
         

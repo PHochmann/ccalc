@@ -172,3 +172,19 @@ char *skip_ansi(const char *str)
     }
     return (char*)str;
 }
+
+char *strip_whitespace(char *str)
+{
+    size_t len = strlen(str);
+    if (len == 0) return str;
+
+    char *res = str;
+    while (*res == ' ') res++;
+    str = &str[len - 1];
+    while (*str == ' ')
+    {
+        *str = '\0';
+        str--;
+    }
+    return res;
+}

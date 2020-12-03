@@ -135,7 +135,7 @@ bool remove_composite_function(const Operator *function)
         curr = curr->next;
     }
 
-    report_error("Built-in functions can not be removed.\n");
+    report_error("Built-in functions can not be removed\n");
     return false;
 }
 

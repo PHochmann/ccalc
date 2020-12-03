@@ -79,7 +79,7 @@ bool cmd_playground_exec(char *input, int code)
 
             if (parse_input(g_ctx, tree_str, &tree) != PERR_SUCCESS)
             {
-                printf("Syntax error.\n");
+                printf("Syntax error\n");
                 goto loop_cleanup;
             }
 
@@ -94,7 +94,7 @@ bool cmd_playground_exec(char *input, int code)
             }
             else
             {
-                printf("No matching found.\n");
+                printf("No matching found\n");
             }
 
             loop_cleanup:

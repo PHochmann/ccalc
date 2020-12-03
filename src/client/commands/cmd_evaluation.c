@@ -11,7 +11,7 @@
 #include "../core/history.h"
 #include "../core/arith_evaluation.h"
 
-#define ERROR_FMT        "Error: %s.\n"
+#define ERROR_FMT        "Error: %s\n"
 #define ASK_VARIABLE_FMT "%s? "
 
 int cmd_evaluation_check(__attribute__((unused)) const char *input)
@@ -56,7 +56,7 @@ bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
                 if (count_all_variable_nodes(tree_var) > 0)
                 {
                     // Not a constant given
-                    report_error("Error: Not a constant expression.\n");
+                    report_error("Error: Not a constant expression\n");
                     free_tree(tree_var);
                     free_tree(tree);
                     set_interactive(temp);
