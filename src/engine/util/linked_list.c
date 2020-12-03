@@ -91,7 +91,7 @@ void *list_get_at(const LinkedList *list, size_t index)
 }
 
 /*
-Summary: Creates a new list node and copies elem_size many bytes pointed to by data into it
+Summary: Creates a new list node and copies elem_size many bytes pointed to by data to it
 Returns: New list node
 */
 ListNode *list_append(LinkedList *list, void *data)
@@ -101,6 +101,8 @@ ListNode *list_append(LinkedList *list, void *data)
 
 /*
 Summary: Creates new list node and inserts it after 'before'
+Params
+    before: Can be NULL to append at start of list
 Returns: New list node
 */
 ListNode *list_insert_after(LinkedList *list, ListNode *before, void *data)

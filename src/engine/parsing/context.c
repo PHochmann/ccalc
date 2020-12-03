@@ -65,7 +65,7 @@ Returns: Pointer to operator within context, NULL if one of the following:
           (another infix operator with same precedence has different associativity)
     * function of same name and arity is present in context
 */
-Operator *ctx_add_op(ParsingContext *ctx, Operator op)
+const Operator *ctx_add_op(ParsingContext *ctx, Operator op)
 {
     if (ctx == NULL) return NULL;
     
@@ -96,7 +96,7 @@ Operator *ctx_add_op(ParsingContext *ctx, Operator op)
     ListNode *list_node = list_append(&ctx->op_list, &op);
     TRIE_ADD_ELEM(&ctx->op_tries[op.placement], op.name, ListNode*, list_node);
     trie_add_str(&ctx->keywords_trie, op.name);
-    return (Operator*)list_node->data;
+    return (const Operator*)list_node->data;
 }
 
 /*
@@ -139,7 +139,7 @@ bool ctx_set_glue_op(ParsingContext *ctx, const Operator *op)
 Summmary: Searches for operator of given name and placement
 Returns: NULL if no operator has been found or invalid arguments given, otherwise pointer to operator in ctx->operators
 */
-Operator *ctx_lookup_op(const ParsingContext *ctx, const char *name, OpPlacement placement)
+const Operator *ctx_lookup_op(const ParsingContext *ctx, const char *name, OpPlacement placement)
 {
     if (ctx == NULL || name == NULL) return NULL;
 
@@ -148,7 +148,7 @@ Operator *ctx_lookup_op(const ParsingContext *ctx, const char *name, OpPlacement
     if (trie_contains(&ctx->op_tries[placement], name, (void**)&node))
     {
         // Return pointer to payload of listnode
-        return (Operator*)(*node)->data;
+        return (const Operator*)(*node)->data;
     }
     else
     {

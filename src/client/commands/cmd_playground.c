@@ -20,7 +20,6 @@
 #define SIMPLIFY_CODE   1
 #define PLAYGROUND_CODE 2
 #define VISUALIZE_CODE  3
-#define MATCHINGS_PRINT_THRESHOLD 10
 
 int cmd_playground_check(const char *input)
 {

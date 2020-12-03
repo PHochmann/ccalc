@@ -261,7 +261,7 @@ ParserError parse_tokens(const ParsingContext *ctx, int num_tokens, const char *
         // - - -
         
         // IV. Is token operator?
-        Operator *op = NULL;
+        const Operator *op = NULL;
         
         // Infix, Prefix, Delimiter (await=false) -> Function (true), Leaf (true), Prefix (false)
         // Function, Leaf, Postfix (await=true) -> Infix (false), Postfix (true), Delimiter (false)

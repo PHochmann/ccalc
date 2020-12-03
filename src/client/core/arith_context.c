@@ -120,7 +120,7 @@ static void remove_node(ListNode *node)
     list_delete_node(g_composite_functions, node);
 }
 
-bool remove_composite_function(Operator *function)
+bool remove_composite_function(const Operator *function)
 {
     // Search for node in linked list to remove
     ListNode *curr = __g_composite_functions.first;

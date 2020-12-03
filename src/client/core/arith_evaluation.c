@@ -6,7 +6,6 @@
 
 #include "../../engine/tree/tree_util.h"
 #include "../../engine/util/console_util.h"
-
 #include "history.h"
 #include "arith_evaluation.h"
 #include "arith_context.h"

@@ -60,25 +60,25 @@ static void replace_negative_consts(Node **tree)
     }
 }
 
-ssize_t init_simplification(char *file)
+ssize_t init_simplification(char *ruleset_path)
 {
-    if (access(file, R_OK) == -1) return -1;
+    if (access(ruleset_path, R_OK) == -1) return -1;
 
-    FILE *ruleset_file = fopen(file, "r");
+    FILE *ruleset_file = fopen(ruleset_path, "r");
     for (size_t i = 0; i < NUM_RULESETS; i++)
     {
         rulesets[i] = get_empty_ruleset();
     }
     if (parse_rulesets_from_file(ruleset_file, g_propositional_ctx, NUM_RULESETS, rulesets) != NUM_RULESETS)
     {
-        report_error("Too few simplification rulesets defined in %s.\n", file);
+        report_error("Too few simplification rulesets defined in %s.\n", ruleset_path);
         return -1;
     }
     fclose(ruleset_file);
 
     deriv_before = get_pattern(P("x'"), 0, NULL);
     deriv_after = P("deriv(x, z)");
-    parse_pattern("deriv(x, y) WHERE !(type(y) == VAR)", g_propositional_ctx, &malformed_deriv);
+    parse_pattern("deriv(x, y) WHERE type(y) != VAR", g_propositional_ctx, &malformed_deriv);
 
     initialized = true;
 

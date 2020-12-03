@@ -13,7 +13,7 @@
 
 #define HELP        "help"
 #define HELP_OPS    "help operators"
-#define LICENSE_OPS "license"
+#define LICENSE_COMMAND "license"
 #define SHORT_HELP_CODE 1
 #define OPS_HELP_CODE   2
 #define LICENSE_CODE    3
@@ -120,7 +120,7 @@ int cmd_help_check(const char *input)
 {
     if (strcmp(HELP, input) == 0) return SHORT_HELP_CODE;
     if (strcmp(HELP_OPS, input) == 0) return OPS_HELP_CODE;
-    if (strcmp(LICENSE_OPS, input) == 0) return LICENSE_CODE;
+    if (strcmp(LICENSE_COMMAND, input) == 0) return LICENSE_CODE;
     return 0;
 }
 

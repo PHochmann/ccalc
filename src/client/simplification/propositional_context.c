@@ -29,6 +29,8 @@ void init_propositional_ctx()
     {
         software_defect("[Prop] Inconsistent operator set.\n");
     }
+    // Remove glue-op to detect malformed syntax
+    ctx_set_glue_op(g_propositional_ctx, NULL);
 }
 
 void unload_propositional_ctx()

@@ -60,8 +60,8 @@ ListenerError prop_op_evaluate(const Operator *op, size_t num_args, const double
             return LISTENERERR_SUCCESS;
     }
 
-    software_defect("Software defect: [Prop] No reduction possible for operator %s.\n", op->name);
-    return LISTENERERR_UNKNOWN_OP;
+    software_defect("[Prop] No reduction possible for operator %s.\n", op->name);
+    return LISTENERERR_UNKNOWN_OP; // To make compiler happy
 }
 
 double equals_eval(__attribute__((unused)) size_t num_children, Node **children)

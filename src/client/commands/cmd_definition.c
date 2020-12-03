@@ -69,7 +69,7 @@ static bool do_left_checks(Node *left_n)
 static bool add_function(char *name, char *left, char *right)
 {
     // First check if function already exists
-    Operator *op = ctx_lookup_op(g_ctx, name, OP_PLACE_FUNCTION);
+    const Operator *op = ctx_lookup_op(g_ctx, name, OP_PLACE_FUNCTION);
     if (op != NULL)
     {
         if (op->id < NUM_ARITH_OPS)

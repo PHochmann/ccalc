@@ -8,26 +8,27 @@ LDFLAGS      = -lm
 # Compile with readline if no opt-out and target is not test
 ifeq (,$(filter $(MAKECMDGOALS),tests))
 	ifeq ($(NOREADLINE),)
-		CFLAGS += -DUSE_READLINE
+		CFLAGS  += -DUSE_READLINE
 		LDFLAGS += -lreadline
 	endif
 endif
 
 # Compile with debugging flags if target is debug or tests
 ifneq (,$(filter $(MAKECMDGOALS),debug))
-	BUILD_DIR := ./bin/debug
-	CFLAGS += -DDEBUG -g3 -O0 -fsanitize=undefined
-	LDFLAGS += -fsanitize=undefined
+	BUILD_DIR =  ./bin/debug
+	CFLAGS    += -DDEBUG -g3 -O0 -fsanitize=undefined
+	LDFLAGS   += -fsanitize=undefined
 endif
 
 # Compile additional test sources 
 ifneq (,$(filter $(MAKECMDGOALS),tests))
-	BUILD_DIR := ./bin/tests
-	SRC_DIRS += ./tests
-	CFLAGS += -DDEBUG -g3 -O0
+	TARGET_EXEC  =  test
+	BUILD_DIR    =  ./bin/tests
+	SRC_DIRS     += ./tests
+	CFLAGS       += -DDEBUG -g3 -O0
 	SRCS = $(shell find $(SRC_DIRS) -name *.c ! -wholename "./src/client/main.c")
 else
-	SRCS := $(shell find $(SRC_DIRS) -name *.c)
+	SRCS = $(shell find $(SRC_DIRS) -name *.c)
 endif
 
 OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)

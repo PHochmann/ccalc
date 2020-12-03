@@ -17,7 +17,7 @@ ParsingContext get_arith_ctx();
 void unload_arith_ctx();
 
 void add_composite_function(RewriteRule rule);
-bool remove_composite_function(Operator *function);
+bool remove_composite_function(const Operator *function);
 void clear_composite_functions();
 RewriteRule *get_composite_function(Operator *op);
 bool arith_parse_raw(char *input, char *error_fmt, Node **out_res);
