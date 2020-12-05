@@ -6,7 +6,7 @@
 // To save a little bit of space, rule out portions of the ASCII table that will
 // never occur in strings inserted into the trie.
 #define START_CHAR '!'
-#define END_CHAR   ('z' + 1) // Exclusive bound
+#define END_CHAR   ('|' + 1) // Exclusive bound
 
 #define TRIE_ADD_ELEM(trie, str, type, expr) (*(type*)trie_add_str(trie, str) = (expr))
 

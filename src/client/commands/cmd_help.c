@@ -236,7 +236,7 @@ static void print_op_table(OpPlacement place, bool assoc, bool precedence, bool 
             {
                 if (op->arity != OP_DYNAMIC_ARITY)
                 {
-                    add_cell_fmt(table, " %d ", op->arity);
+                    add_cell_fmt(table, " %zu ", op->arity);
                 }
                 else
                 {
