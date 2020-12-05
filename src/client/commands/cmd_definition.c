@@ -12,13 +12,13 @@
 #include "../core/arith_context.h"
 
 #define DEFINITION_OP   "="
-#define FMT_ERROR_LEFT  "Error in left expression: %s"
-#define FMT_ERROR_RIGHT "Error in right expression: %s"
+#define FMT_ERROR_LEFT  "Error in left expression: %s\n"
+#define FMT_ERROR_RIGHT "Error in right expression: %s\n"
 
-#define ERR_NOT_A_FUNC           "Not a function or constant\n"
-#define ERR_ARGS_NOT_VARS        "Function arguments must be variables\n"
-#define ERR_NOT_DISTINCT         "Function arguments must be distinct variables\n"
-#define ERR_TOO_MANY_ARGS        "Too many function arguments\n"
+#define ERR_NOT_A_FUNC           "Not a function or constant"
+#define ERR_ARGS_NOT_VARS        "Function arguments must be variables"
+#define ERR_NOT_DISTINCT         "Function arguments must be distinct variables"
+#define ERR_TOO_MANY_ARGS        "Too many function arguments"
 #define ERR_BUILTIN_REDEFINITION "Built-in functions can not be redefined\n"
 #define ERR_REDEFINITION         "Function or constant already defined. Please use clear command before redefinition\n"
 #define ERR_RECURSIVE_DEFINITION "Error: Recursive definition\n"
@@ -92,7 +92,7 @@ static bool add_function(char *name, char *left, char *right)
     // Add function operator to parse left input
     // Must be OP_DYNAMIC_ARITY because we do not know the actual arity yet
     ctx_add_op(g_ctx, op_get_function(name, OP_DYNAMIC_ARITY));
-    if (!arith_parse_raw(left, FMT_ERROR_LEFT "\n", &left_n))
+    if (!arith_parse_raw(left, FMT_ERROR_LEFT, &left_n))
     {
         goto error;
     }
@@ -108,7 +108,7 @@ static bool add_function(char *name, char *left, char *right)
     set_op(left_n, new_op);
 
     // Parse right expression raw to detect a recursive definition
-    if (!arith_parse_raw(right, FMT_ERROR_RIGHT "\n", &right_n))
+    if (!arith_parse_raw(right, FMT_ERROR_RIGHT, &right_n))
     {
         goto error;
     }
@@ -124,7 +124,7 @@ static bool add_function(char *name, char *left, char *right)
     ListenerError l_err = arith_postprocess(&right_n);
     if (l_err != LISTENERERR_SUCCESS)
     {
-        report_error(FMT_ERROR_RIGHT "\n", listenererr_to_str(l_err));
+        report_error(FMT_ERROR_RIGHT, listenererr_to_str(l_err));
         goto error;
     }
 
@@ -160,11 +160,11 @@ static bool add_function(char *name, char *left, char *right)
             whisper("Note: Unbounded variables in previously defined functions or constants are now bounded.\n");
         }
 
-        whisper("Added constant\n");
+        whisper("Added constant.\n");
     }
     else
     {
-        whisper("Added function\n");
+        whisper("Added function.\n");
     }
 
     // Add rule to eliminate operator before evaluation
@@ -221,7 +221,7 @@ bool cmd_definition_exec(char *input, __attribute__((unused)) int code)
     else
     {
         // Zero tokens: expression is empty
-        report_error(FMT_ERROR_LEFT "\n", perr_to_string(PERR_EMPTY));
+        report_error(FMT_ERROR_LEFT, perr_to_string(PERR_EMPTY));
         vec_destroy(&tokens);
         return false;
     }
