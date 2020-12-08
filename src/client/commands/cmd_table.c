@@ -145,23 +145,33 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
         Node *current_expr = tree_copy(expr);
         Node *current_val = malloc_constant_node(start_val);
         replace_variable_nodes(&current_expr, current_val, vars[0]);
-        double result = arith_evaluate(current_expr);
+
+        double result = 0;
+        ListenerError err = tree_reduce(current_expr, arith_op_evaluate, &result);
 
         add_cell_fmt(table, " %zu ", i);
         add_cell_fmt(table, " " CONSTANT_TYPE_FMT " ", start_val);
-        add_cell_fmt(table, " " CONSTANT_TYPE_FMT " ", result);
 
-        if (num_args == 6)
+        if (err == LISTENERERR_SUCCESS)
         {
-            Node *current_fold = tree_copy(fold_expr);
-            Node *current_fold_x = malloc_constant_node(fold_val);
-            Node *current_fold_y = malloc_constant_node(result);
-            replace_variable_nodes(&current_fold, current_fold_x, FOLD_VAR_1);
-            replace_variable_nodes(&current_fold, current_fold_y, FOLD_VAR_2);
-            fold_val = arith_evaluate(current_fold);
-            free_tree(current_fold);
-            free_tree(current_fold_x);
-            free_tree(current_fold_y);
+            add_cell_fmt(table, " " CONSTANT_TYPE_FMT " ", result);
+
+            if (num_args == 6)
+            {
+                Node *current_fold = tree_copy(fold_expr);
+                Node *current_fold_x = malloc_constant_node(fold_val);
+                Node *current_fold_y = malloc_constant_node(result);
+                replace_variable_nodes(&current_fold, current_fold_x, FOLD_VAR_1);
+                replace_variable_nodes(&current_fold, current_fold_y, FOLD_VAR_2);
+                fold_val = arith_evaluate(current_fold);
+                free_tree(current_fold);
+                free_tree(current_fold_x);
+                free_tree(current_fold_y);
+            }
+        }
+        else
+        {
+            add_cell_fmt(table, " %s ", listenererr_to_str(err));
         }
 
         free_tree(current_expr);

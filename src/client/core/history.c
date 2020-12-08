@@ -26,10 +26,7 @@ Params
 */
 bool history_get(size_t index, double *out)
 {
-    if (vec_count(&ans_vec) <= index)
-    {
-        return false;
-    }
+    if (vec_count(&ans_vec) <= index) return false;
     *out = *(double*)vec_get(&ans_vec, vec_count(&ans_vec) - 1 - index);
     return true;
 }
