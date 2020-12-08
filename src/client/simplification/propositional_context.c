@@ -21,7 +21,7 @@ void init_propositional_ctx()
         op_get_infix("<",  1, OP_ASSOC_LEFT),
         op_get_infix(">=", 1, OP_ASSOC_LEFT),
         op_get_infix("<=", 1, OP_ASSOC_LEFT),
-        op_get_infix("OR", 0, OP_ASSOC_LEFT),
+        op_get_infix("||", 0, OP_ASSOC_LEFT),
         op_get_constant("TRUE"),
         op_get_constant("FALSE"),
         op_get_prefix("!", 4),

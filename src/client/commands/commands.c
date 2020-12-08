@@ -29,7 +29,7 @@ struct Command
     Summary: Checks if passed input string is applicable to a command.
     Returns: 0 if command is not applicable, command-specific code otherwise.
     */
-    int (*check_handler)(const char* input);
+    int (*check_handler)(const char *input);
     /*
     Summary: Exec handler is called when check handler returned a value other than 0.
     Params:
@@ -37,7 +37,7 @@ struct Command
         check_code: Return value of check handler
     Returns: True if command succeeded, False otherwise (to affect exit code)
     */
-    bool (*exec_handler)(char* input, int check_code);
+    bool (*exec_handler)(char *input, int check_code);
 };
 
 static const size_t NUM_COMMANDS = 7;
