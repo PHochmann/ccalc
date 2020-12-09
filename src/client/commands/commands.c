@@ -72,11 +72,7 @@ void init_commands()
 {
     init_arith_ctx();
     init_propositional_ctx();
-    ssize_t count = init_simplification(SIMPLIFICATION_DEFAULT_FILENAME);
-    if (count != -1)
-    {
-        printf("Loaded %ld simplification rules\n", count);
-    }
+    init_simplification(SIMPLIFICATION_DEFAULT_FILENAME);
     init_console_util();
     init_history();
 }
