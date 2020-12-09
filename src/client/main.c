@@ -8,8 +8,6 @@
 
 int main(int argc, char **argv)
 {
-    bool interactive = isatty(STDIN_FILENO);
-
     // Build arithmetic context, initialize commands
     init_commands();
 
@@ -76,7 +74,7 @@ int main(int argc, char **argv)
     }
 
     // If we are connected to a terminal, use readline and show whispered messages (interactive mode)
-    set_interactive(interactive);
+    set_interactive(isatty(STDIN_FILENO));
     if (!quiet)
     {
         whisper(COPYRIGHT_NOTICE

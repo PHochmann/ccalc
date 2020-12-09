@@ -16,4 +16,7 @@ jobs:
     - name: make
       run: make NOREADLINE=1
     - name: make tests
-      run: make tests
+      run: |
+           sudo mkdir /etc/ccalc
+           sudo cp simplification.ruleset /etc/ccalc
+           make tests

@@ -21,7 +21,12 @@
 #define INTERACTIVE_ASK_PREFIX "> "
 #define COMMENT_PREFIX         '#'
 #define QUIT_COMMAND           "quit"
-#define SIMPLIFICATION_DEFAULT_FILENAME "simplification.ruleset"
+
+#ifndef ETC_PATH
+#error "ETC_PATH not defined!"
+#endif
+
+#define SIMPLIFICATION_PATH ETC_PATH "simplification.ruleset"
 
 struct Command
 {
@@ -72,7 +77,7 @@ void init_commands()
 {
     init_arith_ctx();
     init_propositional_ctx();
-    init_simplification(SIMPLIFICATION_DEFAULT_FILENAME);
+    init_simplification(SIMPLIFICATION_PATH);
     init_console_util();
     init_history();
 }
