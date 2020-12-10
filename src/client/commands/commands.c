@@ -23,7 +23,7 @@
 #define QUIT_COMMAND           "quit"
 
 #ifndef ETC_PATH
-#error "ETC_PATH not defined!"
+    #error "ETC_PATH not defined!"
 #endif
 
 #define SIMPLIFICATION_PATH ETC_PATH "simplification.ruleset"
