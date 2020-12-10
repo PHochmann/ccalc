@@ -50,7 +50,7 @@ static const char *COMMAND_TABLE[NUM_COMMANDS][2] = {
 };
 
 static const char *OP_DESCRIPTIONS[NUM_ARITH_OPS] = {
-    " Max. precedence parsing ",
+    " Identity to parse rest of expression as if put in parentheses ",
     " History operator ",
     " Derivative shorthand ",
     " Derivative of expression with respect to variable ",

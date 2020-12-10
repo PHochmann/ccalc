@@ -36,8 +36,8 @@ int main(int argc, char **argv)
             // Check for help switch as first argument
             if (strcmp(argv[arg_index], "--help") == 0 || strcmp(argv[arg_index], "-h") == 0)
             {
-                printf("Usage: ccalc [--interactive [--quiet]] [--help | --version | --commands [N]]\n"
-                       "Each switch can be abbreviated by -i, -q etc.\n");
+                printf("Usage: ccalc [--help] [--version] [--interactive] [--quiet] [--commands [<commands>]]\n"
+                       "Each switch can be abbreviated by -h, -v etc.\n");
                 return EXIT_SUCCESS;
             }
 

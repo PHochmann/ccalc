@@ -13,16 +13,27 @@ You can install package ```ccalc``` directly from the AUR.
 1. Clone repository.
 2. If you want to use readline, download its development files (Ubuntu: ```sudo apt-get install libreadline-dev```).
 3. In root of repository, invoke ```make``` (optional targets: ```debug```, ```tests```).
+4. If you automatically want to load simplification rules on startup, copy ```simplification.ruleset``` to ```/etc/ccalc/```.
 
 ## How to use it
-When starting the calculator normally, you can enter expressions and commands interactively. Passed arguments will be evaluated beforehand. You can pipe in contents which will be evaluated as if typed in, after that the calculator terminates and does not enter interactive mode.
+```ccalc``` processes input line by line. Any input that is not a command will be considered an arithmetical expression
+and be directly evaluated. See syntax rules and commands below.
+
+### Switches
+| Switch                  | Description                                                          |
+| ---                     | ---                                                                  |
+| ```--version -v```      | Displays version number and terminates.                              |
+| ```--help -h```         | Displays help message and terminates.                                |
+| ```--interactive -i```  | Forces to enter interactive mode after processing commands.          |
+| ```--quiet -q```        | Suppresses license notice on interactive start.                      |
+| ```--commands -c [N]``` | Executes subsequent arguments as if typed in. Must be last switch. Terminates if ```-i``` not present. |
 
 ### Syntax
 * Just type in a mathematical expression to evaluate it.
 * Use ```ans``` or ```@<index>``` to reference previous results. ```@0``` is the same as ```ans```, ```@1``` the second previous result and so on.
 * Two subexpressions next to each other without an infix operator will be multiplied (e.g. ```2a``` or ```(x-1)(y+1)```).
 * You can define functions and constants (e.g. ```myFunc(x) = x^2```, ```myConst = 42```).
-* Any line starting with ```'``` will be ignored (useful for comments in files to be loaded).
+* Any line starting with ```#``` will be ignored (useful for comments in files to be loaded).
 * Use ```$``` to parse the rest of the expression as if it was put in parentheses, like in Haskell.
 
 ### Available commands
@@ -51,6 +62,8 @@ When starting the calculator normally, you can enter expressions and commands in
 ### Prefix operators
 | Name    | Precedence | Description |
 | ---     | ---        | ---         |
+| ```$``` | 0          | Identity to parse rest of expression as if put in parentheses |
+| ```@``` | 8          | History operator (@0 = ans, @1 = second last result etc.) |
 | ```+``` | 7          | Identity    |
 | ```-``` | 7          | Negation    |
 
@@ -115,6 +128,7 @@ Note:
 | ```phi```    | 1.61803398874 | Golden ratio                         |
 | ```clight``` | 299792458     | Speed of light [m/s]                 |
 | ```csound``` | 343.2         | Speed of sound in air at 20 °C [m/s] |
+| ```ans```    |               | Last result                          |
 
 ## Contributing
 Not currently accepting contributions. Feel free to create an issue.
