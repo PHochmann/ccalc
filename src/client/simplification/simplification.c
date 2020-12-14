@@ -140,7 +140,7 @@ ListenerError simplify(Node **tree)
     {
         // Check if there is more than one variable in within derivative shorthand
         const char *vars[2];
-        size_t var_count = list_variables(*matched, 2, vars);
+        size_t var_count = list_variables(*matched, 2, vars, NULL);
         if (var_count > 1) return LISTENERERR_MALFORMED_DERIV_A;
 
         Node *replacement = tree_copy(deriv_after);

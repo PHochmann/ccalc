@@ -3,7 +3,6 @@
 
 #include "../../engine/util/string_util.h"
 #include "../../engine/util/console_util.h"
-
 #include "../core/arith_context.h"
 #include "../core/history.h"
 #include "../simplification/simplification.h"
@@ -22,16 +21,16 @@
 #define COMMENT_PREFIX         '#'
 #define QUIT_COMMAND           "quit"
 
-#ifndef ETC_PATH
-    #error "ETC_PATH not defined!"
+#ifndef INSTALL_PATH
+    #error INSTALL_PATH not defined!
 #endif
 
-#define SIMPLIFICATION_PATH ETC_PATH "simplification.ruleset"
+#define SIMPLIFICATION_PATH INSTALL_PATH "/simplification.ruleset"
 
 struct Command
 {
     /*
-    Summary: Checks if passed input string is applicable to a command.
+    Summary: Checks if passed input string is applicable to command.
     Returns: 0 if command is not applicable, command-specific code otherwise.
     */
     int (*check_handler)(const char *input);
@@ -77,7 +76,10 @@ void init_commands()
 {
     init_arith_ctx();
     init_propositional_ctx();
-    init_simplification(SIMPLIFICATION_PATH);
+    if (init_simplification(SIMPLIFICATION_PATH) < 0)
+    {
+        report_error("Error loading simplification: " SIMPLIFICATION_PATH " not found or readable.\n");
+    }
     init_console_util();
     init_history();
 }

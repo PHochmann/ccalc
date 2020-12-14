@@ -1,5 +1,5 @@
 #include <string.h>
-
+#include <sys/types.h>
 #include "tree_util.h"
 #include "node.h"
 
@@ -184,8 +184,10 @@ size_t get_variable_nodes(const Node **tree, const char *var_name, Node ***out_i
     return 0;
 }
 
-size_t list_variables_rec(const Node *tree, size_t buffer_size, size_t num_found, const char **out_variables)
+ssize_t list_variables_rec(const Node *tree, size_t buffer_size, ssize_t num_found, const char **out_variables)
 {
+    if (num_found == -1) return -1;
+
     switch (get_type(tree))
     {
         case NTYPE_CONSTANT:
@@ -193,19 +195,28 @@ size_t list_variables_rec(const Node *tree, size_t buffer_size, size_t num_found
         
         case NTYPE_VARIABLE:
             // Check if we already found variable
-            for (size_t i = 0; i < num_found; i++)
+            for (size_t i = 0; i < (size_t)num_found; i++)
             {
                 if (strcmp(get_var_name(tree), out_variables[i]) == 0)
                 {
                     return num_found;
                 }
             }
-            if (num_found < buffer_size) out_variables[num_found] = get_var_name(tree);
-            return num_found + 1;
+            if ((size_t)num_found < buffer_size)
+            {
+                out_variables[num_found] = get_var_name(tree);
+                return num_found + 1;
+            }
+            else
+            {
+                // Buffer too small!
+                return -1;
+            }
 
         case NTYPE_OPERATOR:
             for (size_t i = 0; i < get_num_children(tree); i++)
             {
+                // Don't add to num_found but overwrite it since it's passed to each subsequent call
                 num_found = list_variables_rec(get_child(tree, i), buffer_size, num_found, out_variables);
             }
             return num_found;
@@ -244,10 +255,24 @@ Params
     tree:          Tree to search for variables
     out_variables: Contains result. Function unsafe when too small
 */
-size_t list_variables(const Node *tree, size_t buffer_size, const char **out_variables)
+size_t list_variables(const Node *tree, size_t buffer_size, const char **out_variables, bool *out_sufficient_buff)
 {
     if (tree == NULL || out_variables == NULL) return 0;
-    return list_variables_rec(tree, buffer_size, 0, out_variables);
+    ssize_t res = list_variables_rec(tree, buffer_size, 0, out_variables);
+    if (res == -1)
+    {
+        if (out_sufficient_buff != NULL)
+        {
+            *out_sufficient_buff = false;
+        }
+        return buffer_size;
+    }
+    
+    if (out_sufficient_buff != NULL)
+    {
+        *out_sufficient_buff = true;
+    }
+    return (size_t)res;
 }
 
 /*

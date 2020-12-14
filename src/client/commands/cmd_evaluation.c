@@ -11,6 +11,8 @@
 #include "../core/history.h"
 #include "../core/arith_evaluation.h"
 
+#define MAX_VARIABLES_DISTINCT 10
+
 #define ERROR_FMT        "Error: %s\n"
 #define ASK_VARIABLE_FMT "%s? "
 
@@ -28,8 +30,15 @@ bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
     if (arith_parse_and_postprocess(input, ERROR_FMT, &tree))
     {
         // Make expression constant by asking for values and binding them to variables
-        const char *vars[count_all_variable_nodes(tree)];
-        size_t num_vars = list_variables(tree, SIZE_MAX, vars);
+        const char *vars[MAX_VARIABLES_DISTINCT];
+        bool sufficient_buff = false;
+        ssize_t num_vars = list_variables(tree, MAX_VARIABLES_DISTINCT, vars, &sufficient_buff);
+        if (!sufficient_buff)
+        {
+            report_error("Too many variables.\n");
+            free_tree(tree);
+            return false;
+        }
 
         /*
         * Ask for variables interactively when we are connected to a terminal
@@ -38,7 +47,7 @@ bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
         */
         bool temp = set_interactive(isatty(STDIN_FILENO));
 
-        for (size_t i = 0; i < num_vars; i++)
+        for (size_t i = 0; i < (size_t)num_vars; i++)
         {
             char *input;
             if (ask_input(stdin, &input, ASK_VARIABLE_FMT, vars[i]))

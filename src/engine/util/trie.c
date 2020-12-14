@@ -122,6 +122,8 @@ void trie_remove_str(Trie *trie, const char *string)
     remove_rec(trie->first_node, 0, string);
 }
 
+// out_data may be written to even if string is not in trie
+// because method uses trie_longest_prefix
 bool trie_contains(const Trie *trie, const char *string, void **out_data)
 {
     if (string[0] == '\0')

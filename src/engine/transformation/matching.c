@@ -392,7 +392,7 @@ Pattern get_pattern(Node *tree, size_t num_constraints, Node **constrs)
     if (num_vars > 0)
     {
         const char *vars[num_vars];
-        size_t num_vars_distinct = list_variables(tree, num_vars, vars);
+        size_t num_vars_distinct = list_variables(tree, num_vars, vars, NULL);
 
         // Step 1: Set id in pattern tree
         for (size_t i = 0; i < num_vars_distinct; i++)

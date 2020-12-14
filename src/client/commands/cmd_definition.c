@@ -50,7 +50,9 @@ static bool do_left_checks(Node *left_n)
         }
 
         const char *vars[num_children];
-        if (num_children != list_variables(left_n, num_children, vars))
+        // List variables will always return a positive value since num_children is an upper bound for distinct variables
+        // since we checked before that each child of function operator is a variable
+        if (num_children != (size_t)list_variables(left_n, num_children, vars, NULL))
         {
             report_error(FMT_ERROR_LEFT, ERR_NOT_DISTINCT);
             return false;

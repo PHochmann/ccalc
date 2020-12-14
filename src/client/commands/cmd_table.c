@@ -50,7 +50,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     }
 
     const char *vars[count_all_variable_nodes(expr)];
-    size_t num_vars = list_variables(expr, SIZE_MAX, vars);
+    size_t num_vars = list_variables(expr, SIZE_MAX, vars, NULL);
     if (num_vars > 1)
     {
         report_error("Error: Expression contains more than one variable\n");

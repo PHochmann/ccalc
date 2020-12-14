@@ -1,9 +1,9 @@
 TARGET_EXEC  = ccalc
 BUILD_DIR    = ./bin/release
-ETC_PATH     = \"/etc/ccalc/\" # Quotation marks and trailing forward slash are important
+INSTALL_PATH     = \"/etc/ccalc\" # Quotation marks and no trailing forward slash are important
 SRC_DIRS     = ./src
 
-CFLAGS       = -DETC_PATH=$(ETC_PATH) -MMD -MP -std=c99 -Wall -Wextra -Werror -pedantic
+CFLAGS       = -DINSTALL_PATH=$(INSTALL_PATH) -MMD -MP -std=c99 -Wall -Wextra -Werror -pedantic
 LDFLAGS      = -lm
 
 # Compile with readline if no opt-out and target is not test

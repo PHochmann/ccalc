@@ -21,7 +21,7 @@ bool get_rule(Pattern pattern, Node *after, RewriteRule *out_rule)
     if (num_var_nodes > 0)
     {
         const char *after_vars[count_all_variable_nodes(after)];
-        size_t num_vars_distinct = list_variables(after, SIZE_MAX, after_vars);
+        size_t num_vars_distinct = list_variables(after, SIZE_MAX, after_vars, NULL);
         for (size_t i = 0; i < num_vars_distinct; i++)
         {
             if (get_variable_nodes((const Node**)&pattern.pattern, after_vars[i], NULL) == 0)

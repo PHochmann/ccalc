@@ -30,11 +30,24 @@ bool tree_util_test(StringBuilder *error_builder)
 
     // Case 2
     const char *nodes[2];
-    if (list_variables(root, 2, nodes) != 2)
+    bool sufficient_buff = true;
+    if (list_variables(root, 1, nodes, &sufficient_buff) != 1)
     {
-        free_tree(root);
-        ERROR_RETURN_VAL("list_variables without buffer");
+        ERROR_RETURN_VAL("list_variables with too small buffer");
     }
+    if (sufficient_buff)
+    {
+        ERROR_RETURN_VAL("list_variables with too small buffer: out_sufficient_buffer");
+    }
+    if (list_variables(root, 2, nodes, &sufficient_buff) != 2)
+    {
+        ERROR_RETURN_VAL("list_variables with sufficient buffer");
+    }
+    if (!sufficient_buff)
+    {
+        ERROR_RETURN_VAL("list_variables with sufficient buffer: out_sufficient_buffer");
+    }
+    
 
     // Case 3
     Node **vars_x[3];
