@@ -10,13 +10,13 @@
 int main(int argc, char **argv)
 {
     init_argparse();
-    bool interactive;
+    bool force_interactive;
     bool quiet;
     bool help;
     bool version;
     bool commands;
     int commands_index = -1;
-    add_switch("--interactive", "-i", &interactive);
+    add_switch("--interactive", "-i", &force_interactive);
     add_switch("--quiet", "-q", &quiet);
     add_switch("--help", "-h", &help);
     add_switch("--version", "-v", &version);
@@ -49,6 +49,17 @@ int main(int argc, char **argv)
         return EXIT_SUCCESS;
     }
 
+    // Print copyright notice if we are connected to a terminal and actually will enter interactive mode
+    if (force_interactive || commands_index == -1)
+    {
+        if (!quiet && isatty(STDIN_FILENO))
+        {
+            printf(COPYRIGHT_NOTICE
+                "This program comes with ABSOLUTELY NO WARRANTY; for details type 'license'.\n"
+                "This is free software, and you are welcome to redistribute it under certain conditions.\n");
+        }
+    }
+
     // Build arithmetic context, initialize commands
     init_commands();
     // Free all resources at exit
@@ -64,19 +75,14 @@ int main(int argc, char **argv)
                 return EXIT_FAILURE;
             }
         }
-        if (!interactive)
+        if (!force_interactive)
         {
             return EXIT_SUCCESS;
         }
     }
+    
     // If we are connected to a terminal, use readline and show whispered messages (interactive mode)
     set_interactive(isatty(STDIN_FILENO));
-    if (!quiet)
-    {
-        whisper(COPYRIGHT_NOTICE
-            "This program comes with ABSOLUTELY NO WARRANTY; for details type 'license'.\n"
-            "This is free software, and you are welcome to redistribute it under certain conditions.\n");
-    }
     // Enter loop to read all input lines, return appropiate exit code
     return process_input(stdin) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
