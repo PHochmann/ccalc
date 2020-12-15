@@ -51,7 +51,7 @@ bool tree_util_test(StringBuilder *error_builder)
 
     // Case 3
     Node **vars_x[3];
-    if (get_variable_nodes((const Node**)&root, "x", vars_x) != 3)
+    if (get_variable_nodes((const Node**)&root, "x", 3, vars_x) != 3)
     {
         free_tree(root);
         ERROR_RETURN_VAL("get_variable_nodes");

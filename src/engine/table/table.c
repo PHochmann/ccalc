@@ -32,10 +32,6 @@ struct Cell
     size_t x;             // Column position
     size_t y;             // Row position
     struct Cell *parent;  // Cell that spans into this cell
-    // Additionally generated for ALIGN_NUMBERS:
-    size_t zero_position; // Position of first padded trailing zero
-    size_t zeros_needed;  // Amount of padded trailing zeros
-    bool dot_needed;      // Whether DECIMAL_SEPARATOR needs to be printed
 };
 
 struct Row
@@ -150,6 +146,7 @@ static void print_text(const struct Cell *cell, TextAlignment default_align, siz
             break;
         }
         case ALIGN_RIGHT:
+        case ALIGN_NUMBERS:
         {
             fprintf(stream, "%*.*s", adjusted_total_len, bytes, string);
             break;
@@ -159,18 +156,6 @@ static void print_text(const struct Cell *cell, TextAlignment default_align, siz
             int padding = (total_length - string_length) / 2;
             fprintf(stream, "%*s%.*s%*s", padding, "", bytes, string,
                 (total_length - string_length) % 2 == 0 ? padding : padding + 1, "");
-            break;
-        }
-        case ALIGN_NUMBERS:
-        {
-            int num_inserted = cell->zeros_needed;
-            if (cell->dot_needed) num_inserted++;
-
-            print_repeated(" ", total_length - num_inserted - string_length, stream);
-            fprintf(stream, "%.*s", (int)cell->zero_position, string);
-            if (cell->dot_needed) fprintf(stream, "%c", DECIMAL_SEPARATOR);
-            print_repeated("0", cell->zeros_needed, stream);
-            fprintf(stream, "%.*s", (int)(bytes - cell->zero_position), string + cell->zero_position);
             break;
         }
     }
@@ -424,10 +409,7 @@ static struct Row *malloc_row(size_t y)
             .override_border_above = false,
             .span_x                = 1,
             .span_y                = 1,
-            .text_needs_free       = false,
-            .zeros_needed          = 0,
-            .zero_position         = 0,
-            .dot_needed            = false
+            .text_needs_free       = false
         };
     }
     return res;
@@ -467,85 +449,6 @@ static void free_row(Table *table, struct Row *row)
         }
     }
     free(row);
-}
-
-static void set_dot_paddings(size_t num_cells, TextAlignment default_align, struct Cell **col)
-{
-    size_t after_dot[num_cells];
-    size_t max_after_dot = 0;
-
-    for (size_t i = 0; i < num_cells; i++)
-    {
-        if (col[i]->text == NULL) continue;
-        after_dot[i] = 0;
-
-        if (get_align(default_align, col[i]) == ALIGN_NUMBERS)
-        {
-            bool before_dot = true;
-            bool before_first_digit = true;
-
-            char *str = skip_ansi(col[i]->text);
-            while (*str != '\0')
-            {
-                if (before_dot)
-                {
-                    if (*str == DECIMAL_SEPARATOR)
-                    {
-                        before_dot = false;
-                    }
-                    else
-                    {
-                        if (is_digit(*str))
-                        {
-                            before_first_digit = false;
-                        }
-                        else
-                        {
-                            if (!before_first_digit)
-                            {
-                                break;
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    if (!is_space(*str))
-                    {
-                        before_first_digit = false;
-                        after_dot[i]++;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-
-                str = skip_ansi(str + 1);
-            }
-
-            if (after_dot[i] > max_after_dot) max_after_dot = after_dot[i];
-            if (!before_first_digit)
-            {
-                col[i]->zero_position = str - col[i]->text;
-            }
-            else
-            {
-                col[i]->align = ALIGN_RIGHT;
-                col[i]->override_align = true;
-            }
-        }
-    }
-
-    for (size_t i = 0; i < num_cells; i++)
-    {
-        if (col[i]->text == NULL) continue;
-        if (get_align(default_align, col[i]) == ALIGN_NUMBERS)
-        {
-            col[i]->zeros_needed = max_after_dot - after_dot[i];
-            if (max_after_dot > 0 && after_dot[i] == 0) col[i]->dot_needed = true;
-        }
-    }
 }
 
 static size_t needed_to_satisfy(struct Constraint *constr, size_t *vars)
@@ -623,32 +526,9 @@ static size_t get_text_width(const char *str)
     return res;
 }
 
-// out_cells must hold table->num_rows pointers to cells
-static void get_col(Table *table, size_t col_index, struct Cell **out_cells)
-{
-    struct Row *curr_row = table->first_row;
-    size_t index = 0;
-    while (curr_row != NULL)
-    {
-        out_cells[index] = &curr_row->cells[col_index];
-        curr_row = curr_row->next_row;
-        index++;
-    }
-}
-
 void get_dimensions(Table *table, size_t *out_col_widths, size_t *out_row_heights)
 {
-    size_t num_cells_upper = table->num_cols * table->num_rows;
-    struct Constraint constrs[num_cells_upper];
-
-    // Calculate padding for ALIGN_NUMBERS
-    for (size_t i = 0; i < table->num_cols; i++)
-    {
-        struct Cell *cells[table->num_rows];
-        get_col(table, i, (struct Cell**)cells);
-        set_dot_paddings(table->num_rows, table->alignments[i], cells);
-    }
-
+    struct Constraint *constrs = malloc(table->num_cols * table->num_rows * sizeof(struct Constraint));
     // Satisfy constraints of width
     struct Row *curr_row = table->first_row;
     size_t index = 0;
@@ -659,8 +539,7 @@ void get_dimensions(Table *table, size_t *out_col_widths, size_t *out_row_height
             // Build constraints for set parent cells
             if (curr_row->cells[i].is_set && curr_row->cells[i].parent == NULL)
             {
-                size_t min = get_text_width(curr_row->cells[i].text) + curr_row->cells[i].zeros_needed;
-                if (curr_row->cells[i].dot_needed) min++;
+                size_t min = get_text_width(curr_row->cells[i].text);
 
                 // Constraint can be weakened when vlines are in between
                 for (size_t j = i + 1; j < i + curr_row->cells[i].span_x; j++)
@@ -716,6 +595,7 @@ void get_dimensions(Table *table, size_t *out_col_widths, size_t *out_row_height
     }
     for (size_t i = 0; i < table->num_rows; i++) out_row_heights[i] = 0;
     satisfy_constraints(index, constrs, out_row_heights);
+    free(constrs);
 }
 
 // ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ User-functions ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
@@ -1053,8 +933,8 @@ void set_all_vlines(Table *table, BorderStyle style)
 #ifdef DEBUG
 static void print_debug(Table *table)
 {
-    size_t col_widths[table->num_cols];
-    size_t row_heights[table->num_rows];
+    size_t col_widths[MAX_COLS];
+    size_t *row_heights = malloc(table->num_rows * sizeof(size_t));
     get_dimensions(table, col_widths, row_heights);
 
     printf("Table dimensions: #rows: %zu, #cols: %zu\n", table->num_rows, table->num_cols);
@@ -1062,6 +942,7 @@ static void print_debug(Table *table)
     printf("; ");
     for (size_t i = 0; i < table->num_cols; i++) printf("%zu ", col_widths[i]);
     printf("\n");
+    free(row_heights);
 }
 #endif
 
@@ -1081,8 +962,8 @@ void fprint_table(Table *table, FILE *stream)
         return;
     }
 
-    size_t col_widths[table->num_cols];
-    size_t row_heights[table->num_rows];
+    size_t col_widths[MAX_COLS];
+    size_t *row_heights = malloc(table->num_rows * sizeof(size_t));
     get_dimensions(table, col_widths, row_heights);
     override_superfluous_lines(table, col_widths[table->num_cols - 1], row_heights[table->num_rows - 1]);
     
@@ -1090,7 +971,7 @@ void fprint_table(Table *table, FILE *stream)
     print_debug(table);
     #endif
 
-    size_t line_indices[table->num_cols];
+    size_t line_indices[MAX_COLS];
     for (size_t i = 0; i < table->num_cols; i++) line_indices[i] = 0;
 
     // Print rows
@@ -1149,4 +1030,6 @@ void fprint_table(Table *table, FILE *stream)
         prev_row = curr_row;
         curr_row = curr_row->next_row;
     }
+
+    free(row_heights);
 }

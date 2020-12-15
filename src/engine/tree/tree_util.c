@@ -143,10 +143,10 @@ size_t count_all_variable_nodes(const Node *tree)
 /*
 Summary: Lists all pointers to variable nodes of given name
 Params
-    out_instances: Contains result. Function unsafe when too small. Allowed to be NULL.
+    out_instances: Contains result. Function unsafe when too small. Allowed to be NULL if buffer_size is 0
 Returns: Number of variable nodes found, i.e. count of out_instances
 */
-size_t get_variable_nodes(const Node **tree, const char *var_name, Node ***out_instances)
+size_t get_variable_nodes(const Node **tree, const char *var_name, size_t buffer_size, Node ***out_instances)
 {
     if (tree == NULL || var_name == NULL) return 0;
 
@@ -158,7 +158,7 @@ size_t get_variable_nodes(const Node **tree, const char *var_name, Node ***out_i
         case NTYPE_VARIABLE:
             if (strcmp(get_var_name(*tree), var_name) == 0)
             {
-                if (out_instances != NULL)
+                if (buffer_size > 0)
                 {
                     *out_instances = (Node**)tree; // Discards const!
                 }
@@ -174,8 +174,19 @@ size_t get_variable_nodes(const Node **tree, const char *var_name, Node ***out_i
             size_t res = 0;
             for (size_t i = 0; i < get_num_children(*tree); i++)
             {
-                res += get_variable_nodes((const Node**)get_child_addr(*tree, i), var_name,
+                size_t num_found = get_variable_nodes((const Node**)get_child_addr(*tree, i), var_name,
+                    buffer_size,
                     out_instances != NULL ? out_instances + res : NULL);
+
+                res += num_found;
+                if (buffer_size >= num_found)
+                {
+                    buffer_size -= num_found;
+                }
+                else
+                {
+                    buffer_size = 0;
+                }
             }
             return res;
         }
@@ -285,17 +296,31 @@ Params
 */
 size_t replace_variable_nodes(Node **tree, const Node *tree_to_copy, const char *var_name)
 {
-    if (tree == NULL || *tree == NULL || tree_to_copy == NULL || var_name == NULL) return 0;
-
-    size_t upper_limit = count_all_variable_nodes(*tree);
-    if (upper_limit == 0) return 0;
-    Node **instances[upper_limit];
-    size_t num_instances = get_variable_nodes((const Node**)tree, var_name, instances);
-    for (size_t i = 0; i < num_instances; i++)
+    switch (get_type(*tree))
     {
-        tree_replace(instances[i], tree_copy(tree_to_copy));
+        case NTYPE_CONSTANT:
+            return 0;
+        
+        case NTYPE_VARIABLE:
+            if (strcmp(var_name, get_var_name(*tree)) == 0)
+            {
+                tree_replace(tree, tree_copy(tree_to_copy));
+                return 1;
+            }
+            return 0;
+
+        case NTYPE_OPERATOR:
+        {
+            size_t res = 0;
+            for (size_t i = 0; i < get_num_children(*tree); i++)
+            {
+                res += replace_variable_nodes(get_child_addr(*tree, i), tree_to_copy, var_name);
+            }
+            return res;
+        }
     }
-    return num_instances;
+
+    return 0; // To make compiler happy
 }
 
 /* ~ ~ ~ ~ ~ ~ ~ ~ ~ Traversal ~ ~ ~ ~ ~ ~ ~ ~ ~ */
@@ -321,7 +346,7 @@ ListenerError tree_reduce(const Node *tree, TreeListener listener, double *out)
             size_t num_args = get_num_children(tree);
             if (num_args > 0)
             {
-                double args[num_args];
+                double args[MAX_CHILDREN];
                 for (size_t i = LISTENERERR_SUCCESS; i < num_args; i++)
                 {
                     ListenerError err = tree_reduce(get_child(tree, i), listener, &args[i]);

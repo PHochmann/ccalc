@@ -49,16 +49,14 @@ static bool do_left_checks(Node *left_n)
             }
         }
 
-        const char *vars[num_children];
-        // List variables will always return a positive value since num_children is an upper bound for distinct variables
-        // since we checked before that each child of function operator is a variable
-        if (num_children != (size_t)list_variables(left_n, num_children, vars, NULL))
+        const char *vars[MAX_MAPPED_VARS];
+        bool sufficient_buff = false;
+        if (num_children != (size_t)list_variables(left_n, num_children, vars, &sufficient_buff))
         {
             report_error(FMT_ERROR_LEFT, ERR_NOT_DISTINCT);
             return false;
         }
-
-        if (num_children > MAX_MAPPED_VARS)
+        if (!sufficient_buff)
         {
             report_error(FMT_ERROR_LEFT, ERR_TOO_MANY_ARGS);
             return false;
@@ -145,7 +143,7 @@ static bool add_function(char *name, char *left, char *right)
         {
             RewriteRule *rule = (RewriteRule*)curr->data;
             // Check if variables are unbounded...
-            if (get_variable_nodes((const Node**)&rule->pattern.pattern, name, NULL) == 0)
+            if (get_variable_nodes((const Node**)&rule->pattern.pattern, name, 0, NULL) == 0)
             {
                 // ...if they are, replace them by new definition
                 if (replace_variable_nodes(&rule->after, left_n, name) > 0)

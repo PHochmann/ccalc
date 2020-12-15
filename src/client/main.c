@@ -64,10 +64,10 @@ int main(int argc, char **argv)
                 return EXIT_FAILURE;
             }
         }
-    }
-    if (!interactive)
-    {
-        return EXIT_SUCCESS;
+        if (!interactive)
+        {
+            return EXIT_SUCCESS;
+        }
     }
     // If we are connected to a terminal, use readline and show whispered messages (interactive mode)
     set_interactive(isatty(STDIN_FILENO));

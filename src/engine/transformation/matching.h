@@ -2,10 +2,10 @@
 #include "../util/vector.h"
 #include "../tree/node.h"
 
-#define MAX_MAPPED_VARS 10
+#define MAX_MAPPED_VARS          10
+#define MAX_VARIABLE_OCURRANCES  10
 #define MATCHING_MAX_CONSTRAINTS 10
 #define MATCHING_LIST_PREFIX '['
-#define MATCHING_WILDCARD    '_'
 
 typedef struct
 {

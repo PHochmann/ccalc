@@ -28,12 +28,9 @@ typedef struct {
 The following functions are used for polymorphism of different Node types
 */
 
-#include <stdio.h>
 Node *malloc_variable_node(const char *var_name, size_t id)
 {
-    if (strcmp(var_name, "^") == 0) printf("WTFFFFFFFFFFFFF\n");
     VariableNode *res = malloc_wrapper(sizeof(VariableNode) + (strlen(var_name) + 1) * sizeof(char));
-    if (res == NULL) return NULL;
     res->base.type = NTYPE_VARIABLE;
     res->id = id;
     strcpy(res->var_name, var_name);
@@ -43,7 +40,6 @@ Node *malloc_variable_node(const char *var_name, size_t id)
 Node *malloc_constant_node(double value)
 {
     ConstantNode *res = malloc_wrapper(sizeof(ConstantNode));
-    if (res == NULL) return NULL;
     res->base.type = NTYPE_CONSTANT;
     res->const_value = value;
     return (Node*)res;
@@ -51,14 +47,9 @@ Node *malloc_constant_node(double value)
 
 Node *malloc_operator_node(const Operator *op, size_t num_children)
 {
+    if (num_children > MAX_CHILDREN) return NULL;
     OperatorNode *res = malloc_wrapper(sizeof(OperatorNode) + num_children * sizeof(Node*));
-    if (res == NULL) return NULL;
-    
-    for (size_t i = 0; i < num_children; i++)
-    {
-        res->children[i] = NULL;
-    }
-
+    for (size_t i = 0; i < num_children; i++) res->children[i] = NULL;
     res->base.type = NTYPE_OPERATOR;
     res->op = op;
     res->num_children = num_children;

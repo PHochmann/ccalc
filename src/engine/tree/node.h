@@ -8,6 +8,8 @@ Operators are usually inner nodes (exception: zero-arity functions).
 Constants and variables are leaf nodes.
 */
 
+#define MAX_CHILDREN 30
+
 // Opaque forward declaration
 typedef struct Node Node;
 

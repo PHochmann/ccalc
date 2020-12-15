@@ -20,11 +20,19 @@ bool get_rule(Pattern pattern, Node *after, RewriteRule *out_rule)
     size_t num_var_nodes = count_all_variable_nodes(after);
     if (num_var_nodes > 0)
     {
-        const char *after_vars[count_all_variable_nodes(after)];
-        size_t num_vars_distinct = list_variables(after, SIZE_MAX, after_vars, NULL);
+        const char *after_vars[MAX_MAPPED_VARS];
+        bool sufficient = false;
+        size_t num_vars_distinct = list_variables(after, MAX_MAPPED_VARS, after_vars, &sufficient);
+
+        if (!sufficient)
+        {
+            report_error("Trying to create a rule with too many variables.\n");
+            return false;
+        }
+
         for (size_t i = 0; i < num_vars_distinct; i++)
         {
-            if (get_variable_nodes((const Node**)&pattern.pattern, after_vars[i], NULL) == 0)
+            if (get_variable_nodes((const Node**)&pattern.pattern, after_vars[i], 0, NULL) == 0)
             {
                 report_error("Trying to create a rule that introduces a new variable after appliance.\n");
                 return false;

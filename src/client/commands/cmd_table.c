@@ -49,9 +49,10 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
         return false;
     }
 
-    const char *vars[count_all_variable_nodes(expr)];
-    size_t num_vars = list_variables(expr, SIZE_MAX, vars, NULL);
-    if (num_vars > 1)
+    const char *var;
+    bool sufficient = false;
+    size_t num_vars = list_variables(expr, 1, &var, &sufficient);
+    if (!sufficient)
     {
         report_error("Error: Expression contains more than one variable\n");
         goto exit;
@@ -94,8 +95,8 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
         }
 
         if (count_all_variable_nodes(fold_expr)
-            - get_variable_nodes((const Node**)&fold_expr, FOLD_VAR_1, NULL)
-            - get_variable_nodes((const Node**)&fold_expr, FOLD_VAR_2, NULL) != 0)
+            - get_variable_nodes((const Node**)&fold_expr, FOLD_VAR_1, 0, NULL)
+            - get_variable_nodes((const Node**)&fold_expr, FOLD_VAR_2, 0, NULL) != 0)
         {
             report_error("Error: Fold expression must not contain any variables except '"
                 FOLD_VAR_1 "' and '" FOLD_VAR_2 "'\n");
@@ -124,7 +125,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     add_empty_cell(table);
     if (num_vars != 0)
     {
-        add_cell_fmt(table, VAR_COLOR " %s " COL_RESET, vars[0]);
+        add_cell_fmt(table, VAR_COLOR " %s " COL_RESET, var);
     }
     else
     {
@@ -144,7 +145,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     {
         Node *current_expr = tree_copy(expr);
         Node *current_val = malloc_constant_node(start_val);
-        replace_variable_nodes(&current_expr, current_val, vars[0]);
+        replace_variable_nodes(&current_expr, current_val, var);
 
         double result = 0;
         ListenerError err = tree_reduce(current_expr, arith_op_evaluate, &result);
