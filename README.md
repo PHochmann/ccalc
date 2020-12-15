@@ -14,6 +14,7 @@ You can install package ```ccalc``` directly from the AUR.
 2. If you want to use readline, download its development files (Ubuntu: ```sudo apt-get install libreadline-dev```).
 3. In root of repository, invoke ```make``` (optional targets: ```debug```, ```tests```).
 4. If you automatically want to load simplification rules on startup, copy ```simplification.ruleset``` to ```/etc/ccalc/```.
+   If you want to use another folder, invoke ```make INSTALL_PATH=/my/path``` (without trailing slash).
 
 ## How to use it
 ```ccalc``` processes input line by line. Any input that is not a command will be considered an arithmetical expression
