@@ -17,6 +17,7 @@
 #define FOLD_VAR_2   "y"
 
 #define STRBUILDER_STARTSIZE 10
+#define DOUBLE_FMT "%-.10f"
 
 int cmd_table_check(const char *input)
 {
@@ -151,11 +152,11 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
         ListenerError err = tree_reduce(current_expr, arith_op_evaluate, &result);
 
         add_cell_fmt(table, " %zu ", i);
-        add_cell_fmt(table, " " CONSTANT_TYPE_FMT " ", start_val);
+        add_cell_fmt(table, " " DOUBLE_FMT " ", start_val);
 
         if (err == LISTENERERR_SUCCESS)
         {
-            add_cell_fmt(table, " " CONSTANT_TYPE_FMT " ", result);
+            add_cell_fmt(table, " " DOUBLE_FMT " ", result);
 
             if (num_args == 6)
             {
@@ -181,7 +182,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
         start_val += step_val;
     }
 
-    set_default_alignments(table, 3, (TextAlignment[]){ ALIGN_RIGHT, ALIGN_NUMBERS, ALIGN_NUMBERS });
+    set_default_alignments(table, 3, (TextAlignment[]){ ALIGN_RIGHT, ALIGN_RIGHT, ALIGN_RIGHT });
     print_table(table);
     free_table(table);
 

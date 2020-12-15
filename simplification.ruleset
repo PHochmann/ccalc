@@ -68,7 +68,7 @@ RULESET
     prod(x)                      -> x
     sum()                        -> 0
     sum(x)                       -> x
-    prod([_], 0, [_])            -> 0
+    prod([xs], 0, [ys])          -> 0
     prod([xs], 1, [ys])          -> prod([xs], [ys])
     sum([xs], 0, [ys])           -> sum([xs], [ys])
     sum([xs], sum([ys]), [zs])   -> sum([xs], [ys], [zs])

@@ -4,7 +4,7 @@
 
 // Can be changed without further modifications
 #define MAX_COLS 11
-// For ALIGN_NUMBERS
+// For ALIGN_RIGHT
 #define DECIMAL_SEPARATOR '.'
 
 typedef enum
@@ -19,7 +19,6 @@ typedef enum
     ALIGN_LEFT,
     ALIGN_RIGHT,
     ALIGN_CENTER, // Centered (rounded to the left)
-    ALIGN_NUMBERS // Aligned at dot, rightmost, does not support \n
 } TextAlignment;
 
 typedef struct Table Table;

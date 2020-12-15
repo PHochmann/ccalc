@@ -146,7 +146,6 @@ static void print_text(const struct Cell *cell, TextAlignment default_align, siz
             break;
         }
         case ALIGN_RIGHT:
-        case ALIGN_NUMBERS:
         {
             fprintf(stream, "%*.*s", adjusted_total_len, bytes, string);
             break;
@@ -364,13 +363,9 @@ static void override_superfluous_lines(Table *table, size_t last_col_width, size
     }
 }
 
-static void add_cell_internal(Table *table, char *text, bool needs_free)
+static void add_text_cell(Table *table, char *text, bool needs_free)
 {
-    assert(table != NULL);
-    assert(table->curr_col < MAX_COLS);
     struct Cell *cell = &table->curr_row->cells[table->curr_col];
-    assert(!cell->is_set);
-
     cell->is_set = true;
     cell->text_needs_free = needs_free;
     cell->text = text;
@@ -686,7 +681,7 @@ Summary: Adds next cell. Buffer is not copied. print_table will access it.
 */
 void add_cell(Table *table, const char *text)
 {
-    add_cell_internal(table, (char*)text, false);
+    add_text_cell(table, (char*)text, false);
 }
 
 /*
@@ -694,12 +689,12 @@ Summary: Same as add_cell, but frees buffer on reset
 */
 void add_cell_gc(Table *table, char *text)
 {
-    add_cell_internal(table, text, true);
+    add_text_cell(table, text, true);
 }
 
 void add_empty_cell(Table *table)
 {
-    add_cell_internal(table, NULL, false);
+    add_text_cell(table, NULL, false);
 }
 
 /*
@@ -718,7 +713,7 @@ void add_cell_vfmt(Table *table, const char *fmt, va_list args)
 {
     StringBuilder builder = strbuilder_create(0);
     vstrbuilder_append(&builder, fmt, args);
-    add_cell_internal(table, builder.buffer, true);
+    add_text_cell(table, builder.buffer, true);
 }
 
 /*

@@ -195,7 +195,7 @@ static void print_ops_between(size_t start, size_t end)
 static void print_op_table(OpPlacement place, bool assoc, bool precedence, bool arity, bool value)
 {
     Table *table = get_empty_table();
-    set_default_alignments(table, 2, (TextAlignment[]){ ALIGN_LEFT, ALIGN_NUMBERS });
+    set_default_alignments(table, 2, (TextAlignment[]){ ALIGN_LEFT, ALIGN_RIGHT });
     override_alignment_of_row(table, ALIGN_LEFT);
     add_cell(table, " Name ");
     if (precedence) add_cell(table, " Precedence ");
@@ -247,7 +247,7 @@ static void print_op_table(OpPlacement place, bool assoc, bool precedence, bool 
             if (value)
             {
                 double const_val;
-                override_alignment(table, ALIGN_NUMBERS);
+                override_alignment(table, ALIGN_RIGHT);
                 if (arith_op_evaluate(op, 0, NULL, &const_val) == LISTENERERR_SUCCESS)
                 {
                     add_cell_fmt(table, " " CONSTANT_TYPE_FMT " ", const_val);
