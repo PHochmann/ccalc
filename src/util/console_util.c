@@ -39,6 +39,11 @@ bool set_interactive(bool value)
     return res;
 }
 
+bool is_interactive()
+{
+    return interactive;
+}
+
 /*
 Summary: printf-wrapper that filters unimportant prints in non-interactive mode
 */

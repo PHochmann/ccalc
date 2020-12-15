@@ -123,23 +123,25 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
 
     Table *table = get_empty_table();
     
-    add_empty_cell(table);
-    if (num_vars != 0)
-    {
-        add_cell_fmt(table, VAR_COLOR " %s " COL_RESET, var);
-    }
-    else
+    // Print header row only if interactive
+    if (is_interactive())
     {
         add_empty_cell(table);
+        if (num_vars != 0)
+        {
+            add_cell_fmt(table, VAR_COLOR " %s " COL_RESET, var);
+        }
+        else
+        {
+            add_empty_cell(table);
+        }
+        Vector builder = strbuilder_create(STRBUILDER_STARTSIZE);
+        strbuilder_append(&builder, " ");
+        tree_to_strbuilder(&builder, expr, true);
+        strbuilder_append(&builder, " ");
+        add_cell_gc(table, builder.buffer);
+        next_row(table);
     }
-
-    Vector builder = strbuilder_create(STRBUILDER_STARTSIZE);
-    strbuilder_append(&builder, " ");
-    tree_to_strbuilder(&builder, expr, true);
-    strbuilder_append(&builder, " ");
-    add_cell_gc(table, builder.buffer);
-    override_alignment_of_row(table, ALIGN_LEFT);
-    next_row(table);
 
     // Loop through all values and add them to table
     for (size_t i = 1; step_val > 0 ? start_val <= end_val : start_val >= end_val; i++)
@@ -151,7 +153,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
         double result = 0;
         ListenerError err = tree_reduce(current_expr, arith_op_evaluate, &result);
 
-        add_cell_fmt(table, " %zu ", i);
+        if (is_interactive()) add_cell_fmt(table, " %zu ", i);
         add_cell_fmt(table, " " DOUBLE_FMT " ", start_val);
 
         if (err == LISTENERERR_SUCCESS)

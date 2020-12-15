@@ -1,3 +1,4 @@
+#pragma once
 #include <stdbool.h>
 #include "context.h"
 #include "../util/vector.h"
