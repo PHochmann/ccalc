@@ -1,5 +1,5 @@
-#include "../../engine/util/vector.h"
-#include "../../engine/util/console_util.h"
+#include "../../util/vector.h"
+#include "../../util/console_util.h"
 #include "../../engine/transformation/matching.h"
 #include "../../engine/parsing/parser.h"
 #include "../../engine/tree/tree_util.h"

@@ -1,4 +1,4 @@
-#include "../engine/util/trie.h"
+#include "../util/trie.h"
 
 Trie long_switches; // Payload: bool
 Trie shorthand_switches;

@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../../engine/util/string_util.h"
-#include "../../engine/util/console_util.h"
+#include "../../util/string_util.h"
+#include "../../util/console_util.h"
 #include "../../engine/tree/node.h"
 #include "../../engine/tree/tree_util.h"
 #include "../../engine/parsing/tokenizer.h"
+#include "../../engine/parsing/parser.h"
 #include "../../engine/transformation/rewrite_rule.h"
 
 #include "cmd_definition.h"

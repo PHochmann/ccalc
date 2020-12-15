@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../../engine/util/console_util.h"
+#include "../../util/console_util.h"
 #include "../../engine/tree/tree_to_string.h"
 #include "../../engine/tree/tree_util.h"
 

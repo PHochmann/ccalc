@@ -4,8 +4,8 @@
 #include <errno.h>
 #include <string.h>
 
-#include "../../engine/util/console_util.h"
-#include "../../engine/util/string_util.h"
+#include "../../util/console_util.h"
+#include "../../util/string_util.h"
 #include "../simplification/simplification.h"
 #include "cmd_load.h"
 #include "commands.h"

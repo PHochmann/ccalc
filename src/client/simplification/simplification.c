@@ -8,8 +8,8 @@
 #include "../../engine/transformation/rewrite_rule.h"
 #include "../../engine/transformation/rule_parsing.h"
 #include "../../engine/parsing/parser.h"
-#include "../../engine/util/console_util.h"
-#include "../../engine/util/linked_list.h"
+#include "../../util/console_util.h"
+#include "../../util/linked_list.h"
 
 #include "../core/arith_context.h"
 #include "../core/arith_evaluation.h"

@@ -19,3 +19,4 @@ typedef enum {
 ParserError parse_tokens(const ParsingContext *ctx, int num_tokens, const char **tokens, Node **out_res);
 ParserError parse_input(const ParsingContext *ctx, const char *input, Node **out_res);
 Node *parse_conveniently(const ParsingContext *ctx, const char *input);
+const char *perr_to_string(ParserError perr);

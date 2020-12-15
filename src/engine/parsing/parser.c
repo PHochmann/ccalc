@@ -416,3 +416,35 @@ Node *parse_conveniently(const ParsingContext *ctx, const char *input)
     }
     return result;
 }
+
+/*
+Returns: String representation of ParserError
+*/
+const char *perr_to_string(ParserError perr)
+{
+    switch (perr)
+    {
+        case PERR_SUCCESS:
+            return "Success";
+        case PERR_UNEXPECTED_SUBEXPRESSION:
+            return "Unexpected subexpression";
+        case PERR_EXCESS_OPENING_PARENTHESIS:
+            return "Missing closing parenthesis";
+        case PERR_EXCESS_CLOSING_PARENTHESIS:
+            return "Unexpected closing parenthesis";
+        case PERR_UNEXPECTED_DELIMITER:
+            return "Unexpected delimiter";
+        case PERR_MISSING_OPERATOR:
+            return "Unexpected operand";
+        case PERR_MISSING_OPERAND:
+            return "Missing operand";
+        case PERR_FUNCTION_WRONG_ARITY:
+            return "Wrong number of operands of function";
+        case PERR_CHILDREN_EXCEEDED:
+            return "Exceeded maximum number of operands of function";
+        case PERR_EMPTY:
+            return "Empty Expression";
+        default:
+            return "Unknown Error";
+    }
+}

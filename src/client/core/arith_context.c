@@ -2,8 +2,8 @@
 #include <time.h>
 
 #include "../../engine/tree/tree_util.h"
-#include "../../engine/util/string_util.h"
-#include "../../engine/util/console_util.h"
+#include "../../util/string_util.h"
+#include "../../util/console_util.h"
 #include "../../engine/parsing/parser.h"
 
 #include "../simplification/simplification.h"

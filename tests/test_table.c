@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "../src/engine/table/table.h"
+#include "../src/table/table.h"
 
 #include "test_table.h"
 

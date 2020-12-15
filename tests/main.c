@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "../src/engine/util/string_builder.h"
-#include "../src/engine/table/table.h"
+#include "../src/util/string_builder.h"
+#include "../src/table/table.h"
 #include "../src/client/commands/commands.h"
 
 #include "test.h"

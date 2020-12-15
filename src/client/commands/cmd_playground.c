@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "../../util/console_util.h"
+#include "../../util/string_util.h"
 #include "../../engine/transformation/matching.h"
 #include "../../engine/transformation/rewrite_rule.h"
 #include "../../engine/transformation/transformation.h"
 #include "../../engine/transformation/rule_parsing.h"
-#include "../../engine/util/console_util.h"
-#include "../../engine/util/string_util.h"
+#include "../../engine/parsing/parser.h"
 #include "../../engine/tree/tree_util.h"
 #include "../../engine/tree/tree_to_string.h"
 #include "../core/arith_context.h"

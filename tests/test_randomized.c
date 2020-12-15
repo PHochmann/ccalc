@@ -6,7 +6,7 @@
 #include "../src/engine/parsing/parser.h"
 #include "../src/engine/tree/tree_util.h"
 #include "../src/engine/tree/tree_to_string.h"
-#include "../src/engine/util/string_util.h"
+#include "../src/util/string_util.h"
 #include "../src/client/core/arith_context.h"
 
 #define MAX_INNER_NODES 10
