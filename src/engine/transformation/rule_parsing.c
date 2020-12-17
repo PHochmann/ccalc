@@ -213,20 +213,23 @@ ssize_t parse_rulesets_from_file(FILE *file,
 
         if (curr_ruleset == (ssize_t)buffer_size)
         {
-            break; // Buffer is full
+            curr_ruleset--; // Adjusted for right return value
+            break;          // Buffer is full
         }
 
         if (line[0] == '\0') continue;
 
-        if (curr_ruleset == -1)
+        if (curr_ruleset != -1)
         {
-            report_error("Ignored non-comment line outside of ruleset.\n");
+            if (!parse_rule(line, ctx, vec_push_empty(&out_rulesets[curr_ruleset])))
+            {
+                report_error("Error occurred in line %zu.\n", line_index);
+                goto error;
+            }
         }
-
-        if (!parse_rule(line, ctx, vec_push_empty(&out_rulesets[curr_ruleset])))
+        else
         {
-            report_error("Error occurred in line %zu.\n", line_index);
-            goto error;
+            report_error("Ignored non-comment line before first ruleset.\n");
         }
     }
 

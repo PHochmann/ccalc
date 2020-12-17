@@ -19,7 +19,6 @@
 #define ERR_NOT_A_FUNC           "Not a function or constant"
 #define ERR_ARGS_NOT_VARS        "Function arguments must be variables"
 #define ERR_NOT_DISTINCT         "Function arguments must be distinct variables"
-#define ERR_TOO_MANY_ARGS        "Too many function arguments"
 #define ERR_NEW_VARIABLE_INTRODUCTION "Unbounded variable"
 #define ERR_BUILTIN_REDEFINITION "Built-in functions can not be redefined\n"
 #define ERR_REDEFINITION         "Function or constant already defined. Please use clear command before redefinition\n"
@@ -56,7 +55,7 @@ static bool do_left_checks(Node *left_n)
         size_t num_vars = list_variables(left_n, MAX_MAPPED_VARS, vars, &sufficient_buff);
         if (!sufficient_buff)
         {
-            report_error(FMT_ERROR_LEFT, ERR_TOO_MANY_ARGS);
+            report_error("Too many function parameters. Maximum is %zu.\n", MAX_MAPPED_VARS);
             return false;
         }
         if (num_vars != num_children)

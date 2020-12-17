@@ -4,7 +4,7 @@
 
 #define MAX_MAPPED_VARS          10
 #define MAX_VARIABLE_OCURRANCES  10 // Number of times a single variable can occur in a tree
-#define MATCHING_MAX_CONSTRAINTS 3  // Maximum number of constraints per trigger index
+#define MATCHING_MAX_CONSTRAINTS  3 // Maximum number of constraints per trigger index
 #define MATCHING_LIST_PREFIX '['
 
 typedef struct
@@ -21,7 +21,7 @@ Summary: Contains successful matching
 */
 typedef struct
 {
-    NodeList mapped_nodes[MAX_MAPPED_VARS];   // Subtrees in matched_tree that need to replace each mapped_var
+    NodeList mapped_nodes[MAX_MAPPED_VARS]; // Subtrees in matched_tree that need to replace each mapped_var
 } Matching;
 
 typedef bool (*ConstraintChecker)(Node **tree);

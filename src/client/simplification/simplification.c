@@ -75,7 +75,6 @@ ssize_t init_simplification(char *ruleset_path)
     ssize_t num_rulesets = parse_rulesets_from_file(ruleset_file, g_propositional_ctx, NUM_RULESETS, rulesets);
     if (num_rulesets == -1)
     {
-        report_error("Error while parsing simplification rules.\n", ruleset_path);
         return -1;
     }
     if (num_rulesets != NUM_RULESETS)
