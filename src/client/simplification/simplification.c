@@ -60,6 +60,9 @@ static void replace_negative_consts(Node **tree)
     }
 }
 
+/*
+Returns: -1 if error occurred or number of simplification rules loaded
+*/
 ssize_t init_simplification(char *ruleset_path)
 {
     if (access(ruleset_path, R_OK) == -1) return -1;
@@ -69,14 +72,20 @@ ssize_t init_simplification(char *ruleset_path)
     {
         rulesets[i] = get_empty_ruleset();
     }
-    if (parse_rulesets_from_file(ruleset_file, g_propositional_ctx, NUM_RULESETS, rulesets) != NUM_RULESETS)
+    ssize_t num_rulesets = parse_rulesets_from_file(ruleset_file, g_propositional_ctx, NUM_RULESETS, rulesets);
+    if (num_rulesets == -1)
+    {
+        report_error("Error while parsing simplification rules.\n", ruleset_path);
+        return -1;
+    }
+    if (num_rulesets != NUM_RULESETS)
     {
         report_error("Too few simplification rulesets defined in %s.\n", ruleset_path);
         return -1;
     }
     fclose(ruleset_file);
 
-    deriv_before = get_pattern(P("x'"), 0, NULL);
+    get_pattern(P("x'"), 0, NULL, &deriv_before);
     deriv_after = P("deriv(x, z)");
     parse_pattern("deriv(x, y) WHERE type(y) != VAR", g_propositional_ctx, &malformed_deriv);
 

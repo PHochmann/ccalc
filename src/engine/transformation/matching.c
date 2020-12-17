@@ -367,38 +367,33 @@ Node **find_matching(const Node **tree, const Pattern *pattern, ConstraintChecke
 /*
 Summary: - Sets ids of variable nodes for faster lookup while matching
          - Computes trigger-indices for constraints
+Returns: 0 if success, -1 if MAX_MAPPED_VARS exceeded, -2 if MAX_VARIABLE_OCCURRANCES exceeded, -3 if MATCHING_MAX_CONSTRAINTS exceeded
 */
-Pattern get_pattern(Node *tree, size_t num_constraints, Node **constrs)
+int get_pattern(Node *tree, size_t num_constraints, Node **constrs, Pattern *out_pattern)
 {
-    Pattern res = (Pattern){
+    *out_pattern = (Pattern){
         .pattern         = tree,
         .num_free_vars   = 0,
         .num_constraints = { 0 }
     };
 
-
     bool sufficient = false;
-    res.num_free_vars = list_variables(tree, MAX_MAPPED_VARS, res.free_vars, &sufficient);
+    (*out_pattern).num_free_vars = list_variables(tree, MAX_MAPPED_VARS, (*out_pattern).free_vars, &sufficient);
 
     if (!sufficient)
     {
-        if (res.num_free_vars == MAX_MAPPED_VARS)
-        {
-            print_tree(tree, true);
-            printf("\n");
-            software_defect("Trying to preprocess a pattern with too many distinct variables. Increase MAX_MAPPED_VARS.\n");
-        }
+        return -1;
     }
 
     // Step 1: Set id in pattern tree
-    for (size_t i = 0; i < res.num_free_vars; i++)
+    for (size_t i = 0; i < (*out_pattern).num_free_vars; i++)
     {
         Node **nodes[MAX_VARIABLE_OCURRANCES];
-        size_t num_nodes = get_variable_nodes((const Node**)&tree, res.free_vars[i], MAX_VARIABLE_OCURRANCES, nodes);
+        size_t num_nodes = get_variable_nodes((const Node**)&tree, (*out_pattern).free_vars[i], MAX_VARIABLE_OCURRANCES, nodes);
 
         if (num_nodes > MAX_VARIABLE_OCURRANCES)
         {
-            software_defect("Increase MAX_VARIABLE_OCCURRANCES.\n");
+            return -2;
         }
 
         for (size_t j = 0; j < num_nodes; j++)
@@ -412,24 +407,24 @@ Pattern get_pattern(Node *tree, size_t num_constraints, Node **constrs)
     for (size_t i = 0; i < num_constraints; i++)
     {
         size_t max_id = 0;
-        for (size_t j = 0; j < res.num_free_vars; j++)
+        for (size_t j = 0; j < (*out_pattern).num_free_vars; j++)
         {
-            if (get_variable_nodes((const Node**)&constrs[i], res.free_vars[j], 0, NULL) != 0)
+            if (get_variable_nodes((const Node**)&constrs[i], (*out_pattern).free_vars[j], 0, NULL) != 0)
             {
                 max_id = j;
             }
         }
 
-        if (res.num_constraints[max_id] == MATCHING_MAX_CONSTRAINTS)
+        if ((*out_pattern).num_constraints[max_id] == MATCHING_MAX_CONSTRAINTS)
         {
-            software_defect("Trying to preprocess a pattern with too many constraints. Increase MATCHING_MAX_CONSTRAINTS.\n");
+            return -3;
         }
 
         // max_id contains trigger index
-        res.constraints[max_id][res.num_constraints[max_id]] = constrs[i];
-        res.num_constraints[max_id]++;
+        (*out_pattern).constraints[max_id][(*out_pattern).num_constraints[max_id]] = constrs[i];
+        (*out_pattern).num_constraints[max_id]++;
     }
-    return res;
+    return 0;
 }
 
 void free_pattern(Pattern *pattern)

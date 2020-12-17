@@ -3,8 +3,8 @@
 #include "../tree/node.h"
 
 #define MAX_MAPPED_VARS          10
-#define MAX_VARIABLE_OCURRANCES  10
-#define MATCHING_MAX_CONSTRAINTS 10
+#define MAX_VARIABLE_OCURRANCES  10 // Number of times a single variable can occur in a tree
+#define MATCHING_MAX_CONSTRAINTS 3  // Maximum number of constraints per trigger index
 #define MATCHING_LIST_PREFIX '['
 
 typedef struct
@@ -31,5 +31,5 @@ size_t get_all_matchings(const Node **tree, const Pattern *pattern, ConstraintCh
 bool get_matching(const Node **tree, const Pattern *pattern, ConstraintChecker checker, Matching *out_matching);
 Node **find_matching(const Node **tree, const Pattern *pattern, ConstraintChecker checker, Matching *out_matching);
 
-Pattern get_pattern(Node *tree, size_t num_constraints, Node **constrs);
+int get_pattern(Node *tree, size_t num_constraints, Node **constrs, Pattern *out_pattern);
 void free_pattern(Pattern *pattern);

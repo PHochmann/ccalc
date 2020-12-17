@@ -144,7 +144,7 @@ size_t count_all_variable_nodes(const Node *tree)
 Summary: Lists all pointers to variable nodes of given name
 Params
     out_instances: Contains result. Function unsafe when too small. Allowed to be NULL if buffer_size is 0
-Returns: Number of variable nodes found, i.e. count of out_instances
+Returns: Number of variable nodes found, even if buffer was too small
 */
 size_t get_variable_nodes(const Node **tree, const char *var_name, size_t buffer_size, Node ***out_instances)
 {

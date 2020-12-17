@@ -26,7 +26,6 @@ bool get_rule(Pattern pattern, Node *after, RewriteRule *out_rule)
 
         if (!sufficient)
         {
-            report_error("Trying to create a rule with too many variables.\n");
             return false;
         }
 
@@ -34,7 +33,6 @@ bool get_rule(Pattern pattern, Node *after, RewriteRule *out_rule)
         {
             if (get_variable_nodes((const Node**)&pattern.pattern, after_vars[i], 0, NULL) == 0)
             {
-                report_error("Trying to create a rule that introduces a new variable after appliance.\n");
                 return false;
             }
         }

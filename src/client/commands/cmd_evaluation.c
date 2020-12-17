@@ -35,7 +35,7 @@ bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
         ssize_t num_vars = list_variables(tree, MAX_VARIABLES_DISTINCT, vars, &sufficient_buff);
         if (!sufficient_buff)
         {
-            report_error("Too many variables.\n");
+            report_error(ERROR_FMT, "Too many variables");
             free_tree(tree);
             return false;
         }

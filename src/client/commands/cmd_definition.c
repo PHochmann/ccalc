@@ -20,6 +20,7 @@
 #define ERR_ARGS_NOT_VARS        "Function arguments must be variables"
 #define ERR_NOT_DISTINCT         "Function arguments must be distinct variables"
 #define ERR_TOO_MANY_ARGS        "Too many function arguments"
+#define ERR_NEW_VARIABLE_INTRODUCTION "Unbounded variable"
 #define ERR_BUILTIN_REDEFINITION "Built-in functions can not be redefined\n"
 #define ERR_REDEFINITION         "Function or constant already defined. Please use clear command before redefinition\n"
 #define ERR_RECURSIVE_DEFINITION "Error: Recursive definition\n"
@@ -52,14 +53,15 @@ static bool do_left_checks(Node *left_n)
 
         const char *vars[MAX_MAPPED_VARS];
         bool sufficient_buff = false;
-        if (num_children != (size_t)list_variables(left_n, num_children, vars, &sufficient_buff))
-        {
-            report_error(FMT_ERROR_LEFT, ERR_NOT_DISTINCT);
-            return false;
-        }
+        size_t num_vars = list_variables(left_n, MAX_MAPPED_VARS, vars, &sufficient_buff);
         if (!sufficient_buff)
         {
             report_error(FMT_ERROR_LEFT, ERR_TOO_MANY_ARGS);
+            return false;
+        }
+        if (num_vars != num_children)
+        {
+            report_error(FMT_ERROR_LEFT, ERR_NOT_DISTINCT);
             return false;
         }
     }
@@ -129,6 +131,21 @@ static bool add_function(char *name, char *left, char *right)
         goto error;
     }
 
+    // Add rule to eliminate operator before evaluation
+    RewriteRule rule;
+    Pattern pattern;
+    if (get_pattern(left_n, 0, NULL, &pattern) < 0)
+    {
+        // Should never happen because all limits are checked beforehand.
+        goto error;
+    }
+    if (!get_rule(pattern, right_n, &rule))
+    {
+        report_error(FMT_ERROR_RIGHT, ERR_NEW_VARIABLE_INTRODUCTION);
+        goto error;
+    }
+    add_composite_function(rule);
+
     if (get_op(left_n)->arity == 0)
     {
         /*
@@ -168,13 +185,6 @@ static bool add_function(char *name, char *left, char *right)
         whisper("Added function.\n");
     }
 
-    // Add rule to eliminate operator before evaluation
-    RewriteRule rule;
-    if (!get_rule(get_pattern(left_n, 0, NULL), right_n, &rule))
-    {
-        goto error;
-    }
-    add_composite_function(rule);
     return true;
 
     error:

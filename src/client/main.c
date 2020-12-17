@@ -10,10 +10,9 @@
 
 /*
 Params
-    long_str: Can be NULL
-    alt_str:  Can be NULL
-    sw:       Pointer to bool that will be set to true when switch is set
-              Will be automatically set to false beforehand
+    str: Can be NULL
+    sw:  Pointer to bool that will be set to true when switch is set
+         Will be automatically set to false beforehand
 */
 void add_switch(Trie *switches, const char *str, bool *sw)
 {

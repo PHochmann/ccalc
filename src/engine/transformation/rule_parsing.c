@@ -21,6 +21,21 @@ Could be heap but could also be string literal that is readonly
 #define WHERE          " WHERE "
 #define AND            " ; "
 
+void report_pattern_errocode(int err_code)
+{
+    switch (err_code)
+    {
+        case -1:
+            report_error("Trying to preprocess a pattern with too many distinct variables. Increase MAX_MAPPED_VARS.\n");
+            return;
+        case -2:
+            report_error("Trying to preprocess a pattern with too many variable occurrances. Increase MAX_VARIABLE_OCCURRANCES.\n");
+            return;
+        case -3:
+            report_error("Trying to preprocess a pattern with too many constraints. Increase MATCHING_MAX_CONSTRAINTS.\n");
+    }
+}
+
 // string: without "WHERE"
 bool parse_constraints(const char *string,
     const ParsingContext *ctx,
@@ -89,7 +104,12 @@ bool parse_pattern(const char *string, const ParsingContext *ctx, Pattern *out_p
         goto error;
     }
 
-    *out_pattern = get_pattern(pattern, num_constrs, constrs);
+    int err_code = get_pattern(pattern, num_constrs, constrs, out_pattern);
+    if (err_code != 0)
+    {
+        report_pattern_errocode(err_code);
+        goto error;
+    }
     free(str_cpy);
     return true;
 
@@ -141,9 +161,16 @@ bool parse_rule(const char *string, const ParsingContext *ctx, RewriteRule *out_
         goto error;
     }
 
-    // Error message given by get_rule
-    if (!get_rule(get_pattern(left_n, num_constrs, constrs), right_n, out_rule))
+    Pattern pattern;
+    int err_code = get_pattern(left_n, num_constrs, constrs, &pattern);
+    if (err_code != 0)
     {
+        report_pattern_errocode(err_code);
+        goto error;
+    }
+    if (!get_rule(pattern, right_n, out_rule))
+    {
+        report_error("Unbounded variable in righthand side of rule.\n");
         goto error;
     }
 
@@ -158,9 +185,9 @@ bool parse_rule(const char *string, const ParsingContext *ctx, RewriteRule *out_
     return false;
 }
 
-size_t parse_rulesets_from_file(FILE *file,
+ssize_t parse_rulesets_from_file(FILE *file,
     const ParsingContext *ctx,
-    size_t max_rulesets,
+    size_t buffer_size,
     Vector *out_rulesets)
 {
     ssize_t curr_ruleset = -1;
@@ -184,7 +211,7 @@ size_t parse_rulesets_from_file(FILE *file,
             continue;
         }
 
-        if (curr_ruleset == (ssize_t)max_rulesets)
+        if (curr_ruleset == (ssize_t)buffer_size)
         {
             break; // Buffer is full
         }
@@ -199,9 +226,14 @@ size_t parse_rulesets_from_file(FILE *file,
         if (!parse_rule(line, ctx, vec_push_empty(&out_rulesets[curr_ruleset])))
         {
             report_error("Error occurred in line %zu.\n", line_index);
+            goto error;
         }
     }
 
     free(line_start);
     return curr_ruleset + 1;
+
+    error:
+    free(line_start);
+    return -1;
 }
