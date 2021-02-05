@@ -77,7 +77,8 @@ void init_commands()
     init_propositional_ctx();
     if (init_simplification(SIMPLIFICATION_PATH) < 0)
     {
-        report_error("Error loading simplification: " SIMPLIFICATION_PATH " not found or readable.\n");
+        report_error("Error loading simplification ruleset: " SIMPLIFICATION_PATH " not found or readable.\n"
+                     "Use 'load simplification <path>' to load a ruleset.\n");
     }
     init_console_util();
     init_history();

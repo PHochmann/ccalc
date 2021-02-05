@@ -10,7 +10,7 @@
 #include "commands.h"
 
 #define COMMAND "load "
-#define LOAD_SIMPLFICATION "load simplification "
+#define LOAD_SIMPLIFICATION "load simplification "
 
 int cmd_load_check(const char *input)
 {
@@ -22,9 +22,9 @@ Summary: Opens file and processes its content as from stdin
 */
 bool cmd_load_exec(char *input, __attribute__((unused)) int code)
 {
-    if (begins_with(LOAD_SIMPLFICATION, input))
+    if (begins_with(LOAD_SIMPLIFICATION, input))
     {
-        input += strlen(LOAD_SIMPLFICATION);
+        input += strlen(LOAD_SIMPLIFICATION);
         unload_simplification();
         ssize_t count = init_simplification(input);
         if (count == -1)

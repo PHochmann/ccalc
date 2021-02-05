@@ -134,7 +134,7 @@ bool remove_composite_function(const Operator *function)
         }
         curr = curr->next;
     }
-
+    // Operator is not in list of composite functions, it must be built in
     report_error("Built-in functions can not be removed\n");
     return false;
 }

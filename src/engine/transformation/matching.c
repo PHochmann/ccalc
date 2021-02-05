@@ -43,6 +43,7 @@ static void fill_suffix(
     Vector *matchings,
     Vector *suffixes)
 {
+    // Check if node has already been computed
     if (((SuffixNode*)vec_get(suffixes, curr_index))->first_match_index != SIZE_MAX) return;
 
     // Recursively fill all suffix nodes before
