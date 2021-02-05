@@ -26,9 +26,8 @@ int cmd_table_check(const char *input)
 
 bool cmd_table_exec(char *input, __attribute__((unused)) int code)
 {
-    input += strlen(COMMAND);
     char *args[6];
-    size_t num_args = str_split(input, args, 5, ";", ";", ";", FOLD_KEYWORD, ";");
+    size_t num_args = str_split(input + strlen(COMMAND), args, 5, ";", ";", ";", FOLD_KEYWORD, ";");
 
     if (num_args != 4 && num_args != 6)
     {
@@ -45,7 +44,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     Node *fold_expr = NULL;
     Node *fold_init = NULL;
 
-    if (!arith_parse_and_postprocess(args[0], "Error in expression: %s\n", &expr))
+    if (!arith_parse_and_postprocess(args[0], "Error in expression: %s\n", (size_t)(args[0] - input), &expr))
     {
         return false;
     }
@@ -59,9 +58,9 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
         goto exit;
     }
 
-    if (!arith_parse_and_postprocess(args[1], "Error in start: %s\n", &start)
-        || !arith_parse_and_postprocess(args[2], "Error in end: %s\n", &end)
-        || !arith_parse_and_postprocess(args[3], "Error in step: %s\n", &step))
+    if (!arith_parse_and_postprocess(args[1], "Error in start: %s\n", (size_t)(args[1] - input), &start)
+        || !arith_parse_and_postprocess(args[2], "Error in end: %s\n", (size_t)(args[2] - input), &end)
+        || !arith_parse_and_postprocess(args[3], "Error in step: %s\n", (size_t)(args[3] - input), &step))
     {
         goto exit;
     }
@@ -89,8 +88,8 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     if (num_args == 6)
     {
         // Parse initial fold-value
-        if (!arith_parse_and_postprocess(args[4], "Error in fold expression: %s\n", &fold_expr)
-            || !arith_parse_and_postprocess(args[5], "Error in initial fold value: %s\n", &fold_init))
+        if (!arith_parse_and_postprocess(args[4], "Error in fold expression: %s\n", (size_t)(args[4] - input), &fold_expr)
+            || !arith_parse_and_postprocess(args[5], "Error in initial fold value: %s\n", (size_t)(args[5] - input), &fold_init))
         {
             goto exit;
         }

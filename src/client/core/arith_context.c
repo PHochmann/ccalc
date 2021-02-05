@@ -164,11 +164,16 @@ RewriteRule *get_composite_function(Operator *op)
 /*
 Summary: Only calls parser, does not perform any substitution
 */
-bool arith_parse_raw(char *input, char *error_fmt, Node **out_res)
+bool arith_parse_raw(char *input, char *error_fmt, size_t prompt_len, Node **out_res)
 {
-    ParserError perr = parse_input(g_ctx, input, out_res);
+    size_t error_pos;
+    ParserError perr = parse_input(g_ctx, input, out_res, &error_pos);
     if (perr != PERR_SUCCESS)
     {
+        if (is_interactive())
+        {
+            report_error("%*s%s\n", error_pos + prompt_len, "", "^ error here");
+        }
         report_error(error_fmt, perr_to_string(perr));
         return false;
     }
@@ -182,9 +187,9 @@ Summary:
 Returns:
     True when input was successfully parsed, false when syntax error in input or semantical error while transforming
 */
-bool arith_parse_and_postprocess(char *input, char *error_fmt, Node **out_res)
+bool arith_parse_and_postprocess(char *input, char *error_fmt, size_t prompt_len, Node **out_res)
 {
-    if (arith_parse_raw(input, error_fmt, out_res))
+    if (arith_parse_raw(input, error_fmt, prompt_len, out_res))
     {
         ListenerError l_err = arith_postprocess(out_res);
         if (l_err != LISTENERERR_SUCCESS)

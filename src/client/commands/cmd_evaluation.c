@@ -27,7 +27,7 @@ Summary: The evaluation command is executed when input is no other command (henc
 bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
 {
     Node *tree;
-    if (arith_parse_and_postprocess(input, ERROR_FMT, &tree))
+    if (arith_parse_and_postprocess(input, ERROR_FMT, 0, &tree))
     {
         // Make expression constant by asking for values and binding them to variables
         const char *vars[MAX_VARIABLES_DISTINCT];
@@ -53,7 +53,7 @@ bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
             if (ask_input(stdin, &input, ASK_VARIABLE_FMT, vars[i]))
             {
                 Node *tree_var;
-                if (!arith_parse_and_postprocess(input, ERROR_FMT, &tree_var))
+                if (!arith_parse_and_postprocess(input, ERROR_FMT, strlen(vars[i]) + 2, &tree_var))
                 {
                     // Error while parsing - ask again
                     free(input);

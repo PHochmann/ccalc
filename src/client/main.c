@@ -8,6 +8,9 @@
 #include "commands/commands.h"
 #include "version.h"
 
+#define HELP_MESSAGE "Usage: ccalc [--help] [--version] [--interactive] [--quiet] [--commands [<commands>]]\n" \
+                     "Each switch can be abbreviated by -h, -v etc.\n"
+
 /*
 Params
     str: Can be NULL
@@ -71,7 +74,7 @@ int main(int argc, char **argv)
         }
         if (sw == NULL)
         {
-            report_error("Unrecognized argument: %s\n", argv[i]);
+            report_error("Unrecognized argument: %s\n" HELP_MESSAGE, argv[i]);
             return EXIT_FAILURE;
         }
     }
@@ -80,8 +83,7 @@ int main(int argc, char **argv)
     // Now do stuff based on the switches that have been set
     if (help)
     {
-        printf("Usage: ccalc [--help] [--version] [--interactive] [--quiet] [--commands [<commands>]]\n"
-               "Each switch can be abbreviated by -h, -v etc.\n");
+        printf(HELP_MESSAGE);
         return EXIT_SUCCESS;
     }
 

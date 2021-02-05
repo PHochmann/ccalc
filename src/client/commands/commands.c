@@ -17,7 +17,6 @@
 #include "cmd_table.h"
 #include "cmd_playground.h"
 
-#define INTERACTIVE_ASK_PREFIX "> "
 #define COMMENT_PREFIX         '#'
 #define QUIT_COMMAND           "quit"
 
@@ -93,7 +92,7 @@ bool process_input(FILE *file)
 {
     bool res = true;
     char *input = NULL;
-    while (ask_input(file, &input, INTERACTIVE_ASK_PREFIX))
+    while (ask_input(file, &input, NULL))
     {
         char *stripped = strip_whitespace(input);
         if (strcmp(stripped, QUIT_COMMAND) == 0)

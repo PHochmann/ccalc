@@ -46,12 +46,12 @@ bool simplification_test(StringBuilder *error_builder)
     for (size_t i = 0; i < NUM_CASES; i++)
     {
         Node *left = NULL;
-        if (parse_input(g_ctx, cases[2 * i], &left) != PERR_SUCCESS)
+        if (parse_input(g_ctx, cases[2 * i], &left, NULL) != PERR_SUCCESS)
         {
             ERROR("Syntax error in left side of test case %zu.\n", i);
         }
         Node *right = NULL;
-        if (parse_input(g_ctx, cases[2 * i + 1], &right) != PERR_SUCCESS)
+        if (parse_input(g_ctx, cases[2 * i + 1], &right, NULL) != PERR_SUCCESS)
         {
             ERROR("Syntax error in right side of test case %zu.\n", i);
         }

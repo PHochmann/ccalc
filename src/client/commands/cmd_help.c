@@ -271,8 +271,6 @@ static void print_op_table(OpPlacement place, bool assoc, bool precedence, bool 
 
 void print_short_help()
 {
-    printf(COPYRIGHT_NOTICE);
-    printf("\n");
     Table *table = get_empty_table();
     add_cells_from_array(table, 2, NUM_COMMANDS, (const char**)COMMAND_TABLE);
     print_table(table);

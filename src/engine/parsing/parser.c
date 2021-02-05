@@ -4,6 +4,7 @@
 #include "tokenizer.h"
 #include "parser.h"
 #include "../util/string_util.h"
+#include "../util/console_util.h"
 
 #define VECTOR_STARTSIZE 10
 
@@ -18,6 +19,7 @@ struct OpData
 {
     const Operator *op; // Pointer to operator in context, NULL denotes opening parenthesis
     size_t arity;       // Records number of operands to pop
+    size_t token;
 };
 
 // Encapsulates current state of shunting-yard algo. to be communicated to auxiliary functions
@@ -27,6 +29,7 @@ struct ParserState
     Vector vec_nodes;          // Constructed nodes
     Vector vec_ops;            // Parsed operators
     ParserError result;        // Success when no error occurred
+    size_t curr_tok;           // Current index of token
 };
 
 // Attempts to parse a substring to a double
@@ -76,6 +79,7 @@ bool op_pop_and_insert(struct ParserState *state)
         if (op->arity != OP_DYNAMIC_ARITY && op->arity != op_data->arity)
         {
             state->result = PERR_FUNCTION_WRONG_ARITY;
+            state->curr_tok = op_data->token;
             return false;
         }
 
@@ -130,11 +134,11 @@ bool push_operator(struct ParserState *state, const Operator *op)
 
     if (op->placement == OP_PLACE_FUNCTION)
     {
-        opData = (struct OpData){ op, 0 };
+        opData = (struct OpData){ op, 0, state->curr_tok };
     }
     else
     {
-        opData = (struct OpData){ op, op->arity };
+        opData = (struct OpData){ op, op->arity, state->curr_tok };
     }
 
     return op_push(state, opData);
@@ -143,11 +147,11 @@ bool push_operator(struct ParserState *state, const Operator *op)
 // Pushes opening parenthesis on op_stack
 bool push_opening_parenthesis(struct ParserState *state)
 {
-    return op_push(state, (struct OpData){ NULL, OP_DYNAMIC_ARITY });
+    return op_push(state, (struct OpData){ NULL, OP_DYNAMIC_ARITY, state->curr_tok });
 }
 
 // out_res can be NULL if you only want to check if an error occurred
-ParserError parse_tokens(const ParsingContext *ctx, int num_tokens, const char **tokens, Node **out_res)
+ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const char **tokens, Node **out_res, size_t *error_token)
 {
     // 1. Early outs
     if (ctx == NULL || tokens == NULL) return PERR_ARGS_MALFORMED;
@@ -162,9 +166,10 @@ ParserError parse_tokens(const ParsingContext *ctx, int num_tokens, const char *
 
     // 3. Process each token
     bool await_infix = false; // Or postfix, or delimiter, or closing parenthesis
-    for (int i = 0; i < num_tokens; i++)
+    for (size_t i = 0; i < num_tokens; i++)
     {
         const char *token = tokens[i];
+        state.curr_tok = i;
         
         // I. Does glue-op need to be inserted?
         if (await_infix && state.ctx->glue_op != NULL)
@@ -276,7 +281,7 @@ ParserError parse_tokens(const ParsingContext *ctx, int num_tokens, const char *
                 if (op->arity == 0 || (i < num_tokens - 1 && !is_opening_parenthesis(tokens[i + 1])))
                 {
                     // Skip parsing of empty parameter list
-                    if (i < num_tokens - 2 && is_opening_parenthesis(tokens[i + 1])
+                    if ((int)i < (int)num_tokens - 2 && is_opening_parenthesis(tokens[i + 1])
                         && is_closing_parenthesis(tokens[i + 2]))
                     {
                         i += 2;
@@ -340,6 +345,8 @@ ParserError parse_tokens(const ParsingContext *ctx, int num_tokens, const char *
         await_infix = true;
         node_push(&state, node);
     }
+
+    state.curr_tok = num_tokens;
     
     // 4. Pop all remaining operators
     while (op_peek(&state) != NULL)
@@ -374,6 +381,11 @@ ParserError parse_tokens(const ParsingContext *ctx, int num_tokens, const char *
     // If parsing wasn't successful or result is discarded, free partial results
     if (state.result != PERR_SUCCESS || out_res == NULL)
     {
+        if (error_token != NULL)
+        {
+            *error_token = state.curr_tok;
+        }
+
         while (true)
         {
             Node **node = vec_pop(&state.vec_nodes);
@@ -392,11 +404,20 @@ ParserError parse_tokens(const ParsingContext *ctx, int num_tokens, const char *
 Summary: Parses string, tokenized with default tokenizer, to abstract syntax tree
 Returns: Result code to indicate whether string was parsed successfully or which error occurred
 */
-ParserError parse_input(const ParsingContext *ctx, const char *input, Node **out_res)
+ParserError parse_input(const ParsingContext *ctx, const char *input, Node **out_res, size_t *error_pos)
 {
     Vector tokens;
     tokenize(input, &ctx->keywords_trie, &tokens);
-    ParserError result = parse_tokens(ctx, vec_count(&tokens), tokens.buffer, out_res);
+    size_t error_token = 0;
+    ParserError result = parse_tokens(ctx, vec_count(&tokens), tokens.buffer, out_res, &error_token);
+    if (result != PERR_SUCCESS && error_pos != NULL)
+    {
+        *error_pos = 0;
+        for (size_t i = 0; i < error_token; i++)
+        {
+            *error_pos += strlen(*(const char**)vec_get(&tokens, i));
+        }
+    }
     free_tokens(&tokens);
     return result;
 }
@@ -405,11 +426,10 @@ ParserError parse_input(const ParsingContext *ctx, const char *input, Node **out
 Summary: Calls parse_input, omits ParserError
 Returns: Operator tree or NULL when error occurred
 */
-#include "../util/console_util.h"
 Node *parse_conveniently(const ParsingContext *ctx, const char *input)
 {
     Node *result = NULL;
-    ParserError error = parse_input(ctx, input, &result);
+    ParserError error = parse_input(ctx, input, &result, NULL);
     if (result == NULL)
     {
         report_error("Syntax error: %s\n", perr_to_string(error));

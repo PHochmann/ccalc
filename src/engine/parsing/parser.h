@@ -16,7 +16,7 @@ typedef enum {
     PERR_EMPTY,                      // No node has been created
 } ParserError;
 
-ParserError parse_tokens(const ParsingContext *ctx, int num_tokens, const char **tokens, Node **out_res);
-ParserError parse_input(const ParsingContext *ctx, const char *input, Node **out_res);
+ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const char **tokens, Node **out_res, size_t *error_token);
+ParserError parse_input(const ParsingContext *ctx, const char *input, Node **out_res, size_t *error_pos);
 Node *parse_conveniently(const ParsingContext *ctx, const char *input);
 const char *perr_to_string(ParserError perr);

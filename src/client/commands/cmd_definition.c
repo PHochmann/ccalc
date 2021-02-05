@@ -94,7 +94,7 @@ static bool add_function(char *name, char *left, char *right)
     // Add function operator to parse left input
     // Must be OP_DYNAMIC_ARITY because we do not know the actual arity yet
     ctx_add_op(g_ctx, op_get_function(name, OP_DYNAMIC_ARITY));
-    if (!arith_parse_raw(left, FMT_ERROR_LEFT, &left_n))
+    if (!arith_parse_raw(left, FMT_ERROR_LEFT, 0, &left_n))
     {
         goto error;
     }
@@ -110,7 +110,7 @@ static bool add_function(char *name, char *left, char *right)
     set_op(left_n, new_op);
 
     // Parse right expression raw to detect a recursive definition
-    if (!arith_parse_raw(right, FMT_ERROR_RIGHT, &right_n))
+    if (!arith_parse_raw(right, FMT_ERROR_RIGHT, (size_t)(right - left), &right_n))
     {
         goto error;
     }

@@ -113,7 +113,7 @@ bool parser_test(StringBuilder *error_builder)
     // Perform value tests
     for (size_t i = 0; i < NUM_VALUE_CASES; i++)
     {
-        if (parse_input(g_ctx, valueTests[i].input, &node) != PERR_SUCCESS)
+        if (parse_input(g_ctx, valueTests[i].input, &node, NULL) != PERR_SUCCESS)
         {
             ERROR("Parser Error for '%s'\n", valueTests[i].input);
         }
@@ -130,7 +130,7 @@ bool parser_test(StringBuilder *error_builder)
     // Perform error tests
     for (size_t i = 0; i < NUM_ERROR_CASES; i++)
     {
-        if (parse_input(g_ctx, errorTests[i].input, NULL) != errorTests[i].result)
+        if (parse_input(g_ctx, errorTests[i].input, NULL, NULL) != errorTests[i].result)
         {
             ERROR("Unexpected error type for '%s'\n", errorTests[i].input);
         }

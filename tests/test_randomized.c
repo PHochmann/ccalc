@@ -45,7 +45,7 @@ bool randomized_test(StringBuilder *error_builder)
 
         // Parse stringed random tree
         Node *parsed_tree = NULL;
-        ParserError result = parse_input(g_ctx, stringed_tree, &parsed_tree);
+        ParserError result = parse_input(g_ctx, stringed_tree, &parsed_tree, NULL);
 
         // Check results
         if (result != PERR_SUCCESS)

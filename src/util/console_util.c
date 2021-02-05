@@ -60,7 +60,7 @@ void whisper(const char *format, ...)
 
 bool ask_input_getline(FILE *file, char **out_input, const char *prompt_fmt, va_list args)
 {
-    if (interactive)
+    if (interactive && prompt_fmt != NULL)
     {
         vprintf(prompt_fmt, args);
     }
@@ -92,10 +92,17 @@ Params
 // File is stdin, interactive is true
 bool ask_input_readline(char **out_input, const char *prompt_fmt, va_list args)
 {
-    Vector strbuilder = strbuilder_create(3);
-    vstrbuilder_append(&strbuilder, prompt_fmt, args);
-    *out_input = readline(strbuilder.buffer);
-    vec_destroy(&strbuilder);
+    if (prompt_fmt != NULL)
+    {
+        Vector strbuilder = strbuilder_create(3);
+        vstrbuilder_append(&strbuilder, prompt_fmt, args);
+        *out_input = readline(strbuilder.buffer);
+        vec_destroy(&strbuilder);
+    }
+    else
+    {
+        *out_input = readline(NULL);
+    }
 
     if (*out_input == NULL)
     {

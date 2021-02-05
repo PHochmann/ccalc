@@ -36,7 +36,7 @@ bool cmd_playground_exec(char *input, int code)
     {
         input += strlen(SIMPLIFY_COMMAND);
         Node *node;
-        if (!arith_parse_and_postprocess(input, "Error: %s\n", &node)) return false;
+        if (!arith_parse_and_postprocess(input, "Error: %s\n", strlen(SIMPLIFY_COMMAND), &node)) return false;
         if (code == VISUALIZE_CODE)
         {
             print_tree_visually(node);
@@ -78,7 +78,7 @@ bool cmd_playground_exec(char *input, int code)
                 break;
             }
 
-            if (parse_input(g_ctx, tree_str, &tree) != PERR_SUCCESS)
+            if (parse_input(g_ctx, tree_str, &tree, NULL) != PERR_SUCCESS)
             {
                 printf("Syntax error\n");
                 goto loop_cleanup;

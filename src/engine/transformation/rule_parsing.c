@@ -21,7 +21,7 @@ Could be heap but could also be string literal that is readonly
 #define WHERE          " WHERE "
 #define AND            " ; "
 
-void report_pattern_errocode(int err_code)
+void report_pattern_errcode(int err_code)
 {
     switch (err_code)
     {
@@ -107,7 +107,7 @@ bool parse_pattern(const char *string, const ParsingContext *ctx, Pattern *out_p
     int err_code = get_pattern(pattern, num_constrs, constrs, out_pattern);
     if (err_code != 0)
     {
-        report_pattern_errocode(err_code);
+        report_pattern_errcode(err_code);
         goto error;
     }
     free(str_cpy);
@@ -165,7 +165,7 @@ bool parse_rule(const char *string, const ParsingContext *ctx, RewriteRule *out_
     int err_code = get_pattern(left_n, num_constrs, constrs, &pattern);
     if (err_code != 0)
     {
-        report_pattern_errocode(err_code);
+        report_pattern_errcode(err_code);
         goto error;
     }
     if (!get_rule(pattern, right_n, out_rule))
