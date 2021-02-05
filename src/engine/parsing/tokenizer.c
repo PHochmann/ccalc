@@ -68,14 +68,6 @@ void tokenize(const char *input, const Trie *keywords_trie, Vector *out_tokens)
             next_token_start = i;
         }
 
-        // We don't want any whitespace-tokens
-        if (is_space(input[i]))
-        {
-            next_token_start++;
-            state = TOKSTATE_OTHER;
-            continue;
-        }
-
         // Did we find a keyword?
         if (next_state != TOKSTATE_LETTER && keywords_trie != NULL) // We don't want to find keywords in strings
         {

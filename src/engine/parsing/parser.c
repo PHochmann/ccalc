@@ -170,6 +170,12 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
     {
         const char *token = tokens[i];
         state.curr_tok = i;
+
+        // First: Ignore any whitespace-tokens
+        if (is_space(token[0]))
+        {
+            continue;
+        }
         
         // I. Does glue-op need to be inserted?
         if (await_infix && state.ctx->glue_op != NULL)

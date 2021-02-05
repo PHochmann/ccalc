@@ -172,7 +172,7 @@ bool arith_parse_raw(char *input, char *error_fmt, size_t prompt_len, Node **out
     {
         if (is_interactive())
         {
-            report_error("%*s%s\n", error_pos + prompt_len, "", "^ error here");
+            report_error("%*s^ ", error_pos + prompt_len, "");
         }
         report_error(error_fmt, perr_to_string(perr));
         return false;
