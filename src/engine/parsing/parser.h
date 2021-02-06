@@ -13,6 +13,7 @@ typedef enum {
     PERR_MISSING_OPERAND,            // Could not pop 'arity' amount of nodes
     PERR_FUNCTION_WRONG_ARITY,       // Function of wrong arity
     PERR_CHILDREN_EXCEEDED,          // Too many operands for function
+    PERR_UNEXPECTED_END_OF_EXPR,     // Expression ended too early
     PERR_EMPTY,                      // No node has been created
 } ParserError;
 

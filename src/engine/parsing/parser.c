@@ -360,6 +360,11 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
     }
 
     state.curr_tok = num_tokens;
+
+    if (vec_count(&state.vec_nodes) != 0 && !await_infix)
+    {
+        ERROR(PERR_UNEXPECTED_END_OF_EXPR);
+    }
     
     // 4. Pop all remaining operators
     while (op_peek(&state) != NULL)
@@ -373,23 +378,25 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
             if (!op_pop_and_insert(&state)) goto exit;
         }
     }
-    
-    // 5. Build result and return value
-    switch (vec_count(&state.vec_nodes))
+
+    if (vec_count(&state.vec_nodes) == 0)
     {
         // We haven't constructed a single node
-        case 0:
-            state.result = PERR_EMPTY;
-            state.curr_tok = 0;
-            break;
-        // We successfully constructed a single AST
-        case 1:
-            if (out_res != NULL) *out_res = *(Node**)vec_pop(&state.vec_nodes);
-            break;
-        // We have multiple ASTs (need glue-op)
-        default:
-            state.result = PERR_MISSING_OPERATOR;
+        state.curr_tok = 0;
+        ERROR(PERR_EMPTY);
     }
+    
+    // 5. Build result and return value
+    if (vec_count(&state.vec_nodes) == 1)
+    {
+        if (out_res != NULL) *out_res = *(Node**)vec_pop(&state.vec_nodes);
+    }
+    else
+    {
+        // We have multiple ASTs (need glue-op)
+        ERROR(PERR_MISSING_OPERATOR);
+    }
+    
     
     exit:
     // If parsing wasn't successful or result is discarded, free partial results
@@ -476,6 +483,8 @@ const char *perr_to_string(ParserError perr)
             return "Wrong number of operands of function";
         case PERR_CHILDREN_EXCEEDED:
             return "Exceeded maximum number of operands of function";
+        case PERR_UNEXPECTED_END_OF_EXPR:
+            return "Unexpected end of expression";
         case PERR_EMPTY:
             return "Empty Expression";
         default:

@@ -78,7 +78,7 @@ static const size_t NUM_ERROR_CASES = 12;
 static struct ErrorTest errorTests[] = {
     { "",          PERR_EMPTY },
     { "()",        PERR_EMPTY },
-    { "x+",        PERR_MISSING_OPERAND },
+    { "x+",        PERR_UNEXPECTED_END_OF_EXPR },
     { "root(x,)",  PERR_UNEXPECTED_CLOSING_PARENTHESIS },
     { "sin",       PERR_FUNCTION_WRONG_ARITY },
     { "sin 2",     PERR_FUNCTION_WRONG_ARITY },
