@@ -7,7 +7,7 @@ typedef enum {
     PERR_ARGS_MALFORMED,             // NULL-pointer in arguments
     PERR_UNEXPECTED_SUBEXPRESSION,   // Only without glue-op: Two expressions next to each other
     PERR_EXCESS_OPENING_PARENTHESIS, // There are opening parenthesis on op-stack after all tokens are processed
-    PERR_EXCESS_CLOSING_PARENTHESIS, // Mismatch: no opening parenthesis found
+    PERR_UNEXPECTED_CLOSING_PARENTHESIS, // Mismatch: no opening parenthesis found
     PERR_UNEXPECTED_DELIMITER,       // Delimiter too soon (e.g. 1+,) or not within parameter list of a function
     PERR_MISSING_OPERATOR,           // Too many children
     PERR_MISSING_OPERAND,            // Could not pop 'arity' amount of nodes

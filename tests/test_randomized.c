@@ -50,6 +50,7 @@ bool randomized_test(StringBuilder *error_builder)
         // Check results
         if (result != PERR_SUCCESS)
         {
+            printf("%s\n", stringed_tree);
             ERROR("Parser error: %s.\n", perr_to_string(result));
         }
         else

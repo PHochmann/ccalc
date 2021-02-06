@@ -16,13 +16,13 @@
 #define FMT_ERROR_LEFT  "Error in left expression: %s\n"
 #define FMT_ERROR_RIGHT "Error in right expression: %s\n"
 
-#define ERR_NOT_A_FUNC           "Not a function or constant"
-#define ERR_ARGS_NOT_VARS        "Function arguments must be variables"
-#define ERR_NOT_DISTINCT         "Function arguments must be distinct variables"
-#define ERR_NEW_VARIABLE_INTRODUCTION "Unbounded variable"
-#define ERR_BUILTIN_REDEFINITION "Built-in functions can not be redefined\n"
-#define ERR_REDEFINITION         "Function or constant already defined. Please use clear command before redefinition\n"
-#define ERR_RECURSIVE_DEFINITION "Error: Recursive definition\n"
+#define ERR_NOT_A_FUNC                "Not a function or constant"
+#define ERR_ARGS_NOT_VARS             "Function arguments must be variables"
+#define ERR_NOT_DISTINCT              "Function arguments must be distinct variables"
+#define ERR_NEW_VARIABLE_INTRODUCTION "Unbound variable"
+#define ERR_BUILTIN_REDEFINITION      "Built-in functions can not be redefined\n"
+#define ERR_REDEFINITION              "Function or constant already defined. Please use clear command before redefinition\n"
+#define ERR_RECURSIVE_DEFINITION      "Error: Recursive definition\n"
 
 int cmd_definition_check(const char *input)
 {
@@ -147,36 +147,6 @@ static bool add_function(char *name, char *left, char *right)
 
     if (get_op(left_n)->arity == 0)
     {
-        /*
-         * User-defined constants are zero-arity functions with corresponding elimination rule.
-         * Previously defined rules do not refer to them, because the string was parsed to a
-         * variable node, not an operator. For users, this is confusing, because the technical
-         * difference between variables and constant operators is not clear.
-         * => Replace unbounded variables of the same name with this new constant.
-         */
-        bool replaced_variable = false;
-        ListNode *curr = g_composite_functions->first;
-        while (curr != NULL)
-        {
-            RewriteRule *rule = (RewriteRule*)curr->data;
-            // Check if variables are unbounded...
-            if (get_variable_nodes((const Node**)&rule->pattern.pattern, name, 0, NULL) == 0)
-            {
-                // ...if they are, replace them by new definition
-                if (replace_variable_nodes(&rule->after, left_n, name) > 0)
-                {
-                    replaced_variable = true;
-                }
-            }
-            
-            curr = curr->next;
-        }
-
-        if (replaced_variable)
-        {
-            whisper("Note: Unbounded variables in previously defined functions or constants are now bounded.\n");
-        }
-
         whisper("Added constant.\n");
     }
     else

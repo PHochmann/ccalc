@@ -100,7 +100,7 @@ int main(int argc, char **argv)
         {
             printf(COPYRIGHT_NOTICE
                 "This program comes with ABSOLUTELY NO WARRANTY; for details type 'license'.\n"
-                "This is free software, and you are welcome to redistribute it under certain conditions.\n");
+                "This is free software, and you are welcome to redistribute it under certain conditions.\n\n");
         }
     }
 

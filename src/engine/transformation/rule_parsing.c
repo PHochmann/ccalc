@@ -223,7 +223,7 @@ ssize_t parse_rulesets_from_file(FILE *file,
         {
             if (!parse_rule(line, ctx, vec_push_empty(&out_rulesets[curr_ruleset])))
             {
-                report_error("Error occurred in line %zu.\n", line_index);
+                report_error("Error occurred in line %zu: %s.\n", line_index, line);
                 goto error;
             }
         }

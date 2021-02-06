@@ -202,14 +202,12 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
         // III. Is token closing parenthesis or argument delimiter?
         if (is_closing_parenthesis(token))
         {
-            await_infix = true;
-
             // Pop ops until opening parenthesis on op-stack
             while (op_peek(&state) != NULL && op_peek(&state)->op != NULL)
             {
                 if (!op_pop_and_insert(&state))
                 {
-                    ERROR(PERR_EXCESS_CLOSING_PARENTHESIS);
+                    ERROR(PERR_UNEXPECTED_CLOSING_PARENTHESIS);
                 }
             }
             
@@ -221,24 +219,39 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
             else
             {
                 // We did not stop because an opening parenthesis was found, but because op-stack was empty
-                ERROR(PERR_EXCESS_CLOSING_PARENTHESIS);
+                ERROR(PERR_UNEXPECTED_CLOSING_PARENTHESIS);
             }
-            
+
             // Increment operand count one last time if it was not the empty parameter list.
-            if (op_peek(&state) != NULL
-                && op_peek(&state)->op != NULL
-                && op_peek(&state)->op->placement == OP_PLACE_FUNCTION
-                && i > 0
-                && !is_opening_parenthesis(tokens[i - 1]))
+            if (await_infix)
             {
-                op_peek(&state)->arity++;
+                if (op_peek(&state) != NULL
+                    && op_peek(&state)->op != NULL
+                    && op_peek(&state)->op->placement == OP_PLACE_FUNCTION)
+                {
+                    op_peek(&state)->arity++;
+                }
+            }
+            else
+            {
+                if (op_peek(&state) != NULL && op_peek(&state)->arity != 0)
+                {
+                    ERROR(PERR_UNEXPECTED_CLOSING_PARENTHESIS);
+                }
             }
             
+            
+            await_infix = true;
             continue;
         }
         
         if (is_delimiter(token))
         {
+            if (!await_infix)
+            {
+                ERROR(PERR_UNEXPECTED_DELIMITER);
+            }
+
             // Pop ops until opening parenthesis on op-stack
             while (op_peek(&state) != NULL && op_peek(&state)->op != NULL)
             {
@@ -283,22 +296,16 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
             {
                 if (!push_operator(&state, op)) goto exit;
 
-                // Directly pop constant functions or functions with no parameter list
-                if (op->arity == 0 || (i < num_tokens - 1 && !is_opening_parenthesis(tokens[i + 1])))
+                // Directly pop constant functions
+                if (op->arity == 0)
                 {
-                    // Skip parsing of empty parameter list
-                    if ((int)i < (int)num_tokens - 2 && is_opening_parenthesis(tokens[i + 1])
-                        && is_closing_parenthesis(tokens[i + 2]))
-                    {
-                        i += 2;
-                    }
-
                     if (!op_pop_and_insert(&state)) goto exit;
                     await_infix = true;
-                    continue;
                 }
-
-                await_infix = false;
+                else
+                {
+                    await_infix = false;
+                }
                 continue;
             }
             
@@ -373,6 +380,7 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
         // We haven't constructed a single node
         case 0:
             state.result = PERR_EMPTY;
+            state.curr_tok = 0;
             break;
         // We successfully constructed a single AST
         case 1:
@@ -456,7 +464,7 @@ const char *perr_to_string(ParserError perr)
             return "Unexpected subexpression";
         case PERR_EXCESS_OPENING_PARENTHESIS:
             return "Missing closing parenthesis";
-        case PERR_EXCESS_CLOSING_PARENTHESIS:
+        case PERR_UNEXPECTED_CLOSING_PARENTHESIS:
             return "Unexpected closing parenthesis";
         case PERR_UNEXPECTED_DELIMITER:
             return "Unexpected delimiter";

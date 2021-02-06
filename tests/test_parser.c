@@ -20,7 +20,7 @@ struct ErrorTest {
     ParserError result;
 };
 
-static const size_t NUM_VALUE_CASES = 51;
+static const size_t NUM_VALUE_CASES = 41;
 static struct ValueTest valueTests[] = {
     // 1. Basic prefix, infix, postfix
     { "2+3",         5 },
@@ -54,19 +54,9 @@ static struct ValueTest valueTests[] = {
     { "3+pi",      6.141592653 },
     { "pi2" ,      6.283185307 },
     { "pi(2)",     6.283185307 },
-    { "pi()",      3.141592653 },
-    { "pi() + 2",  5.141592653 },
-    { "3+pi()",    6.141592653 },
-    { "pi()2" ,    6.283185307 },
-    { "pi()(2)",   6.283185307 },
-    { "pi()e",     8.539734222 },
-    { "pi e",      8.539734222 },
-    { "3+sum",     3 },
     { "sum(2)",    2 },
     { "sum()",     0 },
-    { "sum",       0 },
     { "sum() + 2", 2 },
-    { "sum + 2",   2 },
     { "3+sum()",   3 },
     { "sum()2" ,   0 },
     { "sum()(2)",  0 },
@@ -89,15 +79,15 @@ static struct ErrorTest errorTests[] = {
     { "",          PERR_EMPTY },
     { "()",        PERR_EMPTY },
     { "x+",        PERR_MISSING_OPERAND },
-    { "root(x,)",  PERR_MISSING_OPERAND },
+    { "root(x,)",  PERR_UNEXPECTED_CLOSING_PARENTHESIS },
     { "sin",       PERR_FUNCTION_WRONG_ARITY },
     { "sin 2",     PERR_FUNCTION_WRONG_ARITY },
     { "sin(x, y)", PERR_FUNCTION_WRONG_ARITY },
     { "root(x)",   PERR_FUNCTION_WRONG_ARITY },
-    { "sin,",      PERR_FUNCTION_WRONG_ARITY },
+    { "sin,",      PERR_UNEXPECTED_DELIMITER },
     { "-(1,2)",    PERR_UNEXPECTED_DELIMITER },
     { "(x",        PERR_EXCESS_OPENING_PARENTHESIS },
-    { "x)",        PERR_EXCESS_CLOSING_PARENTHESIS }
+    { "x)",        PERR_UNEXPECTED_CLOSING_PARENTHESIS }
 };
 
 static const double EPSILON = 0.00000001;
