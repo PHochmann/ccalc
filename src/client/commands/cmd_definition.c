@@ -180,20 +180,43 @@ bool cmd_definition_exec(char *input, __attribute__((unused)) int code)
     
     if (vec_count(&tokens) > 0)
     {
-        // Function name is first token
-        char *name = *(char**)vec_get(&tokens, 0);
-        // All other tokens can be freed
-        for (size_t i = 1; i < vec_count(&tokens); i++)
+        // Function name is first token that is not a space
+        char *name = NULL;
+        for (size_t i = 0; i < vec_count(&tokens); i++)
         {
-            free(*(char**)vec_get(&tokens, i));
+            char *token = *(char**)vec_get(&tokens, i);
+            if (is_space(token[0]))
+            {
+                free(token);
+            }
+            else
+            {
+                if (name == NULL)
+                {
+                    name = token;
+                }
+                else
+                {
+                    free(token);
+                }
+            }
         }
+
         vec_destroy(&tokens);
 
-        if (!is_letter(name[0]))
+        if (name == NULL)
         {
-            free(name);
-            report_error(FMT_ERROR_LEFT, ERR_NOT_A_FUNC);
+            report_error(FMT_ERROR_LEFT, perr_to_string(PERR_EMPTY));
             return false;
+        }
+        else
+        {
+            if (!is_letter(name[0]))
+            {
+                free(name);
+                report_error(FMT_ERROR_LEFT, ERR_NOT_A_FUNC);
+                return false;
+            }
         }
 
         return add_function(name, input, right_input);
