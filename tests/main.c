@@ -5,6 +5,7 @@
 #include "../src/util/string_builder.h"
 #include "../src/table/table.h"
 #include "../src/client/commands/commands.h"
+#include "../src/client/version.h"
 
 #include "test.h"
 #include "test_tree_util.h"
@@ -84,6 +85,7 @@ int main()
     print_table(table);
     free_table(table);
     unload_commands();
+    printf("Version: %s\n", CCALC_VERSION);
 
     return error ? EXIT_FAILURE : EXIT_SUCCESS;
 }
