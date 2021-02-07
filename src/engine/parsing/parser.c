@@ -245,6 +245,7 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
             else
             {
                 if (op_peek(&state) == NULL // '1,'
+                    || op_peek(&state)->op == NULL // 'f(())'
                     || op_peek(&state)->op->placement != OP_PLACE_FUNCTION // '()' but not empty parameter list
                     || op_peek(&state)->arity != 0) // 'f(x,)'
                 {

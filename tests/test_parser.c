@@ -74,23 +74,24 @@ static struct ValueTest valueTests[] = {
     { "-sqrt(abs(--2!!*--sum(-1+.2-.2+2, 2^2^3-255, -sum(.1, .9), 1+2)*--2!!))", -4 },
 };
 
-static const size_t NUM_ERROR_CASES = 15;
+static const size_t NUM_ERROR_CASES = 16;
 static struct ErrorTest errorTests[] = {
     { "",          PERR_UNEXPECTED_END_OF_EXPR },
     { "()",        PERR_UNEXPECTED_CLOSING_PARENTHESIS },
     { "x+",        PERR_UNEXPECTED_END_OF_EXPR },
     { "root(x,)",  PERR_UNEXPECTED_CLOSING_PARENTHESIS },
-    { "sin",       PERR_UNEXPECTED_END_OF_EXPR },
+    { "sin",       PERR_EXPECTED_PARAM_LIST },
     { "sin 2",     PERR_EXPECTED_PARAM_LIST },
     { "sin(x, y)", PERR_FUNCTION_WRONG_ARITY },
     { "root(x)",   PERR_FUNCTION_WRONG_ARITY },
-    { "2,",      PERR_UNEXPECTED_DELIMITER },
+    { "2,",        PERR_UNEXPECTED_DELIMITER },
     { ",",         PERR_UNEXPECTED_DELIMITER },
     { "-(1,2)",    PERR_UNEXPECTED_DELIMITER },
     { "(x",        PERR_EXCESS_OPENING_PARENTHESIS },
     { "x)",        PERR_UNEXPECTED_CLOSING_PARENTHESIS },
     { "()+2",      PERR_UNEXPECTED_CLOSING_PARENTHESIS },
     { "(+2",       PERR_EXCESS_OPENING_PARENTHESIS },
+    { "sin(())",   PERR_UNEXPECTED_CLOSING_PARENTHESIS },
 };
 
 static const double EPSILON = 0.00000001;
