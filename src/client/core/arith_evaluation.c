@@ -337,6 +337,6 @@ ListenerError arith_op_evaluate(const Operator *op, size_t num_args, const doubl
 double arith_evaluate(const Node *tree)
 {
     double res = 0;
-    tree_reduce(tree, arith_op_evaluate, &res);
+    tree_reduce(tree, arith_op_evaluate, &res, NULL);
     return res;
 }

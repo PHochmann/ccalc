@@ -22,6 +22,6 @@ Node **find_op(const Node **tree, const Operator *op);
 
 // Traversal
 size_t replace_variable_nodes(Node **tree, const Node *tree_to_copy, const char *var_name);
-ListenerError tree_reduce(const Node *tree, TreeListener listener, double *out);
-ListenerError tree_reduce_constant_subtrees(Node **tree, TreeListener listener);
+ListenerError tree_reduce(const Node *tree, TreeListener listener, double *out, const Node **out_errnode);
+ListenerError tree_reduce_constant_subtrees(Node **tree, TreeListener listener, const Node **out_errnode);
 void tree_reduce_ops(Node **tree, const Operator *op, OpEval eval);

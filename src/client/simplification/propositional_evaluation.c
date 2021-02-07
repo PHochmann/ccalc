@@ -92,7 +92,7 @@ bool propositional_checker(Node **tree)
     tree_reduce_ops(tree, ctx_lookup_op(g_propositional_ctx, "=", OP_PLACE_INFIX), equals_eval);
     // Step 4: Reduce everything else
     double reduced = 0;
-    if (tree_reduce(*tree, prop_op_evaluate, &reduced) != LISTENERERR_SUCCESS)
+    if (tree_reduce(*tree, prop_op_evaluate, &reduced, NULL) != LISTENERERR_SUCCESS)
     {
         return false;
     }

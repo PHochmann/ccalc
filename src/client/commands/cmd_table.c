@@ -44,7 +44,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     Node *fold_expr = NULL;
     Node *fold_init = NULL;
 
-    if (!arith_parse_and_postprocess(args[0], "Error in expression: %s\n", (size_t)(args[0] - input), &expr))
+    if (!arith_parse(args[0], "Error in expression: %s\n", (size_t)(args[0] - input), &expr))
     {
         return false;
     }
@@ -58,9 +58,9 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
         goto exit;
     }
 
-    if (!arith_parse_and_postprocess(args[1], "Error in start: %s\n", (size_t)(args[1] - input), &start)
-        || !arith_parse_and_postprocess(args[2], "Error in end: %s\n", (size_t)(args[2] - input), &end)
-        || !arith_parse_and_postprocess(args[3], "Error in step: %s\n", (size_t)(args[3] - input), &step))
+    if (!arith_parse(args[1], "Error in start: %s\n", (size_t)(args[1] - input), &start)
+        || !arith_parse(args[2], "Error in end: %s\n", (size_t)(args[2] - input), &end)
+        || !arith_parse(args[3], "Error in step: %s\n", (size_t)(args[3] - input), &step))
     {
         goto exit;
     }
@@ -88,8 +88,8 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     if (num_args == 6)
     {
         // Parse initial fold-value
-        if (!arith_parse_and_postprocess(args[4], "Error in fold expression: %s\n", (size_t)(args[4] - input), &fold_expr)
-            || !arith_parse_and_postprocess(args[5], "Error in initial fold value: %s\n", (size_t)(args[5] - input), &fold_init))
+        if (!arith_parse(args[4], "Error in fold expression: %s\n", (size_t)(args[4] - input), &fold_expr)
+            || !arith_parse(args[5], "Error in initial fold value: %s\n", (size_t)(args[5] - input), &fold_init))
         {
             goto exit;
         }
@@ -150,7 +150,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
         replace_variable_nodes(&current_expr, current_val, var);
 
         double result = 0;
-        ListenerError err = tree_reduce(current_expr, arith_op_evaluate, &result);
+        ListenerError err = tree_reduce(current_expr, arith_op_evaluate, &result, NULL);
 
         if (is_interactive()) add_cell_fmt(table, " %zu ", i);
         add_cell_fmt(table, " " DOUBLE_FMT " ", start_val);
@@ -174,7 +174,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
         }
         else
         {
-            add_cell_fmt(table, " %s ", listenererr_to_str(err));
+            add_cell_fmt(table, " Math Error ");
         }
 
         free_tree(current_expr);

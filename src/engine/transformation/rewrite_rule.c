@@ -70,6 +70,7 @@ bool apply_rule(Node **tree, const RewriteRule *rule, ConstraintChecker checker)
     Node *transformed = tree_copy(rule->after);
     transform_by_matching(rule->pattern.num_free_vars, rule->pattern.free_vars, &matching, &transformed);
     tree_replace(matched_subtree, transformed);
+
     return true;
 }
 

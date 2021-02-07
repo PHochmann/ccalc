@@ -85,6 +85,7 @@ bool op_pop_and_insert(struct ParserState *state)
 
         // We try to allocate a new node and pop its children from node stack
         Node *op_node = malloc_operator_node(op, op_data->arity);
+        set_token_index(op_node, op_data->token);
         
         for (size_t i = 0; i < get_num_children(op_node); i++)
         {
@@ -368,6 +369,7 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
         {
             node = malloc_variable_node(token, 0);
         }
+        set_token_index(node, i);
 
         await_infix = true;
         node_push(&state, node);
@@ -439,71 +441,36 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
 
 /*
 Summary: Parses string, tokenized with default tokenizer, to abstract syntax tree
-Returns: Result code to indicate whether string was parsed successfully or which error occurred
+Returns: True if success, False otherwise
 */
-ParserError parse_input(const ParsingContext *ctx, const char *input, Node **out_res, size_t *error_pos)
+bool parse_input(const ParsingContext *ctx, const char *input, ParsingResult *out_res)
 {
-    Vector tokens;
-    tokenize(input, &ctx->keywords_trie, &tokens);
-    size_t error_token = 0;
-    ParserError result = parse_tokens(ctx, vec_count(&tokens), tokens.buffer, out_res, &error_token);
-    if (result != PERR_SUCCESS && error_pos != NULL)
-    {
-        *error_pos = 0;
-        for (size_t i = 0; i < error_token; i++)
-        {
-            *error_pos += strlen(*(const char**)vec_get(&tokens, i));
-        }
-    }
-    free_tokens(&tokens);
-    return result;
+    tokenize(input, &ctx->keywords_trie, &out_res->tokens);
+    out_res->error = parse_tokens(ctx, vec_count(&out_res->tokens), out_res->tokens.buffer, &out_res->tree, &out_res->error_token);
+    return out_res->error == PERR_SUCCESS;
 }
 
-/*
-Summary: Calls parse_input, omits ParserError
-Returns: Operator tree or NULL when error occurred
-*/
-Node *parse_conveniently(const ParsingContext *ctx, const char *input)
+Node *parse_easy(const ParsingContext *ctx, const char *input)
 {
-    Node *result = NULL;
-    ParserError error = parse_input(ctx, input, &result, NULL);
-    if (result == NULL)
+    ParsingResult res;
+    if (!parse_input(ctx, input, &res))
     {
-        report_error("Syntax error: %s\n", perr_to_string(error));
+        free_result(&res, true);
+        return NULL;
     }
-    return result;
+    else
+    {
+        free_result(&res, false);
+        return res.tree;
+    }
 }
 
-/*
-Returns: String representation of ParserError
-*/
-const char *perr_to_string(ParserError perr)
+void free_result(ParsingResult *result, bool also_free_tree)
 {
-    switch (perr)
+    free_tokens(&result->tokens);
+    if (also_free_tree && result->error == PERR_SUCCESS)
     {
-        case PERR_SUCCESS:
-            return "Success";
-        case PERR_UNEXPECTED_SUBEXPRESSION:
-            return "Unexpected subexpression";
-        case PERR_EXCESS_OPENING_PARENTHESIS:
-            return "Missing closing parenthesis";
-        case PERR_UNEXPECTED_CLOSING_PARENTHESIS:
-            return "Unexpected closing parenthesis";
-        case PERR_UNEXPECTED_DELIMITER:
-            return "Unexpected delimiter";
-        case PERR_MISSING_OPERATOR:
-            return "Unexpected operand";
-        case PERR_MISSING_OPERAND:
-            return "Missing operand";
-        case PERR_FUNCTION_WRONG_ARITY:
-            return "Wrong number of operands of function";
-        case PERR_CHILDREN_EXCEEDED:
-            return "Exceeded maximum number of operands of function";
-        case PERR_UNEXPECTED_END_OF_EXPR:
-            return "Unexpected end of expression";
-        case PERR_EXPECTED_PARAM_LIST:
-            return "Expected an opening parenthesis";
-        default:
-            return "Unknown Error";
+        free_tree(result->tree);
+        result->tree = NULL;
     }
 }

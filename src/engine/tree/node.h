@@ -33,6 +33,8 @@ void free_tree(Node *tree);
 
 // Accessors
 NodeType get_type(const Node *node);
+size_t get_token_index(const Node *node);
+void set_token_index(Node *node, size_t token_index);
 const Operator *get_op(const Node *node);
 void set_op(Node *node, const Operator *op);
 size_t get_num_children(const Node *node);

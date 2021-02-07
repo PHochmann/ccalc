@@ -1,5 +1,6 @@
 #pragma once
 #include "../tree/node.h"
+#include "../../util/vector.h"
 #include "context.h"
 
 typedef enum {
@@ -17,7 +18,14 @@ typedef enum {
     PERR_EXPECTED_PARAM_LIST,        // Function with arity > 0 has been parsed, but no opening parenthesis followed
 } ParserError;
 
+typedef struct {
+    Vector tokens;
+    ParserError error;
+    size_t error_token;
+    Node *tree;
+} ParsingResult;
+
 ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const char **tokens, Node **out_res, size_t *error_token);
-ParserError parse_input(const ParsingContext *ctx, const char *input, Node **out_res, size_t *error_pos);
-Node *parse_conveniently(const ParsingContext *ctx, const char *input);
-const char *perr_to_string(ParserError perr);
+bool parse_input(const ParsingContext *ctx, const char *input, ParsingResult *out_res);
+Node *parse_easy(const ParsingContext *ctx, const char *input);
+void free_result(ParsingResult *result, bool also_free_tree);

@@ -4,6 +4,7 @@
 
 struct Node {
     NodeType type;
+    size_t token_index;
 };
 
 typedef struct {
@@ -32,6 +33,7 @@ Node *malloc_variable_node(const char *var_name, size_t id)
 {
     VariableNode *res = malloc_wrapper(sizeof(VariableNode) + (strlen(var_name) + 1) * sizeof(char));
     res->base.type = NTYPE_VARIABLE;
+    res->base.token_index = 0;
     res->id = id;
     strcpy(res->var_name, var_name);
     return (Node*)res;
@@ -41,6 +43,7 @@ Node *malloc_constant_node(double value)
 {
     ConstantNode *res = malloc_wrapper(sizeof(ConstantNode));
     res->base.type = NTYPE_CONSTANT;
+    res->base.token_index = 0;
     res->const_value = value;
     return (Node*)res;
 }
@@ -51,6 +54,7 @@ Node *malloc_operator_node(const Operator *op, size_t num_children)
     OperatorNode *res = malloc_wrapper(sizeof(OperatorNode) + num_children * sizeof(Node*));
     for (size_t i = 0; i < num_children; i++) res->children[i] = NULL;
     res->base.type = NTYPE_OPERATOR;
+    res->base.token_index = 0;
     res->op = op;
     res->num_children = num_children;
     return (Node*)res;
@@ -72,6 +76,16 @@ void free_tree(Node *tree)
 NodeType get_type(const Node *node)
 {
     return node->type;
+}
+
+size_t get_token_index(const Node *node)
+{
+    return node->token_index;
+}
+
+void set_token_index(Node *node, size_t token_index)
+{
+    node->token_index = token_index;
 }
 
 const Operator *get_op(const Node *node)

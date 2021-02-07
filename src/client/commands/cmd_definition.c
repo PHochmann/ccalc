@@ -88,64 +88,66 @@ static bool add_function(char *name, char *left, char *right)
         return false;
     }
 
-    Node *left_n = NULL;
-    Node *right_n = NULL;
-
     // Add function operator to parse left input
     // Must be OP_DYNAMIC_ARITY because we do not know the actual arity yet
+    ParsingResult left_result;
     ctx_add_op(g_ctx, op_get_function(name, OP_DYNAMIC_ARITY));
-    if (!arith_parse_raw(left, FMT_ERROR_LEFT, 0, &left_n))
+    if (!arith_parse_raw(left, FMT_ERROR_LEFT, 0, &left_result))
     {
         goto error;
     }
 
     // Check if left side is "function(var_1, ..., var_n)"
-    if (!do_left_checks(left_n)) goto error;
+    if (!do_left_checks(left_result.tree))
+    {
+        goto error;
+    }
 
     // Assign correct arity:
     // Since operators are const, we can't change the arity directly
     // A new operator with correct arity has to be created
     ctx_delete_op(g_ctx, name, OP_PLACE_FUNCTION);
-    const Operator *new_op = ctx_add_op(g_ctx, op_get_function(name, get_num_children(left_n)));
-    set_op(left_n, new_op);
+    const Operator *new_op = ctx_add_op(g_ctx, op_get_function(name, get_num_children(left_result.tree)));
+    set_op(left_result.tree, new_op);
 
     // Parse right expression raw to detect a recursive definition
-    if (!arith_parse_raw(right, FMT_ERROR_RIGHT, (size_t)(right - left), &right_n))
+    ParsingResult right_result;
+    if (!arith_parse_raw(right, FMT_ERROR_RIGHT, (size_t)(right - left), &right_result))
     {
         goto error;
     }
 
     // Check if function is used in its definition
-    if (find_op((const Node**)&right_n, new_op) != NULL)
+    if (find_op((const Node**)&right_result.tree, new_op) != NULL)
     {
         report_error(ERR_RECURSIVE_DEFINITION);
+        free_result(&left_result, true);
+        free_result(&right_result, true);
         goto error;
     }
 
     // Since right expression was parsed raw to detect recursive definitions, do postprocessing
-    ListenerError l_err = arith_postprocess(&right_n);
-    if (l_err != LISTENERERR_SUCCESS)
+    if (!arith_postprocess(&right_result, FMT_ERROR_RIGHT, (size_t)(right - left)))
     {
-        report_error(FMT_ERROR_RIGHT, listenererr_to_str(l_err));
+        free_result(&left_result, true);
         goto error;
     }
 
     // Add rule to eliminate operator before evaluation
     RewriteRule rule;
     Pattern pattern;
-    if (get_pattern(left_n, 0, NULL, &pattern) < 0)
-    {
-        // Should never happen because all limits are checked beforehand.
-        goto error;
-    }
-    if (!get_rule(pattern, right_n, &rule))
+    get_pattern(left_result.tree, 0, NULL, &pattern); // Should always succeed
+    if (!get_rule(pattern, right_result.tree, &rule))
     {
         report_error(FMT_ERROR_RIGHT, ERR_NEW_VARIABLE_INTRODUCTION);
+        free_result(&left_result, true);
+        free_result(&right_result, true);
         goto error;
     }
+
     add_composite_function(rule);
 
-    if (get_op(left_n)->arity == 0)
+    if (get_op(left_result.tree)->arity == 0)
     {
         whisper("Added constant.\n");
     }
@@ -153,12 +155,11 @@ static bool add_function(char *name, char *left, char *right)
     {
         whisper("Added function.\n");
     }
-
+    free_result(&left_result, false);
+    free_result(&right_result, false);
     return true;
 
     error:
-    free_tree(left_n);
-    free_tree(right_n);
     ctx_delete_op(g_ctx, name, OP_PLACE_FUNCTION);
     free(name);
     return false;
@@ -204,7 +205,7 @@ bool cmd_definition_exec(char *input, __attribute__((unused)) int code)
 
     if (name == NULL)
     {
-        report_error(FMT_ERROR_LEFT, perr_to_string(PERR_UNEXPECTED_END_OF_EXPR));
+        report_error(FMT_ERROR_LEFT, ERR_NOT_A_FUNC);
         return false;
     }
     else
