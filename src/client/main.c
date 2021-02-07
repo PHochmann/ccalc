@@ -45,8 +45,8 @@ bool *parse_arg(Trie *switches, const char *arg)
 
 int main(int argc, char **argv)
 {
-    // Build trie full of strings that can be used as switches
-    // Payload: bool* that will be set to true if switch is set
+    // Build trie of strings that can be used as switches
+    // Payload: bool* that will be dereferenced and set to true if switch is set
     Trie switches = trie_create(sizeof(bool*));
     bool force_interactive;
     bool quiet;
@@ -100,7 +100,7 @@ int main(int argc, char **argv)
         {
             printf(COPYRIGHT_NOTICE
                 "This program comes with ABSOLUTELY NO WARRANTY; for details type 'license'.\n"
-                "This is free software, and you are welcome to redistribute it under certain conditions.\n\n");
+                "This is free software, and you are welcome to redistribute it under certain conditions.\n");
         }
     }
 

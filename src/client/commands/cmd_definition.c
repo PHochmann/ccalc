@@ -178,54 +178,46 @@ bool cmd_definition_exec(char *input, __attribute__((unused)) int code)
     Vector tokens;
     tokenize(input, &g_ctx->keywords_trie, &tokens);
     
-    if (vec_count(&tokens) > 0)
+    // Function name is first token that is not a space
+    char *name = NULL;
+    for (size_t i = 0; i < vec_count(&tokens); i++)
     {
-        // Function name is first token that is not a space
-        char *name = NULL;
-        for (size_t i = 0; i < vec_count(&tokens); i++)
+        char *token = *(char**)vec_get(&tokens, i);
+        if (is_space(token[0]))
         {
-            char *token = *(char**)vec_get(&tokens, i);
-            if (is_space(token[0]))
+            free(token);
+        }
+        else
+        {
+            if (name == NULL)
             {
-                free(token);
+                name = token;
             }
             else
             {
-                if (name == NULL)
-                {
-                    name = token;
-                }
-                else
-                {
-                    free(token);
-                }
+                free(token);
             }
         }
+    }
 
-        vec_destroy(&tokens);
+    vec_destroy(&tokens);
 
-        if (name == NULL)
+    if (name == NULL)
+    {
+        report_error(FMT_ERROR_LEFT, perr_to_string(PERR_UNEXPECTED_END_OF_EXPR));
+        return false;
+    }
+    else
+    {
+        if (!is_letter(name[0]))
         {
-            report_error(FMT_ERROR_LEFT, perr_to_string(PERR_EMPTY));
+            free(name);
+            report_error(FMT_ERROR_LEFT, ERR_NOT_A_FUNC);
             return false;
         }
         else
         {
-            if (!is_letter(name[0]))
-            {
-                free(name);
-                report_error(FMT_ERROR_LEFT, ERR_NOT_A_FUNC);
-                return false;
-            }
+            return add_function(name, input, right_input);
         }
-
-        return add_function(name, input, right_input);
-    }
-    else
-    {
-        // Zero tokens: expression is empty
-        report_error(FMT_ERROR_LEFT, perr_to_string(PERR_EMPTY));
-        vec_destroy(&tokens);
-        return false;
     }
 }

@@ -14,7 +14,7 @@ typedef enum {
     PERR_FUNCTION_WRONG_ARITY,       // Function of wrong arity
     PERR_CHILDREN_EXCEEDED,          // Too many operands for function
     PERR_UNEXPECTED_END_OF_EXPR,     // Expression ended too early
-    PERR_EMPTY,                      // No node has been created
+    PERR_EXPECTED_PARAM_LIST,        // Function with arity > 0 has been parsed, but no opening parenthesis followed
 } ParserError;
 
 ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const char **tokens, Node **out_res, size_t *error_token);

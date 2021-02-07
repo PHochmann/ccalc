@@ -23,7 +23,7 @@ static struct TreeToStringTest tests[] = {
     { "1+(2-3)",  "1+(2-3)" },
     { "pi",       "pi" },
     { "log(1,2)", "log(1,2)"},
-    { "sum",      "sum()" },
+    { "sum()",      "sum()" },
     { "sum(--1)",   "sum(-(-1))" },
     { "-sqrt(abs(--a!!*--sum(-b+c-d+e, f^(g^h)-i, -sum(j, k), l+m)*--n!!))",
         "-sqrt(abs(((-(-a)!)!)*(-(-sum(-b+c-d+e,f^g^h-i,-sum(j,k),l+m)))*(-(-n)!)!))" },

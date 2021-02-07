@@ -91,6 +91,7 @@ bool op_pop_and_insert(struct ParserState *state)
             // Pop nodes from stack and append them in subtree
             if (!node_pop(state, get_child_addr(op_node, get_num_children(op_node) - i - 1)))
             {
+                state->curr_tok = op_data->token;
                 // Free already appended children and new node on error
                 free_tree(op_node);
                 return false;
@@ -165,7 +166,8 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
     };
 
     // 3. Process each token
-    bool await_infix = false; // Or postfix, or delimiter, or closing parenthesis
+    bool await_infix = false;  // Or postfix, or delimiter, or closing parenthesis
+    bool await_params = false; // When a function parameter list needs to follow
     for (size_t i = 0; i < num_tokens; i++)
     {
         const char *token = tokens[i];
@@ -195,8 +197,16 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
         // II. Is token opening parenthesis?
         if (is_opening_parenthesis(token))
         {
+            await_params = false;
             if (!push_opening_parenthesis(&state)) goto exit;
             continue;
+        }
+        else
+        {
+            if (await_params)
+            {
+                ERROR(PERR_EXPECTED_PARAM_LIST);
+            }
         }
 
         // III. Is token closing parenthesis or argument delimiter?
@@ -234,7 +244,9 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
             }
             else
             {
-                if (op_peek(&state) != NULL && op_peek(&state)->arity != 0)
+                if (op_peek(&state) == NULL
+                    || op_peek(&state)->op->placement != OP_PLACE_FUNCTION // '()' but not empty parameter list
+                    || op_peek(&state)->arity != 0) // 'f(x,)'
                 {
                     ERROR(PERR_UNEXPECTED_CLOSING_PARENTHESIS);
                 }
@@ -305,6 +317,7 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
                 else
                 {
                     await_infix = false;
+                    await_params = true;
                 }
                 continue;
             }
@@ -361,7 +374,7 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
 
     state.curr_tok = num_tokens;
 
-    if (vec_count(&state.vec_nodes) != 0 && !await_infix)
+    if (!await_infix)
     {
         ERROR(PERR_UNEXPECTED_END_OF_EXPR);
     }
@@ -383,20 +396,22 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
     {
         // We haven't constructed a single node
         state.curr_tok = 0;
-        ERROR(PERR_EMPTY);
+        ERROR(PERR_UNEXPECTED_END_OF_EXPR);
     }
     
     // 5. Build result and return value
     if (vec_count(&state.vec_nodes) == 1)
     {
-        if (out_res != NULL) *out_res = *(Node**)vec_pop(&state.vec_nodes);
+        if (out_res != NULL)
+        {
+            *out_res = *(Node**)vec_pop(&state.vec_nodes);
+        }
     }
     else
     {
         // We have multiple ASTs (need glue-op)
         ERROR(PERR_MISSING_OPERATOR);
     }
-    
     
     exit:
     // If parsing wasn't successful or result is discarded, free partial results
@@ -485,8 +500,8 @@ const char *perr_to_string(ParserError perr)
             return "Exceeded maximum number of operands of function";
         case PERR_UNEXPECTED_END_OF_EXPR:
             return "Unexpected end of expression";
-        case PERR_EMPTY:
-            return "Empty Expression";
+        case PERR_EXPECTED_PARAM_LIST:
+            return "Expected an opening parenthesis";
         default:
             return "Unknown Error";
     }
