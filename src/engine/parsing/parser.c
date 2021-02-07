@@ -244,7 +244,7 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
             }
             else
             {
-                if (op_peek(&state) == NULL
+                if (op_peek(&state) == NULL // '1,'
                     || op_peek(&state)->op->placement != OP_PLACE_FUNCTION // '()' but not empty parameter list
                     || op_peek(&state)->arity != 0) // 'f(x,)'
                 {
@@ -374,6 +374,10 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
 
     state.curr_tok = num_tokens;
 
+    if (await_params)
+    {
+        ERROR(PERR_EXPECTED_PARAM_LIST);
+    }
     if (!await_infix)
     {
         ERROR(PERR_UNEXPECTED_END_OF_EXPR);
@@ -392,12 +396,8 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
         }
     }
 
-    if (vec_count(&state.vec_nodes) == 0)
-    {
-        // We haven't constructed a single node
-        state.curr_tok = 0;
-        ERROR(PERR_UNEXPECTED_END_OF_EXPR);
-    }
+    // By now, the node vector can not be empty!
+    // Empty string or string consisting of spaces will fail because of await_infix=false and '()' will fail because of unexpected closing parenthesis
     
     // 5. Build result and return value
     if (vec_count(&state.vec_nodes) == 1)
@@ -409,7 +409,7 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
     }
     else
     {
-        // We have multiple ASTs (need glue-op)
+        // Node vector contains more than one node (no glue op to glue them together)
         ERROR(PERR_MISSING_OPERATOR);
     }
     
