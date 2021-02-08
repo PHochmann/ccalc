@@ -234,7 +234,7 @@ static void show_error_at_token(const Vector *tokens, size_t error_token, const 
     }
     int error_length = 1;
     if (error_token < vec_count(tokens)) error_length = strlen(*(const char**)vec_get(tokens, error_token));
-    show_error_with_position(error_pos, error_length, "Error: %s\n", message);
+    show_error_with_position(error_pos, error_length, "Error: %s", message);
 }
 
 bool arith_parse(char *input, size_t prompt_len, Node **out_res)

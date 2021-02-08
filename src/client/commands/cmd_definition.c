@@ -14,12 +14,12 @@
 
 #define DEFINITION_OP   "="
 
-#define ERR_NOT_A_FUNC                "Not a function or constant"
-#define ERR_ARGS_NOT_VARS             "Function arguments must be variables"
-#define ERR_NOT_DISTINCT              "Function arguments must be distinct variables"
-#define ERR_NEW_VARIABLE_INTRODUCTION "Unbound variable"
-#define ERR_BUILTIN_REDEFINITION      "Built-in functions can not be redefined\n"
-#define ERR_REDEFINITION              "Function or constant already defined. Please use clear command before redefinition\n"
+#define ERR_NOT_A_FUNC                "Error: Not a function or constant"
+#define ERR_ARGS_NOT_VARS             "Error: Function arguments must be variables"
+#define ERR_NOT_DISTINCT              "Error: Function arguments must be distinct variables"
+#define ERR_NEW_VARIABLE_INTRODUCTION "Error: Unbound variable\n"
+#define ERR_BUILTIN_REDEFINITION      "Error: Built-in functions can not be redefined\n"
+#define ERR_REDEFINITION              "Error: Function or constant already defined. Use clear command before redefinition\n"
 #define ERR_RECURSIVE_DEFINITION      "Error: Recursive definition\n"
 
 int cmd_definition_check(const char *input)
@@ -27,11 +27,11 @@ int cmd_definition_check(const char *input)
     return strstr(input, DEFINITION_OP) != NULL;
 }
 
-static bool do_left_checks(Node *left_n)
+static bool do_left_checks(Node *left_n, int strlen)
 {
     if (get_type(left_n) != NTYPE_OPERATOR || get_op(left_n)->placement != OP_PLACE_FUNCTION)
     {
-        report_error(ERR_NOT_A_FUNC);
+        show_error_with_position(0, strlen, ERR_NOT_A_FUNC);
         return false;
     }
 
@@ -43,7 +43,7 @@ static bool do_left_checks(Node *left_n)
         {
             if (get_type(get_child(left_n, i)) != NTYPE_VARIABLE)
             {
-                report_error(ERR_ARGS_NOT_VARS);
+                show_error_with_position(0, strlen, ERR_ARGS_NOT_VARS);
                 return false;
             }
         }
@@ -53,12 +53,12 @@ static bool do_left_checks(Node *left_n)
         size_t num_vars = list_variables(left_n, MAX_MAPPED_VARS, vars, &sufficient_buff);
         if (!sufficient_buff)
         {
-            report_error("Too many function parameters. Maximum is %zu.\n", MAX_MAPPED_VARS);
+            show_error_with_position(0, strlen, "Too many function parameters. Maximum is %zu.", MAX_MAPPED_VARS);
             return false;
         }
         if (num_vars != num_children)
         {
-            report_error(ERR_NOT_DISTINCT);
+            show_error_with_position(0, strlen, ERR_NOT_DISTINCT);
             return false;
         }
     }
@@ -96,7 +96,7 @@ static bool add_function(char *name, char *left, char *right)
     }
 
     // Check if left side is "function(var_1, ..., var_n)"
-    if (!do_left_checks(left_result.tree))
+    if (!do_left_checks(left_result.tree, strlen(left)))
     {
         goto error;
     }
@@ -203,7 +203,7 @@ bool cmd_definition_exec(char *input, __attribute__((unused)) int code)
 
     if (name == NULL)
     {
-        report_error(ERR_NOT_A_FUNC);
+        show_error_with_position(0, strlen(input), ERR_NOT_A_FUNC);
         return false;
     }
     else
@@ -211,7 +211,7 @@ bool cmd_definition_exec(char *input, __attribute__((unused)) int code)
         if (!is_letter(name[0]))
         {
             free(name);
-            report_error(ERR_NOT_A_FUNC);
+            show_error_with_position(0, strlen(input), ERR_NOT_A_FUNC);
             return false;
         }
         else

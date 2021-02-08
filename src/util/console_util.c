@@ -164,17 +164,41 @@ void software_defect(const char *fmt, ...)
 
 void show_error_with_position(int pos, int length, const char *fmt, ...)
 {
-    if (is_interactive())
-    {
-        report_error("%*s^", pos, "");
-        for (int i = 0; i < length - 1; i++)
-        {
-            report_error("~");
-        }
-    }
     va_list args;
     va_start(args, fmt);
-    fprintf(stderr, " ");
-    vfprintf(stderr, fmt, args);
+
+    if (is_interactive())
+    {
+        int msg_len = vsnprintf(NULL, 0, fmt, args);
+        va_end(args);
+        va_start(args, fmt);
+        if (pos - msg_len > 0) // Left of error token
+        {
+            report_error("%*s", pos - msg_len - 1, "");
+            vfprintf(stderr, fmt, args);
+            report_error(" ");
+            for (int i = 0; i < length - 1; i++)
+            {
+                report_error("~");
+            }
+            report_error("^");
+        }
+        else // Right of error token
+        {
+            report_error("%*s^", pos, "");
+            for (int i = 0; i < length - 1; i++)
+            {
+                report_error("~");
+            }
+            report_error(" ");
+            vfprintf(stderr, fmt, args);
+        }
+    }
+    else
+    {
+        vfprintf(stderr, fmt, args);
+    }
+
+    report_error("\n");
     va_end(args);
 }
