@@ -13,7 +13,7 @@
 #include "test_simplification.h"
 
 static const size_t NUM_CASES = 20;
-char *cases[] = {
+const char *cases[] = {
     "x-x",                 "0",
     "x+x",                 "2x",
     "x+x+x+x+x",           "5x",

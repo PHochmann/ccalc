@@ -13,8 +13,6 @@
 #include "../core/arith_context.h"
 
 #define DEFINITION_OP   "="
-#define FMT_ERROR_LEFT  "Error in left expression: %s\n"
-#define FMT_ERROR_RIGHT "Error in right expression: %s\n"
 
 #define ERR_NOT_A_FUNC                "Not a function or constant"
 #define ERR_ARGS_NOT_VARS             "Function arguments must be variables"
@@ -33,7 +31,7 @@ static bool do_left_checks(Node *left_n)
 {
     if (get_type(left_n) != NTYPE_OPERATOR || get_op(left_n)->placement != OP_PLACE_FUNCTION)
     {
-        report_error(FMT_ERROR_LEFT, ERR_NOT_A_FUNC);
+        report_error(ERR_NOT_A_FUNC);
         return false;
     }
 
@@ -45,7 +43,7 @@ static bool do_left_checks(Node *left_n)
         {
             if (get_type(get_child(left_n, i)) != NTYPE_VARIABLE)
             {
-                report_error(FMT_ERROR_LEFT, ERR_ARGS_NOT_VARS);
+                report_error(ERR_ARGS_NOT_VARS);
                 return false;
             }
         }
@@ -60,7 +58,7 @@ static bool do_left_checks(Node *left_n)
         }
         if (num_vars != num_children)
         {
-            report_error(FMT_ERROR_LEFT, ERR_NOT_DISTINCT);
+            report_error(ERR_NOT_DISTINCT);
             return false;
         }
     }
@@ -92,7 +90,7 @@ static bool add_function(char *name, char *left, char *right)
     // Must be OP_DYNAMIC_ARITY because we do not know the actual arity yet
     ParsingResult left_result;
     ctx_add_op(g_ctx, op_get_function(name, OP_DYNAMIC_ARITY));
-    if (!arith_parse_raw(left, FMT_ERROR_LEFT, 0, &left_result))
+    if (!arith_parse_raw(left, 0, &left_result))
     {
         goto error;
     }
@@ -112,7 +110,7 @@ static bool add_function(char *name, char *left, char *right)
 
     // Parse right expression raw to detect a recursive definition
     ParsingResult right_result;
-    if (!arith_parse_raw(right, FMT_ERROR_RIGHT, (size_t)(right - left), &right_result))
+    if (!arith_parse_raw(right, (size_t)(right - left), &right_result))
     {
         goto error;
     }
@@ -127,7 +125,7 @@ static bool add_function(char *name, char *left, char *right)
     }
 
     // Since right expression was parsed raw to detect recursive definitions, do postprocessing
-    if (!arith_postprocess(&right_result, FMT_ERROR_RIGHT, (size_t)(right - left)))
+    if (!arith_postprocess(&right_result, (size_t)(right - left)))
     {
         free_result(&left_result, true);
         goto error;
@@ -139,7 +137,7 @@ static bool add_function(char *name, char *left, char *right)
     get_pattern(left_result.tree, 0, NULL, &pattern); // Should always succeed
     if (!get_rule(pattern, right_result.tree, &rule))
     {
-        report_error(FMT_ERROR_RIGHT, ERR_NEW_VARIABLE_INTRODUCTION);
+        report_error(ERR_NEW_VARIABLE_INTRODUCTION);
         free_result(&left_result, true);
         free_result(&right_result, true);
         goto error;
@@ -205,7 +203,7 @@ bool cmd_definition_exec(char *input, __attribute__((unused)) int code)
 
     if (name == NULL)
     {
-        report_error(FMT_ERROR_LEFT, ERR_NOT_A_FUNC);
+        report_error(ERR_NOT_A_FUNC);
         return false;
     }
     else
@@ -213,7 +211,7 @@ bool cmd_definition_exec(char *input, __attribute__((unused)) int code)
         if (!is_letter(name[0]))
         {
             free(name);
-            report_error(FMT_ERROR_LEFT, ERR_NOT_A_FUNC);
+            report_error(ERR_NOT_A_FUNC);
             return false;
         }
         else

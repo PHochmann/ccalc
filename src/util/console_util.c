@@ -161,3 +161,20 @@ void software_defect(const char *fmt, ...)
     va_end(args);
     exit(EXIT_FAILURE);
 }
+
+void show_error_with_position(int pos, int length, const char *fmt, ...)
+{
+    if (is_interactive())
+    {
+        report_error("%*s^", pos, "");
+        for (int i = 0; i < length - 1; i++)
+        {
+            report_error("~");
+        }
+    }
+    va_list args;
+    va_start(args, fmt);
+    fprintf(stderr, " ");
+    vfprintf(stderr, fmt, args);
+    va_end(args);
+}

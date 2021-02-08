@@ -210,9 +210,9 @@ const char *listenererr_to_str(int code)
         case LISTENERERR_IMPOSSIBLE_DERIV:
             return "Expression not continuously differentiable";
         case LISTENERERR_MALFORMED_DERIV_A:
-            return "You can only use expr' when there is not more than one variable in expr.";
+            return "More than one variable in expr'";
         case LISTENERERR_MALFORMED_DERIV_B:
-            return "Second operand of function 'deriv' must be variable.";
+            return "Second operand of function 'deriv' must be variable";
         case LISTENERERR_UNKNOWN_OP:
             return "No evaluation of operator possible";
         case LISTENERERR_DIVISION_BY_ZERO:
@@ -225,34 +225,24 @@ const char *listenererr_to_str(int code)
 /*
 Summary: Prints error message with position (if interactive) under token stream in console
 */
-void show_error_with_position(Vector *tokens, size_t error_token, const char *error_fmt, const char *error_message, size_t prompt_len)
+void show_error_at_token(Vector *tokens, size_t error_token, const char *message, size_t prompt_len)
 {
-    size_t error_pos = 0;
+    int error_pos = prompt_len;
     for (size_t i = 0; i < error_token; i++)
     {
         error_pos += strlen(*(const char**)vec_get(tokens, i));
     }
-    if (is_interactive())
-    {
-        report_error("%*s^", (int)(error_pos + prompt_len), "");
-        if (error_token < vec_count(tokens))
-        {
-            for (size_t i = 0; i < strlen(*(const char**)vec_get(tokens, error_token)) - 1; i++)
-            {
-                report_error("~");
-            }
-        }
-    }
-    report_error(" ");
-    report_error(error_fmt, error_message);
+    int error_length = 1;
+    if (error_token < vec_count(tokens)) error_length = strlen(*(const char**)vec_get(tokens, error_token));
+    show_error_with_position(error_pos, error_length, "Error: %s\n", message);
 }
 
-bool arith_parse(char *input, char *error_fmt, size_t prompt_len, Node **out_res)
+bool arith_parse(char *input, size_t prompt_len, Node **out_res)
 {
     ParsingResult res;
-    if (arith_parse_raw(input, error_fmt, prompt_len, &res))
+    if (arith_parse_raw(input, prompt_len, &res))
     {
-        if (arith_postprocess(&res, error_fmt, prompt_len))
+        if (arith_postprocess(&res, prompt_len))
         {
             free_result(&res, false);
             *out_res = res.tree;
@@ -265,11 +255,11 @@ bool arith_parse(char *input, char *error_fmt, size_t prompt_len, Node **out_res
 /*
 Summary: Only calls parser, does not perform any substitution
 */
-bool arith_parse_raw(char *input, char *error_fmt, size_t prompt_len, ParsingResult *out_res)
+bool arith_parse_raw(char *input, size_t prompt_len, ParsingResult *out_res)
 {
     if (!parse_input(g_ctx, input, out_res))
     {
-        show_error_with_position(&out_res->tokens, out_res->error_token, error_fmt, perr_to_string(out_res->error), prompt_len);
+        show_error_at_token(&out_res->tokens, out_res->error_token, perr_to_string(out_res->error), prompt_len);
         free_result(out_res, false);
         return false;
     }
@@ -282,7 +272,7 @@ bool arith_parse_raw(char *input, char *error_fmt, size_t prompt_len, ParsingRes
 /*
 Summary: Replaces user-defined functions and simplifies
 */
-bool arith_postprocess(ParsingResult *p_result, char *error_fmt, size_t prompt_len)
+bool arith_postprocess(ParsingResult *p_result, size_t prompt_len)
 {
     LinkedListIterator iterator = list_get_iterator(g_composite_functions);
     apply_ruleset_by_iterator(&p_result->tree, (Iterator*)&iterator, NULL, SIZE_MAX);
@@ -290,7 +280,7 @@ bool arith_postprocess(ParsingResult *p_result, char *error_fmt, size_t prompt_l
     ListenerError l_err = simplify(&p_result->tree, &errnode);
     if (l_err != LISTENERERR_SUCCESS)
     {
-        show_error_with_position(&p_result->tokens, get_token_index(errnode), error_fmt, listenererr_to_str(l_err), prompt_len);
+        show_error_at_token(&p_result->tokens, get_token_index(errnode), listenererr_to_str(l_err), prompt_len);
         free_result(p_result, true);
         return false;
     }

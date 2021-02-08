@@ -11,8 +11,6 @@
 #include "../core/history.h"
 #include "../core/arith_evaluation.h"
 
-#define ERROR_FMT "Error: %s\n"
-
 int cmd_evaluation_check(__attribute__((unused)) const char *input)
 {
     return true;
@@ -24,7 +22,7 @@ Summary: The evaluation command is executed when input is no other command (henc
 bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
 {
         Node *node;
-        if (!arith_parse(input, ERROR_FMT, 0, &node)) return false;
+        if (!arith_parse(input, 0, &node)) return false;
         printf("= ");
         print_tree(node, true);
         printf("\n");

@@ -141,7 +141,7 @@ char *skip_ansi(const char *str)
     return (char*)str;
 }
 
-char *strip_whitespace(char *str)
+char *strip(char *str)
 {
     size_t len = strlen(str);
     if (len == 0) return str;

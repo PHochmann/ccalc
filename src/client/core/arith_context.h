@@ -22,6 +22,6 @@ bool remove_composite_function(const Operator *function);
 void clear_composite_functions();
 RewriteRule *get_composite_function(Operator *op);
 
-bool arith_parse(char *input, char *error_fmt, size_t prompt_len, Node **out_res);
-bool arith_parse_raw(char *input, char *error_fmt, size_t prompt_len, ParsingResult *out_res);
-bool arith_postprocess(ParsingResult *p_result, char *error_fmt, size_t prompt_len);
+bool arith_parse(char *input, size_t prompt_len, Node **out_res);
+bool arith_parse_raw(char *input, size_t prompt_len, ParsingResult *out_res);
+bool arith_postprocess(ParsingResult *p_result, size_t prompt_len);
