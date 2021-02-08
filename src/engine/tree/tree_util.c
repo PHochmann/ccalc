@@ -248,7 +248,7 @@ Node **find_op(const Node **tree, const Operator *op)
 {
     if (get_type(*tree) == NTYPE_OPERATOR)
     {
-        if (get_op(*tree) == op)
+        if (get_op(*tree)->id == op->id)
         {
             return (Node**)tree;
         }
