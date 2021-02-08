@@ -5,34 +5,34 @@
 
 /*
 Summary: Copies tree, tree_equals(tree, copy) will return true. Source tree can be safely free'd afterwards.
+Params
+    tree: Tree to copy
 */
 Node *tree_copy(const Node *tree)
 {
     if (tree == NULL) return NULL;
 
+    Node *res = NULL;
     switch (get_type(tree))
     {
         case NTYPE_OPERATOR:
-        {
-            Node *res = malloc_operator_node(get_op(tree), get_num_children(tree));
+            res = malloc_operator_node(get_op(tree), get_num_children(tree), get_token_index(tree));
             for (size_t i = 0; i < get_num_children(tree); i++)
             {
                 set_child(res, i, tree_copy(get_child(tree, i)));
             }
-            return res;
-        }
-        
+            break;
+      
         case NTYPE_CONSTANT:
-            return malloc_constant_node(get_const_value(tree));
+            res = malloc_constant_node(get_const_value(tree), get_token_index(tree));
+            break;
             
         case NTYPE_VARIABLE:
-        {
-            Node *res = malloc_variable_node(get_var_name(tree), get_id(tree));
-            return res;
-        }
+            res = malloc_variable_node(get_var_name(tree), get_id(tree), get_token_index(tree));
+            break;
     }
     
-    return NULL;
+    return res;
 }
 
 /*
@@ -87,7 +87,12 @@ void tree_replace_by_list(Node **parent, size_t child_to_replace, NodeList list)
     if (list.size != 1) // Parent needs to be replaced (but not via tree_replace because most children are preserved)
     {
         free_tree(get_child(*parent, child_to_replace));
-        Node *new_parent = malloc_operator_node(get_op(*parent), get_num_children(*parent) - 1 + list.size);
+
+        Node *new_parent = malloc_operator_node(
+            get_op(*parent),
+            get_num_children(*parent) - 1 + list.size,
+            get_token_index(*parent));
+        
         for (size_t i = 0; i < child_to_replace; i++)
         {
             set_child(new_parent, i, get_child(*parent, i));
@@ -243,7 +248,7 @@ Node **find_op(const Node **tree, const Operator *op)
 {
     if (get_type(*tree) == NTYPE_OPERATOR)
     {
-        if (get_op(*tree) == op)
+        if (get_op(*tree)->id == op->id)
         {
             return (Node**)tree;
         }
@@ -333,7 +338,7 @@ Params
     reduction: Function that takes an operator, number of children, and pointer to number of children many child values
     out:       Reduction result
 */
-ListenerError tree_reduce(const Node *tree, TreeListener listener, double *out)
+ListenerError tree_reduce(const Node *tree, TreeListener listener, double *out, const Node **out_errnode)
 {
     switch (get_type(tree))
     {
@@ -344,30 +349,30 @@ ListenerError tree_reduce(const Node *tree, TreeListener listener, double *out)
         case NTYPE_OPERATOR:
         {
             size_t num_args = get_num_children(tree);
-            if (num_args > 0)
+            double args[MAX_CHILDREN];
+
+            for (size_t i = LISTENERERR_SUCCESS; i < num_args; i++)
             {
-                double args[MAX_CHILDREN];
-                for (size_t i = LISTENERERR_SUCCESS; i < num_args; i++)
-                {
-                    ListenerError err = tree_reduce(get_child(tree, i), listener, &args[i]);
-                    if (err != LISTENERERR_SUCCESS) return err;
-                }
-                ListenerError err = listener(get_op(tree), num_args, args, out);
+                ListenerError err = tree_reduce(get_child(tree, i), listener, &args[i], out_errnode);
                 if (err != LISTENERERR_SUCCESS) return err;
             }
-            else
+
+            ListenerError err = listener(get_op(tree), num_args, args, out);
+            if (err != LISTENERERR_SUCCESS)
             {
-                ListenerError err = listener(get_op(tree), 0, NULL, out);
-                if (err != LISTENERERR_SUCCESS) return err;
+                if (out_errnode != NULL) *out_errnode = tree;
+                return err;
             }
-            return 0;
+
+            return LISTENERERR_SUCCESS;
         }
 
         case NTYPE_VARIABLE:
+            if (out_errnode != NULL) *out_errnode = tree;
             return LISTENERERR_VARIABLE_ENCOUNTERED;
 
         default:
-            return -42; // This should never happen
+            return 0; // This should never happen
     }
 }
 
@@ -377,14 +382,15 @@ Params:
     tree:            Tree that will be changed
     listener:        Compositional evaluation function
 */
-ListenerError tree_reduce_constant_subtrees(Node **tree, TreeListener listener)
+ListenerError tree_reduce_constant_subtrees(Node **tree, TreeListener listener, const Node **out_errnode)
 {
     if (count_all_variable_nodes(*tree) == 0)
     {
         double res;
-        ListenerError err = tree_reduce(*tree, listener, &res);
+        ListenerError err = tree_reduce(*tree, listener, &res, out_errnode);
         if (err != LISTENERERR_SUCCESS) return err;
-        tree_replace(tree, malloc_constant_node(res));
+        Node *replacement = malloc_constant_node(res, get_token_index(*tree));
+        tree_replace(tree, replacement);
     }
     else
     {
@@ -392,11 +398,12 @@ ListenerError tree_reduce_constant_subtrees(Node **tree, TreeListener listener)
         {
             for (size_t i = 0; i < get_num_children(*tree); i++)
             {
-                ListenerError err = tree_reduce_constant_subtrees(get_child_addr(*tree, i), listener);
+                ListenerError err = tree_reduce_constant_subtrees(get_child_addr(*tree, i), listener, out_errnode);
                 if (err != LISTENERERR_SUCCESS) return err;
             }
         }
     }
+
     return LISTENERERR_SUCCESS;
 }
 
@@ -414,7 +421,10 @@ void tree_reduce_ops(Node **tree, const Operator *op, OpEval callback)
 
         if (get_op(*tree) == op)
         {
-            tree_replace(tree, malloc_constant_node(callback(get_num_children(*tree), get_child_addr(*tree, 0))));
+            Node *replacement = malloc_constant_node(callback(get_num_children(*tree),
+                get_child_addr(*tree, 0)),
+                get_token_index(*tree));
+            tree_replace(tree, replacement);
         }
     }
 }

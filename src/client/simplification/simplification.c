@@ -17,7 +17,7 @@
 #include "propositional_context.h"
 #include "propositional_evaluation.h"
 
-#define P(x) (parse_conveniently(g_ctx, x))
+#define P(x) (parse_easy(g_ctx, x))
 #define NUM_RULESETS 7
 
 /*
@@ -43,8 +43,8 @@ static void replace_negative_consts(Node **tree)
     {
         if (get_const_value(*tree) < 0)
         {
-            Node *minus_op = malloc_operator_node(ctx_lookup_op(g_ctx, "-", OP_PLACE_PREFIX), 1);
-            set_child(minus_op, 0, malloc_constant_node(fabs(get_const_value(*tree))));
+            Node *minus_op = malloc_operator_node(ctx_lookup_op(g_ctx, "-", OP_PLACE_PREFIX), 1, get_token_index(*tree));
+            set_child(minus_op, 0, malloc_constant_node(fabs(get_const_value(*tree)), get_token_index(*tree)));
             tree_replace(tree, minus_op);
         }
     }
@@ -117,73 +117,93 @@ static void apply_simplification(Node **tree, Vector *ruleset)
     while (apply_ruleset_by_iterator(tree, (Iterator*)&it, propositional_checker, 1) != 0)
     {
         iterator_reset((Iterator*)&it);
-        tree_reduce_constant_subtrees(tree, arith_op_evaluate);
+        tree_reduce_constant_subtrees(tree, arith_op_evaluate, NULL);
     };
     replace_negative_consts(tree);
 }
 
-/*
-Summary: Applies all pre-defined rewrite rules to tree
-Returns: True when transformations could be applied, False otherwise
-*/
-ListenerError simplify(Node **tree)
+ListenerError apply_derivatives(Node **tree, const Node **errnode)
 {
-    tree_reduce_constant_subtrees(tree, arith_op_evaluate);
-    // It's okay if simplification module is not initialized, just return without doing much
-    if (!initialized) return LISTENERERR_SUCCESS;
-
-    // Apply elimination rules
-    apply_simplification(tree, rulesets + 0);
-
-    // Check for deriv(x, y) WHERE !(type(y) == VAR)
-    if (get_matching((const Node**)tree, &malformed_deriv, propositional_checker, NULL))
-    {
-        return LISTENERERR_MALFORMED_DERIV_B;
-    }
-
-    // Transform shorthand derivative to deriv(expr, x)
     Matching matching;
     Node **matched;
+    // Transform shorthand derivative to deriv(expr, x)
     while ((matched = find_matching((const Node**)tree, &deriv_before, NULL, &matching)) != NULL)
     {
         // Check if there is more than one variable in within derivative shorthand
         const char *vars[2];
         size_t var_count = list_variables(*matched, 2, vars, NULL);
-        if (var_count > 1) return LISTENERERR_MALFORMED_DERIV_A;
+        if (var_count > 1)
+        {
+            if (errnode != NULL) *errnode = *matched;
+            return LISTENERERR_MALFORMED_DERIV_A;
+        }
 
         Node *replacement = tree_copy(deriv_after);
+        set_token_index(replacement, get_token_index(*matched));
 
         if (var_count == 1)
         {
-            tree_replace(get_child_addr(replacement, 1), malloc_variable_node(vars[0], 0));
+            tree_replace(get_child_addr(replacement, 1), malloc_variable_node(vars[0], 0, 0));
         }
 
         tree_replace(get_child_addr(replacement, 0), tree_copy(matching.mapped_nodes[0].nodes[0]));
         tree_replace(matched, replacement);
     }
 
-    // Simplify once, leave deriv untouched for now
-    for (size_t j = 3; j < NUM_RULESETS; j++)
+    // Check for deriv(x, y) WHERE !(type(y) == VAR)
+    if ((matched = find_matching((const Node**)tree, &malformed_deriv, propositional_checker, &matching)) != NULL)
     {
-        apply_simplification(tree, rulesets + j);
+        if (errnode != NULL) *errnode = *matched;
+        return LISTENERERR_MALFORMED_DERIV_B;
     }
 
-    // Simplify again, now with expanded derivation
-    for (size_t j = 0; j < NUM_RULESETS - 1; j++)
-    {
-        apply_simplification(tree, rulesets + j);
-    }
+    apply_simplification(tree, rulesets + 1);
 
     // If the tree still contains deriv-operators, the user attempted to derivate 
     // a subtree for which no reduction rule exists.
     Node **unresolved_derivation = find_op((const Node**)tree, get_op(deriv_after));
     if (unresolved_derivation != NULL)
     {
+        if (errnode != NULL) *errnode = *unresolved_derivation;
         return LISTENERERR_IMPOSSIBLE_DERIV;
     }
 
-    // Prettify
-    apply_simplification(tree, &rulesets[NUM_RULESETS - 1]);
+    return LISTENERERR_SUCCESS;
+}
+
+void simplify_without_derivative(Node **tree)
+{
+    apply_simplification(tree, rulesets + 0);
+    apply_simplification(tree, rulesets + 2);
+    apply_simplification(tree, rulesets + 3);
+    apply_simplification(tree, rulesets + 4);
+    apply_simplification(tree, rulesets + 5);
+    apply_simplification(tree, rulesets + 6);
+}
+
+/*
+Summary: Applies all pre-defined rewrite rules to tree
+Params
+    tree:    Tree to simplify
+    errnode: Node in which error occurred
+Returns: True when transformations could be applied, False otherwise
+*/
+ListenerError simplify(Node **tree, const Node **errnode)
+{
+    ListenerError res = tree_reduce_constant_subtrees(tree, arith_op_evaluate, errnode);
+
+    // It's okay if simplification module is not initialized, just return without doing much
+    if (!initialized) return res;
+
+    // Apply elimination rules
+    simplify_without_derivative(tree);
+    res = apply_derivatives(tree, errnode);
+    if (res != LISTENERERR_SUCCESS) return res;
+    simplify_without_derivative(tree);
+
+    res = tree_reduce_constant_subtrees(tree, arith_op_evaluate, errnode);
+    if (res != LISTENERERR_SUCCESS) return res;
+    replace_negative_consts(tree);
 
     return LISTENERERR_SUCCESS;
 }

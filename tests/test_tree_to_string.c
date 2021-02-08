@@ -33,8 +33,8 @@ bool tree_to_string_test(StringBuilder *error_builder)
 {
     for (size_t i = 0; i < NUM_CASES; i++)
     {
-        Node *node = NULL;
-        if (parse_input(g_ctx, tests[i].input, &node, NULL) != PERR_SUCCESS)
+        Node *node = parse_easy(g_ctx, tests[i].input);
+        if (node == NULL)
         {
             ERROR("Parser Error in '%s'\n", tests[i].input);
         }

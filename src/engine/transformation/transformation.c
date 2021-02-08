@@ -60,7 +60,7 @@ void transform_by_matching(size_t num_free_vars,
                 {
                     if (matching->mapped_nodes[j].size != 1) 
                     {
-                        software_defect("Trying to replace root with a list > 1.\n");
+                        software_defect("Trying to replace root with a list != 1.\n");
                     }
                     tree_replace(to_transform, tree_copy(matching->mapped_nodes[j].nodes[0]));
                     break;

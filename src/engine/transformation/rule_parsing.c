@@ -25,13 +25,13 @@ void report_pattern_errcode(int err_code)
 {
     switch (err_code)
     {
-        case -1:
+        case MAX_MAPPED_VARS_EXCEEDED:
             report_error("Trying to preprocess a pattern with too many distinct variables. Increase MAX_MAPPED_VARS.\n");
             return;
-        case -2:
+        case MAX_VARIABLE_OCCURRANCES_EXCEEDED:
             report_error("Trying to preprocess a pattern with too many variable occurrances. Increase MAX_VARIABLE_OCCURRANCES.\n");
             return;
-        case -3:
+        case MATCHING_MAX_CONSTRAINTS_EXCEEDED:
             report_error("Trying to preprocess a pattern with too many constraints. Increase MATCHING_MAX_CONSTRAINTS.\n");
     }
 }
@@ -63,7 +63,7 @@ bool parse_constraints(const char *string,
             next_and += strlen(AND);
         }
 
-        out_constraints[*num_constraints] = parse_conveniently(ctx, str);
+        out_constraints[*num_constraints] = parse_easy(ctx, str);
         if (out_constraints[*num_constraints] == NULL) goto error;
         (*num_constraints)++;
         if (*num_constraints == buffer_size) goto success;
@@ -98,7 +98,7 @@ bool parse_pattern(const char *string, const ParsingContext *ctx, Pattern *out_p
         goto error;
     }
 
-    Node *pattern = parse_conveniently(ctx, str); // Gives error message
+    Node *pattern = parse_easy(ctx, str); // Gives error message
     if (pattern == NULL)
     {
         goto error;
@@ -149,13 +149,13 @@ bool parse_rule(const char *string, const ParsingContext *ctx, RewriteRule *out_
     num_constrs = MATCHING_MAX_CONSTRAINTS;
     if (!parse_constraints(where_pos, ctx, &num_constrs, constrs)) goto error;
 
-    left_n = parse_conveniently(ctx, str); // Gives error message
+    left_n = parse_easy(ctx, str); // Gives error message
     if (left_n == NULL)
     {
         goto error;
     }
 
-    right_n = parse_conveniently(ctx, arrow_pos);
+    right_n = parse_easy(ctx, arrow_pos);
     if (right_n == NULL)
     {
         goto error;

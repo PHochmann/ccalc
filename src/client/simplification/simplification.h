@@ -6,4 +6,4 @@
 
 ssize_t init_simplification(char *file);
 void unload_simplification();
-ListenerError simplify(Node **tree);
+ListenerError simplify(Node **tree, const Node **errnode);

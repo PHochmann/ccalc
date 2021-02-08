@@ -24,6 +24,16 @@ int cmd_table_check(const char *input)
     return begins_with(COMMAND, input);
 }
 
+bool check_if_constant(const char *base, const char *string, const Node *node)
+{
+    if (count_all_variable_nodes(node) > 0)
+    {
+        show_error_with_position(string - base, strlen(string), "Error: Not constant\n");
+        return false;
+    }
+    return true;
+}
+
 bool cmd_table_exec(char *input, __attribute__((unused)) int code)
 {
     char *args[6];
@@ -36,6 +46,11 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
         return false;
     }
 
+    for (size_t i = 0; i < num_args; i++)
+    {
+        args[i] = strip(args[i]);
+    }
+
     bool success = false;
     Node *expr = NULL;
     Node *start = NULL;
@@ -44,7 +59,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     Node *fold_expr = NULL;
     Node *fold_init = NULL;
 
-    if (!arith_parse_and_postprocess(args[0], "Error in expression: %s\n", (size_t)(args[0] - input), &expr))
+    if (!arith_parse(args[0], (size_t)(args[0] - input), &expr))
     {
         return false;
     }
@@ -54,22 +69,21 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     size_t num_vars = list_variables(expr, 1, &var, &sufficient);
     if (!sufficient)
     {
-        report_error("Error: Expression contains more than one variable\n");
+        show_error_with_position(args[0] - input, strlen(args[0]), "Error: More than one variable\n");
         goto exit;
     }
 
-    if (!arith_parse_and_postprocess(args[1], "Error in start: %s\n", (size_t)(args[1] - input), &start)
-        || !arith_parse_and_postprocess(args[2], "Error in end: %s\n", (size_t)(args[2] - input), &end)
-        || !arith_parse_and_postprocess(args[3], "Error in step: %s\n", (size_t)(args[3] - input), &step))
+    if (!arith_parse(args[1], (size_t)(args[1] - input), &start)
+        || !arith_parse(args[2], (size_t)(args[2] - input), &end)
+        || !arith_parse(args[3], (size_t)(args[3] - input), &step))
     {
         goto exit;
     }
 
-    if (count_all_variable_nodes(start) > 0
-        || count_all_variable_nodes(end) > 0
-        || count_all_variable_nodes(step) > 0)
+    if (!check_if_constant(input, args[1], start)
+        || !check_if_constant(input, args[2], end)
+        || !check_if_constant(input, args[3], step))
     {
-        report_error("Error: Start, end and step must be constant\n");
         goto exit;
     }
 
@@ -79,7 +93,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
 
     if (step_val == 0)
     {
-        report_error("Error: Step must not be zero\n");
+        show_error_with_position(args[3] - input, strlen(args[3]), "Error: 'step' must not be zero\n");
         goto exit;
     }
 
@@ -88,8 +102,8 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     if (num_args == 6)
     {
         // Parse initial fold-value
-        if (!arith_parse_and_postprocess(args[4], "Error in fold expression: %s\n", (size_t)(args[4] - input), &fold_expr)
-            || !arith_parse_and_postprocess(args[5], "Error in initial fold value: %s\n", (size_t)(args[5] - input), &fold_init))
+        if (!arith_parse(args[4], (size_t)(args[4] - input), &fold_expr)
+            || !arith_parse(args[5], (size_t)(args[5] - input), &fold_init))
         {
             goto exit;
         }
@@ -98,16 +112,12 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
             - get_variable_nodes((const Node**)&fold_expr, FOLD_VAR_1, 0, NULL)
             - get_variable_nodes((const Node**)&fold_expr, FOLD_VAR_2, 0, NULL) != 0)
         {
-            report_error("Error: Fold expression must not contain any variables except '"
-                FOLD_VAR_1 "' and '" FOLD_VAR_2 "'\n");
+            show_error_with_position(args[4] - input, strlen(args[4]),
+                "Error: Fold expression must not contain any variables except '" FOLD_VAR_1 "' and '" FOLD_VAR_2 "'\n");
             goto exit;
         }
 
-        if (count_all_variable_nodes(fold_init) > 0)
-        {
-            report_error("Error: Initial fold value must be constant\n");
-            goto exit;
-        }
+        if (!check_if_constant(input, args[5], fold_init)) goto exit;
 
         fold_val = arith_evaluate(fold_init);
     }
@@ -146,11 +156,11 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     for (size_t i = 1; step_val > 0 ? start_val <= end_val : start_val >= end_val; i++)
     {
         Node *current_expr = tree_copy(expr);
-        Node *current_val = malloc_constant_node(start_val);
+        Node *current_val = malloc_constant_node(start_val, 0);
         replace_variable_nodes(&current_expr, current_val, var);
 
         double result = 0;
-        ListenerError err = tree_reduce(current_expr, arith_op_evaluate, &result);
+        ListenerError err = tree_reduce(current_expr, arith_op_evaluate, &result, NULL);
 
         if (is_interactive()) add_cell_fmt(table, " %zu ", i);
         add_cell_fmt(table, " " DOUBLE_FMT " ", start_val);
@@ -162,8 +172,8 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
             if (num_args == 6)
             {
                 Node *current_fold = tree_copy(fold_expr);
-                Node *current_fold_x = malloc_constant_node(fold_val);
-                Node *current_fold_y = malloc_constant_node(result);
+                Node *current_fold_x = malloc_constant_node(fold_val, 0);
+                Node *current_fold_y = malloc_constant_node(result, 0);
                 replace_variable_nodes(&current_fold, current_fold_x, FOLD_VAR_1);
                 replace_variable_nodes(&current_fold, current_fold_y, FOLD_VAR_2);
                 fold_val = arith_evaluate(current_fold);
@@ -174,7 +184,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
         }
         else
         {
-            add_cell_fmt(table, " %s ", listenererr_to_str(err));
+            add_cell_fmt(table, " Error ");
         }
 
         free_tree(current_expr);

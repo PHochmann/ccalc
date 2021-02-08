@@ -26,13 +26,15 @@ typedef struct {
 } NodeList;
 
 // Memory
-Node *malloc_variable_node(const char *var_name, size_t id);
-Node *malloc_constant_node(double value);
-Node *malloc_operator_node(const Operator *op, size_t num_children);
+Node *malloc_variable_node(const char *var_name, size_t id, size_t tok_index);
+Node *malloc_constant_node(double value, size_t tok_index);
+Node *malloc_operator_node(const Operator *op, size_t num_children, size_t tok_index);
 void free_tree(Node *tree);
 
 // Accessors
 NodeType get_type(const Node *node);
+size_t get_token_index(const Node *node);
+void set_token_index(Node *node, size_t token_index);
 const Operator *get_op(const Node *node);
 void set_op(Node *node, const Operator *op);
 size_t get_num_children(const Node *node);

@@ -125,9 +125,17 @@ ListenerError arith_op_evaluate(const Operator *op, size_t num_args, const doubl
             *out = args[0] * args[1];
             return LISTENERERR_SUCCESS;
         case 7: // x/y
-            *out = args[0] / args[1];
-            return LISTENERERR_SUCCESS;
+            if (args[1] != 0)
+            {
+                *out = args[0] / args[1];
+                return LISTENERERR_SUCCESS;
+            }
+            else
+            {
+                return LISTENERERR_DIVISION_BY_ZERO;
+            }
         case 8: // x^y
+            if (args[0] == 0 && args[1] <= 0) return LISTENERERR_DIVISION_BY_ZERO;
             *out = pow(args[0], args[1]);
             return LISTENERERR_SUCCESS;
         case 9: // x C y
@@ -337,6 +345,6 @@ ListenerError arith_op_evaluate(const Operator *op, size_t num_args, const doubl
 double arith_evaluate(const Node *tree)
 {
     double res = 0;
-    tree_reduce(tree, arith_op_evaluate, &res);
+    tree_reduce(tree, arith_op_evaluate, &res, NULL);
     return res;
 }

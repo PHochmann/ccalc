@@ -44,14 +44,12 @@ bool randomized_test(StringBuilder *error_builder)
         }
 
         // Parse stringed random tree
-        Node *parsed_tree = NULL;
-        ParserError result = parse_input(g_ctx, stringed_tree, &parsed_tree, NULL);
+        Node *parsed_tree = parse_easy(g_ctx, stringed_tree);
 
         // Check results
-        if (result != PERR_SUCCESS)
+        if (parsed_tree == NULL)
         {
-            printf("%s\n", stringed_tree);
-            ERROR("Parser error: %s.\n", perr_to_string(result));
+            ERROR("Parser error for: %s.\n", stringed_tree);
         }
         else
         {

@@ -105,12 +105,11 @@ bool almost_equals(double a, double b)
 
 bool parser_test(StringBuilder *error_builder)
 {
-    Node *node = NULL;
-
     // Perform value tests
     for (size_t i = 0; i < NUM_VALUE_CASES; i++)
     {
-        if (parse_input(g_ctx, valueTests[i].input, &node, NULL) != PERR_SUCCESS)
+        Node *node = parse_easy(g_ctx, valueTests[i].input);
+        if (node == NULL)
         {
             ERROR("Parser Error for '%s'\n", valueTests[i].input);
         }
@@ -127,10 +126,13 @@ bool parser_test(StringBuilder *error_builder)
     // Perform error tests
     for (size_t i = 0; i < NUM_ERROR_CASES; i++)
     {
-        if (parse_input(g_ctx, errorTests[i].input, NULL, NULL) != errorTests[i].result)
+        ParsingResult res;
+        parse_input(g_ctx, errorTests[i].input, &res);
+        if (res.error != errorTests[i].result)
         {
             ERROR("Unexpected error type for '%s'\n", errorTests[i].input);
         }
+        free_result(&res, true);
     }
 
     return true;

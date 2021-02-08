@@ -8,3 +8,6 @@ bin/
 vgcore*
 massif*
 callgrind*
+
+# Line counter output files
+out/

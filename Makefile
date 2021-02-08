@@ -1,6 +1,7 @@
 TARGET_EXEC  = ccalc
 BUILD_DIR    = ./bin/release
 # No trailing forward slash in INSTALL_PATH!
+# Note that install path is cwd when compiling tests or debug
 INSTALL_PATH = /etc/ccalc
 SRC_DIRS     = ./src
 
@@ -15,17 +16,19 @@ ifeq (,$(filter $(MAKECMDGOALS),tests))
 	endif
 endif
 
-# Compile with debugging flags if target is debug or tests
+# Compile with debugging flags if target is debug
 ifneq (,$(filter $(MAKECMDGOALS),debug))
-	BUILD_DIR =  ./bin/debug
-	CFLAGS    += -DDEBUG -g3 -O0 -fsanitize=undefined
-	LDFLAGS   += -fsanitize=undefined
+	BUILD_DIR    =  ./bin/debug
+	INSTALL_PATH = .
+	CFLAGS       += -DDEBUG -g3 -O0 -fsanitize=undefined
+	LDFLAGS      += -fsanitize=undefined
 endif
 
 # Compile additional test sources 
 ifneq (,$(filter $(MAKECMDGOALS),tests))
 	TARGET_EXEC  =  test
 	BUILD_DIR    =  ./bin/tests
+	INSTALL_PATH =  .
 	SRC_DIRS     += ./tests
 	CFLAGS       += -g3 -O0
 	SRCS = $(shell find $(SRC_DIRS) -name *.c ! -wholename "./src/client/main.c")

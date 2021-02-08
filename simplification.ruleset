@@ -76,6 +76,7 @@ RULESET
 
     # Misc.
     --x -> x
+    x/0 -> 0/0 WHERE x != 0
 
     # Operator ordering
     # Products before powers
@@ -114,8 +115,8 @@ RULESET
     x^1                              -> x
     (x^y)^z                          -> x^prod(y, z)
 
-    prod([xs], x^cy, [ys], x^cz, [zs]) -> prod([xs], x^sum(cy,cz), [ys], [zs]) WHERE type(cy)=CONST ; type(cz)=CONST
-    prod([xs], cy^x, [ys], cz^x, [zs]) -> prod([xs], (cy*cz)^x, [ys], [zs]) WHERE type(cy)=CONST ; type(cz)=CONST
+    prod([xs], x^cy, [ys], x^cz, [zs]) -> prod([xs], x^sum(cy,cz), [ys], [zs]) WHERE type(cy)==CONST ; type(cz)==CONST
+    prod([xs], cy^x, [ys], cz^x, [zs]) -> prod([xs], (cy*cz)^x, [ys], [zs]) WHERE type(cy)==CONST ; type(cz)==CONST
     prod([xs], x, [ys], x, [zs])     -> prod([xs], x^2, [ys], [zs])
     prod([xs], x, [ys], x^y, [zs])   -> prod([xs], x^sum(y,1), [ys], [zs])
     prod(x, y)^z                     -> prod(x^z, y^z)
@@ -185,6 +186,8 @@ RULESET
 
     x+(y+z)       -> x+y+z
     x*(y*z)       -> x*y*z
+
+    x/0           -> 0/0    WHERE !equal(x,0)
 
 # Ordering
 RULESET

@@ -54,6 +54,19 @@ void free_rule(RewriteRule *rule)
     free_tree(rule->after);
 }
 
+// Needed to preserve error information
+void set_tok_index_for_all(Node *tree, size_t index)
+{
+    set_token_index(tree, index);
+    if (get_type(tree) == NTYPE_OPERATOR)
+    {
+        for (size_t i = 0; i < get_num_children(tree); i++)
+        {
+            set_tok_index_for_all(get_child(tree, i), index);
+        }
+    }
+}
+
 /*
 Summary: Tries to find matching in tree and directly transforms tree by it
 Returns: True when matching could be applied, false otherwise
@@ -68,8 +81,11 @@ bool apply_rule(Node **tree, const RewriteRule *rule, ConstraintChecker checker)
     if (matched_subtree == NULL) return false;
     // If matching is found, transform tree with it
     Node *transformed = tree_copy(rule->after);
+    // Every new node in rhs of rule emerged from root of matched subtree
+    set_tok_index_for_all(transformed, get_token_index(*matched_subtree));
     transform_by_matching(rule->pattern.num_free_vars, rule->pattern.free_vars, &matching, &transformed);
     tree_replace(matched_subtree, transformed);
+
     return true;
 }
 

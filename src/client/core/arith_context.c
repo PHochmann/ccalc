@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <time.h>
+#include <string.h>
 
 #include "../../engine/tree/tree_util.h"
 #include "../../util/string_util.h"
 #include "../../util/console_util.h"
-#include "../../engine/parsing/parser.h"
 
 #include "../simplification/simplification.h"
 #include "arith_context.h"
@@ -161,61 +161,45 @@ RewriteRule *get_composite_function(Operator *op)
     return NULL;
 }
 
-/*
-Summary: Only calls parser, does not perform any substitution
-*/
-bool arith_parse_raw(char *input, char *error_fmt, size_t prompt_len, Node **out_res)
-{
-    size_t error_pos;
-    ParserError perr = parse_input(g_ctx, input, out_res, &error_pos);
-    if (perr != PERR_SUCCESS)
-    {
-        if (is_interactive())
-        {
-            report_error("%*s^ ", (int)(error_pos + prompt_len), "");
-        }
-        report_error(error_fmt, perr_to_string(perr));
-        return false;
-    }
-    return true;
-}
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ WRAPPER FUNCTIONS FOR PARSER
 
 /*
-Summary:
-    Parses input, does post-processing of input, gives feedback on command line
-    Result is guaranteed not to contain any user-defined functions or pseudo-ops (deriv, $...)
-Returns:
-    True when input was successfully parsed, false when syntax error in input or semantical error while transforming
+Returns: String representation of ParserError
 */
-bool arith_parse_and_postprocess(char *input, char *error_fmt, size_t prompt_len, Node **out_res)
+static const char *perr_to_string(ParserError perr)
 {
-    if (arith_parse_raw(input, error_fmt, prompt_len, out_res))
+    switch (perr)
     {
-        ListenerError l_err = arith_postprocess(out_res);
-        if (l_err != LISTENERERR_SUCCESS)
-        {
-            report_error(error_fmt, listenererr_to_str(l_err));
-            free_tree(*out_res);
-            return false;
-        }
-        return true;
-    }
-    else
-    {
-        return false;
+        case PERR_SUCCESS:
+            return "Success";
+        case PERR_UNEXPECTED_SUBEXPRESSION:
+            return "Unexpected subexpression";
+        case PERR_EXCESS_OPENING_PARENTHESIS:
+            return "Missing closing parenthesis";
+        case PERR_UNEXPECTED_CLOSING_PARENTHESIS:
+            return "Unexpected closing parenthesis";
+        case PERR_UNEXPECTED_DELIMITER:
+            return "Unexpected delimiter";
+        case PERR_MISSING_OPERATOR:
+            return "Unexpected operand";
+        case PERR_MISSING_OPERAND:
+            return "Missing operand";
+        case PERR_FUNCTION_WRONG_ARITY:
+            return "Wrong number of operands of function";
+        case PERR_CHILDREN_EXCEEDED:
+            return "Exceeded maximum number of operands of function";
+        case PERR_UNEXPECTED_END_OF_EXPR:
+            return "Unexpected end of expression";
+        case PERR_EXPECTED_PARAM_LIST:
+            return "Expected an opening parenthesis";
+        default:
+            return "Unknown Error";
     }
 }
 
-ListenerError arith_postprocess(Node **tree)
+static const char *listenererr_to_str(int code)
 {
-    LinkedListIterator iterator = list_get_iterator(g_composite_functions);
-    apply_ruleset_by_iterator(tree, (Iterator*)&iterator, NULL, SIZE_MAX);
-    return simplify(tree);
-}
-
-const char *listenererr_to_str(ListenerError error)
-{
-    switch (error)
+    switch (code)
     {
         case LISTENERERR_SUCCESS:
             return "No error";
@@ -224,14 +208,84 @@ const char *listenererr_to_str(ListenerError error)
         case LISTENERERR_HISTORY_NOT_SET:
             return "This part of the history is not set yet";
         case LISTENERERR_IMPOSSIBLE_DERIV:
-            return "Derivation not possible";
+            return "Expression not continuously differentiable";
         case LISTENERERR_MALFORMED_DERIV_A:
-            return "You can only use expr' when there is not more than one variable in expr.";
+            return "More than one variable in expr'";
         case LISTENERERR_MALFORMED_DERIV_B:
-            return "Second operand of function 'deriv' must be variable.";
+            return "Second operand of function 'deriv' must be variable";
         case LISTENERERR_UNKNOWN_OP:
             return "No evaluation of operator possible";
+        case LISTENERERR_DIVISION_BY_ZERO:
+            return "Division by zero";
         default:
             return "Unknown error";
+    }
+}
+
+/*
+Summary: Prints error message with position (if interactive) under token stream in console
+*/
+static void show_error_at_token(const Vector *tokens, size_t error_token, const char *message, size_t prompt_len)
+{
+    int error_pos = prompt_len;
+    for (size_t i = 0; i < error_token; i++)
+    {
+        error_pos += strlen(*(const char**)vec_get(tokens, i));
+    }
+    int error_length = 1;
+    if (error_token < vec_count(tokens)) error_length = strlen(*(const char**)vec_get(tokens, error_token));
+    show_error_with_position(error_pos, error_length, "Error: %s\n", message);
+}
+
+bool arith_parse(char *input, size_t prompt_len, Node **out_res)
+{
+    ParsingResult res;
+    if (arith_parse_raw(input, prompt_len, &res))
+    {
+        if (arith_postprocess(&res, prompt_len))
+        {
+            free_result(&res, false);
+            *out_res = res.tree;
+            return true;
+        }
+    }
+    return false;
+}
+
+/*
+Summary: Only calls parser, does not perform any substitution
+*/
+bool arith_parse_raw(char *input, size_t prompt_len, ParsingResult *out_res)
+{
+    if (!parse_input(g_ctx, input, out_res))
+    {
+        show_error_at_token(&out_res->tokens, out_res->error_token, perr_to_string(out_res->error), prompt_len);
+        free_result(out_res, false);
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
+/*
+Summary: Replaces user-defined functions and simplifies
+*/
+bool arith_postprocess(ParsingResult *p_result, size_t prompt_len)
+{
+    LinkedListIterator iterator = list_get_iterator(g_composite_functions);
+    apply_ruleset_by_iterator(&p_result->tree, (Iterator*)&iterator, NULL, SIZE_MAX);
+    const Node *errnode = NULL;
+    ListenerError l_err = simplify(&p_result->tree, &errnode);
+    if (l_err != LISTENERERR_SUCCESS)
+    {
+        show_error_at_token(&p_result->tokens, get_token_index(errnode), listenererr_to_str(l_err), prompt_len);
+        free_result(p_result, true);
+        return false;
+    }
+    else
+    {
+        return true;
     }
 }
