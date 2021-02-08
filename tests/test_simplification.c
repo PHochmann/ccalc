@@ -12,7 +12,7 @@
 #include "fuzzer.h"
 #include "test_simplification.h"
 
-static const size_t NUM_CASES = 19;
+static const size_t NUM_CASES = 20;
 char *cases[] = {
     "x-x",                 "0",
     "x+x",                 "2x",
@@ -34,7 +34,8 @@ char *cases[] = {
     "x'",                  "1",
     "(10x^10)'''''''''''", "0",
     "deriv(3*x*y, y)",     "3x",
-    "deriv((3x)'*y, y)",   "3"
+    "deriv((3x)'*y, y)",   "3",
+    "(x+y-y)'",            "1",
 };
 
 bool simplification_test(StringBuilder *error_builder)
@@ -53,7 +54,7 @@ bool simplification_test(StringBuilder *error_builder)
         }
         if (simplify(&left, NULL) != LISTENERERR_SUCCESS)
         {
-            ERROR("core_simplify returned false in test case %zu.\n", i);
+            ERROR("Simplification reported semantic error in test case %zu.\n", i);
         }
 
         if (!tree_equals(left, right))
