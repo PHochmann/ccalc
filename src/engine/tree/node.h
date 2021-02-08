@@ -26,9 +26,9 @@ typedef struct {
 } NodeList;
 
 // Memory
-Node *malloc_variable_node(const char *var_name, size_t id);
-Node *malloc_constant_node(double value);
-Node *malloc_operator_node(const Operator *op, size_t num_children);
+Node *malloc_variable_node(const char *var_name, size_t id, size_t tok_index);
+Node *malloc_constant_node(double value, size_t tok_index);
+Node *malloc_operator_node(const Operator *op, size_t num_children, size_t tok_index);
 void free_tree(Node *tree);
 
 // Accessors

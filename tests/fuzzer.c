@@ -26,12 +26,12 @@ void get_random_tree(size_t max_inner_nodes, Node **out)
         // Choose constant or variable 50/50
         if (rand() % 2 == 0)
         {
-            *out = malloc_constant_node(constants[rand() % NUM_CONSTANTS]);
+            *out = malloc_constant_node(constants[rand() % NUM_CONSTANTS], 0);
         }
         else
         {
             // Variable with random name
-            *out = malloc_variable_node(variable_names[rand() % NUM_VARIABLE_NAMES], 0);
+            *out = malloc_variable_node(variable_names[rand() % NUM_VARIABLE_NAMES], 0, 0);
         }
     }
     else
@@ -49,7 +49,7 @@ void get_random_tree(size_t max_inner_nodes, Node **out)
             num_children = op->arity;
         }
 
-        *out = malloc_operator_node(op, num_children);
+        *out = malloc_operator_node(op, num_children, 0);
 
         for (size_t i = 0; i < num_children; i++)
         {

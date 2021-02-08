@@ -19,20 +19,20 @@ ListenerError prop_op_evaluate(const Operator *op, size_t num_args, const double
 
     switch (op->id)
     {
-        case NUM_ARITH_OPS + 2: // CONST
-            *out = EVAL_TYPE_CONST;
-            return LISTENERERR_SUCCESS;
-        case NUM_ARITH_OPS + 3: // VAR
-            *out = EVAL_TYPE_VAR;
-            return LISTENERERR_SUCCESS;
-        case NUM_ARITH_OPS + 4: // OP
-            *out = EVAL_TYPE_OP;
-            return LISTENERERR_SUCCESS;
-        case NUM_ARITH_OPS + 5: // ==
+        case NUM_ARITH_OPS + 2: // ==
             *out = (args[0] == args[1]) ? EVAL_TRUE : EVAL_FALSE;
             return LISTENERERR_SUCCESS;
-        case NUM_ARITH_OPS + 6: // !=
+        case NUM_ARITH_OPS + 3: // !=
             *out = (args[0] != args[1]) ? EVAL_TRUE : EVAL_FALSE;
+            return LISTENERERR_SUCCESS;
+        case NUM_ARITH_OPS + 4: // CONST
+            *out = EVAL_TYPE_CONST;
+            return LISTENERERR_SUCCESS;
+        case NUM_ARITH_OPS + 5: // VAR
+            *out = EVAL_TYPE_VAR;
+            return LISTENERERR_SUCCESS;
+        case NUM_ARITH_OPS + 6: // OP
+            *out = EVAL_TYPE_OP;
             return LISTENERERR_SUCCESS;
         case NUM_ARITH_OPS + 7: // >
             *out = (args[0] > args[1]) ? EVAL_TRUE : EVAL_FALSE;
@@ -64,7 +64,7 @@ ListenerError prop_op_evaluate(const Operator *op, size_t num_args, const double
     return LISTENERERR_UNKNOWN_OP; // To make compiler happy
 }
 
-double equals_eval(__attribute__((unused)) size_t num_children, Node **children)
+double equal_eval(__attribute__((unused)) size_t num_children, Node **children)
 {
     if (tree_equals(children[0], children[1]))
     {
@@ -88,9 +88,9 @@ bool propositional_checker(Node **tree)
 {
     // Step 1: Reduce type(x)
     tree_reduce_ops(tree, ctx_lookup_op(g_propositional_ctx, "type", OP_PLACE_FUNCTION), type_eval);
-    // Step 3: Reduce =
-    tree_reduce_ops(tree, ctx_lookup_op(g_propositional_ctx, "=", OP_PLACE_INFIX), equals_eval);
-    // Step 4: Reduce everything else
+    // Step 2: Reduce equal(x,y)
+    tree_reduce_ops(tree, ctx_lookup_op(g_propositional_ctx, "equal", OP_PLACE_FUNCTION), equal_eval);
+    // Step 3: Reduce everything else
     double reduced = 0;
     if (tree_reduce(*tree, prop_op_evaluate, &reduced, NULL) != LISTENERERR_SUCCESS)
     {

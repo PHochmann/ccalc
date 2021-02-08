@@ -12,10 +12,6 @@
 #include "fuzzer.h"
 #include "test_simplification.h"
 
-/*#define NUM_FUZZER_CASES 300
-#define MAX_INNER_NODES  100
-#define EPS 0.001*/
-
 static const size_t NUM_CASES = 19;
 char *cases[] = {
     "x-x",                 "0",
@@ -45,17 +41,17 @@ bool simplification_test(StringBuilder *error_builder)
 {
     for (size_t i = 0; i < NUM_CASES; i++)
     {
-        Node *left = NULL;
-        if (parse_input(g_ctx, cases[2 * i], &left, NULL) != PERR_SUCCESS)
+        Node *left = parse_easy(g_ctx, cases[2 * i]);
+        if (left == NULL)
         {
             ERROR("Syntax error in left side of test case %zu.\n", i);
         }
-        Node *right = NULL;
-        if (parse_input(g_ctx, cases[2 * i + 1], &right, NULL) != PERR_SUCCESS)
+        Node *right = parse_easy(g_ctx, cases[2 * i + 1]);
+        if (right == NULL)
         {
             ERROR("Syntax error in right side of test case %zu.\n", i);
         }
-        if (simplify(&left) != LISTENERERR_SUCCESS)
+        if (simplify(&left, NULL) != LISTENERERR_SUCCESS)
         {
             ERROR("core_simplify returned false in test case %zu.\n", i);
         }

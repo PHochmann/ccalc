@@ -43,8 +43,8 @@ static void replace_negative_consts(Node **tree)
     {
         if (get_const_value(*tree) < 0)
         {
-            Node *minus_op = malloc_operator_node(ctx_lookup_op(g_ctx, "-", OP_PLACE_PREFIX), 1);
-            set_child(minus_op, 0, malloc_constant_node(fabs(get_const_value(*tree))));
+            Node *minus_op = malloc_operator_node(ctx_lookup_op(g_ctx, "-", OP_PLACE_PREFIX), 1, get_token_index(*tree));
+            set_child(minus_op, 0, malloc_constant_node(fabs(get_const_value(*tree)), get_token_index(*tree)));
             tree_replace(tree, minus_op);
         }
     }
@@ -131,9 +131,10 @@ Returns: True when transformations could be applied, False otherwise
 */
 ListenerError simplify(Node **tree, const Node **errnode)
 {
-    tree_reduce_constant_subtrees(tree, arith_op_evaluate, errnode);
+    ListenerError res = tree_reduce_constant_subtrees(tree, arith_op_evaluate, errnode);
+
     // It's okay if simplification module is not initialized, just return without doing much
-    if (!initialized) return LISTENERERR_SUCCESS;
+    if (!initialized) return res;
 
     // Apply elimination rules
     apply_simplification(tree, rulesets + 0);
@@ -144,7 +145,7 @@ ListenerError simplify(Node **tree, const Node **errnode)
     // Check for deriv(x, y) WHERE !(type(y) == VAR)
     if ((matched = find_matching((const Node**)tree, &malformed_deriv, propositional_checker, &matching)) != NULL)
     {
-        *errnode = *matched;
+        if (errnode != NULL) *errnode = *matched;
         return LISTENERERR_MALFORMED_DERIV_B;
     }
 
@@ -156,15 +157,16 @@ ListenerError simplify(Node **tree, const Node **errnode)
         size_t var_count = list_variables(*matched, 2, vars, NULL);
         if (var_count > 1)
         {
-            *errnode = *matched;
+            if (errnode != NULL) *errnode = *matched;
             return LISTENERERR_MALFORMED_DERIV_A;
         }
 
         Node *replacement = tree_copy(deriv_after);
+        set_token_index(replacement, get_token_index(*matched));
 
         if (var_count == 1)
         {
-            tree_replace(get_child_addr(replacement, 1), malloc_variable_node(vars[0], 0));
+            tree_replace(get_child_addr(replacement, 1), malloc_variable_node(vars[0], 0, 0));
         }
 
         tree_replace(get_child_addr(replacement, 0), tree_copy(matching.mapped_nodes[0].nodes[0]));
@@ -188,12 +190,19 @@ ListenerError simplify(Node **tree, const Node **errnode)
     Node **unresolved_derivation = find_op((const Node**)tree, get_op(deriv_after));
     if (unresolved_derivation != NULL)
     {
-        *errnode = *unresolved_derivation;
+        if (errnode != NULL) *errnode = *unresolved_derivation;
         return LISTENERERR_IMPOSSIBLE_DERIV;
     }
 
     // Prettify
     apply_simplification(tree, &rulesets[NUM_RULESETS - 1]);
+
+    res = tree_reduce_constant_subtrees(tree, arith_op_evaluate, errnode);
+    if (res != LISTENERERR_SUCCESS)
+    {
+        return res;
+    }
+    replace_negative_consts(tree);
 
     return LISTENERERR_SUCCESS;
 }

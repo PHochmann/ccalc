@@ -16,20 +16,22 @@ Node *tree_copy(const Node *tree)
     switch (get_type(tree))
     {
         case NTYPE_OPERATOR:
-            res = malloc_operator_node(get_op(tree), get_num_children(tree));
+            res = malloc_operator_node(get_op(tree), get_num_children(tree), get_token_index(tree));
             for (size_t i = 0; i < get_num_children(tree); i++)
             {
                 set_child(res, i, tree_copy(get_child(tree, i)));
             }
+            break;
       
         case NTYPE_CONSTANT:
-            res = malloc_constant_node(get_const_value(tree));
+            res = malloc_constant_node(get_const_value(tree), get_token_index(tree));
+            break;
             
         case NTYPE_VARIABLE:
-            res = malloc_variable_node(get_var_name(tree), get_id(tree));
+            res = malloc_variable_node(get_var_name(tree), get_id(tree), get_token_index(tree));
+            break;
     }
     
-    set_token_index(res, get_token_index(tree));
     return res;
 }
 
@@ -73,7 +75,6 @@ Summary: Frees *tree_to_replace and assigns tree_to_insert to tree_to_replace
 */
 void tree_replace(Node **tree_to_replace, Node *tree_to_insert)
 {
-    set_token_index(tree_to_insert, get_token_index(*tree_to_replace));
     free_tree(*tree_to_replace);
     *tree_to_replace = tree_to_insert;
 }
@@ -86,7 +87,12 @@ void tree_replace_by_list(Node **parent, size_t child_to_replace, NodeList list)
     if (list.size != 1) // Parent needs to be replaced (but not via tree_replace because most children are preserved)
     {
         free_tree(get_child(*parent, child_to_replace));
-        Node *new_parent = malloc_operator_node(get_op(*parent), get_num_children(*parent) - 1 + list.size);
+
+        Node *new_parent = malloc_operator_node(
+            get_op(*parent),
+            get_num_children(*parent) - 1 + list.size,
+            get_token_index(*parent));
+        
         for (size_t i = 0; i < child_to_replace; i++)
         {
             set_child(new_parent, i, get_child(*parent, i));
@@ -383,7 +389,8 @@ ListenerError tree_reduce_constant_subtrees(Node **tree, TreeListener listener, 
         double res;
         ListenerError err = tree_reduce(*tree, listener, &res, out_errnode);
         if (err != LISTENERERR_SUCCESS) return err;
-        tree_replace(tree, malloc_constant_node(res));
+        Node *replacement = malloc_constant_node(res, get_token_index(*tree));
+        tree_replace(tree, replacement);
     }
     else
     {
@@ -414,7 +421,10 @@ void tree_reduce_ops(Node **tree, const Operator *op, OpEval callback)
 
         if (get_op(*tree) == op)
         {
-            tree_replace(tree, malloc_constant_node(callback(get_num_children(*tree), get_child_addr(*tree, 0))));
+            Node *replacement = malloc_constant_node(callback(get_num_children(*tree),
+                get_child_addr(*tree, 0)),
+                get_token_index(*tree));
+            tree_replace(tree, replacement);
         }
     }
 }

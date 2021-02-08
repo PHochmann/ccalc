@@ -84,8 +84,7 @@ bool op_pop_and_insert(struct ParserState *state)
         }
 
         // We try to allocate a new node and pop its children from node stack
-        Node *op_node = malloc_operator_node(op, op_data->arity);
-        set_token_index(op_node, op_data->token);
+        Node *op_node = malloc_operator_node(op, op_data->arity, op_data->token);
         
         for (size_t i = 0; i < get_num_children(op_node); i++)
         {
@@ -363,13 +362,12 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
         double const_val;
         if (try_parse_constant(token, &const_val))
         {
-            node = malloc_constant_node(const_val);
+            node = malloc_constant_node(const_val, i);
         }
         else // Token must be variable
         {
-            node = malloc_variable_node(token, 0);
+            node = malloc_variable_node(token, 0, i);
         }
-        set_token_index(node, i);
 
         await_infix = true;
         node_push(&state, node);

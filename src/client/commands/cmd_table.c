@@ -146,7 +146,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     for (size_t i = 1; step_val > 0 ? start_val <= end_val : start_val >= end_val; i++)
     {
         Node *current_expr = tree_copy(expr);
-        Node *current_val = malloc_constant_node(start_val);
+        Node *current_val = malloc_constant_node(start_val, 0);
         replace_variable_nodes(&current_expr, current_val, var);
 
         double result = 0;
@@ -162,8 +162,8 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
             if (num_args == 6)
             {
                 Node *current_fold = tree_copy(fold_expr);
-                Node *current_fold_x = malloc_constant_node(fold_val);
-                Node *current_fold_y = malloc_constant_node(result);
+                Node *current_fold_x = malloc_constant_node(fold_val, 0);
+                Node *current_fold_y = malloc_constant_node(result, 0);
                 replace_variable_nodes(&current_fold, current_fold_x, FOLD_VAR_1);
                 replace_variable_nodes(&current_fold, current_fold_y, FOLD_VAR_2);
                 fold_val = arith_evaluate(current_fold);

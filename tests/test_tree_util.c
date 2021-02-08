@@ -11,15 +11,15 @@ bool tree_util_test(StringBuilder *error_builder)
     Operator op = op_get_function("test", OP_DYNAMIC_ARITY);
 
     // Manually construct tree: test(x, test(x, y), y, 42, x)
-    Node *root = malloc_operator_node(&op, 5);
-    Node *child = malloc_operator_node(&op, 2);
-    set_child(root, 0, malloc_variable_node("x", 0));
+    Node *root = malloc_operator_node(&op, 5, 0);
+    Node *child = malloc_operator_node(&op, 2, 0);
+    set_child(root, 0, malloc_variable_node("x", 0, 0));
     set_child(root, 1, child);
-    set_child(root, 2, malloc_variable_node("y", 0));
-    set_child(root, 3, malloc_constant_node(42));
-    set_child(root, 4, malloc_variable_node("x", 0));
-    set_child(child, 0, malloc_variable_node("x", 0));
-    set_child(child, 1, malloc_variable_node("y", 0));
+    set_child(root, 2, malloc_variable_node("y", 0, 0));
+    set_child(root, 3, malloc_constant_node(42, 0));
+    set_child(root, 4, malloc_variable_node("x", 0, 0));
+    set_child(child, 0, malloc_variable_node("x", 0, 0));
+    set_child(child, 1, malloc_variable_node("y", 0, 0));
 
     // Case 1
     if (count_all_variable_nodes(root) != 5)

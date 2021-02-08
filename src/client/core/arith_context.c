@@ -208,13 +208,15 @@ const char *listenererr_to_str(int code)
         case LISTENERERR_HISTORY_NOT_SET:
             return "This part of the history is not set yet";
         case LISTENERERR_IMPOSSIBLE_DERIV:
-            return "Operator not continuously differentiable";
+            return "Expression not continuously differentiable";
         case LISTENERERR_MALFORMED_DERIV_A:
             return "You can only use expr' when there is not more than one variable in expr.";
         case LISTENERERR_MALFORMED_DERIV_B:
             return "Second operand of function 'deriv' must be variable.";
         case LISTENERERR_UNKNOWN_OP:
             return "No evaluation of operator possible";
+        case LISTENERERR_DIVISION_BY_ZERO:
+            return "Division by zero";
         default:
             return "Unknown error";
     }
@@ -241,6 +243,7 @@ void show_error_with_position(Vector *tokens, size_t error_token, const char *er
             }
         }
     }
+    report_error(" ");
     report_error(error_fmt, error_message);
 }
 
