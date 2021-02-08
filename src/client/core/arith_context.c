@@ -166,7 +166,7 @@ RewriteRule *get_composite_function(Operator *op)
 /*
 Returns: String representation of ParserError
 */
-const char *perr_to_string(ParserError perr)
+static const char *perr_to_string(ParserError perr)
 {
     switch (perr)
     {
@@ -197,7 +197,7 @@ const char *perr_to_string(ParserError perr)
     }
 }
 
-const char *listenererr_to_str(int code)
+static const char *listenererr_to_str(int code)
 {
     switch (code)
     {
@@ -225,7 +225,7 @@ const char *listenererr_to_str(int code)
 /*
 Summary: Prints error message with position (if interactive) under token stream in console
 */
-void show_error_at_token(Vector *tokens, size_t error_token, const char *message, size_t prompt_len)
+static void show_error_at_token(const Vector *tokens, size_t error_token, const char *message, size_t prompt_len)
 {
     int error_pos = prompt_len;
     for (size_t i = 0; i < error_token; i++)

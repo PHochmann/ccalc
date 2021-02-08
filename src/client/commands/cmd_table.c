@@ -184,7 +184,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
         }
         else
         {
-            add_cell_fmt(table, " Math Error ");
+            add_cell_fmt(table, " Error ");
         }
 
         free_tree(current_expr);

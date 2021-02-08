@@ -7,6 +7,10 @@
 #define MATCHING_MAX_CONSTRAINTS  3 // Maximum number of constraints per trigger index
 #define MATCHING_LIST_PREFIX '['
 
+#define MAX_MAPPED_VARS_EXCEEDED          -1
+#define MAX_VARIABLE_OCCURRANCES_EXCEEDED -2
+#define MATCHING_MAX_CONSTRAINTS_EXCEEDED -3
+
 typedef struct
 {
     Node *pattern;

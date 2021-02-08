@@ -26,6 +26,10 @@ bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
         printf("= ");
         print_tree(node, true);
         printf("\n");
+        if (get_type(node) == NTYPE_CONSTANT)
+        {
+            history_add(get_const_value(node));
+        }
         free_tree(node);
         return true;
 }

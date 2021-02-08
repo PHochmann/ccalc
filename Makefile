@@ -1,6 +1,7 @@
 TARGET_EXEC  = ccalc
 BUILD_DIR    = ./bin/release
 # No trailing forward slash in INSTALL_PATH!
+# Note that install path is cwd when compiling tests or debug
 INSTALL_PATH = /etc/ccalc
 SRC_DIRS     = ./src
 
