@@ -23,7 +23,7 @@ bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
 {
         Node *node;
         if (!arith_parse(input, 0, &node)) return false;
-        printf("= ");
+        whisper("= ");
         print_tree(node, true);
         printf("\n");
         if (get_type(node) == NTYPE_CONSTANT)

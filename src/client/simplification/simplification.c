@@ -61,13 +61,17 @@ static void replace_negative_consts(Node **tree)
 }
 
 /*
-Returns: -1 if error occurred or number of simplification rules loaded
+Summary: Initializes tree simplification system
+Returns: -1 if file not readable,
+         -2 if ruleset file malformed,
+         number of simplification rules loaded on success
 */
-ssize_t init_simplification(char *ruleset_path)
+ssize_t init_simplification(const char *ruleset_path)
 {
-    if (access(ruleset_path, R_OK) == -1) return -1;
-
     FILE *ruleset_file = fopen(ruleset_path, "r");
+
+    if (ruleset_file == NULL) return -1;
+
     for (size_t i = 0; i < NUM_RULESETS; i++)
     {
         rulesets[i] = get_empty_ruleset();
@@ -75,12 +79,12 @@ ssize_t init_simplification(char *ruleset_path)
     ssize_t num_rulesets = parse_rulesets_from_file(ruleset_file, g_propositional_ctx, NUM_RULESETS, rulesets);
     if (num_rulesets == -1)
     {
-        return -1;
+        return -2;
     }
     if (num_rulesets != NUM_RULESETS)
     {
         report_error("Too few simplification rulesets defined in %s.\n", ruleset_path);
-        return -1;
+        return -2;
     }
     fclose(ruleset_file);
 

@@ -36,14 +36,13 @@ static const char *LICENSE =
     "You should have received a copy of the GNU General Public License\n"
     "along with this program.  If not, see <https://www.gnu.org/licenses/>.\n";
 
-#define NUM_COMMANDS 10
+#define NUM_COMMANDS 9
 static const char *COMMAND_TABLE[NUM_COMMANDS][2] = {
     { "<func|const> = <after>",                  "Adds function or constant" },
     { "table <expr> ; <from> ; <to> ; <step>  \n"
       "   [fold <expr> ; <init>]",               "Prints table of values" },
     { "load [simplification] <path>",            "Executes commands or loads simplification ruleset in file" },
     { "clear [<func>]",                          "Clears all or one function or constant" },
-    { "simplify <expr>",                         "Attempts to simplify an expression (beta)" },
     { "help [operators]",                        "Shows this message or a verbose list of all operators" },
     { "license",                                 "Shows information about ccalc's license" },
     { "quit",                                    "Closes application" }

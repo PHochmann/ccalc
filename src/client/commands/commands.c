@@ -73,7 +73,7 @@ void init_commands()
 {
     init_arith_ctx();
     init_propositional_ctx();
-    if (init_simplification(SIMPLIFICATION_PATH) < 0)
+    if (init_simplification(SIMPLIFICATION_PATH) == -1)
     {
         report_error("Error loading simplification ruleset: " SIMPLIFICATION_PATH " not found or readable.\n"
                      "Use 'load simplification <path>' to load a ruleset.\n");

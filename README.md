@@ -45,7 +45,6 @@ and be directly evaluated. See syntax rules and commands below.
 | ```load [simplification] <path>``` | Loads file as if its content had been typed in or loads simplification rules. |
 | ```help [operators]```             | Lists available commands and operators.                              |
 | ```clear [<func>]```               | Clears all or one function or constant.                              |
-| ```simplify <expr>```              | Attempts to simplify an expression (beta)                            |
 | ```license```                      | Shows information about ccalc's license.                             |
 | ```quit```                         | Closes application.                                                  |
 
