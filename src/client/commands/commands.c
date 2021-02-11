@@ -19,11 +19,7 @@
 #define COMMENT_PREFIX         '#'
 #define QUIT_COMMAND           "quit"
 
-#ifndef INSTALL_PATH
-    #error INSTALL_PATH not defined!
-#endif
-
-#define SIMPLIFICATION_PATH INSTALL_PATH "/simplification.ruleset"
+#define SIMPLIFICATION_FILENAME "/simplification.ruleset"
 
 struct Command
 {
@@ -73,11 +69,17 @@ void init_commands()
 {
     init_arith_ctx();
     init_propositional_ctx();
-    if (init_simplification(SIMPLIFICATION_PATH) == -1)
-    {
-        report_error("Error loading simplification ruleset: " SIMPLIFICATION_PATH " not found or readable.\n"
-                     "Use 'load simplification <path>' to load a ruleset.\n");
-    }
+
+    #ifdef INSTALL_PATH
+        if (init_simplification(INSTALL_PATH SIMPLIFICATION_FILENAME) == -1)
+        {
+            report_error("Error loading simplification ruleset: " INSTALL_PATH SIMPLIFICATION_FILENAME " not found or readable.\n"
+                        "Use 'load simplification <path>' to load a ruleset.\n");
+        }
+    #else
+        whisper("No simplification loaded, use 'load simplification <path>' to load a ruleset.\n");
+    #endif
+    
     init_console_util();
     init_history();
 }
