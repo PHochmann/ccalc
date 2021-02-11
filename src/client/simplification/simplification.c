@@ -37,6 +37,11 @@ Pattern deriv_before;
 Node *deriv_after;
 Pattern malformed_deriv;
 
+bool simplification_is_initialized()
+{
+    return initialized;
+}
+
 static void replace_negative_consts(Node **tree)
 {
     if (get_type(*tree) == NTYPE_CONSTANT)

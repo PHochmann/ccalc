@@ -40,6 +40,11 @@ const char *cases[] = {
 
 bool simplification_test(StringBuilder *error_builder)
 {
+    if (!simplification_is_initialized())
+    {
+        ERROR("Simplification module initialization failed\n");
+    }
+
     for (size_t i = 0; i < NUM_CASES; i++)
     {
         Node *left = parse_easy(g_ctx, cases[2 * i]);
