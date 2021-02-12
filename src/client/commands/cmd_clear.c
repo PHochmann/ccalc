@@ -47,7 +47,7 @@ bool cmd_clear_exec(char *input, int code)
         }
         else
         {
-            show_error_with_position(strlen(CLEAR_COMMAND) + 1, strlen(input), "Error: Unknown function\n");
+            report_error_at(strlen(CLEAR_COMMAND) + 1, strlen(input), "Error: Unknown function\n");
             return false;
         }
     }
