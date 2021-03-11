@@ -28,7 +28,7 @@ bool check_if_constant(const char *base, const char *string, const Node *node)
 {
     if (count_all_variable_nodes(node) > 0)
     {
-        show_error_with_position(string - base, strlen(string), "Error: Not constant\n");
+        report_error_at(string - base, strlen(string), "Error: Not constant\n");
         return false;
     }
     return true;
@@ -69,7 +69,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     size_t num_vars = list_variables(expr, 1, &var, &sufficient);
     if (!sufficient)
     {
-        show_error_with_position(args[0] - input, strlen(args[0]), "Error: More than one variable\n");
+        report_error_at(args[0] - input, strlen(args[0]), "Error: More than one variable\n");
         goto exit;
     }
 
@@ -93,7 +93,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
 
     if (step_val == 0)
     {
-        show_error_with_position(args[3] - input, strlen(args[3]), "Error: 'step' must not be zero\n");
+        report_error_at(args[3] - input, strlen(args[3]), "Error: 'step' must not be zero\n");
         goto exit;
     }
 
@@ -112,7 +112,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
             - get_variable_nodes((const Node**)&fold_expr, FOLD_VAR_1, 0, NULL)
             - get_variable_nodes((const Node**)&fold_expr, FOLD_VAR_2, 0, NULL) != 0)
         {
-            show_error_with_position(args[4] - input, strlen(args[4]),
+            report_error_at(args[4] - input, strlen(args[4]),
                 "Error: Fold expression must not contain any variables except '" FOLD_VAR_1 "' and '" FOLD_VAR_2 "'\n");
             goto exit;
         }

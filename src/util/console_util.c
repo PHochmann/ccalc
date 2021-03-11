@@ -162,7 +162,7 @@ void software_defect(const char *fmt, ...)
     exit(EXIT_FAILURE);
 }
 
-void show_error_with_position(int pos, int length, const char *fmt, ...)
+void report_error_at(int pos, int length, const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);

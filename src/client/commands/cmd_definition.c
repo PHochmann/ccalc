@@ -31,7 +31,7 @@ static bool do_left_checks(Node *left_n, int strlen)
 {
     if (get_type(left_n) != NTYPE_OPERATOR || get_op(left_n)->placement != OP_PLACE_FUNCTION)
     {
-        show_error_with_position(0, strlen, ERR_NOT_A_FUNC);
+        report_error_at(0, strlen, ERR_NOT_A_FUNC);
         return false;
     }
 
@@ -43,7 +43,7 @@ static bool do_left_checks(Node *left_n, int strlen)
         {
             if (get_type(get_child(left_n, i)) != NTYPE_VARIABLE)
             {
-                show_error_with_position(0, strlen, ERR_ARGS_NOT_VARS);
+                report_error_at(0, strlen, ERR_ARGS_NOT_VARS);
                 return false;
             }
         }
@@ -53,12 +53,12 @@ static bool do_left_checks(Node *left_n, int strlen)
         size_t num_vars = list_variables(left_n, MAX_MAPPED_VARS, vars, &sufficient_buff);
         if (!sufficient_buff)
         {
-            show_error_with_position(0, strlen, "Too many function parameters. Maximum is %zu.", MAX_MAPPED_VARS);
+            report_error_at(0, strlen, "Too many function parameters. Maximum is %zu.", MAX_MAPPED_VARS);
             return false;
         }
         if (num_vars != num_children)
         {
-            show_error_with_position(0, strlen, ERR_NOT_DISTINCT);
+            report_error_at(0, strlen, ERR_NOT_DISTINCT);
             return false;
         }
     }
@@ -224,7 +224,7 @@ bool cmd_definition_exec(char *input, __attribute__((unused)) int code)
 
     if (name == NULL)
     {
-        show_error_with_position(0, strlen(input), ERR_NOT_A_FUNC);
+        report_error_at(0, strlen(input), ERR_NOT_A_FUNC);
         return false;
     }
     else
@@ -232,7 +232,7 @@ bool cmd_definition_exec(char *input, __attribute__((unused)) int code)
         if (!is_letter(name[0]))
         {
             free(name);
-            show_error_with_position(0, strlen(input), ERR_NOT_A_FUNC);
+            report_error_at(0, strlen(input), ERR_NOT_A_FUNC);
             return false;
         }
         else

@@ -19,7 +19,7 @@ Params
 */
 void add_switch(Trie *switches, const char *str, bool *sw)
 {
-    if (str != NULL) TRIE_ADD_ELEM(switches, str, bool*, sw);
+    TRIE_ADD_ELEM(switches, str, bool*, sw);
     *sw = false;
 }
 
