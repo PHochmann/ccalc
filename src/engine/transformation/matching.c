@@ -13,7 +13,7 @@
 
 #define VECTOR_STARTSIZE 1
 
-// On heap during matching
+// On stack during matching
 typedef struct {
     const Pattern *pattern;
     ConstraintChecker checker;
@@ -383,7 +383,7 @@ int get_pattern(Node *tree, size_t num_constraints, Node **constrs, Pattern *out
 
     if (!sufficient)
     {
-        return -1;
+        return MAX_MAPPED_VARS_EXCEEDED;
     }
 
     // Step 1: Set id in pattern tree
@@ -394,7 +394,7 @@ int get_pattern(Node *tree, size_t num_constraints, Node **constrs, Pattern *out
 
         if (num_nodes > MAX_VARIABLE_OCURRANCES)
         {
-            return -2;
+            return MAX_VARIABLE_OCCURRANCES_EXCEEDED;
         }
 
         for (size_t j = 0; j < num_nodes; j++)
@@ -418,7 +418,7 @@ int get_pattern(Node *tree, size_t num_constraints, Node **constrs, Pattern *out
 
         if ((*out_pattern).num_constraints[max_id] == MATCHING_MAX_CONSTRAINTS)
         {
-            return -3;
+            return MATCHING_MAX_CONSTRAINTS_EXCEEDED;
         }
 
         // max_id contains trigger index

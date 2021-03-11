@@ -465,10 +465,14 @@ Node *parse_easy(const ParsingContext *ctx, const char *input)
 
 void free_result(ParsingResult *result, bool also_free_tree)
 {
-    free_tokens(&result->tokens);
-    if (also_free_tree && result->error == PERR_SUCCESS)
+    if (result->error != PERR_NULL)
     {
-        free_tree(result->tree);
-        result->tree = NULL;
+        free_tokens(&result->tokens);
+        if (also_free_tree && result->error == PERR_SUCCESS)
+        {
+            free_tree(result->tree);
+            result->tree = NULL;
+        }
+        result->error = PERR_NULL;
     }
 }

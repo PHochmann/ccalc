@@ -89,6 +89,7 @@ void tokenize(const char *input, const Trie *keywords_trie, Vector *out_tokens)
 
 void free_tokens(Vector *tokens)
 {
+    if (tokens == NULL) return;
     for (size_t i = 0; i < vec_count(tokens); i++)
     {
         free(*(char**)vec_get(tokens, i));

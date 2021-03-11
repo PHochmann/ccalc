@@ -9,7 +9,6 @@
 #include "../src/client/core/arith_context.h"
 #include "../src/client/core/arith_evaluation.h"
 #include "../src/client/simplification/simplification.h"
-#include "fuzzer.h"
 #include "test_simplification.h"
 
 static const size_t NUM_CASES = 20;

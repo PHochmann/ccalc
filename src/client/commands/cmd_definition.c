@@ -66,7 +66,7 @@ static bool do_left_checks(Node *left_n, int strlen)
     return true;
 }
 
-static bool add_function(char *name, char *left, char *right)
+static bool add_function(char *name, char *left, char *right, bool is_constant)
 {
     // First check if function already exists
     const Operator *op = ctx_lookup_op(g_ctx, name, OP_PLACE_FUNCTION);
@@ -88,8 +88,21 @@ static bool add_function(char *name, char *left, char *right)
 
     // Add function operator to parse left input
     // Must be OP_DYNAMIC_ARITY because we do not know the actual arity yet
-    ParsingResult left_result;
-    ctx_add_op(g_ctx, op_get_function(name, OP_DYNAMIC_ARITY));
+    ParsingResult left_result = { .error = PERR_NULL };
+    ParsingResult right_result = { .error = PERR_NULL };
+    const Operator *new_op = NULL;
+
+    // To successfully parse inputs like "x = 5", we can't add a function with dynamic arity because
+    // the user would have to type "x() = 5" since dynamic arity functions require parameter lists
+    if (!is_constant)
+    {
+        ctx_add_op(g_ctx, op_get_function(name, OP_DYNAMIC_ARITY));
+    }
+    else
+    {
+        new_op = ctx_add_op(g_ctx, op_get_constant(name));
+    }
+
     if (!arith_parse_raw(left, 0, &left_result))
     {
         goto error;
@@ -104,12 +117,14 @@ static bool add_function(char *name, char *left, char *right)
     // Assign correct arity:
     // Since operators are const, we can't change the arity directly
     // A new operator with correct arity has to be created
-    ctx_delete_op(g_ctx, name, OP_PLACE_FUNCTION);
-    const Operator *new_op = ctx_add_op(g_ctx, op_get_function(name, get_num_children(left_result.tree)));
-    set_op(left_result.tree, new_op);
+    if (!is_constant)
+    {
+        ctx_delete_op(g_ctx, name, OP_PLACE_FUNCTION);
+        new_op = ctx_add_op(g_ctx, op_get_function(name, get_num_children(left_result.tree)));
+        set_op(left_result.tree, new_op);
+    }
 
     // Parse right expression raw to detect a recursive definition
-    ParsingResult right_result;
     if (!arith_parse_raw(right, (size_t)(right - left), &right_result))
     {
         goto error;
@@ -119,15 +134,12 @@ static bool add_function(char *name, char *left, char *right)
     if (find_op((const Node**)&right_result.tree, new_op) != NULL)
     {
         report_error(ERR_RECURSIVE_DEFINITION);
-        free_result(&left_result, true);
-        free_result(&right_result, true);
         goto error;
     }
 
     // Since right expression was parsed raw to detect recursive definitions, do postprocessing
     if (!arith_postprocess(&right_result, (size_t)(right - left)))
     {
-        free_result(&left_result, true);
         goto error;
     }
 
@@ -135,11 +147,9 @@ static bool add_function(char *name, char *left, char *right)
     RewriteRule rule;
     Pattern pattern;
     get_pattern(left_result.tree, 0, NULL, &pattern); // Should always succeed
-    if (!get_rule(pattern, right_result.tree, &rule))
+    if (!get_rule(pattern, right_result.tree, &rule)) // Only reason to return false is new variable introduction
     {
         report_error(ERR_NEW_VARIABLE_INTRODUCTION);
-        free_result(&left_result, true);
-        free_result(&right_result, true);
         goto error;
     }
 
@@ -147,7 +157,14 @@ static bool add_function(char *name, char *left, char *right)
 
     if (get_op(left_result.tree)->arity == 0)
     {
-        whisper("Added constant.\n");
+        if (!is_constant)
+        {
+            whisper("Added constant. Note: constants don't require a parameter list.\n");
+        }
+        else
+        {
+            whisper("Added constant.\n");
+        }
     }
     else
     {
@@ -158,6 +175,8 @@ static bool add_function(char *name, char *left, char *right)
     return true;
 
     error:
+    free_result(&left_result, true);
+    free_result(&right_result, true);
     ctx_delete_op(g_ctx, name, OP_PLACE_FUNCTION);
     free(name);
     return false;
@@ -179,6 +198,7 @@ bool cmd_definition_exec(char *input, __attribute__((unused)) int code)
     
     // Function name is first token that is not a space
     char *name = NULL;
+    size_t non_space_tokens = 0;
     for (size_t i = 0; i < vec_count(&tokens); i++)
     {
         char *token = *(char**)vec_get(&tokens, i);
@@ -188,6 +208,7 @@ bool cmd_definition_exec(char *input, __attribute__((unused)) int code)
         }
         else
         {
+            non_space_tokens++;
             if (name == NULL)
             {
                 name = token;
@@ -216,7 +237,7 @@ bool cmd_definition_exec(char *input, __attribute__((unused)) int code)
         }
         else
         {
-            return add_function(name, input, right_input);
+            return add_function(name, input, right_input, non_space_tokens == 1);
         }
     }
 }

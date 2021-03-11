@@ -4,6 +4,7 @@
 #include "context.h"
 
 typedef enum {
+    PERR_NULL,                       // Empty ParsingResult, parser not invoked yet
     PERR_SUCCESS,                    // No error
     PERR_ARGS_MALFORMED,             // NULL-pointer in arguments
     PERR_UNEXPECTED_SUBEXPRESSION,   // Only without glue-op: Two expressions next to each other
