@@ -217,6 +217,7 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
             {
                 if (!op_pop_and_insert(&state))
                 {
+                    state.curr_tok = i;
                     ERROR(PERR_UNEXPECTED_CLOSING_PARENTHESIS);
                 }
             }
@@ -229,6 +230,7 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
             else
             {
                 // We did not stop because an opening parenthesis was found, but because op-stack was empty
+                state.curr_tok = i;
                 ERROR(PERR_UNEXPECTED_CLOSING_PARENTHESIS);
             }
 
