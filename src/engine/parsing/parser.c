@@ -83,6 +83,13 @@ bool op_pop_and_insert(struct ParserState *state)
             return false;
         }
 
+        if (op_data->arity > MAX_CHILDREN)
+        {
+            state->result = PERR_CHILDREN_EXCEEDED;
+            state->curr_tok = op_data->token;
+            return false;
+        }
+
         // We try to allocate a new node and pop its children from node stack
         Node *op_node = malloc_operator_node(op, op_data->arity, op_data->token);
         

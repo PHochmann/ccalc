@@ -1,5 +1,6 @@
 #include <string.h>
 #include "../util/alloc_wrappers.h"
+#include "../util/console_util.h"
 #include "node.h"
 
 struct Node {
@@ -50,7 +51,8 @@ Node *malloc_constant_node(double value, size_t tok_index)
 
 Node *malloc_operator_node(const Operator *op, size_t num_children, size_t tok_index)
 {
-    if (num_children > MAX_CHILDREN) return NULL;
+    if (num_children > MAX_CHILDREN) software_defect("malloc operator node: too many children\n");
+
     OperatorNode *res = malloc_wrapper(sizeof(OperatorNode) + num_children * sizeof(Node*));
     for (size_t i = 0; i < num_children; i++) res->children[i] = NULL;
     res->base.type = NTYPE_OPERATOR;

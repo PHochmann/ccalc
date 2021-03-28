@@ -10,7 +10,7 @@ Summary: This method is used to create a new ParsingContext without glue-op and 
 */
 ParsingContext ctx_create()
 {
-    ParsingContext res = (ParsingContext){
+    ParsingContext res = {
         .op_list       = list_create(sizeof(Operator)),
         .keywords_trie = trie_create(0),
         .glue_op       = NULL,

@@ -368,7 +368,10 @@ Node **find_matching(const Node **tree, const Pattern *pattern, ConstraintChecke
 /*
 Summary: - Sets ids of variable nodes for faster lookup while matching
          - Computes trigger-indices for constraints
-Returns: 0 if success, -1 if MAX_MAPPED_VARS exceeded, -2 if MAX_VARIABLE_OCCURRANCES exceeded, -3 if MATCHING_MAX_CONSTRAINTS exceeded
+Returns: 0 if success
+         -1 if MAX_MAPPED_VARS exceeded
+         -2 if MAX_VARIABLE_OCCURRANCES exceeded
+         -3 if MATCHING_MAX_CONSTRAINTS exceeded
 */
 int get_pattern(Node *tree, size_t num_constraints, Node **constrs, Pattern *out_pattern)
 {

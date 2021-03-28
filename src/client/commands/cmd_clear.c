@@ -34,9 +34,17 @@ bool cmd_clear_exec(char *input, int code)
         const Operator *function = ctx_lookup_op(g_ctx, input, OP_PLACE_FUNCTION);
         if (function != NULL)
         {
+            bool is_constant = (function->arity == 0);
             if (remove_composite_function(function))
             {
-                whisper("Function or constant removed\n");
+                if (is_constant)
+                {
+                    whisper("Constant removed\n");
+                }
+                else
+                {
+                    whisper("Function removed\n");
+                }
                 return true;
             }
             else
@@ -47,7 +55,7 @@ bool cmd_clear_exec(char *input, int code)
         }
         else
         {
-            report_error_at(strlen(CLEAR_COMMAND) + 1, strlen(input), "Error: Unknown function\n");
+            report_error_at(strlen(CLEAR_COMMAND) + 1, strlen(input), "Error: Unknown function or constant");
             return false;
         }
     }
