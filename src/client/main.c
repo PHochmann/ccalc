@@ -93,7 +93,7 @@ int main(int argc, char **argv)
         return EXIT_SUCCESS;
     }
 
-    // Print copyright notice if we are connected to a terminal and actually will enter interactive mode
+    // Print copyright notice if we are connected to a terminal and enter interactive mode
     if (force_interactive || commands_index == -1)
     {
         if (!quiet && isatty(STDIN_FILENO))
@@ -115,7 +115,7 @@ int main(int argc, char **argv)
         {
             if (!exec_command(argv[i]))
             {
-                report_error("Error occurred in command no. %d\n", i - commands_index);
+                report_error("Error occurred in command %d\n", i - commands_index);
                 return EXIT_FAILURE;
             }
         }

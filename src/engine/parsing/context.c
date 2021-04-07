@@ -18,6 +18,7 @@ ParsingContext ctx_create()
 
     for (size_t i = 0; i < OP_NUM_PLACEMENTS; i++)
     {
+        // Payload of trie nodes is pointer to list node in op_list
         res.op_tries[i] = trie_create(sizeof(ListNode*));
     }
 
@@ -78,10 +79,11 @@ const Operator *ctx_add_op(ParsingContext *ctx, Operator op)
         ListNode *curr = ctx->op_list.first;
         while (curr != NULL)
         {
+            // Go through all operators and check if same precedence entails same associativity
+            // If not, new operator would make set inconsistent
             Operator *opB = (Operator*)curr->data;
-            if (opB->placement == OP_PLACE_INFIX
-                && opB->precedence == op.precedence)
-            {                
+            if (opB->placement == OP_PLACE_INFIX && opB->precedence == op.precedence)
+            {
                 if (opB->assoc != op.assoc)
                 {
                     return NULL;

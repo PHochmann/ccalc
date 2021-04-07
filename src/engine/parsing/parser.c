@@ -204,9 +204,16 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
         // II. Is token opening parenthesis?
         if (is_opening_parenthesis(token))
         {
-            await_params = false;
-            if (!push_opening_parenthesis(&state)) goto exit;
-            continue;
+            if (!await_infix)
+            {
+                await_params = false;
+                if (!push_opening_parenthesis(&state)) goto exit;
+                continue;
+            }
+            else
+            {
+                ERROR(PERR_EXPECTED_INFIX);
+            }
         }
         else
         {
@@ -354,14 +361,14 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
             if (op != NULL) // Postfix operator found
             {
                 if (!push_operator(&state, op)) goto exit;
-                // Postfix operators are never on the op_stack, because their operands are directly available
+                // Postfix operators are never on the op_stack because their operands are directly available
                 op_pop_and_insert(&state);
                 await_infix = true;
                 continue;
             }
             
             // We can fail here: no more tokens processable (no glue-op)
-            ERROR(PERR_UNEXPECTED_SUBEXPRESSION);
+            ERROR(PERR_EXPECTED_INFIX);
         }
         
         // V. Token must be variable or constant (leaf)
@@ -375,6 +382,14 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
         }
         else // Token must be variable
         {
+            // Check if string has the same name as an infix or a postfix operator and fail
+            // to not to confuse the user
+            if (ctx_lookup_op(state.ctx, token, OP_PLACE_INFIX) != NULL
+                || ctx_lookup_op(state.ctx, token, OP_PLACE_POSTFIX) != NULL)
+            {
+                ERROR(PERR_UNEXPECTED_INFIX);
+            }
+
             node = malloc_variable_node(token, 0, i);
         }
 

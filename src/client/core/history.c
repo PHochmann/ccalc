@@ -8,11 +8,13 @@
 #include "arith_context.h"
 #include "arith_evaluation.h"
 
+#define HISTORY_STARTSIZE 8
+
 Vector ans_vec; // Results of last evaluations (doubles)
 
 void init_history()
 {
-    ans_vec = vec_create(sizeof(double), 5);
+    ans_vec = vec_create(sizeof(double), HISTORY_STARTSIZE);
 }
 
 void unload_history()

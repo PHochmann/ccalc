@@ -7,7 +7,8 @@ typedef enum {
     PERR_NULL,                       // Empty ParsingResult, parser not invoked yet
     PERR_SUCCESS,                    // No error
     PERR_ARGS_MALFORMED,             // NULL-pointer in arguments
-    PERR_UNEXPECTED_SUBEXPRESSION,   // Only without glue-op: Two expressions next to each other
+    PERR_EXPECTED_INFIX,             // Only without glue-op: Two expressions next to each other
+    PERR_UNEXPECTED_INFIX,           // e.g. sum(*)
     PERR_EXCESS_OPENING_PARENTHESIS, // There are opening parenthesis on op-stack after all tokens are processed
     PERR_UNEXPECTED_CLOSING_PARENTHESIS, // Mismatch: no opening parenthesis found
     PERR_UNEXPECTED_DELIMITER,       // Delimiter too soon (e.g. 1+,) or not within parameter list of a function

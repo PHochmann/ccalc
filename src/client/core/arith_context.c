@@ -172,8 +172,10 @@ static const char *perr_to_string(ParserError perr)
     {
         case PERR_SUCCESS:
             return "Success";
-        case PERR_UNEXPECTED_SUBEXPRESSION:
-            return "Unexpected subexpression";
+        case PERR_EXPECTED_INFIX:
+            return "Expected infix or postfix operator";
+        case PERR_UNEXPECTED_INFIX:
+            return "Unexpected infix or postfix operator";
         case PERR_EXCESS_OPENING_PARENTHESIS:
             return "Missing closing parenthesis";
         case PERR_UNEXPECTED_CLOSING_PARENTHESIS:

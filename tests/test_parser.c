@@ -75,26 +75,30 @@ static struct ValueTest valueTests[] = {
     { "-sqrt(abs(--2!!*--sum(-1+.2-.2+2, 2^2^3-255, -sum(.1, .9), 1+2)*--2!!))", -4 },
 };
 
-static const size_t NUM_ERROR_CASES = 18;
+static const size_t NUM_ERROR_CASES = 22;
 static struct ErrorTest errorTests[] = {
-    { "",          PERR_UNEXPECTED_END_OF_EXPR },
-    { "     ",     PERR_UNEXPECTED_END_OF_EXPR },
-    { "()",        PERR_UNEXPECTED_CLOSING_PARENTHESIS },
-    { "x+",        PERR_UNEXPECTED_END_OF_EXPR },
-    { "root(x,)",  PERR_UNEXPECTED_CLOSING_PARENTHESIS },
-    { "sin",       PERR_EXPECTED_PARAM_LIST },
-    { "sin 2",     PERR_EXPECTED_PARAM_LIST },
-    { "sin(x, y)", PERR_FUNCTION_WRONG_ARITY },
-    { "root(x)",   PERR_FUNCTION_WRONG_ARITY },
-    { "2,",        PERR_UNEXPECTED_DELIMITER },
-    { ",",         PERR_UNEXPECTED_DELIMITER },
-    { "-(1,2)",    PERR_UNEXPECTED_DELIMITER },
-    { "(x",        PERR_EXCESS_OPENING_PARENTHESIS },
-    { "x)",        PERR_UNEXPECTED_CLOSING_PARENTHESIS },
-    { "()+2",      PERR_UNEXPECTED_CLOSING_PARENTHESIS },
-    { "(+2",       PERR_EXCESS_OPENING_PARENTHESIS },
-    { "sin(())",   PERR_UNEXPECTED_CLOSING_PARENTHESIS },
-    { "sin(2,())", PERR_UNEXPECTED_CLOSING_PARENTHESIS }
+    { "",            PERR_UNEXPECTED_END_OF_EXPR },
+    { "     ",       PERR_UNEXPECTED_END_OF_EXPR },
+    { "()",          PERR_UNEXPECTED_CLOSING_PARENTHESIS },
+    { "x+",          PERR_UNEXPECTED_END_OF_EXPR },
+    { "root(x,)",    PERR_UNEXPECTED_CLOSING_PARENTHESIS },
+    { "sin",         PERR_EXPECTED_PARAM_LIST },
+    { "sin 2",       PERR_EXPECTED_PARAM_LIST },
+    { "sin(x, y)",   PERR_FUNCTION_WRONG_ARITY },
+    { "root(x)",     PERR_FUNCTION_WRONG_ARITY },
+    { "2,",          PERR_UNEXPECTED_DELIMITER },
+    { ",",           PERR_UNEXPECTED_DELIMITER },
+    { "-(1,2)",      PERR_UNEXPECTED_DELIMITER },
+    { "(x",          PERR_EXCESS_OPENING_PARENTHESIS },
+    { "x)",          PERR_UNEXPECTED_CLOSING_PARENTHESIS },
+    { "()+2",        PERR_UNEXPECTED_CLOSING_PARENTHESIS },
+    { "(+2",         PERR_EXCESS_OPENING_PARENTHESIS },
+    { "sin(())",     PERR_UNEXPECTED_CLOSING_PARENTHESIS },
+    { "sin(2,())",   PERR_UNEXPECTED_CLOSING_PARENTHESIS },
+    { "sum(+)",      PERR_UNEXPECTED_CLOSING_PARENTHESIS },
+    { "sum(*)",      PERR_UNEXPECTED_INFIX },
+    { "a b",         PERR_EXPECTED_INFIX },
+    { "sin(x)(a+b)", PERR_EXPECTED_INFIX }
 };
 
 static const double EPSILON = 0.00000001;
@@ -105,10 +109,12 @@ bool almost_equals(double a, double b)
 
 bool parser_test(StringBuilder *error_builder)
 {
+    ParsingContext ctx = get_arith_ctx();
+
     // Perform value tests
     for (size_t i = 0; i < NUM_VALUE_CASES; i++)
     {
-        Node *node = parse_easy(g_ctx, valueTests[i].input);
+        Node *node = parse_easy(&ctx, valueTests[i].input);
         if (node == NULL)
         {
             ERROR("Parser Error for '%s'\n", valueTests[i].input);
@@ -124,10 +130,12 @@ bool parser_test(StringBuilder *error_builder)
     }
 
     // Perform error tests
+    // Remove glue-op to test for "expected infix or prefix"
+    ctx_set_glue_op(&ctx, NULL);
     for (size_t i = 0; i < NUM_ERROR_CASES; i++)
     {
         ParsingResult res;
-        parse_input(g_ctx, errorTests[i].input, &res);
+        parse_input(&ctx, errorTests[i].input, &res);
         if (res.error != errorTests[i].result)
         {
             ERROR("Unexpected error type for '%s'\n", errorTests[i].input);
@@ -135,6 +143,7 @@ bool parser_test(StringBuilder *error_builder)
         free_result(&res, true);
     }
 
+    ctx_destroy(&ctx);
     return true;
 }
 

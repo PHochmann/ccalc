@@ -11,17 +11,18 @@
 #include "../version.h"
 #include "cmd_help.h"
 
-#define HELP        "help"
-#define HELP_OPS    "help operators"
+#define HELP            "help"
+#define HELP_OPS        "help operators"
 #define LICENSE_COMMAND "license"
 #define SHORT_HELP_CODE 1
 #define OPS_HELP_CODE   2
 #define LICENSE_CODE    3
-#define TTY_WIDTH 80
+#define TTY_WIDTH       80
 
 static const char *LICENSE =
     COPYRIGHT_NOTICE
-    "Scientific calculator in which you can define new functions and constants \n"
+    "Scientific calculator in which you can define new functions and constants\n"
+    "https://github.com/PhilippHochmann/ccalc\n"
     "\n"
     "This program is free software: you can redistribute it and/or modify\n"
     "it under the terms of the GNU General Public License as published by\n"
