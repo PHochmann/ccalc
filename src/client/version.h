@@ -1,4 +1,4 @@
-#define CCALC_VERSION "1.6.3"
+#define CCALC_VERSION "1.6.4"
 
 #ifdef DEBUG
     #define CCALC_RELEASE CCALC_VERSION " DEBUG"

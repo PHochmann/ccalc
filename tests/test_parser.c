@@ -75,7 +75,7 @@ static struct ValueTest valueTests[] = {
     { "-sqrt(abs(--2!!*--sum(-1+.2-.2+2, 2^2^3-255, -sum(.1, .9), 1+2)*--2!!))", -4 },
 };
 
-static const size_t NUM_ERROR_CASES = 22;
+static const size_t NUM_ERROR_CASES = 23;
 static struct ErrorTest errorTests[] = {
     { "",            PERR_UNEXPECTED_END_OF_EXPR },
     { "     ",       PERR_UNEXPECTED_END_OF_EXPR },
@@ -97,6 +97,7 @@ static struct ErrorTest errorTests[] = {
     { "sin(2,())",   PERR_UNEXPECTED_CLOSING_PARENTHESIS },
     { "sum(+)",      PERR_UNEXPECTED_CLOSING_PARENTHESIS },
     { "sum(*)",      PERR_UNEXPECTED_INFIX },
+    { "a+(*",        PERR_UNEXPECTED_INFIX },
     { "a b",         PERR_EXPECTED_INFIX },
     { "sin(x)(a+b)", PERR_EXPECTED_INFIX }
 };

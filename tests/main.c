@@ -85,7 +85,7 @@ int main()
     print_table(table);
     free_table(table);
     unload_commands();
-    printf("Version: %s\n", CCALC_VERSION);
+    printf(COPYRIGHT_NOTICE);
 
     return error ? EXIT_FAILURE : EXIT_SUCCESS;
 }
