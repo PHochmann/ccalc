@@ -3,5 +3,5 @@
 #include "context.h"
 #include "../util/vector.h"
 
-void tokenize(const char *input, const Trie *keywords_trie, Vector *out_tokens);
+Vector tokenize(const char *input, const Trie *keywords_trie);
 void free_tokens(Vector *tokens);

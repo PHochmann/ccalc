@@ -467,7 +467,7 @@ Returns: True if success, False otherwise
 */
 bool parse_input(const ParsingContext *ctx, const char *input, ParsingResult *out_res)
 {
-    tokenize(input, &ctx->keywords_trie, &out_res->tokens);
+    out_res->tokens = tokenize(input, &ctx->keywords_trie);
     out_res->error = parse_tokens(ctx, vec_count(&out_res->tokens), out_res->tokens.buffer, &out_res->tree, &out_res->error_token);
     return out_res->error == PERR_SUCCESS;
 }

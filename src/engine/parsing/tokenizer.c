@@ -37,11 +37,9 @@ Params:
     keywords_trie: Allowed to be NULL
     out_tokens:    Vector of pointers to malloced tokens (free with free_tokens)
 */
-void tokenize(const char *input, const Trie *keywords_trie, Vector *out_tokens)
+Vector tokenize(const char *input, const Trie *keywords_trie)
 {
-    if (input == NULL) return;
-
-    *out_tokens = vec_create(sizeof(char*), VECTOR_STARTSIZE);
+    Vector res = vec_create(sizeof(char*), VECTOR_STARTSIZE);
     TokState state = TOKSTATE_NEW;
     
     size_t next_token_start = 0;
@@ -64,7 +62,7 @@ void tokenize(const char *input, const Trie *keywords_trie, Vector *out_tokens)
         // Did the current token end?
         if (state != TOKSTATE_NEW && (next_state != state || next_state == TOKSTATE_OTHER))
         {
-            push_token(input + next_token_start, i - next_token_start, out_tokens);
+            push_token(input + next_token_start, i - next_token_start, &res);
             next_token_start = i;
         }
 
@@ -74,7 +72,7 @@ void tokenize(const char *input, const Trie *keywords_trie, Vector *out_tokens)
             size_t keyword_len = trie_longest_prefix(keywords_trie, input + i, NULL);
             if (keyword_len > 0)
             {
-                push_token(input + i, keyword_len, out_tokens);
+                push_token(input + i, keyword_len, &res);
                 next_token_start += keyword_len;
                 i += keyword_len - 1;
                 next_state = TOKSTATE_NEW;
@@ -84,7 +82,8 @@ void tokenize(const char *input, const Trie *keywords_trie, Vector *out_tokens)
         state = next_state;
     }
 
-    push_token(input + next_token_start, strlen(input) - next_token_start, out_tokens);
+    push_token(input + next_token_start, strlen(input) - next_token_start, &res);
+    return res;
 }
 
 void free_tokens(Vector *tokens)

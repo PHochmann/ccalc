@@ -193,8 +193,7 @@ bool cmd_definition_exec(char *input, __attribute__((unused)) int code)
     right_input += strlen(DEFINITION_OP);
     
     // Tokenize function definition to get its name. Name is first token.
-    Vector tokens;
-    tokenize(input, &g_ctx->keywords_trie, &tokens);
+    Vector tokens = tokenize(input, &g_ctx->keywords_trie);
     
     // Function name is first token that is not a space
     char *name = NULL;
