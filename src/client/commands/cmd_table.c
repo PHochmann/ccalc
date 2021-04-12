@@ -142,6 +142,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
         }
         else
         {
+            // Expression is constant - don't print any variable
             add_empty_cell(table);
         }
         Vector builder = strbuilder_create(STRBUILDER_STARTSIZE);

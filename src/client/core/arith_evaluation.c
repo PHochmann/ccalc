@@ -136,6 +136,7 @@ ListenerError arith_op_evaluate(const Operator *op, size_t num_args, const doubl
             }
         case 8: // x^y
             if (args[0] == 0 && args[1] <= 0) return LISTENERERR_DIVISION_BY_ZERO;
+            if (args[0] < 0 && args[1] < 1) return LISTENERERR_COMPLEX_SOLUTION;
             *out = pow(args[0], args[1]);
             return LISTENERERR_SUCCESS;
         case 9: // x C y
@@ -174,11 +175,25 @@ ListenerError arith_op_evaluate(const Operator *op, size_t num_args, const doubl
             *out = exp(args[0]);
             return LISTENERERR_SUCCESS;
         case 16: // root(x, n)
-            *out = pow(args[0], 1 / args[1]);
-            return LISTENERERR_SUCCESS;
+            if (args[0] >= 0)
+            {
+                *out = pow(args[0], 1 / args[1]);
+                return LISTENERERR_SUCCESS;
+            }
+            else
+            {
+                return LISTENERERR_COMPLEX_SOLUTION;
+            }
         case 17: // sqrt(x)
-            *out = sqrt(args[0]);
-            return LISTENERERR_SUCCESS;
+            if (args[0] >= 0)
+            {
+                *out = sqrt(args[0]);
+                return LISTENERERR_SUCCESS;
+            }
+            else
+            {
+                return LISTENERERR_COMPLEX_SOLUTION;
+            }
         case 18: // log(x, n)
             *out = log(args[0]) / log(args[1]);
             return LISTENERERR_SUCCESS;

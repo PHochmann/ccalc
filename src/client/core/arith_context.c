@@ -14,16 +14,16 @@
 ParsingContext __g_ctx;
 LinkedList __g_composite_functions;
 
-void init_arith_ctx()
-{
-    __g_ctx = get_arith_ctx();
-    srand(time(NULL));
-    __g_composite_functions = list_create(sizeof(RewriteRule));
-}
-
 /*
 Summary: Sets arithmetic context stored in global variable
 */
+void init_arith_ctx()
+{
+    srand(time(NULL));
+    __g_ctx = get_arith_ctx();
+    __g_composite_functions = list_create(sizeof(RewriteRule));
+}
+
 ParsingContext get_arith_ctx()
 {
     ParsingContext res = ctx_create();
@@ -219,6 +219,8 @@ static const char *listenererr_to_str(int code)
             return "No evaluation of operator possible";
         case LISTENERERR_DIVISION_BY_ZERO:
             return "Division by zero";
+        case LISTENERERR_COMPLEX_SOLUTION:
+            return "Complex solution";
         default:
             return "Unknown error";
     }

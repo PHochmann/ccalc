@@ -9,6 +9,7 @@
 #define LISTENERERR_MALFORMED_DERIV_B 4
 #define LISTENERERR_UNKNOWN_OP        5
 #define LISTENERERR_DIVISION_BY_ZERO  6
+#define LISTENERERR_COMPLEX_SOLUTION  7
 
 ListenerError arith_op_evaluate(const Operator *op, size_t num_args, const double *args, double *out);
 double arith_evaluate(const Node *node);
