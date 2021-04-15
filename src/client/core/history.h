@@ -1,6 +1,5 @@
 #pragma once
 #include <stdbool.h>
-#include "../../engine/tree/node.h"
 
 void init_history();
 void unload_history();

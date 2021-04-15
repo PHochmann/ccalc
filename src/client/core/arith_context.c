@@ -176,16 +176,12 @@ static const char *perr_to_string(ParserError perr)
             return "Expected infix or postfix operator";
         case PERR_UNEXPECTED_INFIX:
             return "Unexpected infix or postfix operator";
-        case PERR_EXCESS_OPENING_PARENTHESIS:
+        case PERR_EXCESS_OPENING_PAREN:
             return "Missing closing parenthesis";
-        case PERR_UNEXPECTED_CLOSING_PARENTHESIS:
+        case PERR_UNEXPECTED_CLOSING_PAREN:
             return "Unexpected closing parenthesis";
         case PERR_UNEXPECTED_DELIMITER:
             return "Unexpected delimiter";
-        case PERR_MISSING_OPERATOR:
-            return "Unexpected operand";
-        case PERR_MISSING_OPERAND:
-            return "Missing operand";
         case PERR_FUNCTION_WRONG_ARITY:
             return "Wrong number of operands of function";
         case PERR_CHILDREN_EXCEEDED:

@@ -1,12 +1,5 @@
 #include "../../util/vector.h"
-#include "../../util/console_util.h"
-#include "../../engine/transformation/matching.h"
-#include "../../engine/parsing/parser.h"
-#include "../../engine/tree/tree_util.h"
-
 #include "history.h"
-#include "arith_context.h"
-#include "arith_evaluation.h"
 
 #define HISTORY_STARTSIZE 8
 

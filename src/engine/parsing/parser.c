@@ -54,11 +54,7 @@ void node_push(struct ParserState *state, Node *node)
 bool node_pop(struct ParserState *state, Node **out)
 {
     Node **popped = vec_pop(&state->vec_nodes);
-    if (popped == NULL)
-    {
-        state->result = PERR_MISSING_OPERAND;
-        return false;
-    }
+    if (popped == NULL) return false;
     *out = *popped;
     return true;
 }
@@ -66,12 +62,6 @@ bool node_pop(struct ParserState *state, Node **out)
 bool op_pop_and_insert(struct ParserState *state)
 {
     struct OpData *op_data = (struct OpData*)vec_pop(&state->vec_ops);
-    if (op_data == NULL)
-    {
-        state->result = PERR_MISSING_OPERATOR;
-        return false;
-    }
-
     const Operator *op = op_data->op;
 
     if (op != NULL) // Construct operator-node and append children
@@ -232,7 +222,7 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
                 if (!op_pop_and_insert(&state))
                 {
                     state.curr_tok = i;
-                    ERROR(PERR_UNEXPECTED_CLOSING_PARENTHESIS);
+                    ERROR(PERR_UNEXPECTED_CLOSING_PAREN);
                 }
             }
             
@@ -245,7 +235,7 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
             {
                 // We did not stop because an opening parenthesis was found, but because op-stack was empty
                 state.curr_tok = i;
-                ERROR(PERR_UNEXPECTED_CLOSING_PARENTHESIS);
+                ERROR(PERR_UNEXPECTED_CLOSING_PAREN);
             }
 
             // Increment operand count one last time if it was not the empty parameter list.
@@ -265,7 +255,7 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
                     || op_peek(&state)->op->placement != OP_PLACE_FUNCTION // '()' but not empty parameter list
                     || op_peek(&state)->arity != 0) // 'f(x,)'
                 {
-                    ERROR(PERR_UNEXPECTED_CLOSING_PARENTHESIS);
+                    ERROR(PERR_UNEXPECTED_CLOSING_PAREN);
                 }
             }
             
@@ -413,7 +403,7 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
     {
         if (op_peek(&state)->op == NULL)
         {
-            ERROR(PERR_EXCESS_OPENING_PARENTHESIS);
+            ERROR(PERR_EXCESS_OPENING_PAREN);
         }
         else
         {
@@ -425,17 +415,9 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
     // Empty string or string consisting of spaces will fail because of await_infix=false and '()' will fail because of unexpected closing parenthesis
     
     // 5. Build result and return value
-    if (vec_count(&state.vec_nodes) == 1)
+    if (out_res != NULL)
     {
-        if (out_res != NULL)
-        {
-            *out_res = *(Node**)vec_pop(&state.vec_nodes);
-        }
-    }
-    else
-    {
-        // Node vector contains more than one node (no glue op to glue them together)
-        ERROR(PERR_MISSING_OPERATOR);
+        *out_res = *(Node**)vec_pop(&state.vec_nodes);
     }
     
     exit:

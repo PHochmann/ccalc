@@ -75,6 +75,7 @@ int main(int argc, char **argv)
         if (sw == NULL)
         {
             report_error("Unrecognized argument: %s\n" HELP_MESSAGE, argv[i]);
+            trie_destroy(&switches);
             return EXIT_FAILURE;
         }
     }
