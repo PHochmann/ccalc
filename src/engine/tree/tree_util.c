@@ -1,5 +1,6 @@
 #include <string.h>
 #include <sys/types.h>
+#include "../util/alloc_wrappers.h"
 #include "tree_util.h"
 #include "node.h"
 
@@ -379,21 +380,27 @@ ListenerError tree_reduce(const Node *tree, TreeListener listener, double *out, 
         case NTYPE_OPERATOR:
         {
             size_t num_args = get_num_children(tree);
-            double args[MAX_CHILDREN];
+            double *args = malloc_wrapper(sizeof(double) * num_args);
 
             for (size_t i = LISTENERERR_SUCCESS; i < num_args; i++)
             {
                 ListenerError err = tree_reduce(get_child(tree, i), listener, &args[i], out_errnode);
-                if (err != LISTENERERR_SUCCESS) return err;
+                if (err != LISTENERERR_SUCCESS)
+                {
+                    free(args);
+                    return err;
+                }
             }
 
             ListenerError err = listener(get_op(tree), num_args, args, out);
             if (err != LISTENERERR_SUCCESS)
             {
                 if (out_errnode != NULL) *out_errnode = tree;
+                free(args);
                 return err;
             }
 
+            free(args);
             return LISTENERERR_SUCCESS;
         }
 
