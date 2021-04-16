@@ -17,7 +17,8 @@ void tree_replace_by_list(Node **parent, size_t child_to_replace, NodeList list)
 // Helper and convenience functions
 size_t count_all_variable_nodes(const Node *tree);
 size_t get_variable_nodes(const Node **tree, const char *var_name, size_t buffer_size, Node ***out_instances);
-size_t list_variables(const Node *tree, size_t buffer_size, const char **out_variables, bool *out_sufficient_buff);
+size_t list_variables(Node *tree, size_t buffer_size, const char **out_vars, bool *out_sufficient_buff);
+void tree_copy_IDs(Node *tree, size_t num_vars, const char **vars);
 Node **find_op(const Node **tree, const Operator *op);
 
 // Traversal

@@ -28,9 +28,6 @@ void report_pattern_errcode(int err_code)
         case MAX_MAPPED_VARS_EXCEEDED:
             report_error("Trying to preprocess a pattern with too many distinct variables. Increase MAX_MAPPED_VARS.\n");
             return;
-        case MAX_VARIABLE_OCCURRANCES_EXCEEDED:
-            report_error("Trying to preprocess a pattern with too many variable occurrances. Increase MAX_VARIABLE_OCCURRANCES.\n");
-            return;
         case MATCHING_MAX_CONSTRAINTS_EXCEEDED:
             report_error("Trying to preprocess a pattern with too many constraints. Increase MATCHING_MAX_CONSTRAINTS.\n");
     }

@@ -200,7 +200,7 @@ size_t get_variable_nodes(const Node **tree, const char *var_name, size_t buffer
     return 0;
 }
 
-ssize_t list_variables_rec(const Node *tree, size_t buffer_size, ssize_t num_found, const char **out_variables)
+ssize_t list_variables_rec(Node *tree, size_t buffer_size, ssize_t num_found, const char **out_vars)
 {
     if (num_found == -1) return -1;
 
@@ -213,14 +213,16 @@ ssize_t list_variables_rec(const Node *tree, size_t buffer_size, ssize_t num_fou
             // Check if we already found variable
             for (size_t i = 0; i < (size_t)num_found; i++)
             {
-                if (strcmp(get_var_name(tree), out_variables[i]) == 0)
+                if (strcmp(get_var_name(tree), out_vars[i]) == 0)
                 {
+                    set_id(tree, i);
                     return num_found;
                 }
             }
             if ((size_t)num_found < buffer_size)
             {
-                out_variables[num_found] = get_var_name(tree);
+                out_vars[num_found] = get_var_name(tree);
+                set_id(tree, num_found);
                 return num_found + 1;
             }
             else
@@ -233,7 +235,7 @@ ssize_t list_variables_rec(const Node *tree, size_t buffer_size, ssize_t num_fou
             for (size_t i = 0; i < get_num_children(tree); i++)
             {
                 // Don't add to num_found but overwrite it since it's passed to each subsequent call
-                num_found = list_variables_rec(get_child(tree, i), buffer_size, num_found, out_variables);
+                num_found = list_variables_rec(get_child(tree, i), buffer_size, num_found, out_vars);
             }
             return num_found;
     }
@@ -266,15 +268,16 @@ Node **find_op(const Node **tree, const Operator *op)
 
 /*
 Summary: Lists all variable names occurring in tree. Strings are not copied!
+    Also sets IDs of variables
 Returns: Length of out_variables (i.e. count of variables in tree without duplicates)
 Params
-    tree:          Tree to search for variables
-    out_variables: Contains result. Function unsafe when too small
+    tree:     Tree to search for variables
+    out_vars: Contains result. Function unsafe when too small
 */
-size_t list_variables(const Node *tree, size_t buffer_size, const char **out_variables, bool *out_sufficient_buff)
+size_t list_variables(Node *tree, size_t buffer_size, const char **out_vars, bool *out_sufficient_buff)
 {
-    if (tree == NULL || out_variables == NULL) return 0;
-    ssize_t res = list_variables_rec(tree, buffer_size, 0, out_variables);
+    if (tree == NULL || out_vars == NULL) return 0;
+    ssize_t res = list_variables_rec(tree, buffer_size, 0, out_vars);
     if (res == -1)
     {
         if (out_sufficient_buff != NULL)
@@ -289,6 +292,33 @@ size_t list_variables(const Node *tree, size_t buffer_size, const char **out_var
         *out_sufficient_buff = true;
     }
     return (size_t)res;
+}
+
+void tree_copy_IDs(Node *tree, size_t num_vars, const char **vars)
+{
+    switch (get_type(tree))
+    {
+        case NTYPE_CONSTANT:
+            return;
+        
+        case NTYPE_VARIABLE:
+            for (size_t i = 0; i < num_vars; i++)
+            {
+                if (strcmp(vars[i], get_var_name(tree)) == 0)
+                {
+                    set_id(tree, i);
+                    return;
+                }
+            }
+            return;
+
+        case NTYPE_OPERATOR:
+            for (size_t i = 0; i < get_num_children(tree); i++)
+            {
+                tree_copy_IDs(get_child(tree, i), num_vars, vars);
+            }
+    }
+
 }
 
 /*

@@ -237,7 +237,7 @@ static void extend_matching(
                 for (size_t i = 0; i < ctx->pattern->num_constraints[id]; i++)
                 {
                     Node *constr_cpy = tree_copy(ctx->pattern->constraints[id][i]);
-                    transform_by_matching(id + 1, ctx->pattern->free_vars, &matching, &constr_cpy);
+                    transform_by_matching(&matching, &constr_cpy);
                     bool res = ctx->checker(&constr_cpy);
                     free_tree(constr_cpy);
                     if (!res) return;
@@ -368,52 +368,36 @@ Node **find_matching(const Node **tree, const Pattern *pattern, ConstraintChecke
 /*
 Summary: - Sets ids of variable nodes for faster lookup while matching
          - Computes trigger-indices for constraints
-Returns: 0 if success
+Returns:  0 if success
          -1 if MAX_MAPPED_VARS exceeded
-         -2 if MAX_VARIABLE_OCCURRANCES exceeded
-         -3 if MATCHING_MAX_CONSTRAINTS exceeded
+         -2 if MATCHING_MAX_CONSTRAINTS exceeded
 */
 int get_pattern(Node *tree, size_t num_constraints, Node **constrs, Pattern *out_pattern)
 {
     *out_pattern = (Pattern){
         .pattern         = tree,
-        .num_free_vars   = 0,
         .num_constraints = { 0 }
     };
 
     bool sufficient = false;
-    (*out_pattern).num_free_vars = list_variables(tree, MAX_MAPPED_VARS, (*out_pattern).free_vars, &sufficient);
+    const char *free_vars[MAX_MAPPED_VARS];
+    size_t num_free_vars = list_variables(tree, MAX_MAPPED_VARS, free_vars, &sufficient);
 
     if (!sufficient)
     {
         return MAX_MAPPED_VARS_EXCEEDED;
     }
 
-    // Step 1: Set id in pattern tree
-    for (size_t i = 0; i < (*out_pattern).num_free_vars; i++)
-    {
-        Node **nodes[MAX_VARIABLE_OCURRANCES];
-        size_t num_nodes = get_variable_nodes((const Node**)&tree, (*out_pattern).free_vars[i], MAX_VARIABLE_OCURRANCES, nodes);
-
-        if (num_nodes > MAX_VARIABLE_OCURRANCES)
-        {
-            return MAX_VARIABLE_OCCURRANCES_EXCEEDED;
-        }
-
-        for (size_t j = 0; j < num_nodes; j++)
-        {
-            set_id(*(nodes[j]), i);
-        }
-    }
-
     // Step 2: Compute contraints that should be checked when variable with this id is bound
     // This involves computing the variable with the highest id that occurs in the constraint
     for (size_t i = 0; i < num_constraints; i++)
     {
+        tree_copy_IDs(constrs[i], num_free_vars, free_vars);
+
         size_t max_id = 0;
-        for (size_t j = 0; j < (*out_pattern).num_free_vars; j++)
+        for (size_t j = 0; j < num_free_vars; j++)
         {
-            if (get_variable_nodes((const Node**)&constrs[i], (*out_pattern).free_vars[j], 0, NULL) != 0)
+            if (get_variable_nodes((const Node**)&constrs[i], free_vars[j], 0, NULL) != 0)
             {
                 max_id = j;
             }

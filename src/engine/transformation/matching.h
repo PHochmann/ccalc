@@ -8,14 +8,11 @@
 #define MATCHING_LIST_PREFIX '['
 
 #define MAX_MAPPED_VARS_EXCEEDED          -1
-#define MAX_VARIABLE_OCCURRANCES_EXCEEDED -2
-#define MATCHING_MAX_CONSTRAINTS_EXCEEDED -3
+#define MATCHING_MAX_CONSTRAINTS_EXCEEDED -2
 
 typedef struct
 {
     Node *pattern;
-    size_t num_free_vars;
-    const char *free_vars[MAX_MAPPED_VARS];
     size_t num_constraints[MAX_MAPPED_VARS];
     Node *constraints[MAX_MAPPED_VARS][MATCHING_MAX_CONSTRAINTS];
 } Pattern;

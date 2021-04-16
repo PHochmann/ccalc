@@ -191,6 +191,6 @@ RULESET
 
 # Ordering
 RULESET
-    x*y      -> y*x   WHERE type(x) != CONST ; type(y) == CONST
-    x+y      -> y+x   WHERE type(x) != CONST ; type(y) == CONST
+    #x*y      -> y*x   WHERE type(x) != CONST ; type(y) == CONST
+    #x+y      -> y+x   WHERE type(x) != CONST ; type(y) == CONST
     x*(-y)   -> -y*x  WHERE type(x) != CONST ; type(y) == CONST

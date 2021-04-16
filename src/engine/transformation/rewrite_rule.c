@@ -38,6 +38,10 @@ bool get_rule(Pattern pattern, Node *after, RewriteRule *out_rule)
         }
     }
 
+    const char *free_vars[MAX_MAPPED_VARS];
+    size_t num_free_vars = list_variables(pattern.pattern, MAX_MAPPED_VARS, free_vars, NULL);
+    tree_copy_IDs(after, num_free_vars, free_vars);
+
     *out_rule = (RewriteRule){
         .pattern = pattern,
         .after  = after,
@@ -83,7 +87,7 @@ bool apply_rule(Node **tree, const RewriteRule *rule, ConstraintChecker checker)
     Node *transformed = tree_copy(rule->after);
     // Every new node in rhs of rule emerged from root of matched subtree
     set_tok_index_for_all(transformed, get_token_index(*matched_subtree));
-    transform_by_matching(rule->pattern.num_free_vars, rule->pattern.free_vars, &matching, &transformed);
+    transform_by_matching(&matching, &transformed);
     tree_replace(matched_subtree, transformed);
 
     return true;
