@@ -20,7 +20,7 @@ struct ErrorTest {
     ParserError result;
 };
 
-static const size_t NUM_VALUE_CASES = 42;
+static const size_t NUM_VALUE_CASES = 43;
 static struct ValueTest valueTests[] = {
     // 1. Basic prefix, infix, postfix
     { "2+3",         5 },
@@ -47,6 +47,7 @@ static struct ValueTest valueTests[] = {
     { "1-2-3 - ((1-2)-3)",    0 },
     { "2^2^3",              256 },
     { "2^2^3 - 2^(2^3)",      0 },
+    { "(2^2)^3",             64 },
     // 5. Functions
     // 5.1. Constants
     { "pi",        3.141592653 },
