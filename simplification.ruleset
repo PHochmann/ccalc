@@ -1,3 +1,5 @@
+# Version: 1.6.4
+
 # Operator elimination (de-sugar)
 RULESET
     count()       -> 0
@@ -88,8 +90,9 @@ RULESET
     prod(cx, [xs], sum(cy, [xxs]), [zs])    -> prod([xs], sum(cx*cy, prod(cx, sum([xxs]))), [zs]) WHERE type(cx)==CONST ; type(cy)==CONST
 
     # Simplify sums
-    sum([xs], x, [ys], -x, [zs]) -> sum([xs], [ys], [zs])
-    sum([xs], -x, [ys], x, [zs]) -> sum([xs], [ys], [zs])
+    sum([xs], x, [ys], y, [zs]) -> sum([xs], [ys], [zs])  WHERE equal(y,-x) || equal(x,-y)
+
+
     # Pull minus into sum
     -sum(x,[xs])                 -> sum(-x,-sum([xs]))
 

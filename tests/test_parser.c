@@ -20,7 +20,7 @@ struct ErrorTest {
     ParserError result;
 };
 
-static const size_t NUM_VALUE_CASES = 42;
+static const size_t NUM_VALUE_CASES = 43;
 static struct ValueTest valueTests[] = {
     // 1. Basic prefix, infix, postfix
     { "2+3",         5 },
@@ -47,6 +47,7 @@ static struct ValueTest valueTests[] = {
     { "1-2-3 - ((1-2)-3)",    0 },
     { "2^2^3",              256 },
     { "2^2^3 - 2^(2^3)",      0 },
+    { "(2^2)^3",             64 },
     // 5. Functions
     // 5.1. Constants
     { "pi",        3.141592653 },
@@ -75,7 +76,7 @@ static struct ValueTest valueTests[] = {
     { "-sqrt(abs(--2!!*--sum(-1+.2-.2+2, 2^2^3-255, -sum(.1, .9), 1+2)*--2!!))", -4 },
 };
 
-static const size_t NUM_ERROR_CASES = 23;
+static const size_t NUM_ERROR_CASES = 24;
 static struct ErrorTest errorTests[] = {
     { "",            PERR_UNEXPECTED_END_OF_EXPR },
     { "     ",       PERR_UNEXPECTED_END_OF_EXPR },
@@ -99,7 +100,8 @@ static struct ErrorTest errorTests[] = {
     { "sum(*)",      PERR_UNEXPECTED_INFIX },
     { "a+(*",        PERR_UNEXPECTED_INFIX },
     { "a b",         PERR_EXPECTED_INFIX },
-    { "sin(x)(a+b)", PERR_EXPECTED_INFIX }
+    { "sin(x)(a+b)", PERR_EXPECTED_INFIX },
+    { ".",           PERR_UNEXPECTED_CHARACTER }
 };
 
 static const double EPSILON = 0.00000001;

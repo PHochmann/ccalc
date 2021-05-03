@@ -184,12 +184,12 @@ static const char *perr_to_string(ParserError perr)
             return "Unexpected delimiter";
         case PERR_FUNCTION_WRONG_ARITY:
             return "Wrong number of operands of function";
-        case PERR_CHILDREN_EXCEEDED:
-            return "Exceeded maximum number of operands of function";
         case PERR_UNEXPECTED_END_OF_EXPR:
             return "Unexpected end of expression";
         case PERR_EXPECTED_PARAM_LIST:
             return "Expected an opening parenthesis";
+        case PERR_UNEXPECTED_CHARACTER:
+            return "Unexpected character";
         default:
             return "Unknown Error";
     }

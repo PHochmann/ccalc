@@ -523,7 +523,7 @@ static size_t get_text_width(const char *str)
 
 void get_dimensions(Table *table, size_t *out_col_widths, size_t *out_row_heights)
 {
-    struct Constraint *constrs = malloc(table->num_cols * table->num_rows * sizeof(struct Constraint));
+    struct Constraint *constrs = malloc_wrapper(table->num_cols * table->num_rows * sizeof(struct Constraint));
     // Satisfy constraints of width
     struct Row *curr_row = table->first_row;
     size_t index = 0;
@@ -929,7 +929,7 @@ void set_all_vlines(Table *table, BorderStyle style)
 static void print_debug(Table *table)
 {
     size_t col_widths[MAX_COLS];
-    size_t *row_heights = malloc(table->num_rows * sizeof(size_t));
+    size_t *row_heights = malloc_wrapper(table->num_rows * sizeof(size_t));
     get_dimensions(table, col_widths, row_heights);
 
     printf("Table dimensions: #rows: %zu, #cols: %zu\n", table->num_rows, table->num_cols);
@@ -958,7 +958,7 @@ void fprint_table(Table *table, FILE *stream)
     }
 
     size_t col_widths[MAX_COLS];
-    size_t *row_heights = malloc(table->num_rows * sizeof(size_t));
+    size_t *row_heights = malloc_wrapper(table->num_rows * sizeof(size_t));
     get_dimensions(table, col_widths, row_heights);
     override_superfluous_lines(table, col_widths[table->num_cols - 1], row_heights[table->num_rows - 1]);
     

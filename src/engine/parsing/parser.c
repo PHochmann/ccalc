@@ -73,13 +73,6 @@ bool op_pop_and_insert(struct ParserState *state)
             return false;
         }
 
-        if (op_data->arity > MAX_CHILDREN)
-        {
-            state->result = PERR_CHILDREN_EXCEEDED;
-            state->curr_tok = op_data->token;
-            return false;
-        }
-
         // We try to allocate a new node and pop its children from node stack
         Node *op_node = malloc_operator_node(op, op_data->arity, op_data->token);
         
@@ -378,6 +371,11 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
                 || ctx_lookup_op(state.ctx, token, OP_PLACE_POSTFIX) != NULL)
             {
                 ERROR(PERR_UNEXPECTED_INFIX);
+            }
+
+            if (!is_letter(token[0]))
+            {
+                ERROR(PERR_UNEXPECTED_CHARACTER);
             }
 
             node = malloc_variable_node(token, 0, i);

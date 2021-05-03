@@ -13,9 +13,9 @@ typedef enum {
     PERR_UNEXPECTED_CLOSING_PAREN, // Mismatch: no opening parenthesis found
     PERR_UNEXPECTED_DELIMITER,     // Delimiter too soon (e.g. sum(,)) or not within parameter list of a function
     PERR_FUNCTION_WRONG_ARITY,     // Function of wrong arity
-    PERR_CHILDREN_EXCEEDED,        // Too many operands for function
     PERR_UNEXPECTED_END_OF_EXPR,   // Expression ended too early
     PERR_EXPECTED_PARAM_LIST,      // Function with arity > 0 has been parsed, but no opening parenthesis followed
+    PERR_UNEXPECTED_CHARACTER      // Non-alphabet variable
 } ParserError;
 
 typedef struct {

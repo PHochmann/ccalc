@@ -11,12 +11,14 @@
 #include "../src/client/simplification/simplification.h"
 #include "test_simplification.h"
 
-static const size_t NUM_CASES = 20;
+static const size_t NUM_CASES = 23;
 const char *cases[] = {
     "x-x",                 "0",
+    "-sin(x)+sin(x)",      "0",
     "x+x",                 "2x",
     "x+x+x+x+x",           "5x",
     "x-x-x-x-x",           "-3x",
+    "x x x x x x x x x x", "x^10",
     "10x-x-x-x-10x",       "-3x",
     "2*(sqrt(2)*x)^2",     "4x^2", // Precision problems
     "(-x)^2 - x^2",        "0",
@@ -27,6 +29,7 @@ const char *cases[] = {
     "(x^2+x^3)x^4",        "x^7+x^6",
     "sqrt(x)/sqrt(x y)",   "1/sqrt(y)",
     "avg(a,b)",            "0.5a+0.5b",
+    "avg(a,a,b,b)",        "0.5a+0.5b",
     
     // Derivative
     "4'",                  "0",
