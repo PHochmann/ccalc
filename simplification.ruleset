@@ -106,9 +106,13 @@ RULESET
     # Two products with common element (Zusammenfassen)
     sum([xs], prod([xxs], x, [yys]), [ys], prod([xxxs], x, [yyys]), [zs]) -> sum([xs], prod(sum(prod([xxs], [yys]), prod([xxxs], [yyys])), x), [ys], [zs])
 
-    # Binomische Formel rückwärts
-    sum(prod(2, x, y), x^2, y^2) -> sum(x, y)^2
-    sum(prod(2, y, x), x^2, y^2) -> sum(x, y)^2
+    # Binomische Formel für Summe mit Konstante
+    sum(x, y)^2 -> sum(prod(2,x,y), x^2, y^2)     WHERE type(x) == CONST
+    # Binomische Formel rückwärts für alle anderen Fälle
+    sum(prod(2, x, y), x^2, y^2) -> sum(x, y)^2   WHERE type(x) != CONST
+    sum(prod(2, y, x), x^2, y^2) -> sum(x, y)^2   WHERE type(x) != CONST
+    sum(x^2, prod(2, x, y), y^2) -> sum(x, y)^2   WHERE type(x) != CONST
+    sum(x^2, y^2, prod(2, y, x)) -> sum(x, y)^2   WHERE type(x) != CONST
 
     # Powers
     x^0                              -> 1
@@ -132,8 +136,8 @@ RULESET
     prod([xs], sin(x)^y, [ys], cos(x)^-y, [zs]) -> prod([xs], tan(x)^y, [ys], [zs])
 
     # Some special ops
-    min(x, x)     -> x
-    max(x, x)     -> x
+    min([xs], x, [ys], x, [zs]) -> min([xs], x, [ys], [zs])
+    max([xs], x, [ys], x, [zs]) -> max([xs], x, [ys], [zs])
 
     (-x)^y -> x^y WHERE (y mod 2) == 0
 
@@ -186,6 +190,8 @@ RULESET
 
     x+(y+z)       -> x+y+z
     x*(y*z)       -> x*y*z
+
+    sin(x)/cos(x) -> tan(x)
 
     x/0           -> 1/0    WHERE !equal(x,1)
 
