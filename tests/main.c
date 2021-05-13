@@ -41,12 +41,12 @@ int main()
     init_commands();
     Table *table = get_empty_table();
     set_default_alignments(table, 4,
-        (TextAlignment[]){ ALIGN_RIGHT, ALIGN_LEFT, ALIGN_RIGHT, ALIGN_LEFT });
+        (TableHAlign[]){ H_ALIGN_RIGHT, H_ALIGN_LEFT, H_ALIGN_RIGHT, H_ALIGN_LEFT }, NULL);
     add_empty_cell(table);
     override_left_border(table, BORDER_NONE);
     add_cell(table, " Test suite ");
     add_cell(table, " Result ");
-    override_alignment_of_row(table, ALIGN_LEFT);
+    override_horizontal_alignment_of_row(table, H_ALIGN_LEFT);
     next_row(table);
     set_hline(table, BORDER_SINGLE);
 
@@ -76,7 +76,7 @@ int main()
     vec_destroy(&error_builder);
 
     set_span(table, 2, 1);
-    override_alignment(table, ALIGN_CENTER);
+    override_horizontal_alignment(table, H_ALIGN_CENTER);
     set_hline(table, BORDER_SINGLE);
     add_cell(table, " End result ");
     add_cell(table, error ? F_RED " failed " COL_RESET : F_GREEN " passed " COL_RESET);

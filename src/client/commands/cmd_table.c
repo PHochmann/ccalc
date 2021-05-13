@@ -194,7 +194,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
         start_val += step_val;
     }
 
-    set_default_alignments(table, 3, (TextAlignment[]){ ALIGN_RIGHT, ALIGN_RIGHT, ALIGN_RIGHT });
+    set_default_alignments(table, 3, (TableHAlign[]){ H_ALIGN_RIGHT, H_ALIGN_RIGHT, H_ALIGN_RIGHT }, NULL);
     print_table(table);
     free_table(table);
 
