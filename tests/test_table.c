@@ -73,12 +73,12 @@ bool table_test(__attribute__((unused)) StringBuilder *error_builder)
 
     // Case 2
     Table *t2 = get_empty_table();
-    for (size_t i = 0; i < MAX_COLS - 1; i++)
+    for (size_t i = 0; i < TABLE_MAX_COLS - 1; i++)
     {
-        for (size_t j = 0; j < MAX_COLS - 1; j++)
+        for (size_t j = 0; j < TABLE_MAX_COLS - 1; j++)
         {
             override_horizontal_alignment(t2, H_ALIGN_RIGHT);
-            add_cell_fmt(t2, " %d ", i * (MAX_COLS - 1) + j + 1);
+            add_cell_fmt(t2, " %d ", i * (TABLE_MAX_COLS - 1) + j + 1);
         }
         next_row(t2);
     }
@@ -94,17 +94,17 @@ bool table_test(__attribute__((unused)) StringBuilder *error_builder)
 
     // Case 4
     Table *t4 = get_empty_table();
-    for (size_t i = 1; i < MAX_COLS - 1; i++)
+    for (size_t i = 1; i < TABLE_MAX_COLS - 1; i++)
     {
         set_span(t4, i, 1);
         add_cell_fmt(t4, " x ");
-        set_span(t4, MAX_COLS - i - 1, 1);
+        set_span(t4, TABLE_MAX_COLS - i - 1, 1);
         add_cell_fmt(t4, " x ");
         next_row(t4);
         set_hline(t4, BORDER_SINGLE);
     }
 
-    for (size_t i = 0; i < MAX_COLS / 2; i++)
+    for (size_t i = 0; i < TABLE_MAX_COLS / 2; i++)
     {
         set_span(t4, 2, 1);
         add_cell_fmt(t4, " x ");
@@ -115,6 +115,30 @@ bool table_test(__attribute__((unused)) StringBuilder *error_builder)
     make_boxed(t4, BORDER_SINGLE);
     print_table(t4);
     free_table(t4);
+
+    // Case 5
+    Table *t5 = get_empty_table();
+    set_default_alignments(t5, 3, NULL, (const TableVAlign[]){ V_ALIGN_CENTER, V_ALIGN_TOP, V_ALIGN_TOP });
+    add_cells(t5, 3, " henlo ", " smol ", " beans ");
+    next_row(t5);
+    set_hline(t5, BORDER_DOUBLE);
+    set_span(t5, 2, 2);
+    override_horizontal_alignment(t5, H_ALIGN_CENTER);
+    override_vertical_alignment(t5, V_ALIGN_CENTER);
+    add_cell_fmt(t5, " %d ", 666);
+    set_span(t5, 2, 1);
+    add_cell(t5, " UwU\n OwO ");
+    next_row(t5);
+    override_left_border(t5, BORDER_NONE);
+    add_cell(t5, " >.> ");
+    override_above_border(t5, BORDER_NONE);
+    add_cell(t5, " <.< ");
+    set_hline(t5, BORDER_SINGLE);
+    set_all_vlines(t5, BORDER_SINGLE);
+    next_row(t5);
+    make_boxed(t5, BORDER_SINGLE);
+    print_table(t5);
+    free_table(t5);
     
     return true;
 }

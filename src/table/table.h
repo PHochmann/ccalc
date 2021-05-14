@@ -3,9 +3,7 @@
 #include <stdarg.h>
 
 // Can be changed without further modifications
-#define MAX_COLS 11
-// For ALIGN_RIGHT
-#define DECIMAL_SEPARATOR '.'
+#define TABLE_MAX_COLS 11
 
 typedef enum
 {
@@ -43,6 +41,7 @@ void next_row(Table *table);
 // Cell insertion
 void add_empty_cell(Table *table);
 void add_cell(Table *table, const char *text);
+void add_cells(Table *table, size_t num_cells, ...);
 void add_cell_gc(Table *table, char *text);
 void add_cell_fmt(Table *table, const char *fmt, ...);
 void add_cell_vfmt(Table *table, const char *fmt, va_list args);

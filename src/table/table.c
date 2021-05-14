@@ -40,7 +40,7 @@ struct Cell
 
 struct Row
 {
-    struct Cell cells[MAX_COLS]; // All cells of this row from left to right
+    struct Cell cells[TABLE_MAX_COLS]; // All cells of this row from left to right
     struct Row *next_row;        // Pointer to next row or NULL if last row
     TableBorderStyle border_above;    // Default border above (can be overwritten in cell)
     size_t border_above_counter; // Counts cells that override their border_above
@@ -53,10 +53,10 @@ struct Table
     struct Row *first_row;                   // Start of linked list to rows
     struct Row *curr_row;                    // Marker of row of next inserted cell
     size_t curr_col;                         // Marker of col of next inserted cell
-    TableBorderStyle borders_left[MAX_COLS]; // Default left border of cols
-    TableHAlign h_aligns[MAX_COLS];          // Default horizontal alignment of cols
-    TableVAlign v_aligns[MAX_COLS];          // Default vertical alignment of cols
-    size_t border_left_counters[MAX_COLS];   // Counts cells that override their border_left
+    TableBorderStyle borders_left[TABLE_MAX_COLS]; // Default left border of cols
+    TableHAlign h_aligns[TABLE_MAX_COLS];          // Default horizontal alignment of cols
+    TableVAlign v_aligns[TABLE_MAX_COLS];          // Default vertical alignment of cols
+    size_t border_left_counters[TABLE_MAX_COLS];   // Counts cells that override their border_left
 };
 
 // Represents a size contraint in one dimension imposed by a single cell
@@ -181,6 +181,7 @@ static void print_text(const struct Cell *cell,
             break;
         case V_ALIGN_CENTER:
             actual_line = line_index - (total_height - cell->text_height) / 2;
+            //printf("~~%zu~~", total_height);
             break;
         case V_ALIGN_BOTTOM:
             actual_line = line_index - (total_height - cell->text_height);
@@ -234,7 +235,7 @@ static size_t get_total_width(const Table *table, const size_t *col_widths, stru
     size_t sum = 0;
     for (size_t i = 0; i < cell->span_x; i++)
     {
-        if (i < cell->span_x - 1 && table->border_left_counters[cell->x + i + 1] > 0) sum++;
+        if (i != 0 && table->border_left_counters[cell->x + i + 1] > 0) sum++;
         sum += col_widths[cell->x + i];
     }
     return sum;
@@ -248,7 +249,7 @@ static size_t get_total_height(const Table *table, const size_t *row_heights, st
     struct Row *curr_row = get_row(table, cell->y);
     for (size_t i = 0; i < cell->span_y; i++)
     {
-        if (i < cell->span_y - 1 && curr_row->border_above_counter > 0) sum++;
+        if (i != 0 && curr_row->border_above_counter > 0) sum++;
         sum += row_heights[cell->y + i];
         curr_row = curr_row->next_row;
     }
@@ -465,7 +466,7 @@ static void add_text_cell(Table *table, char *text, bool needs_free)
         table->num_cols = table->curr_col + 1;
     }
 
-    while (table->curr_col != MAX_COLS && table->curr_row->cells[table->curr_col].is_set)
+    while (table->curr_col != TABLE_MAX_COLS && table->curr_row->cells[table->curr_col].is_set)
     {
         table->curr_col++;
     }
@@ -487,7 +488,7 @@ static struct Row *malloc_row(size_t y)
 {
     struct Row *res = calloc_wrapper(1, sizeof(struct Row));
     if (res == NULL) return NULL;
-    for (size_t i = 0; i < MAX_COLS; i++)
+    for (size_t i = 0; i < TABLE_MAX_COLS; i++)
     {
         res->cells[i] = (struct Cell){
             .is_set                = false,
@@ -696,7 +697,7 @@ void free_table(Table *table)
 void set_position(Table *table, size_t x, size_t y)
 {
     assert(table != NULL);
-    assert(x < MAX_COLS);
+    assert(x < TABLE_MAX_COLS);
 
     table->curr_col = x;
     if (y < table->num_rows)
@@ -728,7 +729,7 @@ void next_row(Table *table)
     else
     {
         table->curr_row = table->curr_row->next_row;
-        while (table->curr_col < MAX_COLS && table->curr_row->cells[table->curr_col].is_set)
+        while (table->curr_col < TABLE_MAX_COLS && table->curr_row->cells[table->curr_col].is_set)
         {
             table->curr_col++;
         }
@@ -742,6 +743,17 @@ Summary: Adds next cell. Buffer is not copied. print_table will access it.
 void add_cell(Table *table, const char *text)
 {
     add_text_cell(table, (char*)text, false);
+}
+
+void add_cells(Table *table, size_t num_cells, ...)
+{
+    va_list args;
+    va_start(args, num_cells);
+    for (size_t i = 0; i < num_cells; i++)
+    {
+        add_cell(table, va_arg(args, const char*));
+    }
+    va_end(args);
 }
 
 /*
@@ -799,7 +811,7 @@ Summary: Sets default alignment of columns
 void set_default_alignments(Table *table, size_t num_alignments, const TableHAlign *h_aligns, const TableVAlign *v_aligns)
 {
     assert(table != NULL);
-    assert(num_alignments <= MAX_COLS);
+    assert(num_alignments <= TABLE_MAX_COLS);
 
     for (size_t i = 0; i < num_alignments; i++)
     {
@@ -829,7 +841,7 @@ Summary: Overrides alignment of all cells in current row
 void override_horizontal_alignment_of_row(Table *table, TableHAlign h_align)
 {
     assert(table != NULL);
-    for (size_t i = 0; i < MAX_COLS; i++)
+    for (size_t i = 0; i < TABLE_MAX_COLS; i++)
     {
         override_h_align_internal(&table->curr_row->cells[i], h_align);
     }
@@ -838,7 +850,7 @@ void override_horizontal_alignment_of_row(Table *table, TableHAlign h_align)
 void override_vertical_alignment_of_row(Table *table, TableVAlign v_align)
 {
     assert(table != NULL);
-    for (size_t i = 0; i < MAX_COLS; i++)
+    for (size_t i = 0; i < TABLE_MAX_COLS; i++)
     {
         override_v_align_internal(&table->curr_row->cells[i], v_align);
     }
@@ -861,7 +873,7 @@ void set_hline(Table *table, TableBorderStyle style)
 void set_vline(Table *table, size_t index, TableBorderStyle style)
 {
     assert(table != NULL);
-    assert (index < MAX_COLS);
+    assert (index < TABLE_MAX_COLS);
 
     if (table->num_cols <= index)
     {
@@ -933,7 +945,7 @@ void set_span(Table *table, size_t span_x, size_t span_y)
     assert(table != NULL);
     assert(span_x != 0);
     assert(span_y != 0);
-    assert(table->curr_col + span_x <= MAX_COLS);
+    assert(table->curr_col + span_x <= TABLE_MAX_COLS);
     struct Cell *cell = &table->curr_row->cells[table->curr_col];
     assert(cell->span_x == 1);
     assert(cell->span_y == 1);
@@ -1004,7 +1016,7 @@ void set_all_vlines(Table *table, TableBorderStyle style)
 #ifdef DEBUG
 static void print_debug(Table *table)
 {
-    size_t col_widths[MAX_COLS];
+    size_t col_widths[TABLE_MAX_COLS];
     size_t *row_heights = malloc_wrapper(table->num_rows * sizeof(size_t));
     get_dimensions(table, col_widths, row_heights);
 
@@ -1033,7 +1045,7 @@ void fprint_table(Table *table, FILE *stream)
         return;
     }
 
-    size_t col_widths[MAX_COLS];
+    size_t col_widths[TABLE_MAX_COLS];
     size_t *row_heights = malloc_wrapper(table->num_rows * sizeof(size_t));
     get_dimensions(table, col_widths, row_heights);
     override_superfluous_lines(table, col_widths[table->num_cols - 1], row_heights[table->num_rows - 1]);
@@ -1042,7 +1054,7 @@ void fprint_table(Table *table, FILE *stream)
     print_debug(table);
     #endif
 
-    size_t line_indices[MAX_COLS];
+    size_t line_indices[TABLE_MAX_COLS];
     for (size_t i = 0; i < table->num_cols; i++) line_indices[i] = 0;
 
     // Print rows
