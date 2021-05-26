@@ -16,14 +16,14 @@ typedef enum
 {
     H_ALIGN_LEFT,
     H_ALIGN_RIGHT,
-    H_ALIGN_CENTER, // Centered (rounded to the left)
+    H_ALIGN_CENTER // Rounded to the left
 } TableHAlign;
 
 typedef enum
 {
     V_ALIGN_TOP,
     V_ALIGN_BOTTOM,
-    V_ALIGN_CENTER, // Centered (rounded to the top)
+    V_ALIGN_CENTER // Rounded to the top
 } TableVAlign;
 
 typedef struct Table Table;

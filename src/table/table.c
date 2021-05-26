@@ -13,21 +13,21 @@
 
 struct Cell
 {
-    char *text; // Actual content to be displayed
-    size_t text_height;
-    size_t text_width;
+    char *text;         // Actual content to be displayed
+    size_t text_height; // Number of lines
+    size_t text_width;  // Maximum width of lines
 
     // Settings
-    TableHAlign h_align;        // Non default, how to place text in col width
-    TableVAlign v_align;        // Non default, how to place text in col width
-    TableBorderStyle border_left;    // Non-default border left
-    TableBorderStyle border_above;   // Non-default border above
-    size_t span_x;              // How many cols to span over
-    size_t span_y;              // How many rows to span over
+    TableHAlign h_align;           // Non default, how to place text in col width
+    TableVAlign v_align;           // Non default, how to place text in col width
+    TableBorderStyle border_left;  // Non-default border left
+    TableBorderStyle border_above; // Non-default border above
+    size_t span_x;                 // How many cols to span over
+    size_t span_y;                 // How many rows to span over
 
     // Generated
-    bool override_v_align;        // Default set for each col in table
-    bool override_h_align;        // Default set for each col in table
+    bool override_v_align;      // Default set for each col in table
+    bool override_h_align;      // Default set for each col in table
     bool override_border_left;  // Default set for each col in table
     bool override_border_above; // Default set in row
 
@@ -41,9 +41,9 @@ struct Cell
 struct Row
 {
     struct Cell cells[TABLE_MAX_COLS]; // All cells of this row from left to right
-    struct Row *next_row;        // Pointer to next row or NULL if last row
-    TableBorderStyle border_above;    // Default border above (can be overwritten in cell)
-    size_t border_above_counter; // Counts cells that override their border_above
+    struct Row *next_row;              // Pointer to next row or NULL if last row
+    TableBorderStyle border_above;     // Default border above (can be overwritten in cell)
+    size_t border_above_counter;       // Counts cells that override their border_above
 };
 
 struct Table
@@ -94,13 +94,13 @@ static struct Row *get_row(const Table *table, size_t index)
     return row;
 }
 
-TableHAlign get_h_align(TableHAlign default_h, const struct Cell *cell)
+static TableHAlign get_h_align(TableHAlign default_h, const struct Cell *cell)
 {
     if (cell->parent != NULL) return get_h_align(default_h, cell->parent);
     return (cell->override_h_align ? cell->h_align : default_h);
 }
 
-TableVAlign get_v_align(TableVAlign default_v, const struct Cell *cell)
+static TableVAlign get_v_align(TableVAlign default_v, const struct Cell *cell)
 {
     if (cell->parent != NULL) return get_v_align(default_v, cell->parent);
     return (cell->override_v_align ? cell->v_align : default_v);

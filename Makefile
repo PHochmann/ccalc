@@ -20,8 +20,8 @@ endif
 ifneq (,$(filter $(MAKECMDGOALS),debug))
 	BUILD_DIR    =  ./bin/debug
 	INSTALL_PATH = .
-	CFLAGS       += -DDEBUG -g3 -O0 -fsanitize=undefined
-	LDFLAGS      += -fsanitize=undefined
+	CFLAGS       += -DDEBUG -g3 -O0 -fsanitize=address
+	LDFLAGS      += -fsanitize=address
 endif
 
 # Compile additional test sources 

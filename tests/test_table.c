@@ -42,7 +42,7 @@ bool table_test(__attribute__((unused)) StringBuilder *error_builder)
     override_horizontal_alignment(t1, H_ALIGN_RIGHT);
     override_vertical_alignment(t1, V_ALIGN_CENTER);
     override_above_border(t1, BORDER_NONE);
-    add_cell(t1, " ^ no border, right aligned \n and span x \n and also y \n and also vertically centered ");
+    add_cell(t1, " ^ xy ");
     set_position(t1, 0, 4);
     set_hline(t1, BORDER_SINGLE);
     set_span(t1, 2, 1);
@@ -51,7 +51,7 @@ bool table_test(__attribute__((unused)) StringBuilder *error_builder)
     set_vline(t1, 4, BORDER_SINGLE);
     set_span(t1, 1, 3);
     override_vertical_alignment(t1, V_ALIGN_BOTTOM);
-    add_cell(t1, " bottom aligned \n span y \n < no border ");
+    add_cell(t1, " xy ");
     next_row(t1);
     set_hline(t1, BORDER_SINGLE);
     set_span(t1, 2, 1);
@@ -125,7 +125,7 @@ bool table_test(__attribute__((unused)) StringBuilder *error_builder)
     set_span(t5, 2, 2);
     override_horizontal_alignment(t5, H_ALIGN_CENTER);
     override_vertical_alignment(t5, V_ALIGN_CENTER);
-    add_cell_fmt(t5, " %d ", 666);
+    add_cell_fmt(t5, " %d ", 123);
     set_span(t5, 2, 1);
     add_cell(t5, " UwU\n OwO ");
     next_row(t5);

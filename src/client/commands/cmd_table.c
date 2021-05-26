@@ -24,11 +24,11 @@ int cmd_table_check(const char *input)
     return begins_with(COMMAND, input);
 }
 
-bool check_if_constant(const char *base, const char *string, const Node *node)
+bool check_if_constant(const char *offset, const char *string, const Node *node)
 {
     if (count_all_variable_nodes(node) > 0)
     {
-        report_error_at(string - base, strlen(string), "Error: Not constant\n");
+        report_error_at(string - offset, strlen(string), "Error: Not constant\n");
         return false;
     }
     return true;
