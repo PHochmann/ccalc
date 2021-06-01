@@ -29,14 +29,6 @@ typedef struct
     TrieNode *first_node;
 } Trie;
 
-typedef struct
-{
-    Iterator base;
-    const Trie *trie;
-    char curr_str[30];
-    const TrieNode *nodes[30];
-} TrieIterator;
-
 Trie trie_create(size_t elem_size);
 void trie_destroy(Trie *trie);
 void *trie_add_str(Trie *trie, const char *string);
@@ -45,4 +37,15 @@ bool trie_contains(const Trie *trie, const char *string, void **out_data);
 size_t trie_longest_prefix(const Trie *trie, const char *string, void **out_data);
 
 // Iterator
+
+#define TRIE_MAX_ITERATOR_DEPTH 30
+
+typedef struct
+{
+    Iterator base;
+    const Trie *trie;
+    char curr_str[TRIE_MAX_ITERATOR_DEPTH];
+    const TrieNode *nodes[TRIE_MAX_ITERATOR_DEPTH];
+} TrieIterator;
+
 TrieIterator trie_get_iterator(const Trie *trie);

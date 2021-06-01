@@ -174,46 +174,61 @@ size_t trie_longest_prefix(const Trie *trie, const char *string, void **out_data
 
 // Iterator implementation:
 
-void find_next_terminal(TrieIterator *ti)
+const TrieNode *find_terminal(TrieIterator *ti, size_t len, int begin_from, bool allow_self)
 {
-    size_t len = 0;
-    void *res = NULL;
-    while (ti->nodes[len] != NULL) len++;
+    const TrieNode *node = ti->nodes[len - 1];
+    if (allow_self && node->is_terminal) return node;
 
-    int i = ti->curr_str[len - 1];
-    while (i != END_CHAR - START_CHAR)
+    for (int i = begin_from; i < END_CHAR - START_CHAR; i++)
     {
-        if (ti->nodes[len]->next[i] != NULL)
+        if (ti->nodes[len - 1]->next[i] != NULL)
         {
-            ti->nodes[len + 1] = ti->nodes[len]->next[i];
+            ti->nodes[len] = ti->nodes[len - 1]->next[i];
             ti->curr_str[len] = i + START_CHAR;
-            break;
+            if ((node = find_terminal(ti, len + 1, 0, true)) != NULL) return node;
         }
     }
+
+    return NULL;
 }
 
 static void *get_next(Iterator *iterator)
 {
     TrieIterator *ti = (TrieIterator*)iterator;
 
-    if (ti->nodes[0] == NULL)
-    {
-        ti->nodes[0] = ti->trie->first_node;
-        ti->curr_str[0] = '\0';
+    size_t len = 0;
+    while (ti->nodes[len] != NULL) len++;
 
-        if (ti->nodes[0]->is_terminal)
-        {
-            return (void*)ti->nodes[0]->data;
-        }
+    const TrieNode *next_terminal = NULL;
+
+    if (len == 0)
+    {
+        len = 1;
+        ti->nodes[0] = ti->trie->first_node;
+        next_terminal = find_terminal(ti, 1, 0, true);
+        if (next_terminal != NULL) return (void*)next_terminal->data;
     }
 
-    return get_next_rec(ti);
+    // First: Carry on depth search
+    next_terminal = find_terminal(ti, len, 0, false);
+    if (next_terminal != NULL) return (void*)next_terminal->data;
+
+    // Switch character
+    while (len > 1)
+    {
+        len--;
+        ti->nodes[len] = NULL;
+        next_terminal = find_terminal(ti, len, ti->curr_str[len] - START_CHAR + 1, false);
+        if (next_terminal != NULL) return (void*)next_terminal->data;
+    }
+
+    return NULL;
 }
 
 static void reset(Iterator *iterator)
 {
-    ((TrieIterator*)iterator)->nodes = { NULL };
-    ((TrieIterator*)iterator)->curr_str = { '\0' };
+    TrieIterator *ti = (TrieIterator*)iterator;
+    *ti = trie_get_iterator(ti->trie);
 }
 
 TrieIterator trie_get_iterator(const Trie *trie)
