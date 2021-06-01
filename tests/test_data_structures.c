@@ -113,9 +113,22 @@ bool data_structures_test(StringBuilder *error_builder)
     {
         ERROR("Empty string should not be in trie, as it has been deleted\n");
     }
-    trie_add_str(&trie, "aaaaaaaaaaaa");
-    trie_add_str(&trie, "aabzzz");
-    trie_add_str(&trie, "aaaaab");
+    *(int*)trie_add_str(&trie, "aaaaaaaaaaaa") = 1;
+    *(int*)trie_add_str(&trie, "aabzzz") = 3;
+    *(int*)trie_add_str(&trie, "aaaaab") = 2;
+
+    TrieIterator ti = trie_get_iterator(&trie);
+    int *a = iterator_get_next((Iterator*)&ti);
+    int *b= iterator_get_next((Iterator*)&ti);
+    int *c = iterator_get_next((Iterator*)&ti);
+    int *d = iterator_get_next((Iterator*)&ti);
+    int *e = iterator_get_next((Iterator*)&ti);
+    int *f = iterator_get_next((Iterator*)&ti);
+    if (*a != 42 || *b != 21 || *c != 1 || *d != 2 || *e != 3 || f != NULL)
+    {
+        ERROR("Trie iterator error\n");
+    }
+
     trie_remove_str(&trie, "aaaaaaaaaaaa");
     trie_destroy(&trie);
 

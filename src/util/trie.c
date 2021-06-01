@@ -5,6 +5,8 @@
 #include "alloc_wrappers.h"
 #include "trie.h"
 
+#define TRIE_OUT_FAN (END_CHAR - START_CHAR)
+
 static TrieNode *malloc_trienode(size_t elem_size)
 {
     return calloc_wrapper(1, sizeof(TrieNode) + elem_size);
@@ -33,7 +35,7 @@ Trie trie_create(size_t elem_size)
 
 static void destroy_rec(TrieNode *node)
 {
-    for (unsigned char i = 0; i < END_CHAR - START_CHAR; i++)
+    for (unsigned char i = 0; i < TRIE_OUT_FAN; i++)
     {
         if (node->next[i] != NULL) destroy_rec(node->next[i]);
     }
@@ -168,4 +170,58 @@ size_t trie_longest_prefix(const Trie *trie, const char *string, void **out_data
     }
 
     return res;
+}
+
+// Iterator implementation:
+
+void find_next_terminal(TrieIterator *ti)
+{
+    size_t len = 0;
+    void *res = NULL;
+    while (ti->nodes[len] != NULL) len++;
+
+    int i = ti->curr_str[len - 1];
+    while (i != END_CHAR - START_CHAR)
+    {
+        if (ti->nodes[len]->next[i] != NULL)
+        {
+            ti->nodes[len + 1] = ti->nodes[len]->next[i];
+            ti->curr_str[len] = i + START_CHAR;
+            break;
+        }
+    }
+}
+
+static void *get_next(Iterator *iterator)
+{
+    TrieIterator *ti = (TrieIterator*)iterator;
+
+    if (ti->nodes[0] == NULL)
+    {
+        ti->nodes[0] = ti->trie->first_node;
+        ti->curr_str[0] = '\0';
+
+        if (ti->nodes[0]->is_terminal)
+        {
+            return (void*)ti->nodes[0]->data;
+        }
+    }
+
+    return get_next_rec(ti);
+}
+
+static void reset(Iterator *iterator)
+{
+    ((TrieIterator*)iterator)->nodes = { NULL };
+    ((TrieIterator*)iterator)->curr_str = { '\0' };
+}
+
+TrieIterator trie_get_iterator(const Trie *trie)
+{
+    return (TrieIterator){
+        .base = { .get_next = get_next, .reset = reset },
+        .trie = trie,
+        .curr_str = { '\0' },
+        .nodes = { NULL },
+    };
 }

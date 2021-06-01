@@ -13,7 +13,7 @@ ParsingContext ctx_create()
     ParsingContext res = {
         .op_list       = list_create(sizeof(Operator)),
         .keywords_trie = trie_create(0),
-        .glue_op       = NULL,
+        .glue_op       = NULL
     };
 
     for (size_t i = 0; i < OP_NUM_PLACEMENTS; i++)
@@ -37,8 +37,8 @@ void ctx_destroy(ParsingContext *ctx)
 
 /*
 Summary: Adds given operators to context
-Returns: true if all operators were successfully added
-    false if inconsistency occurred, buffer full or invalid arguments
+Returns: True if all operators were successfully added
+    False if inconsistency occurred or invalid arguments
 */
 bool ctx_add_ops(ParsingContext *ctx, size_t count, ...)
 {
@@ -102,7 +102,8 @@ const Operator *ctx_add_op(ParsingContext *ctx, Operator op)
 }
 
 /*
-Summary: 
+Summary: Deletes operator from context
+Returns: True if operator existed before and was deleted, False otherwise
 */
 bool ctx_delete_op(ParsingContext *ctx, const char *name, OpPlacement placement)
 {
