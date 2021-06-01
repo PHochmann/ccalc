@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "test_data_structures.h"
 #include "../src/util/linked_list.h"
@@ -113,10 +114,32 @@ bool data_structures_test(StringBuilder *error_builder)
     {
         ERROR("Empty string should not be in trie, as it has been deleted\n");
     }
-    trie_add_str(&trie, "aaaaaaaaaaaa");
-    trie_add_str(&trie, "aabzzz");
-    trie_add_str(&trie, "aaaaab");
-    trie_remove_str(&trie, "aaaaaaaaaaaa");
+
+    trie_destroy(&trie);
+
+    trie = trie_create(sizeof(int));
+
+    *(int*)trie_add_str(&trie, "") = 0;
+    *(int*)trie_add_str(&trie, "a") = 1;
+    *(int*)trie_add_str(&trie, "aa") = 2;
+    *(int*)trie_add_str(&trie, "ab") = 3;
+    *(int*)trie_add_str(&trie, "b") = 4;
+
+    TrieIterator ti = trie_get_iterator(&trie);
+    int *a = iterator_get_next((Iterator*)&ti);
+    int *b= iterator_get_next((Iterator*)&ti);
+    int *c = iterator_get_next((Iterator*)&ti);
+    int *d = iterator_get_next((Iterator*)&ti);
+    int *e = iterator_get_next((Iterator*)&ti);
+    int *f = iterator_get_next((Iterator*)&ti);
+
+    //printf("%d %d %d %d %p \n", *a, *b, *c, *d, (void*)e);
+
+    if (*a != 0 || *b != 1 || *c != 2 || *d != 3 || *e != 4 || f != NULL)
+    {
+        ERROR("Trie iterator error\n");
+    }
+
     trie_destroy(&trie);
 
     return true;

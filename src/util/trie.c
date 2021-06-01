@@ -5,6 +5,8 @@
 #include "alloc_wrappers.h"
 #include "trie.h"
 
+#define TRIE_OUT_FAN (END_CHAR - START_CHAR)
+
 static TrieNode *malloc_trienode(size_t elem_size)
 {
     return calloc_wrapper(1, sizeof(TrieNode) + elem_size);
@@ -33,7 +35,7 @@ Trie trie_create(size_t elem_size)
 
 static void destroy_rec(TrieNode *node)
 {
-    for (unsigned char i = 0; i < END_CHAR - START_CHAR; i++)
+    for (unsigned char i = 0; i < TRIE_OUT_FAN; i++)
     {
         if (node->next[i] != NULL) destroy_rec(node->next[i]);
     }
@@ -168,4 +170,78 @@ size_t trie_longest_prefix(const Trie *trie, const char *string, void **out_data
     }
 
     return res;
+}
+
+// Iterator implementation:
+
+const TrieNode *find_terminal(TrieIterator *ti, size_t len, int begin_from, bool allow_self)
+{
+    if (len == TRIE_MAX_ITERATOR_DEPTH)
+    {
+        software_defect("Max trie iterator depth reached\n");
+    }
+
+    const TrieNode *node = ti->nodes[len - 1];
+    if (allow_self && node->is_terminal) return node;
+
+    for (int i = begin_from; i < END_CHAR - START_CHAR; i++)
+    {
+        if (ti->nodes[len - 1]->next[i] != NULL)
+        {
+            ti->nodes[len] = ti->nodes[len - 1]->next[i];
+            ti->curr_str[len] = i + START_CHAR;
+            if ((node = find_terminal(ti, len + 1, 0, true)) != NULL) return node;
+        }
+    }
+
+    return NULL;
+}
+
+static void *get_next(Iterator *iterator)
+{
+    TrieIterator *ti = (TrieIterator*)iterator;
+
+    size_t len = 0;
+    while (ti->nodes[len] != NULL) len++;
+
+    const TrieNode *next_terminal = NULL;
+
+    if (len == 0)
+    {
+        len = 1;
+        ti->nodes[0] = ti->trie->first_node;
+        next_terminal = find_terminal(ti, 1, 0, true);
+        if (next_terminal != NULL) return (void*)next_terminal->data;
+    }
+
+    // First: Carry on depth search
+    next_terminal = find_terminal(ti, len, 0, false);
+    if (next_terminal != NULL) return (void*)next_terminal->data;
+
+    // Switch character
+    while (len > 1)
+    {
+        len--;
+        ti->nodes[len] = NULL;
+        next_terminal = find_terminal(ti, len, ti->curr_str[len] - START_CHAR + 1, false);
+        if (next_terminal != NULL) return (void*)next_terminal->data;
+    }
+
+    return NULL;
+}
+
+static void reset(Iterator *iterator)
+{
+    TrieIterator *ti = (TrieIterator*)iterator;
+    *ti = trie_get_iterator(ti->trie);
+}
+
+TrieIterator trie_get_iterator(const Trie *trie)
+{
+    return (TrieIterator){
+        .base = { .get_next = get_next, .reset = reset },
+        .trie = trie,
+        .curr_str = { '\0' },
+        .nodes = { NULL },
+    };
 }
