@@ -49,3 +49,4 @@ typedef struct
 } TrieIterator;
 
 TrieIterator trie_get_iterator(const Trie *trie);
+char *trie_get_current_string(TrieIterator *iterator);

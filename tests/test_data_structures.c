@@ -6,6 +6,18 @@
 #include "../src/util/linked_list.h"
 #include "../src/util/trie.h"
 
+#define NUM_TRIE_ITERATOR_TESTS 8
+char *trie_iterator_tests[] = {
+    "",
+    "a",
+    "aa",
+    "aaa",
+    "abbbbb",
+    "b",
+    "zaabaaa",
+    "zzaaa"
+};
+
 bool data_structures_test(StringBuilder *error_builder)
 {
     // Case 1: vector
@@ -117,27 +129,37 @@ bool data_structures_test(StringBuilder *error_builder)
 
     trie_destroy(&trie);
 
+    // Test iterator
     trie = trie_create(sizeof(int));
 
-    *(int*)trie_add_str(&trie, "") = 0;
-    *(int*)trie_add_str(&trie, "a") = 1;
-    *(int*)trie_add_str(&trie, "aa") = 2;
-    *(int*)trie_add_str(&trie, "ab") = 3;
-    *(int*)trie_add_str(&trie, "b") = 4;
+    // Add 8 ints into trie that should be traversed from 0 to 7
+    for (int i = 0; i < NUM_TRIE_ITERATOR_TESTS; i++)
+    {
+        *(int*)trie_add_str(&trie, trie_iterator_tests[i]) = i;
+    }
 
     TrieIterator ti = trie_get_iterator(&trie);
-    int *a = iterator_get_next((Iterator*)&ti);
-    int *b= iterator_get_next((Iterator*)&ti);
-    int *c = iterator_get_next((Iterator*)&ti);
-    int *d = iterator_get_next((Iterator*)&ti);
-    int *e = iterator_get_next((Iterator*)&ti);
-    int *f = iterator_get_next((Iterator*)&ti);
 
-    //printf("%d %d %d %d %p \n", *a, *b, *c, *d, (void*)e);
-
-    if (*a != 0 || *b != 1 || *c != 2 || *d != 3 || *e != 4 || f != NULL)
+    for (size_t repetitions = 0; repetitions < 2; repetitions++)
     {
-        ERROR("Trie iterator error\n");
+        for (int i = 0; i < NUM_TRIE_ITERATOR_TESTS; i++)
+        {
+            if (*(int*)iterator_get_next((Iterator*)&ti) != i)
+            {
+                ERROR("Trie iterator error\n");
+            }
+
+            if (strcmp(trie_get_current_string(&ti), trie_iterator_tests[i]) != 0)
+            {
+                ERROR("Trie get current string error\n");
+            }
+        }
+        if (iterator_get_next((Iterator*)&ti) != NULL)
+        {
+            ERROR("Trie iterator not null at end\n");
+        }
+
+        iterator_reset((Iterator*)&ti);
     }
 
     trie_destroy(&trie);

@@ -223,7 +223,9 @@ static void *get_next(Iterator *iterator)
     {
         len--;
         ti->nodes[len] = NULL;
-        next_terminal = find_terminal(ti, len, ti->curr_str[len] - START_CHAR + 1, false);
+        int start = ti->curr_str[len] - START_CHAR + 1;
+        ti->curr_str[len] = '\0';
+        next_terminal = find_terminal(ti, len, start, false);
         if (next_terminal != NULL) return (void*)next_terminal->data;
     }
 
@@ -244,4 +246,9 @@ TrieIterator trie_get_iterator(const Trie *trie)
         .curr_str = { '\0' },
         .nodes = { NULL },
     };
+}
+
+char *trie_get_current_string(TrieIterator *iterator)
+{
+    return iterator->curr_str + 1;
 }
