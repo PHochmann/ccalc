@@ -176,6 +176,11 @@ size_t trie_longest_prefix(const Trie *trie, const char *string, void **out_data
 
 const TrieNode *find_terminal(TrieIterator *ti, size_t len, int begin_from, bool allow_self)
 {
+    if (len == TRIE_MAX_ITERATOR_DEPTH)
+    {
+        software_defect("Max trie iterator depth reached\n");
+    }
+
     const TrieNode *node = ti->nodes[len - 1];
     if (allow_self && node->is_terminal) return node;
 
