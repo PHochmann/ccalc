@@ -5,7 +5,9 @@
 #include "alloc_wrappers.h"
 #include "trie.h"
 
-#define TRIE_OUT_FAN (END_CHAR - START_CHAR)
+/*
+Todo: Refactor by combining adding and searching into single auxiliary function
+*/
 
 static TrieNode *malloc_trienode(size_t elem_size)
 {
@@ -35,7 +37,7 @@ Trie trie_create(size_t elem_size)
 
 static void destroy_rec(TrieNode *node)
 {
-    for (unsigned char i = 0; i < TRIE_OUT_FAN; i++)
+    for (unsigned char i = 0; i < END_CHAR - START_CHAR; i++)
     {
         if (node->next[i] != NULL) destroy_rec(node->next[i]);
     }
@@ -51,6 +53,7 @@ void trie_destroy(Trie *trie)
 /*
 Returns: Pointer to a buffer to attach an item to the inserted string
     The size of this buffer is equal to the elem_size specified when creating the trie
+    Returns NULL on duplicate string
 */
 void *trie_add_str(Trie *trie, const char *string)
 {
@@ -62,7 +65,7 @@ void *trie_add_str(Trie *trie, const char *string)
     {
         if (!is_legal_char(string[i]))
         {
-            software_defect("Trying to insert out of range char %c into trie.\n", string[i]);
+            software_defect("Trying to insert out of range char '%c' into trie.\n", string[i]);
         }
 
         unsigned char index = char_to_index(string[i]);
@@ -139,6 +142,11 @@ bool trie_contains(const Trie *trie, const char *string, void **out_data)
     }
 }
 
+/*
+Returns: Length of longest prefix of 'string' that is present in trie
+Params
+    out_data: Allowed to be NULL
+*/
 size_t trie_longest_prefix(const Trie *trie, const char *string, void **out_data)
 {
     assert(trie != NULL);
@@ -201,17 +209,21 @@ static void *get_next(Iterator *iterator)
 {
     TrieIterator *ti = (TrieIterator*)iterator;
 
+    // Compute current depth
     size_t len = 0;
     while (ti->nodes[len] != NULL) len++;
 
     const TrieNode *next_terminal = NULL;
 
+    // Special case: Check if empty string is in trie
+    // Then, do depth first search from root
     if (len == 0)
     {
         len = 1;
         ti->nodes[0] = ti->trie->first_node;
         next_terminal = find_terminal(ti, 1, 0, true);
         if (next_terminal != NULL) return (void*)next_terminal->data;
+        return NULL;
     }
 
     // First: Carry on depth search
@@ -248,7 +260,12 @@ TrieIterator trie_get_iterator(const Trie *trie)
     };
 }
 
-char *trie_get_current_string(TrieIterator *iterator)
+/*
+Returns: String of last item that was returned by trie_get_next
+*/
+const char *trie_get_current_string(const TrieIterator *iterator)
 {
+    // +1 because first character is always \0
+    // because the root node is not associated with a character
     return iterator->curr_str + 1;
 }

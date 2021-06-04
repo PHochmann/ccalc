@@ -6,7 +6,7 @@
 #include "../src/util/linked_list.h"
 #include "../src/util/trie.h"
 
-#define NUM_TRIE_ITERATOR_TESTS 8
+#define NUM_TRIE_ITERATOR_TESTS 10
 char *trie_iterator_tests[] = {
     "",
     "a",
@@ -14,6 +14,8 @@ char *trie_iterator_tests[] = {
     "aaa",
     "abbbbb",
     "b",
+    "hewwo_smol_bean",
+    "z",
     "zaabaaa",
     "zzaaa"
 };
@@ -154,6 +156,7 @@ bool data_structures_test(StringBuilder *error_builder)
                 ERROR("Trie get current string error\n");
             }
         }
+        
         if (iterator_get_next((Iterator*)&ti) != NULL)
         {
             ERROR("Trie iterator not null at end\n");
