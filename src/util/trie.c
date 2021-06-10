@@ -193,23 +193,23 @@ size_t trie_longest_prefix(const Trie *trie, const char *string, void **out_data
 
 // Iterator implementation:
 
-const TrieNode *find_terminal(TrieIterator *ti, size_t len, int begin_from, bool allow_self)
+const TrieNode *find_terminal(TrieIterator *ti, size_t depth, int begin_from, bool allow_self)
 {
-    if (len == TRIE_MAX_ITERATOR_DEPTH)
+    if (depth == TRIE_MAX_ITERATOR_DEPTH)
     {
         software_defect("Max trie iterator depth reached\n");
     }
 
-    const TrieNode *node = ti->nodes[len - 1];
+    const TrieNode *node = ti->nodes[depth - 1];
     if (allow_self && node->is_terminal) return node;
 
     for (int i = begin_from; i < TRIE_END_CHAR - TRIE_START_CHAR; i++)
     {
-        if (ti->nodes[len - 1]->next[i] != NULL)
+        if (ti->nodes[depth - 1]->next[i] != NULL)
         {
-            ti->nodes[len] = ti->nodes[len - 1]->next[i];
-            ti->curr_str[len] = i + TRIE_START_CHAR;
-            if ((node = find_terminal(ti, len + 1, 0, true)) != NULL) return node;
+            ti->nodes[depth] = ti->nodes[depth - 1]->next[i];
+            ti->curr_str[depth] = i + TRIE_START_CHAR;
+            if ((node = find_terminal(ti, depth + 1, 0, true)) != NULL) return node;
         }
     }
 
@@ -221,16 +221,16 @@ static void *get_next(Iterator *iterator)
     TrieIterator *ti = (TrieIterator*)iterator;
 
     // Compute current depth
-    size_t len = 0;
-    while (ti->nodes[len] != NULL) len++;
+    size_t depth = 0;
+    while (ti->nodes[depth] != NULL) depth++;
 
     const TrieNode *next_terminal = NULL;
 
     // Special case: Check if empty string is in trie
     // Then, do depth first search from root
-    if (len == 0)
+    if (depth == 0)
     {
-        len = 1;
+        depth = 1;
         ti->nodes[0] = ti->trie->first_node;
         next_terminal = find_terminal(ti, 1, 0, true);
         if (next_terminal != NULL) return (void*)next_terminal->data;
@@ -238,17 +238,17 @@ static void *get_next(Iterator *iterator)
     }
 
     // First: Carry on depth search
-    next_terminal = find_terminal(ti, len, 0, false);
+    next_terminal = find_terminal(ti, depth, 0, false);
     if (next_terminal != NULL) return (void*)next_terminal->data;
 
     // Switch character
-    while (len > 1)
+    while (depth > 1)
     {
-        len--;
-        ti->nodes[len] = NULL;
-        int start = ti->curr_str[len] - TRIE_START_CHAR + 1;
-        ti->curr_str[len] = '\0';
-        next_terminal = find_terminal(ti, len, start, false);
+        depth--;
+        ti->nodes[depth] = NULL;
+        int start = ti->curr_str[depth] - TRIE_START_CHAR + 1;
+        ti->curr_str[depth] = '\0';
+        next_terminal = find_terminal(ti, depth, start, false);
         if (next_terminal != NULL) return (void*)next_terminal->data;
     }
 

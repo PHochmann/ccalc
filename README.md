@@ -3,9 +3,10 @@
 [![AUR](https://img.shields.io/aur/version/ccalc)](https://aur.archlinux.org/packages/ccalc/)
 
 # ccalc
-Scientific calculator in which you can define new functions and constants
+Calculator with expression simplification that lets you define new functions and constants
 
 ## Setup guide
+
 ### Arch and Manjaro
 You can install package ```ccalc``` directly from the AUR.
 

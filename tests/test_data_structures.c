@@ -156,13 +156,14 @@ bool data_structures_test(StringBuilder *error_builder)
                 ERROR("Trie get current string error\n");
             }
         }
-        
-        if (iterator_get_next((Iterator*)&ti) != NULL)
+
+        if (iterator_get_next((Iterator*)&ti) != NULL
+            || trie_get_current_string(&ti) != NULL)
         {
             ERROR("Trie iterator not null at end\n");
         }
 
-        iterator_reset((Iterator*)&ti);
+        //iterator_reset((Iterator*)&ti);
     }
 
     trie_destroy(&trie);
