@@ -233,7 +233,13 @@ static void *get_next(Iterator *iterator)
         depth = 1;
         ti->nodes[0] = ti->trie->first_node;
         next_terminal = find_terminal(ti, 1, 0, true);
-        if (next_terminal != NULL) return (void*)next_terminal->data;
+
+        if (next_terminal != NULL)
+        {
+            return (void*)next_terminal->data;
+        }
+
+        ti->nodes[0] = NULL;
         return NULL;
     }
 
@@ -250,6 +256,13 @@ static void *get_next(Iterator *iterator)
         ti->curr_str[depth] = '\0';
         next_terminal = find_terminal(ti, depth, start, false);
         if (next_terminal != NULL) return (void*)next_terminal->data;
+    }
+
+    // Reset iterator
+    for (size_t i = 0; i < TRIE_MAX_ITERATOR_DEPTH; i++)
+    {
+        ti->curr_str[i] = '\0';
+        ti->nodes[i] = NULL;
     }
 
     return NULL;
@@ -276,6 +289,7 @@ Returns: String of last item that was returned by trie_get_next
 */
 const char *trie_get_current_string(const TrieIterator *iterator)
 {
+    if (iterator->nodes[0] == NULL) return NULL;
     // +1 because first character is always \0
     // because the root node is not associated with a character
     return iterator->curr_str + 1;

@@ -134,13 +134,20 @@ bool data_structures_test(StringBuilder *error_builder)
     // Test iterator
     trie = trie_create(sizeof(int));
 
+    TrieIterator ti = trie_get_iterator(&trie);
+    if (iterator_get_next((Iterator*)&ti) != NULL
+        || trie_get_current_string(&ti) != NULL)
+    {
+        ERROR("Trie iterator for empty trie: not NULL or get_current_string not NULL\n");
+    }
+
     // Add 8 ints into trie that should be traversed from 0 to 7
     for (int i = 0; i < NUM_TRIE_ITERATOR_TESTS; i++)
     {
         *(int*)trie_add_str(&trie, trie_iterator_tests[i]) = i;
     }
 
-    TrieIterator ti = trie_get_iterator(&trie);
+    ti = trie_get_iterator(&trie);
 
     for (size_t repetitions = 0; repetitions < 2; repetitions++)
     {
