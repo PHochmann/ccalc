@@ -4,6 +4,16 @@
 #include "linked_list.h"
 #include "alloc_wrappers.h"
 
+/*
+A ListNode directly contains the payload and is always on heap
+*/
+struct ListNode
+{
+    struct ListNode *next;
+    struct ListNode *previous;
+    uint8_t data[];
+};
+
 static ListNode *malloc_node(size_t elem_size, void *data)
 {
     ListNode *new = malloc_wrapper(sizeof(ListNode) + elem_size);
@@ -88,6 +98,16 @@ void *list_get_at(const LinkedList *list, size_t index)
         return NULL;
     }
     return (void*)node->data;
+}
+
+void *listnode_get_data(const ListNode *node)
+{
+    return (ListNode*)node->data;
+}
+
+ListNode *listnode_get_next(const ListNode *node)
+{
+    return node->next;
 }
 
 /*

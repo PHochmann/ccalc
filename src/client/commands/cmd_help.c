@@ -180,7 +180,7 @@ static void print_ops_between(size_t start, size_t end)
     ListNode *curr = list_get_node(&g_ctx->op_list, start);
     while (curr != NULL && start != end)
     {
-        Operator *op = (Operator*)curr->data;
+        Operator *op = (Operator*)listnode_get_data(curr);
         remaining_width -= print_op(op);
         if (remaining_width <= 0)
         {
@@ -188,7 +188,7 @@ static void print_ops_between(size_t start, size_t end)
             remaining_width = TTY_WIDTH;
         }
         start++;
-        curr = curr->next;
+        curr = listnode_get_next(curr);
     }
 }
 
@@ -209,7 +209,7 @@ static void print_op_table(OpPlacement place, bool assoc, bool precedence, bool 
     size_t index = PSEUDO_IND;
     while (curr != NULL && index < LAST_IND)
     {
-        Operator *op = (Operator*)curr->data;
+        Operator *op = (Operator*)listnode_get_data(curr);
 
         if (op->placement == place && (place != OP_PLACE_FUNCTION || (value == (op->arity == 0))))
         {
@@ -262,7 +262,7 @@ static void print_op_table(OpPlacement place, bool assoc, bool precedence, bool 
             next_row(table);
         }
         index++;
-        curr = curr->next;
+        curr = listnode_get_next(curr);
     }
 
     print_table(table);
@@ -296,12 +296,12 @@ void print_short_help()
         ListNode *curr = g_composite_functions->first;
         while (curr != NULL)
         {
-            RewriteRule *rule = (RewriteRule*)curr->data;
+            RewriteRule *rule = (RewriteRule*)listnode_get_data(curr);
             add_cell_gc(table, tree_to_str(rule->pattern.pattern, true));
             add_cell(table, " = ");
             add_cell_gc(table, tree_to_str(rule->after, true));
             next_row(table);
-            curr = curr->next;
+            curr = listnode_get_next(curr);
         }
         print_table(table);
         free_table(table);

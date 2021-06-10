@@ -9,6 +9,17 @@
 Todo: Refactor by combining adding and searching into single auxiliary function
 */
 
+/*
+Summary: A TrieNode directly contains the data and is always on heap
+*/
+struct TrieNode
+{
+    bool is_terminal;                             // True if node represents last char of an inserted string
+    unsigned char num_successors;                 // To detect and delete non-terminal leaves
+    struct TrieNode *next[TRIE_END_CHAR - TRIE_START_CHAR]; // Pointers to next chars
+    uint8_t data[];                               // Payload
+};
+
 static TrieNode *malloc_trienode(size_t elem_size)
 {
     return calloc_wrapper(1, sizeof(TrieNode) + elem_size);
@@ -16,12 +27,12 @@ static TrieNode *malloc_trienode(size_t elem_size)
 
 static bool is_legal_char(char c)
 {
-    return (c >= START_CHAR) && (c < END_CHAR);
+    return (c >= TRIE_START_CHAR) && (c < TRIE_END_CHAR);
 }
 
 static unsigned char char_to_index(char c)
 {
-    return (unsigned char)(c - START_CHAR);
+    return (unsigned char)(c - TRIE_START_CHAR);
 }
 
 /*
@@ -37,7 +48,7 @@ Trie trie_create(size_t elem_size)
 
 static void destroy_rec(TrieNode *node)
 {
-    for (unsigned char i = 0; i < END_CHAR - START_CHAR; i++)
+    for (unsigned char i = 0; i < TRIE_END_CHAR - TRIE_START_CHAR; i++)
     {
         if (node->next[i] != NULL) destroy_rec(node->next[i]);
     }
@@ -192,12 +203,12 @@ const TrieNode *find_terminal(TrieIterator *ti, size_t len, int begin_from, bool
     const TrieNode *node = ti->nodes[len - 1];
     if (allow_self && node->is_terminal) return node;
 
-    for (int i = begin_from; i < END_CHAR - START_CHAR; i++)
+    for (int i = begin_from; i < TRIE_END_CHAR - TRIE_START_CHAR; i++)
     {
         if (ti->nodes[len - 1]->next[i] != NULL)
         {
             ti->nodes[len] = ti->nodes[len - 1]->next[i];
-            ti->curr_str[len] = i + START_CHAR;
+            ti->curr_str[len] = i + TRIE_START_CHAR;
             if ((node = find_terminal(ti, len + 1, 0, true)) != NULL) return node;
         }
     }
@@ -235,7 +246,7 @@ static void *get_next(Iterator *iterator)
     {
         len--;
         ti->nodes[len] = NULL;
-        int start = ti->curr_str[len] - START_CHAR + 1;
+        int start = ti->curr_str[len] - TRIE_START_CHAR + 1;
         ti->curr_str[len] = '\0';
         next_terminal = find_terminal(ti, len, start, false);
         if (next_terminal != NULL) return (void*)next_terminal->data;

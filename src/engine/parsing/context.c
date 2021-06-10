@@ -81,7 +81,7 @@ const Operator *ctx_add_op(ParsingContext *ctx, Operator op)
         {
             // Go through all operators and check if same precedence entails same associativity
             // If not, new operator would make set inconsistent
-            Operator *opB = (Operator*)curr->data;
+            Operator *opB = (Operator*)listnode_get_data(curr);
             if (opB->placement == OP_PLACE_INFIX && opB->precedence == op.precedence)
             {
                 if (opB->assoc != op.assoc)
@@ -89,7 +89,7 @@ const Operator *ctx_add_op(ParsingContext *ctx, Operator op)
                     return NULL;
                 }
             }
-            curr = curr->next;
+            curr = listnode_get_next(curr);
         }
     }
     
@@ -98,7 +98,7 @@ const Operator *ctx_add_op(ParsingContext *ctx, Operator op)
     ListNode *list_node = list_append(&ctx->op_list, &op);
     TRIE_ADD_ELEM(&ctx->op_tries[op.placement], op.name, ListNode*, list_node);
     trie_add_str(&ctx->keywords_trie, op.name);
-    return (const Operator*)list_node->data;
+    return (const Operator*)listnode_get_data(list_node);
 }
 
 /*
@@ -151,7 +151,7 @@ const Operator *ctx_lookup_op(const ParsingContext *ctx, const char *name, OpPla
     if (trie_contains(&ctx->op_tries[placement], name, (void**)&node))
     {
         // Return pointer to payload of listnode
-        return (const Operator*)(*node)->data;
+        return (const Operator*)listnode_get_data(*node);
     }
     else
     {

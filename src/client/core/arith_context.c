@@ -108,14 +108,14 @@ void add_composite_function(RewriteRule rule)
 // Removes node from g_composite_functions
 static void remove_node(ListNode *node)
 {
-    RewriteRule *rule = (RewriteRule*)node->data;
+    RewriteRule *rule = (RewriteRule*)listnode_get_data(node);
     char *temp = get_op(rule->pattern.pattern)->name;
     // Remove function operator from context
     ctx_delete_op(g_ctx, get_op(rule->pattern.pattern)->name, OP_PLACE_FUNCTION);
     // Free its name since it is malloced by the tokenizer in definition-command
     free(temp);
     // Free elimination rule
-    free_rule((RewriteRule*)node->data);
+    free_rule(rule);
     // Remove from linked list
     list_delete_node(g_composite_functions, node);
 }
@@ -126,13 +126,13 @@ bool remove_composite_function(const Operator *function)
     ListNode *curr = __g_composite_functions.first;
     while (curr != NULL)
     {
-        RewriteRule *rule = (RewriteRule*)curr->data;
+        RewriteRule *rule = (RewriteRule*)listnode_get_data(curr);
         if (get_op(rule->pattern.pattern) == function)
         {
             remove_node(curr);
             return true;
         }
-        curr = curr->next;
+        curr = listnode_get_next(curr);
     }
     // Operator is not in list of composite functions, it must be built in
     report_error("Built-in functions can not be removed\n");
@@ -145,20 +145,6 @@ void clear_composite_functions()
     {
         remove_node(__g_composite_functions.first);
     }
-}
-
-RewriteRule *get_composite_function(Operator *op)
-{
-    ListNode *curr = __g_composite_functions.first;
-    while (curr != NULL)
-    {
-        RewriteRule *rule = (RewriteRule*)curr->data;
-        if (get_op(rule->pattern.pattern) == op)
-        {
-            return rule;
-        }
-    }
-    return NULL;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ WRAPPER FUNCTIONS FOR PARSER
