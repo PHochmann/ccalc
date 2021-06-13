@@ -18,6 +18,7 @@ typedef struct TrieNode TrieNode;
 typedef struct
 {
     size_t elem_size;
+    size_t count;
     TrieNode *first_node;
 } Trie;
 
@@ -35,6 +36,7 @@ void *trie_add_str(Trie *trie, const char *string);
 void trie_remove_str(Trie *trie, const char *string);
 bool trie_contains(const Trie *trie, const char *string, void **out_data);
 size_t trie_longest_prefix(const Trie *trie, const char *string, void **out_data);
+size_t trie_count(const Trie *trie);
 
 TrieIterator trie_get_iterator(const Trie *trie);
 const char *trie_get_current_string(const TrieIterator *iterator);

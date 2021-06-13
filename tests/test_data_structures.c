@@ -103,6 +103,9 @@ bool data_structures_test(StringBuilder *error_builder)
         ERROR("Wrong value after lookup\n");
     }
     TRIE_ADD_ELEM(&trie, "aaaa", int, 21);
+
+    trie_remove_str(&trie, "testestst"); // Try to remove a string that is not in trie
+
     if (trie_longest_prefix(&trie, "aaaaaaa", (void**)&data) != 4)
     {
         ERROR_RETURN_VAL("trie_longest_prefix");
@@ -129,6 +132,11 @@ bool data_structures_test(StringBuilder *error_builder)
         ERROR("Empty string should not be in trie, as it has been deleted\n");
     }
 
+    if (trie_count(&trie) != 1)
+    {
+        ERROR("trie_count is %zu, should be 1\n", trie_count(&trie));
+    }
+
     trie_destroy(&trie);
 
     // Test iterator
@@ -148,6 +156,11 @@ bool data_structures_test(StringBuilder *error_builder)
     }
 
     ti = trie_get_iterator(&trie);
+
+    if (trie_count(&trie) != NUM_TRIE_ITERATOR_TESTS)
+    {
+        ERROR("trie_count is %zu, should be %d\n", trie_count(&trie), NUM_TRIE_ITERATOR_TESTS);
+    }
 
     for (size_t repetitions = 0; repetitions < 2; repetitions++)
     {

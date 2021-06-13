@@ -42,7 +42,8 @@ Trie trie_create(size_t elem_size)
 {
     return (Trie){
         .first_node = malloc_trienode(elem_size),
-        .elem_size  = elem_size
+        .elem_size  = elem_size,
+        .count = 0
     };
 }
 
@@ -95,14 +96,16 @@ void *trie_add_str(Trie *trie, const char *string)
         return NULL;
     }
     curr->is_terminal = true;
+    trie->count++;
     return (void*)curr->data;
 }
 
 // Returns true if node has been freed
-static bool remove_rec(TrieNode *node, size_t depth, const char *string)
+static bool remove_rec(Trie *trie, TrieNode *node, size_t depth, const char *string)
 {
     if (depth == strlen(string))
     {
+        if (node->is_terminal) trie->count--;
         node->is_terminal = false;
     }
     else
@@ -111,7 +114,7 @@ static bool remove_rec(TrieNode *node, size_t depth, const char *string)
         unsigned char index = char_to_index(string[depth]);
         if (node->next[index] != NULL)
         {
-            if (remove_rec(node->next[index], depth + 1, string))
+            if (remove_rec(trie, node->next[index], depth + 1, string))
             {
                 node->next[index] = NULL;
                 node->num_successors--;
@@ -135,7 +138,7 @@ void trie_remove_str(Trie *trie, const char *string)
 {
     assert(trie != NULL);
     assert(string != NULL);
-    remove_rec(trie->first_node, 0, string);
+    remove_rec(trie, trie->first_node, 0, string);
 }
 
 // out_data may be written to even if string is not in trie
@@ -191,6 +194,11 @@ size_t trie_longest_prefix(const Trie *trie, const char *string, void **out_data
     return res;
 }
 
+size_t trie_count(const Trie *trie)
+{
+    return trie->count;
+}
+
 // Iterator implementation:
 
 const TrieNode *find_terminal(TrieIterator *ti, size_t depth, int begin_from, bool allow_self)
@@ -239,6 +247,7 @@ static void *get_next(Iterator *iterator)
             return (void*)next_terminal->data;
         }
 
+        // Reset iterator
         ti->nodes[0] = NULL;
         return NULL;
     }
