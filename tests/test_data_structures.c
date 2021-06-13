@@ -103,17 +103,21 @@ bool data_structures_test(StringBuilder *error_builder)
         ERROR("Wrong value after lookup\n");
     }
     TRIE_ADD_ELEM(&trie, "aaaa", int, 21);
+    TRIE_ADD_ELEM(&trie, "aaaaaa", int, 22);
 
     trie_remove_str(&trie, "testestst"); // Try to remove a string that is not in trie
+    trie_remove_str(&trie, "aaaaaa");
 
     if (trie_longest_prefix(&trie, "aaaaaaa", (void**)&data) != 4)
     {
         ERROR_RETURN_VAL("trie_longest_prefix");
     }
+
     if (*data != 21)
     {
         ERROR("trie_longest_prefix lookup was %zu, should be 21.\n", *data);
     }
+    
     if (trie_contains(&trie, "z", NULL))
     {
         ERROR_RETURN_VAL("trie_contains");

@@ -123,7 +123,9 @@ static bool remove_rec(Trie *trie, TrieNode *node, size_t depth, const char *str
     }
 
     // Never free the first trie node
-    if (node->num_successors == 0 && depth != 0)
+    if (node->num_successors == 0
+        && depth != 0
+        && !node->is_terminal)
     {
         free(node);
         return true;
