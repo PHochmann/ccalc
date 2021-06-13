@@ -3,7 +3,7 @@
 [![AUR](https://img.shields.io/aur/version/ccalc)](https://aur.archlinux.org/packages/ccalc/)
 
 # ccalc
-Calculator with expression simplification that lets you define new functions and constants
+Calculator with expression simplification that lets you define new functions and constants. Dependency-free except for readline.
 
 ## Setup guide
 
