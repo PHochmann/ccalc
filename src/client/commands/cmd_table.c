@@ -28,7 +28,7 @@ bool check_if_constant(const char *offset, const char *string, const Node *node)
 {
     if (count_all_variable_nodes(node) > 0)
     {
-        report_error_at(string - offset, strlen(string), "Error: Not constant\n");
+        report_error_at(string - offset, strlen(string), "Error: Not constant");
         return false;
     }
     return true;
@@ -58,10 +58,25 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     Node *step = NULL;
     Node *fold_expr = NULL;
     Node *fold_init = NULL;
+    char *expr_string = NULL;
 
-    if (!arith_parse(args[0], (size_t)(args[0] - input), &expr))
+    ParsingResult presult = { .error = PERR_NULL };
+    if (!arith_parse_raw(args[0], (size_t)(args[0] - input), &presult))
     {
+        free_result(&presult, false);
         return false;
+    }
+
+    Vector builder = strbuilder_create(STRBUILDER_STARTSIZE);
+    strbuilder_append(&builder, " ");
+    tree_append_to_strbuilder(&builder, presult.tree, true);
+    strbuilder_append(&builder, " ");
+    expr_string = strbuilder_to_str(&builder);
+
+    expr = arith_simplify(&presult, args[0] - input);
+    if (expr == NULL)
+    {
+        goto exit;
     }
 
     const char *var;
@@ -145,11 +160,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
             // Expression is constant - don't print any variable
             add_empty_cell(table);
         }
-        Vector builder = strbuilder_create(STRBUILDER_STARTSIZE);
-        strbuilder_append(&builder, " ");
-        tree_to_strbuilder(&builder, expr, true);
-        strbuilder_append(&builder, " ");
-        add_cell_gc(table, builder.buffer);
+        add_cell(table, expr_string);
         next_row(table);
     }
 
@@ -207,6 +218,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     success = true;
     exit:
     free_tree(expr);
+    free(expr_string);
     free_tree(start);
     free_tree(end);
     free_tree(step);

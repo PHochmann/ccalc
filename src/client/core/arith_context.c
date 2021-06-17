@@ -228,12 +228,9 @@ bool arith_parse(char *input, size_t prompt_len, Node **out_res)
     ParsingResult res;
     if (arith_parse_raw(input, prompt_len, &res))
     {
-        if (arith_postprocess(&res, prompt_len))
-        {
-            free_result(&res, false);
-            *out_res = res.tree;
-            return true;
-        }
+        *out_res = arith_simplify(&res, prompt_len);
+        if (*out_res == NULL) return false;
+        return true;
     }
     return false;
 }
@@ -257,8 +254,9 @@ bool arith_parse_raw(char *input, size_t prompt_len, ParsingResult *out_res)
 
 /*
 Summary: Replaces user-defined functions and simplifies
+    Will call free_result on p_result!!! Don't use it afterwards.
 */
-bool arith_postprocess(ParsingResult *p_result, size_t prompt_len)
+Node *arith_simplify(ParsingResult *p_result, size_t prompt_len)
 {
     LinkedListIterator iterator = list_get_iterator(g_composite_functions);
     apply_ruleset_by_iterator(&p_result->tree, (Iterator*)&iterator, NULL, SIZE_MAX);
@@ -268,10 +266,12 @@ bool arith_postprocess(ParsingResult *p_result, size_t prompt_len)
     {
         show_error_at_token(&p_result->tokens, get_token_index(errnode), listenererr_to_str(l_err), prompt_len);
         free_result(p_result, true);
-        return false;
+        return NULL;
     }
     else
     {
-        return true;
+        Node *res = p_result->tree;
+        free_result(p_result, false);
+        return res;
     }
 }

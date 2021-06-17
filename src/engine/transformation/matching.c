@@ -5,11 +5,11 @@
 
 #include "matching.h"
 #include "transformation.h"
-#include "../util/vector.h"
 #include "../tree/tree_util.h"
-#include "../util/console_util.h"
-#include "../util/string_util.h"
 #include "../tree/tree_to_string.h"
+#include "../../util/vector.h"
+#include "../../util/console_util.h"
+#include "../../util/string_util.h"
 
 #define VECTOR_STARTSIZE 1
 

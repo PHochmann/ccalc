@@ -1,7 +1,7 @@
 #pragma once
 #include "matching.h"
-#include "../util/vector.h"
-#include "../util/iterator.h"
+#include "../../util/vector.h"
+#include "../../util/iterator.h"
 #include "../tree/node.h"
 
 typedef struct

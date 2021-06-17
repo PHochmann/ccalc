@@ -1,10 +1,25 @@
 #include <stdio.h>
+#include <string.h>
 #include "string_builder.h"
+#include "vector.h"
 
 StringBuilder strbuilder_create(size_t start_size)
 {
     StringBuilder builder = vec_create(sizeof(char), start_size);
     *(char*)vec_push_empty(&builder) = '\0';
+    return builder;
+}
+
+// It is very important that heap_string was dynamically allocated
+StringBuilder strbuilder_from_heapstring(char *heap_string)
+{
+    size_t len = strlen(heap_string) + 1;
+    StringBuilder builder = (Vector){
+        .elem_size   = sizeof(char),
+        .elem_count  = len,
+        .buffer_size = len,
+        .buffer      = heap_string
+    };
     return builder;
 }
 

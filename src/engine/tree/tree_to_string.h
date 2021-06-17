@@ -1,5 +1,5 @@
 #include <stdbool.h>
-#include "../util/string_builder.h"
+#include "../../util/string_builder.h"
 #include "node.h"
 
 #define OP_COLOR    "\x1B[47m\x1B[22;30m" // White background, black foreground
@@ -10,6 +10,6 @@
 #define CONSTANT_TYPE_FMT "%-.10g"
 
 char *tree_to_str(const Node *node, bool color);
-void tree_to_strbuilder(StringBuilder *builder, const Node *node, bool color);
+void tree_append_to_strbuilder(StringBuilder *builder, const Node *node, bool color);
 void print_tree(const Node *node, bool color);
 void print_tree_visually(const Node *node);

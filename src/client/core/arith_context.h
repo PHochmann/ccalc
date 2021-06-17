@@ -23,4 +23,4 @@ void clear_composite_functions();
 
 bool arith_parse(char *input, size_t prompt_len, Node **out_res);
 bool arith_parse_raw(char *input, size_t prompt_len, ParsingResult *out_res);
-bool arith_postprocess(ParsingResult *p_result, size_t prompt_len);
+Node *arith_simplify(ParsingResult *p_result, size_t prompt_len);

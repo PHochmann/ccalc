@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#include "../util/vector.h"
+#include "../../util/vector.h"
 #include "../parsing/context.h"
 #include "rewrite_rule.h"
 

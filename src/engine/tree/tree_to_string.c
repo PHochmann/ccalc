@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "tree_to_string.h"
-#include "../util/string_util.h"
+#include "../../util/string_util.h"
 
 #define STRBUILDER_STARTSIZE 20
 #define OPENING_P "("
@@ -161,7 +161,7 @@ static void to_str(StringBuilder *builder, bool color, const Node *node, bool l,
         }
 }
 
-void tree_to_strbuilder(StringBuilder *builder, const Node *node, bool color)
+void tree_append_to_strbuilder(StringBuilder *builder, const Node *node, bool color)
 {
     to_str(builder, color, node, false, false);
 }
@@ -170,7 +170,7 @@ void tree_to_strbuilder(StringBuilder *builder, const Node *node, bool color)
 char *tree_to_str(const Node *node, bool color)
 {
     StringBuilder builder = strbuilder_create(STRBUILDER_STARTSIZE);
-    tree_to_strbuilder(&builder, node, color);
+    tree_append_to_strbuilder(&builder, node, color);
     return strbuilder_to_str(&builder);
 }
 
@@ -230,6 +230,5 @@ Summary: Draws colored tree to stdout
 */
 void print_tree_visually(const Node *node)
 {
-    if (node == NULL) return;
     print_tree_visually_internal(node, 0, 0);
 }

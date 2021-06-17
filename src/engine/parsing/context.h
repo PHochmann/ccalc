@@ -1,8 +1,8 @@
 #pragma once
 #include <stdbool.h>
 #include "../tree/operator.h"
-#include "../util/linked_list.h"
-#include "../util/trie.h"
+#include "../../util/linked_list.h"
+#include "../../util/trie.h"
 
 typedef struct
 {

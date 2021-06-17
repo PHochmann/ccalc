@@ -90,6 +90,8 @@ static bool add_function(char *name, char *left, char *right, bool is_constant)
     // Must be OP_DYNAMIC_ARITY because we do not know the actual arity yet
     ParsingResult left_result = { .error = PERR_NULL };
     ParsingResult right_result = { .error = PERR_NULL };
+    Node *left_tree = NULL;
+    Node *right_tree = NULL;
     const Operator *new_op = NULL;
 
     // To successfully parse inputs like "x = 5", we can't add a function with dynamic arity because
@@ -108,8 +110,11 @@ static bool add_function(char *name, char *left, char *right, bool is_constant)
         goto error;
     }
 
+    left_tree = left_result.tree;
+    free_result(&left_result, false);
+
     // Check if left side is "function(var_1, ..., var_n)"
-    if (!do_left_checks(left_result.tree, strlen(left)))
+    if (!do_left_checks(left_tree, strlen(left)))
     {
         goto error;
     }
@@ -120,8 +125,8 @@ static bool add_function(char *name, char *left, char *right, bool is_constant)
     if (!is_constant)
     {
         ctx_delete_op(g_ctx, name, OP_PLACE_FUNCTION);
-        new_op = ctx_add_op(g_ctx, op_get_function(name, get_num_children(left_result.tree)));
-        set_op(left_result.tree, new_op);
+        new_op = ctx_add_op(g_ctx, op_get_function(name, get_num_children(left_tree)));
+        set_op(left_tree, new_op);
     }
 
     // Parse right expression raw to detect a recursive definition
@@ -134,11 +139,13 @@ static bool add_function(char *name, char *left, char *right, bool is_constant)
     if (find_op((const Node**)&right_result.tree, new_op) != NULL)
     {
         report_error(ERR_RECURSIVE_DEFINITION);
+        free_result(&right_result, true);
         goto error;
     }
 
-    // Since right expression was parsed raw to detect recursive definitions, do postprocessing
-    if (!arith_postprocess(&right_result, (size_t)(right - left)))
+    // Since right expression was parsed raw to detect recursive definitions, do post processing
+    right_tree = arith_simplify(&right_result, (size_t)(right - left));
+    if (left_tree == NULL)
     {
         goto error;
     }
@@ -146,8 +153,8 @@ static bool add_function(char *name, char *left, char *right, bool is_constant)
     // Add rule to eliminate operator before evaluation
     RewriteRule rule;
     Pattern pattern;
-    get_pattern(left_result.tree, 0, NULL, &pattern); // Should always succeed
-    if (!get_rule(pattern, right_result.tree, &rule)) // Only reason to return false is new variable introduction
+    get_pattern(left_tree, 0, NULL, &pattern); // Should always succeed
+    if (!get_rule(pattern, right_tree, &rule)) // Only reason to return false is new variable introduction
     {
         report_error(ERR_NEW_VARIABLE_INTRODUCTION);
         goto error;
@@ -155,7 +162,7 @@ static bool add_function(char *name, char *left, char *right, bool is_constant)
 
     add_composite_function(rule);
 
-    if (get_op(left_result.tree)->arity == 0)
+    if (get_op(left_tree)->arity == 0)
     {
         if (!is_constant)
         {
@@ -170,14 +177,13 @@ static bool add_function(char *name, char *left, char *right, bool is_constant)
     {
         whisper("Added function.\n");
     }
-    free_result(&left_result, false);
-    free_result(&right_result, false);
+    
     return true;
 
     error:
-    free_result(&left_result, true);
-    free_result(&right_result, true);
     ctx_delete_op(g_ctx, name, OP_PLACE_FUNCTION);
+    free_tree(left_tree);
+    free_tree(right_tree);
     free(name);
     return false;
 }
