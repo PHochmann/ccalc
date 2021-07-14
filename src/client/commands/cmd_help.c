@@ -101,6 +101,7 @@ static const char *OP_DESCRIPTIONS[NUM_ARITH_OPS] = {
     " Random integer between min and max (exclusive) ",
     " Fibonacci sequence ",
     " Gamma function ",
+    " Variance of a population ",
     " Archimedes' constant ",
     " Euler's number ",
     " Golden ratio ",
@@ -113,8 +114,8 @@ static const size_t PSEUDO_IND =  0; // Index of first pseudo operator ($, @, ',
 static const size_t BASIC_IND  =  4; // Index of first basic operator
 static const size_t TRIG_IND   = 22; // Index of first trigonometric function
 static const size_t MISC_IND   = 34; // Index of first misc. function
-static const size_t CONST_IND  = 51; // Index of first constant
-static const size_t LAST_IND   = 57; // Index of last constant
+static const size_t CONST_IND  = 52; // Index of first constant
+static const size_t LAST_IND   = 58; // Index of last constant
 
 int cmd_help_check(const char *input)
 {

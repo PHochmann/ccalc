@@ -79,6 +79,7 @@ ParsingContext get_arith_ctx()
         op_get_function("rand", 2),
         op_get_function("fib", 1),
         op_get_function("gamma", 1),
+        op_get_function("var", OP_DYNAMIC_ARITY),
         op_get_constant("pi"),
         op_get_constant("e"),
         op_get_constant("phi"),

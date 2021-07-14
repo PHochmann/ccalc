@@ -25,7 +25,7 @@ StringBuilder strbuilder_from_heapstring(char *heap_string)
 
 void strbuilder_clear(StringBuilder *builder)
 {
-    vec_clear(builder),
+    vec_clear(builder);
     *(char*)vec_push_empty(builder) = '\0';
 }
 

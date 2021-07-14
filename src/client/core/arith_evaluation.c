@@ -10,6 +10,24 @@
 #include "arith_evaluation.h"
 #include "arith_context.h"
 
+static double variance(const double *args, size_t num_args)
+{
+    double u = 0;
+    for (size_t i = 0; i < num_args; i++)
+    {
+        u += args[i];
+    }
+    u /= num_args;
+
+    double res = 0;
+    for (size_t i = 0; i < num_args; i++)
+    {
+        res += pow(args[i] - u, 2);
+    }
+
+    return res / num_args;
+}
+
 static double euclid(double a, double b)
 {
     a = fabs(trunc(a));
@@ -326,22 +344,25 @@ ListenerError arith_op_evaluate(const Operator *op, size_t num_args, const doubl
         case 50: // gamma(x)
             *out = tgamma(args[0]);
             return LISTENERERR_SUCCESS;
-        case 51: // pi
+        case 51:
+            *out = variance(args, num_args);
+            return LISTENERERR_SUCCESS;
+        case 52: // pi
             *out = 3.14159265359;
             return LISTENERERR_SUCCESS;
-        case 52: // e
+        case 53: // e
             *out = 2.71828182846;
             return LISTENERERR_SUCCESS;
-        case 53: // phi
+        case 54: // phi
             *out = 1.61803398874;
             return LISTENERERR_SUCCESS;
-        case 54: // clight (m/s)
+        case 55: // clight (m/s)
             *out = 299792458;
             return LISTENERERR_SUCCESS;
-        case 55: // csound (m/s)
+        case 56: // csound (m/s)
             *out = 343.2;
             return LISTENERERR_SUCCESS;
-        case 56: // ans
+        case 57: // ans
         {
             bool res = history_get(0, out);
             if (res)

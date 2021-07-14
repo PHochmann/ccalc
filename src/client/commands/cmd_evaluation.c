@@ -21,15 +21,15 @@ Summary: The evaluation command is executed when input is no other command (henc
 */
 bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
 {
-        Node *node;
-        if (!arith_parse(input, 0, &node)) return false;
-        whisper("= ");
-        print_tree(node, false);
-        printf("\n");
-        if (get_type(node) == NTYPE_CONSTANT)
-        {
-            history_add(get_const_value(node));
-        }
-        free_tree(node);
-        return true;
+    Node *node;
+    if (!arith_parse(input, 0, &node)) return false;
+    whisper("= ");
+    print_tree(node, false);
+    printf("\n");
+    if (get_type(node) == NTYPE_CONSTANT)
+    {
+        history_add(get_const_value(node));
+    }
+    free_tree(node);
+    return true;
 }
