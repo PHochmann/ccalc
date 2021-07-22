@@ -79,17 +79,27 @@ double equal_eval(__attribute__((unused)) size_t num_children, Node **children)
 double type_eval(__attribute__((unused)) size_t num_children, Node **children)
 {
     if (get_type(children[0]) == NTYPE_CONSTANT) return EVAL_TYPE_CONST;
+    if (get_type(children[0]) == NTYPE_VARIABLE)
+        //|| count_all_variable_nodes(*children) == 0)
+    {
+        return EVAL_TYPE_VAR;
+    }
     if (get_type(children[0]) == NTYPE_OPERATOR) return EVAL_TYPE_OP;
-    if (get_type(children[0]) == NTYPE_VARIABLE) return EVAL_TYPE_VAR;
     return 0; // To make compiler happy
 }
 
 bool propositional_checker(Node **tree)
 {
+    static const Operator *type_op = NULL;
+    static const Operator *equal_op = NULL;
+    
+    if (type_op == NULL) type_op = ctx_lookup_op(g_propositional_ctx, "type", OP_PLACE_FUNCTION);
+    if (equal_op == NULL) equal_op = ctx_lookup_op(g_propositional_ctx, "equal", OP_PLACE_FUNCTION);
+
     // Step 1: Reduce type(x)
-    tree_reduce_ops(tree, ctx_lookup_op(g_propositional_ctx, "type", OP_PLACE_FUNCTION), type_eval);
+    tree_reduce_ops(tree, type_op, type_eval);
     // Step 2: Reduce equal(x,y)
-    tree_reduce_ops(tree, ctx_lookup_op(g_propositional_ctx, "equal", OP_PLACE_FUNCTION), equal_eval);
+    tree_reduce_ops(tree, equal_op, equal_eval);
     // Step 3: Reduce everything else
     double reduced = 0;
     if (tree_reduce(*tree, prop_op_evaluate, &reduced, NULL) != LISTENERERR_SUCCESS)

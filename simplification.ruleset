@@ -1,4 +1,4 @@
-# Version: 1.6.4
+# Version: 1.6.5
 
 # Operator elimination (de-sugar)
 RULESET
@@ -102,8 +102,16 @@ RULESET
     prod(y, [xs], -x, [zs])      -> prod(-y, [xs], x, [zs])
 
     # Products within sum
-    sum([xs], prod(cx, y), [ys], y, [zs]) -> sum([xs], prod(cx + 1, y), [ys], [zs])  WHERE type(cx)==CONST
-    sum([xs], prod(cx, y), [ys], -y, [zs]) -> sum([xs], prod(cx - 1, y), [ys], [zs])  WHERE type(cx)==CONST
+    sum([xs], prod(x, y), [ys], y, [zs]) -> sum([xs], prod(x + 1, y), [ys], [zs])
+    sum([xs], prod(y, x), [ys], y, [zs]) -> sum([xs], prod(x + 1, y), [ys], [zs])
+    sum([xs], y, [ys], prod(x, y), [zs]) -> sum([xs], prod(x + 1, y), [ys], [zs])
+    sum([xs], y, [ys], prod(y, x), [zs]) -> sum([xs], prod(x + 1, y), [ys], [zs])
+    # Same for negative
+    sum([xs], prod(x, y), [ys], -y, [zs]) -> sum([xs], prod(x - 1, y), [ys], [zs])
+    sum([xs], prod(y, x), [ys], -y, [zs]) -> sum([xs], prod(x - 1, y), [ys], [zs])
+    sum([xs], -y, [ys], prod(x, y), [zs]) -> sum([xs], prod(x - 1, y), [ys], [zs])
+    sum([xs], -y, [ys], prod(y, x), [zs]) -> sum([xs], prod(x - 1, y), [ys], [zs])
+
     # Sum of two equal values
     sum([xs], x, [ys], x, [zs]) -> sum([xs], prod(2,x), [ys], [zs])
     # Two products with common element (Zusammenfassen)
