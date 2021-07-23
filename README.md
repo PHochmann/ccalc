@@ -65,7 +65,7 @@ Here, ```[xs]``` and ```[ys]``` are arbitrarily many operands coming before and 
 
 The following rule deletes minuses when exponentiating with an even exponent: ```(-x)^y -> x^y WHERE (y mod 2) == 0```
 
-### Operators for WHERE-clauses
+### Additional operators for WHERE-clauses
 
 ``` type(x), count(*), equal(x, y), ==, !=, >, <, >=, <=, ||, ! TRUE, FALSE, CONST, VAR, OP ```
 See ```propositional_context.c``` and ```propositional_evaluation.c``` for details.
@@ -138,6 +138,7 @@ See ```propositional_context.c``` and ```propositional_evaluation.c``` for detai
 | ```rand(min, max)``` | Random integer between min and max (exclusive) |
 | ```fib(n)```         | Fibonacci sequence                             |
 | ```gamma(x)```       | Gamma function                                 |
+| ```var(*)```         | Variance of a population                       |
 
 Note:
 * ```*``` is used to denote arbitrary number of operands
