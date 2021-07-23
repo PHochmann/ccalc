@@ -49,27 +49,6 @@ and be directly evaluated. See syntax rules and commands below.
 | ```license```                      | Shows information about ccalc's license.                             |
 | ```quit```                         | Closes application.                                                  |
 
-## Changing ```simplification.ruleset```
-
-You can add your own transformation rules by altering ```simplification.ruleset```.
-Syntax is: ```before -> after WHERE restrictionA ; restrictionB```.
-```;``` is treated as a logical ```and```, thus all restrictions must hold for the rule to execute.
-You can use lists in the form of variables enclosed in brackets (```[list]```).
-
-### Example 1
-
-The following rule filters zeros from sums: ```sum([xs], 0, [ys]) -> sum([xs], [ys])```.
-Here, ```[xs]``` and ```[ys]``` are arbitrarily many operands coming before and after the zero.
-
-### Example 2
-
-The following rule deletes minuses when exponentiating with an even exponent: ```(-x)^y -> x^y WHERE (y mod 2) == 0```
-
-### Operators for WHERE-clauses
-
-``` type(x), count(*), equal(x, y), ==, !=, >, <, >=, <=, ||, ! TRUE, FALSE, CONST, VAR, OP ```
-See ```propositional_context.c``` and ```propositional_evaluation.c``` for details.
-
 ## Arithmetic operators
 
 ### Infix operators
@@ -138,6 +117,7 @@ See ```propositional_context.c``` and ```propositional_evaluation.c``` for detai
 | ```rand(min, max)``` | Random integer between min and max (exclusive) |
 | ```fib(n)```         | Fibonacci sequence                             |
 | ```gamma(x)```       | Gamma function                                 |
+| ```var(*)```         | Variance of a population                       |
 
 Note:
 * ```*``` is used to denote arbitrary number of operands
