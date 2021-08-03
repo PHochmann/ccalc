@@ -1,6 +1,7 @@
 #include <string.h>
 #include <sys/types.h>
-#include "../util/alloc_wrappers.h"
+#include "../../util/alloc_wrappers.h"
+#include "operator.h"
 #include "tree_util.h"
 #include "node.h"
 

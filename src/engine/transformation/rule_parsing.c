@@ -7,9 +7,9 @@ Could be heap but could also be string literal that is readonly
 #include <stdio.h>
 #include <string.h>
 
-#include "../util/alloc_wrappers.h"
-#include "../util/console_util.h"
-#include "../util/string_util.h"
+#include "../../util/alloc_wrappers.h"
+#include "../../util/console_util.h"
+#include "../../util/string_util.h"
 #include "../tree/node.h"
 #include "../parsing/parser.h"
 #include "rule_parsing.h"

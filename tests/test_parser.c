@@ -76,27 +76,32 @@ static struct ValueTest valueTests[] = {
     { "-sqrt(abs(--2!!*--sum(-1+.2-.2+2, 2^2^3-255, -sum(.1, .9), 1+2)*--2!!))", -4 },
 };
 
-static const size_t NUM_ERROR_CASES = 24;
+static const size_t NUM_ERROR_CASES = 27;
 static struct ErrorTest errorTests[] = {
     { "",            PERR_UNEXPECTED_END_OF_EXPR },
     { "     ",       PERR_UNEXPECTED_END_OF_EXPR },
-    { "()",          PERR_UNEXPECTED_CLOSING_PAREN },
     { "x+",          PERR_UNEXPECTED_END_OF_EXPR },
-    { "root(x,)",    PERR_UNEXPECTED_CLOSING_PAREN },
     { "sin",         PERR_EXPECTED_PARAM_LIST },
     { "sin 2",       PERR_EXPECTED_PARAM_LIST },
     { "sin(x, y)",   PERR_FUNCTION_WRONG_ARITY },
     { "root(x)",     PERR_FUNCTION_WRONG_ARITY },
+    { "(1+log(x))",  PERR_FUNCTION_WRONG_ARITY },
     { "2,",          PERR_UNEXPECTED_DELIMITER },
     { ",",           PERR_UNEXPECTED_DELIMITER },
     { "-(1,2)",      PERR_UNEXPECTED_DELIMITER },
+    { "sum(3+, 7)",  PERR_UNEXPECTED_DELIMITER },
     { "(x",          PERR_EXCESS_OPENING_PAREN },
+    { "(+2",         PERR_EXCESS_OPENING_PAREN },
+
     { "x)",          PERR_UNEXPECTED_CLOSING_PAREN },
     { "()+2",        PERR_UNEXPECTED_CLOSING_PAREN },
-    { "(+2",         PERR_EXCESS_OPENING_PAREN },
+    { "root(x,)",    PERR_UNEXPECTED_CLOSING_PAREN },
+    { ")",           PERR_UNEXPECTED_CLOSING_PAREN },
+    { "()",          PERR_UNEXPECTED_CLOSING_PAREN },
     { "sin(())",     PERR_UNEXPECTED_CLOSING_PAREN },
     { "sin(2,())",   PERR_UNEXPECTED_CLOSING_PAREN },
     { "sum(+)",      PERR_UNEXPECTED_CLOSING_PAREN },
+
     { "sum(*)",      PERR_UNEXPECTED_INFIX },
     { "a+(*",        PERR_UNEXPECTED_INFIX },
     { "a b",         PERR_EXPECTED_INFIX },

@@ -3,8 +3,8 @@
 
 #include "tokenizer.h"
 #include "parser.h"
-#include "../util/string_util.h"
-#include "../util/console_util.h"
+#include "../../util/string_util.h"
+#include "../../util/console_util.h"
 
 #define VECTOR_STARTSIZE 10
 
@@ -83,6 +83,7 @@ bool op_pop_and_insert(struct ParserState *state)
             {
                 state->curr_tok = op_data->token;
                 // Free already appended children and new node on error
+                // Caller must set error in state
                 free_tree(op_node);
                 return false;
             }
@@ -209,13 +210,18 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
         // III. Is token closing parenthesis or argument delimiter?
         if (is_closing_parenthesis(token))
         {
+            if (!await_infix &&
+                (op_peek(&state) == NULL || op_peek(&state)->op != NULL))
+            {
+                ERROR(PERR_UNEXPECTED_CLOSING_PAREN);
+            }
+
             // Pop ops until opening parenthesis on op-stack
             while (op_peek(&state) != NULL && op_peek(&state)->op != NULL)
             {
                 if (!op_pop_and_insert(&state))
                 {
-                    state.curr_tok = i;
-                    ERROR(PERR_UNEXPECTED_CLOSING_PAREN);
+                    goto exit;
                 }
             }
             

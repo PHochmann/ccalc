@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include "../../engine/tree/operator.h"
 #include "../../engine/tree/node.h"
+#include "../../engine/tree/tree_util.h"
 
 #define LISTENERERR_HISTORY_NOT_SET   1
 #define LISTENERERR_IMPOSSIBLE_DERIV  2

@@ -3,9 +3,9 @@
 #include <stddef.h>
 #include <stdio.h>
 
-#include "../util/string_util.h"
-#include "../util/trie.h"
-#include "../util/alloc_wrappers.h"
+#include "../../util/string_util.h"
+#include "../../util/trie.h"
+#include "../../util/alloc_wrappers.h"
 #include "tokenizer.h"
 
 #define VECTOR_STARTSIZE 10

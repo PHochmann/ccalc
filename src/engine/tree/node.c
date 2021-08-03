@@ -1,6 +1,6 @@
 #include <string.h>
-#include "../util/alloc_wrappers.h"
-#include "../util/console_util.h"
+#include "../../util/alloc_wrappers.h"
+#include "../../util/console_util.h"
 #include "node.h"
 
 struct Node {

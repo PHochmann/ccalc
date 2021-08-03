@@ -35,6 +35,7 @@ RULESET
     deriv(x + y, z)     -> deriv(x, z) + deriv(y, z)
     deriv(x - y, z)     -> deriv(x, z) - deriv(y, z)
     deriv(x*y, z)       -> deriv(x, z)*y + x*deriv(y, z)
+    deriv(x/y, z)       -> deriv(x*(y^(-1)), z)
     deriv(sin(x), z)    -> cos(x) * deriv(x, z)
     deriv(cos(x), z)    -> -sin(x) * deriv(x, z)
     deriv(tan(x), z)    -> deriv(x, z) * cos(x)^-2
@@ -44,6 +45,7 @@ RULESET
     deriv(e^y, z)       -> deriv(y, z)*e^y
     deriv(x^y, z)       -> (y * deriv(x, z) * x^-1 + deriv(y, z) * ln(x)) * x^y
     deriv(ln(x), z)     -> deriv(x, z)*x^(-1)
+    deriv(log(x, y), z) -> deriv(x, z) / (x * ln(y))    WHERE type(y) == CONST
 
 # Normal form
 RULESET
