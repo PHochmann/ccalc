@@ -134,6 +134,14 @@ size_t apply_ruleset_by_iterator(Node **tree, Iterator *iterator, ConstraintChec
         {
             if (apply_rule(tree, curr_rule, checker))
             {
+                #ifdef DEBUG
+                printf("Applied rule ");
+                print_tree(curr_rule->pattern.pattern, true);
+                printf(" : ");
+                print_tree(*tree, true);
+                printf("\n");
+                #endif
+
                 applied_flag = true;
                 counter++;
                 break;

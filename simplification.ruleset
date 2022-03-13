@@ -45,7 +45,7 @@ RULESET
     deriv(e^y, z)       -> deriv(y, z)*e^y
     deriv(x^y, z)       -> (y * deriv(x, z) * x^-1 + deriv(y, z) * ln(x)) * x^y
     deriv(ln(x), z)     -> deriv(x, z)*x^(-1)
-    deriv(log(x, y), z) -> deriv(x, z) / (x * ln(y))    WHERE type(y) == CONST
+    deriv(log(x, y), z) -> deriv(x, z) / (x * ln(y))    WHERE type(y) == CONST || ((type(y) == VAR) && !contains(x, y))
 
 # Normal form
 RULESET
@@ -147,6 +147,7 @@ RULESET
     sum([xs], sin(x)^2, [ys], cos(x)^2, [zs])   -> sum(1, [xs], [ys], [zs])
     prod([xs], sin(x), [ys], cos(x)^-1, [zs])   -> prod([xs], tan(x), [ys], [zs])
     prod([xs], sin(x)^y, [ys], cos(x)^-y, [zs]) -> prod([xs], tan(x)^y, [ys], [zs])
+    prod(sin(atan(x)), cos(atan(x))^-1) -> x
 
     # Some special ops
     min([xs], x, [ys], x, [zs]) -> min([xs], x, [ys], [zs])
@@ -162,6 +163,9 @@ RULESET
     prod([xs],cX,[ys],cY,[zs]) -> prod(cX*cY,[xs],[ys],[zs])  WHERE type(cX) == CONST ; type(cY) == CONST
     prod(x*y,[xs],cX,[ys])     -> prod(x*y*cX,[xs],[ys])      WHERE type(cX) == CONST
     prod(x,[xs],cX,[ys])       -> prod(cX,x,[xs],[ys])        WHERE type(cX) == CONST
+
+    # Inverse functions
+    tan(atan(x)) -> x
 
 # Fold flattened operators again
 RULESET

@@ -193,7 +193,7 @@ static const char *listenererr_to_str(int code)
         case LISTENERERR_HISTORY_NOT_SET:
             return "This part of the history is not set yet";
         case LISTENERERR_IMPOSSIBLE_DERIV:
-            return "Expression not continuously differentiable";
+            return "Differentiation of this expression not supported (yet)";
         case LISTENERERR_MALFORMED_DERIV_A:
             return "More than one variable in expr'";
         case LISTENERERR_MALFORMED_DERIV_B:

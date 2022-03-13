@@ -84,43 +84,43 @@ static void function_to_str(StringBuilder *builder, bool color, const Node *node
 
 static void infix_to_str(StringBuilder *builder, bool color, const Node *node, bool l, bool r)
 {
-    Node *childL = get_child(node, 0);
-    Node *childR = get_child(node, 1);
+    Node *left = get_child(node, 0);
+    Node *right = get_child(node, 1);
 
     // Checks if left operand of infix operator which itself is an operator needs to be wrapped in parentheses
     // This is the case when:
     //    - It has a lower precedence
     //    - It has the same precedence but associates to the right
     //      (Same precedence -> same associativity, see consistency rules for operator set in context.c)
-    if (get_type(childL) == NTYPE_OPERATOR
-        && (get_op(childL)->precedence < get_op(node)->precedence
-            || (get_op(childL)->precedence == get_op(node)->precedence
+    if (get_type(left) == NTYPE_OPERATOR
+        && (get_op(left)->precedence < get_op(node)->precedence
+            || (get_op(left)->precedence == get_op(node)->precedence
                 && get_op(node)->assoc == OP_ASSOC_RIGHT)))
     {
         p_open(builder);
-        to_str(builder, color, childL, false, false);
+        to_str(builder, color, left, false, false);
         p_close(builder);
     }
     else
     {
-        to_str(builder, color, childL, l, true);
+        to_str(builder, color, left, l, true);
     }
 
     strbuilder_append(builder, is_letter(get_op(node)->name[0]) ? " %s " : "%s", get_op(node)->name);
     
     // Checks if right operand of infix operator needs to be wrapped in parentheses (see analog case for left operand)
-    if (get_type(childR) == NTYPE_OPERATOR
-        && (get_op(childR)->precedence < get_op(node)->precedence
-            || (get_op(childR)->precedence == get_op(node)->precedence
+    if (get_type(right) == NTYPE_OPERATOR
+        && (get_op(right)->precedence < get_op(node)->precedence
+            || (get_op(right)->precedence == get_op(node)->precedence
                 && get_op(node)->assoc == OP_ASSOC_LEFT)))
     {
         p_open(builder);
-        to_str(builder, color, childR, false, false);
+        to_str(builder, color, right, false, false);
         p_close(builder);
     }
     else
     {
-        to_str(builder, color, childR, true, r);
+        to_str(builder, color, right, true, r);
     }
 }
 

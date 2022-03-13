@@ -153,7 +153,7 @@ Params
     out_instances: Contains result. Function unsafe when too small. Allowed to be NULL if buffer_size is 0
 Returns: Number of variable nodes found, even if buffer was too small
 */
-size_t get_variable_nodes(const Node **tree, const char *var_name, size_t buffer_size, Node ***out_instances)
+size_t get_variable_nodes(const Node * const *tree, const char *var_name, size_t buffer_size, Node ***out_instances)
 {
     if (tree == NULL || var_name == NULL) return 0;
 
@@ -248,7 +248,7 @@ ssize_t list_variables_rec(Node *tree, size_t buffer_size, ssize_t num_found, co
 /*
 Returns: Address of first operator node that has given operator, NULL when no such node in tree
 */
-Node **find_op(const Node **tree, const Operator *op)
+Node **find_op(const Node * const *tree, const Operator *op)
 {
     if (get_type(*tree) == NTYPE_OPERATOR)
     {
@@ -260,7 +260,7 @@ Node **find_op(const Node **tree, const Operator *op)
         {
             for (size_t i = 0; i < get_num_children(*tree); i++)
             {
-                Node **child_res = find_op((const Node**)get_child_addr(*tree, i), op);
+                Node **child_res = find_op((const Node* const*)get_child_addr(*tree, i), op);
                 if (child_res != NULL) return child_res;
             }
         }
@@ -460,7 +460,7 @@ void tree_reduce_ops(Node **tree, const Operator *op, OpEval callback)
         if (get_op(*tree) == op)
         {
             Node *replacement = malloc_constant_node(callback(get_num_children(*tree),
-                get_child_addr(*tree, 0)),
+                (const Node * const *)get_child_addr(*tree, 0)),
                 get_token_index(*tree));
             tree_replace(tree, replacement);
         }

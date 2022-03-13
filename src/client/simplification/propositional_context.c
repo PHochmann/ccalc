@@ -2,7 +2,7 @@
 #include "../core/arith_context.h"
 #include "propositional_context.h"
 
-#define NUM_PROPOSITIONAL_OPS 16
+#define NUM_PROPOSITIONAL_OPS 18
 
 ParsingContext __g_propositional_ctx;
 
@@ -22,10 +22,12 @@ void init_propositional_ctx()
         op_get_infix(">=", 1, OP_ASSOC_LEFT),
         op_get_infix("<=", 1, OP_ASSOC_LEFT),
         op_get_infix("||", 0, OP_ASSOC_LEFT),
+        op_get_infix("&&", 0, OP_ASSOC_LEFT),
         op_get_constant("TRUE"),
         op_get_constant("FALSE"),
         op_get_prefix("!", 4),
-        op_get_function("count", OP_DYNAMIC_ARITY)))
+        op_get_function("count", OP_DYNAMIC_ARITY),
+        op_get_function("contains", 2)))
     {
         software_defect("[Prop] Inconsistent operator set.\n");
     }
