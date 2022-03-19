@@ -11,7 +11,7 @@
 #include "../src/client/simplification/simplification.h"
 #include "test_simplification.h"
 
-static const size_t NUM_CASES = 25;
+static const size_t NUM_CASES = 26;
 const char *cases[] = {
     "x-x",                 "0",
     "-sin(x)+sin(x)",      "0",
@@ -40,6 +40,7 @@ const char *cases[] = {
     "deriv(3*x*y, y)",     "3x",
     "deriv((3x)'*y, y)",   "3",
     "(x+y-y)'",            "1",
+    "log(x,2)'",           "1.442695041/x"
 };
 
 bool simplification_test(StringBuilder *error_builder)

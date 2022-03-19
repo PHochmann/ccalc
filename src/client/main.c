@@ -116,7 +116,7 @@ int main(int argc, char **argv)
         {
             if (!exec_command(argv[i]))
             {
-                report_error("Error occurred in command %d\n", i - commands_index);
+                report_error("Error occurred in command no. %d\n", i - commands_index);
                 return EXIT_FAILURE;
             }
         }

@@ -15,7 +15,10 @@
 ListenerError prop_op_evaluate(const Operator *op, size_t num_args, const double *args, double *out)
 {
     // Propositional context is an extension of the arithmetic context
-    if (op->id < NUM_ARITH_OPS) return arith_op_evaluate(op, num_args, args, out);
+    if (op->id < NUM_ARITH_OPS)
+    {
+        return arith_op_evaluate(op, num_args, args, out);
+    }
 
     switch (op->id)
     {
@@ -91,12 +94,14 @@ double type_eval(__attribute__((unused)) size_t num_children, const Node * const
     return 0; // To make compiler happy
 }
 
-#include "../../engine/tree/tree_to_string.h"
-double contains_eval(size_t __attribute__((unused)) num_children, const Node * const *tree)
+double contains_eval(__attribute__((unused)) size_t num_children, const Node * const *children)
 {
-    if (get_type(*tree) != NTYPE_VARIABLE) return EVAL_FALSE;
+    if (get_type(*(children + 1)) != NTYPE_VARIABLE)
+    {
+        return EVAL_FALSE;
+    }
 
-    if (get_variable_nodes(tree, get_var_name(*(tree + 1)), 0, NULL) != 0)
+    if (get_variable_nodes(children, get_var_name(*(children + 1)), 0, NULL) != 0)
     {
         return EVAL_TRUE;
     }
@@ -111,9 +116,6 @@ bool propositional_checker(Node **tree)
     static const Operator *type_op = NULL;
     static const Operator *equal_op = NULL;
     static const Operator *contains_op = NULL;
-    
-    print_tree(*tree, false);
-    printf("\n");
 
     if (type_op == NULL) type_op = ctx_lookup_op(g_propositional_ctx, "type", OP_PLACE_FUNCTION);
     if (equal_op == NULL) equal_op = ctx_lookup_op(g_propositional_ctx, "equal", OP_PLACE_FUNCTION);

@@ -10,12 +10,12 @@ RULESET
     x%            -> x/100
     (x/y)/z       -> x/(y*z)
     x/y           -> x*y^(-1)
-    log(x, e)     -> ln(x)
+    log(x, y)     -> ln(x)/ln(y)
     tan(x)        -> sin(x)/cos(x)
     sqrt(x)       -> x^0.5
     exp(x)        -> e^x
     root(x, y)    -> x^(1/y)
-    avg([xs])     -> sum([xs])/count([xs])   # Comment test
+    avg([xs])     -> sum([xs]) / count([xs])   # Comment test
 
 # Deriv elimination
 RULESET
@@ -45,7 +45,6 @@ RULESET
     deriv(e^y, z)       -> deriv(y, z)*e^y
     deriv(x^y, z)       -> (y * deriv(x, z) * x^-1 + deriv(y, z) * ln(x)) * x^y
     deriv(ln(x), z)     -> deriv(x, z)*x^(-1)
-    deriv(log(x, y), z) -> deriv(x, z) / (x * ln(y))    WHERE type(y) == CONST || ((type(y) == VAR) && !contains(x, y))
 
 # Normal form
 RULESET
@@ -214,6 +213,6 @@ RULESET
 
 # Ordering
 RULESET
-    #x*y      -> y*x   WHERE type(x) != CONST ; type(y) == CONST
-    #x+y      -> y+x   WHERE type(x) != CONST ; type(y) == CONST
-    x*(-y)   -> -y*x  WHERE type(x) != CONST ; type(y) == CONST
+    #x*y      -> y*x     WHERE type(x) != CONST ; type(y) == CONST
+    #x+y      -> y+x     WHERE type(x) != CONST ; type(y) == CONST
+    x*(-y)    -> -y*x    WHERE type(x) != CONST ; type(y) == CONST

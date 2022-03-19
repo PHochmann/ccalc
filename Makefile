@@ -5,7 +5,7 @@ BUILD_DIR    = ./bin/release
 INSTALL_PATH = /etc/ccalc
 SRC_DIRS     = ./src
 
-CFLAGS       = "-DINSTALL_PATH=\"$(INSTALL_PATH)\"" -MMD -MP -std=c99 -Wall -Wextra -Werror -pedantic -Werror=vla
+CFLAGS       = "-DINSTALL_PATH=\"$(INSTALL_PATH)\"" -MMD -MP -std=c17 -Wall -Wextra -Werror -pedantic -Werror=vla
 LDFLAGS      = -lm
 
 # Compile with readline if no opt-out and target is not test

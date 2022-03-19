@@ -18,4 +18,3 @@ ssize_t parse_rulesets_from_file(FILE *file,
     const ParsingContext *ctx,
     size_t max_rulesets,
     Vector *out_rulesets);
-    
