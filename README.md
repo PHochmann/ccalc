@@ -113,6 +113,7 @@ and be directly evaluated. See syntax rules and commands below.
 | ```sum(*)```         | Sum of all operands                            |
 | ```prod(*)```        | Product of all operands                        |
 | ```avg(*)```         | Arithmetic mean of all operands                |
+| ```median(*)```      | Median of all values                           |
 | ```gcd(x, y)```      | Greatest common divisor                        |
 | ```lcm(x, y)```      | Least common multiple                          |
 | ```rand(min, max)``` | Random integer between min and max (exclusive) |
