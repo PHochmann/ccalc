@@ -17,7 +17,7 @@
 #define FOLD_VAR_2   "y"
 
 #define STRBUILDER_STARTSIZE 10
-#define DOUBLE_FMT "%-.10f"
+#define DOUBLE_FMT "%f"
 
 int cmd_table_check(const char *input)
 {
