@@ -96,6 +96,7 @@ static const char *OP_DESCRIPTIONS[NUM_ARITH_OPS] = {
     " Sum of all operands ",
     " Product of all operands ",
     " Arithmetic mean of all operands ",
+    " Median of all values ",
     " Greatest common divisor ",
     " Least common multiple ",
     " Random integer between min and max (exclusive) ",

@@ -74,6 +74,7 @@ ParsingContext get_arith_ctx()
         op_get_function("sum", OP_DYNAMIC_ARITY),
         op_get_function("prod", OP_DYNAMIC_ARITY),
         op_get_function("avg", OP_DYNAMIC_ARITY),
+        op_get_function("median", OP_DYNAMIC_ARITY),
         op_get_function("gcd", 2),
         op_get_function("lcm", 2),
         op_get_function("rand", 2),

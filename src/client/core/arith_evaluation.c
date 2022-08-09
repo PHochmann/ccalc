@@ -111,6 +111,25 @@ static double random_between(double min, double max)
     return rand() % diff + min;
 }
 
+static int asc_double_cmp(const void *a, const void *b)
+{
+    return *(double*)a - *(double*)b;
+}
+
+static double median(size_t num_args, const double *args)
+{
+    if (num_args == 0) return NAN;
+    qsort((void*)args, num_args, sizeof(double), asc_double_cmp);
+    if (num_args % 2 == 1)
+    {
+        return args[num_args / 2];
+    }
+    else
+    {
+        return 0.5 * (args[num_args / 2] + args[num_args / 2 - 1]);
+    }
+}
+
 ListenerError arith_op_evaluate(const Operator *op, size_t num_args, const double *args, double *out)
 {
     switch (op->id)
@@ -329,40 +348,43 @@ ListenerError arith_op_evaluate(const Operator *op, size_t num_args, const doubl
             *out = res / num_args;
             return LISTENERERR_SUCCESS;
         }
-        case 46: // gcd(x, y)
+        case 46: // median(x, y, ...)
+            *out = median(num_args, args);
+            return LISTENERERR_SUCCESS;
+        case 47: // gcd(x, y)
             *out = euclid(args[0], args[1]);
             return LISTENERERR_SUCCESS;
-        case 47: // lcm(x, y)
+        case 48: // lcm(x, y)
             *out = fabs(trunc(args[0]) * trunc(args[1])) / euclid(args[0], args[1]);
             return LISTENERERR_SUCCESS;
-        case 48: // rand(x, y)
+        case 49: // rand(x, y)
             *out = random_between(args[0], args[1]);
             return LISTENERERR_SUCCESS;
-        case 49: // fib(x)
+        case 50: // fib(x)
             *out = fibonacci(args[0]);
             return LISTENERERR_SUCCESS;
-        case 50: // gamma(x)
+        case 51: // gamma(x)
             *out = tgamma(args[0]);
             return LISTENERERR_SUCCESS;
-        case 51:
+        case 52:
             *out = variance(args, num_args);
             return LISTENERERR_SUCCESS;
-        case 52: // pi
+        case 53: // pi
             *out = 3.14159265359;
             return LISTENERERR_SUCCESS;
-        case 53: // e
+        case 54: // e
             *out = 2.71828182846;
             return LISTENERERR_SUCCESS;
-        case 54: // phi
+        case 55: // phi
             *out = 1.61803398874;
             return LISTENERERR_SUCCESS;
-        case 55: // clight (m/s)
+        case 56: // clight (m/s)
             *out = 299792458;
             return LISTENERERR_SUCCESS;
-        case 56: // csound (m/s)
+        case 57: // csound (m/s)
             *out = 343.2;
             return LISTENERERR_SUCCESS;
-        case 57: // ans
+        case 58: // ans
         {
             bool res = history_get(0, out);
             if (res)

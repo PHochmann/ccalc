@@ -7,15 +7,17 @@ RULESET
     +x            -> x
     $x            -> x
     --x           -> x
-    x%            -> x/100
-    (x/y)/z       -> x/(y*z)
-    x/y           -> x*y^(-1)
+    x%            -> x / 100
+    (x/y)/z       -> x / (y*z)
+    x/y           -> x * y^(-1)
     log(x, y)     -> ln(x)/ln(y)
-    tan(x)        -> sin(x)/cos(x)
+    tan(x)        -> sin(x) / cos(x)
     sqrt(x)       -> x^0.5
     exp(x)        -> e^x
     root(x, y)    -> x^(1/y)
     avg([xs])     -> sum([xs]) / count([xs])   # Comment test
+
+   # var(x,[xs])   -> (sum(x,[xs]) -  count(x,[xs]) * avg(x,[xs])) / count(x,[xs])
 
 # Deriv elimination
 RULESET

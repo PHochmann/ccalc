@@ -7,7 +7,7 @@
 #define VAR_COLOR   "\x1B[1;36m"          // Cyan
 #define COL_RESET   "\x1B[0m"
 
-#define CONSTANT_TYPE_FMT "%-.10g"
+#define CONSTANT_TYPE_FMT "%f"
 
 char *tree_to_str(const Node *node, bool color);
 void tree_append_to_strbuilder(StringBuilder *builder, const Node *node, bool color);
