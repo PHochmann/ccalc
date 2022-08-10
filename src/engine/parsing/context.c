@@ -62,9 +62,9 @@ Summary: Adds operator to context
     infix operators with the same precedence must have the same associativity.
 Returns: Pointer to operator within context, NULL if one of the following:
     * ctx is NULL
-    * infix operator with inconsistent associativity is given
+    * Infix operator with inconsistent associativity is given
           (another infix operator with same precedence has different associativity)
-    * function of same name and arity is present in context
+    * Function of same name and arity is present in context
 */
 const Operator *ctx_add_op(ParsingContext *ctx, Operator op)
 {

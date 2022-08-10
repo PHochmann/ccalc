@@ -1,6 +1,7 @@
 #pragma once
 #include <stdbool.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 // Can be changed without further modifications
 #define TABLE_MAX_COLS 11

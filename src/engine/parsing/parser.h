@@ -16,16 +16,24 @@ typedef enum {
     PERR_UNEXPECTED_END_OF_EXPR,   // Expression ended too early
     PERR_EXPECTED_PARAM_LIST,      // Function with arity > 0 has been parsed, but no opening parenthesis followed
     PERR_UNEXPECTED_CHARACTER      // Non-alphabet variable
+} ParserErrorType;
+
+typedef struct {
+    ParserErrorType type;
+    size_t error_token;
+    int additional_data[2]; // Currently only used for PERR_FUNCTION_WRONG_ARITY to record input arity
 } ParserError;
 
 typedef struct {
     Vector tokens;
     ParserError error;
-    size_t error_token;
     Node *tree;
 } ParsingResult;
 
-ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const char **tokens, Node **out_res, size_t *error_token);
+ParserError parse_tokens(const ParsingContext *ctx,
+    size_t num_tokens,
+    const char **tokens,
+    Node **out_res);
 bool parse_input(const ParsingContext *ctx, const char *input, ParsingResult *out_res);
 Node *parse_easy(const ParsingContext *ctx, const char *input);
 void free_result(ParsingResult *result, bool also_free_tree);

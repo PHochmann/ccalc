@@ -349,6 +349,7 @@ ListenerError arith_op_evaluate(const Operator *op, size_t num_args, const doubl
             return LISTENERERR_SUCCESS;
         }
         case 46: // median(x, y, ...)
+            if (num_args == 0) return LISTENERERR_EMPTY_PARAMS;
             *out = median(num_args, args);
             return LISTENERERR_SUCCESS;
         case 47: // gcd(x, y)

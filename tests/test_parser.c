@@ -17,7 +17,7 @@ struct ValueTest {
 // To check if parser returns expected error on malformed inputs
 struct ErrorTest {
     char *input;
-    ParserError result;
+    ParserErrorType result;
 };
 
 static const size_t NUM_VALUE_CASES = 43;
@@ -144,7 +144,7 @@ bool parser_test(StringBuilder *error_builder)
     {
         ParsingResult res;
         parse_input(&ctx, errorTests[i].input, &res);
-        if (res.error != errorTests[i].result)
+        if (res.error.type != errorTests[i].result)
         {
             ERROR("Unexpected error type for '%s'\n", errorTests[i].input);
         }

@@ -151,78 +151,114 @@ void clear_composite_functions()
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ WRAPPER FUNCTIONS FOR PARSER
 
-/*
-Returns: String representation of ParserError
-*/
-static const char *perr_to_string(ParserError perr)
+static void get_pos_and_length_from_tokenstream(const Vector *tokens, size_t error_index, size_t *out_pos, size_t *out_length)
 {
-    switch (perr)
+    *out_pos = 0;
+    for (size_t i = 0; i < error_index; i++)
     {
-        case PERR_SUCCESS:
-            return "Success";
-        case PERR_EXPECTED_INFIX:
-            return "Expected infix or postfix operator";
-        case PERR_UNEXPECTED_INFIX:
-            return "Unexpected infix or postfix operator";
-        case PERR_EXCESS_OPENING_PAREN:
-            return "Missing closing parenthesis";
-        case PERR_UNEXPECTED_CLOSING_PAREN:
-            return "Unexpected closing parenthesis";
-        case PERR_UNEXPECTED_DELIMITER:
-            return "Unexpected delimiter";
-        case PERR_FUNCTION_WRONG_ARITY:
-            return "Wrong number of operands of function";
-        case PERR_UNEXPECTED_END_OF_EXPR:
-            return "Unexpected end of expression";
-        case PERR_EXPECTED_PARAM_LIST:
-            return "Expected an opening parenthesis";
-        case PERR_UNEXPECTED_CHARACTER:
-            return "Unexpected character";
-        default:
-            return "Unknown Error";
+        *out_pos += strlen(*(const char**)vec_get(tokens, i));
+    }
+
+    *out_length = 1;
+    if (error_index < vec_count(tokens))
+    {
+        *out_length = strlen(*(const char**)vec_get(tokens, error_index));
     }
 }
 
-static const char *listenererr_to_str(int code)
+static void report_listener_error(const Vector *tokens, size_t token_index, int error_code, size_t prompt_len)
 {
-    switch (code)
+    size_t pos;
+    size_t length;
+    get_pos_and_length_from_tokenstream(tokens, token_index, &pos, &length);
+    length += prompt_len;
+
+    switch (error_code)
     {
         case LISTENERERR_SUCCESS:
-            return "No error";
+            report_error_at(pos, length, "No error");
+            break;
         case LISTENERERR_VARIABLE_ENCOUNTERED:
-            return "Expression not constant";
+            report_error_at(pos, length, "Expression not constant");
+            break;
         case LISTENERERR_HISTORY_NOT_SET:
-            return "This part of the history is not set yet";
+            report_error_at(pos, length, "This part of the history is not set yet");
+            break;
         case LISTENERERR_IMPOSSIBLE_DERIV:
-            return "Differentiation of this expression not supported (yet)";
+            report_error_at(pos, length, "Differentiation of this expression not supported (yet)");
+            break;
         case LISTENERERR_MALFORMED_DERIV_A:
-            return "More than one variable in expr'";
+            report_error_at(pos, length, "More than one variable in expr'");
+            break;
         case LISTENERERR_MALFORMED_DERIV_B:
-            return "Second operand of function 'deriv' must be variable";
+            report_error_at(pos, length, "Second operand of function 'deriv' must be variable");
+            break;
         case LISTENERERR_UNKNOWN_OP:
-            return "No evaluation of operator possible";
+            report_error_at(pos, length, "No evaluation of operator possible");
+            break;
         case LISTENERERR_DIVISION_BY_ZERO:
-            return "Division by zero";
+            report_error_at(pos, length, "Division by zero");
+            break;
         case LISTENERERR_COMPLEX_SOLUTION:
-            return "Complex solution";
+            report_error_at(pos, length, "Complex solution");
+            break;
+        case LISTENERERR_EMPTY_PARAMS:
+            report_error_at(pos, length, "At least one operand needed");
+            break;
         default:
-            return "Unknown error";
+            report_error_at(pos, length, "Unknown error");
+            break;
     }
 }
 
 /*
 Summary: Prints error message with position (if interactive) under token stream in console
 */
-static void show_error_at_token(const Vector *tokens, size_t error_token, const char *message, size_t prompt_len)
+static void report_parser_error(const Vector *tokens, ParserError error, size_t prompt_len)
 {
-    int error_pos = prompt_len;
-    for (size_t i = 0; i < error_token; i++)
+    size_t pos;
+    size_t length;
+    get_pos_and_length_from_tokenstream(tokens, error.error_token, &pos, &length);
+    length += prompt_len;
+
+    switch (error.type)
     {
-        error_pos += strlen(*(const char**)vec_get(tokens, i));
+        case PERR_SUCCESS:
+            report_error_at(pos, length, "Success");
+            break;
+        case PERR_EXPECTED_INFIX:
+            report_error_at(pos, length, "Expected infix or postfix operator");
+            break;
+        case PERR_UNEXPECTED_INFIX:
+            report_error_at(pos, length, "Unexpected infix or postfix operator");
+            break;
+        case PERR_EXCESS_OPENING_PAREN:
+            report_error_at(pos, length, "Missing closing parenthesis");
+            break;
+        case PERR_UNEXPECTED_CLOSING_PAREN:
+            report_error_at(pos, length, "Unexpected closing parenthesis");
+            break;
+        case PERR_UNEXPECTED_DELIMITER:
+            report_error_at(pos, length, "Unexpected delimiter");
+            break;
+        case PERR_FUNCTION_WRONG_ARITY:
+            report_error_at(pos, length, "Wrong number of operands, got %d but expected %d",
+                error.additional_data[0],
+                error.additional_data[1]);
+            break;
+        case PERR_UNEXPECTED_END_OF_EXPR:
+            report_error_at(pos, length, "Unexpected end of expression");
+            break;
+        case PERR_EXPECTED_PARAM_LIST:
+            report_error_at(pos, length, "Expected an opening parenthesis");
+            break;
+        case PERR_UNEXPECTED_CHARACTER:
+            report_error_at(pos, length, "Unexpected character");
+            break;
+        default:
+            report_error_at(pos, length, "Unknown Error");
+            break;
     }
-    int error_length = 1;
-    if (error_token < vec_count(tokens)) error_length = strlen(*(const char**)vec_get(tokens, error_token));
-    report_error_at(error_pos, error_length, "Error: %s", message);
 }
 
 bool arith_parse(char *input, size_t prompt_len, Node **out_res)
@@ -244,7 +280,7 @@ bool arith_parse_raw(char *input, size_t prompt_len, ParsingResult *out_res)
 {
     if (!parse_input(g_ctx, input, out_res))
     {
-        show_error_at_token(&out_res->tokens, out_res->error_token, perr_to_string(out_res->error), prompt_len);
+        report_parser_error(&out_res->tokens, out_res->error, prompt_len);
         free_result(out_res, false);
         return false;
     }
@@ -266,7 +302,7 @@ Node *arith_simplify(ParsingResult *p_result, size_t prompt_len)
     ListenerError l_err = simplify(&p_result->tree, &errnode);
     if (l_err != LISTENERERR_SUCCESS)
     {
-        show_error_at_token(&p_result->tokens, get_token_index(errnode), listenererr_to_str(l_err), prompt_len);
+        report_listener_error(&p_result->tokens, get_token_index(errnode), l_err, prompt_len);
         free_result(p_result, true);
         return NULL;
     }

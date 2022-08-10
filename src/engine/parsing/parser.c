@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "tokenizer.h"
@@ -9,8 +10,8 @@
 #define VECTOR_STARTSIZE 10
 
 // Do not use this macro in auxiliary functions!
-#define ERROR(type) {\
-    state.result = type;\
+#define ERROR(error_type) {\
+    state.result.type = error_type;\
     goto exit;\
 }
 
@@ -68,8 +69,10 @@ bool op_pop_and_insert(struct ParserState *state)
     {
         if (op->arity != OP_DYNAMIC_ARITY && op->arity != op_data->arity)
         {
-            state->result = PERR_FUNCTION_WRONG_ARITY;
-            state->curr_tok = op_data->token;
+            state->result.type = PERR_FUNCTION_WRONG_ARITY;
+            state->result.additional_data[0] = op_data->arity;
+            state->result.additional_data[1] = op->arity;
+            state->result.error_token = op_data->token;
             return false;
         }
 
@@ -81,7 +84,7 @@ bool op_pop_and_insert(struct ParserState *state)
             // Pop nodes from stack and append them in subtree
             if (!node_pop(state, get_child_addr(op_node, get_num_children(op_node) - i - 1)))
             {
-                state->curr_tok = op_data->token;
+                state->result.error_token = op_data->token;
                 // Free already appended children and new node on error
                 // Caller must set error in state
                 free_tree(op_node);
@@ -143,15 +146,15 @@ bool push_opening_parenthesis(struct ParserState *state)
 }
 
 // out_res can be NULL if you only want to check if an error occurred
-ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const char **tokens, Node **out_res, size_t *error_token)
+ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const char **tokens, Node **out_res)
 {
     // 1. Early outs
-    if (ctx == NULL || tokens == NULL) return PERR_ARGS_MALFORMED;
+    if (ctx == NULL || tokens == NULL) return (ParserError){ .type = PERR_ARGS_MALFORMED };
 
     // 2. Initialize state
     struct ParserState state = {
         .ctx       = ctx,
-        .result    = PERR_SUCCESS,
+        .result    = (ParserError){ .type = PERR_SUCCESS, .error_token = SIZE_MAX },
         .vec_nodes = vec_create(sizeof(Node*), VECTOR_STARTSIZE),
         .vec_ops   = vec_create(sizeof(struct OpData), VECTOR_STARTSIZE)
     };
@@ -233,7 +236,7 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
             else
             {
                 // We did not stop because an opening parenthesis was found, but because op-stack was empty
-                state.curr_tok = i;
+                state.result.error_token = i;
                 ERROR(PERR_UNEXPECTED_CLOSING_PAREN);
             }
 
@@ -426,11 +429,11 @@ ParserError parse_tokens(const ParsingContext *ctx, size_t num_tokens, const cha
     
     exit:
     // If parsing wasn't successful or result is discarded, free partial results
-    if (state.result != PERR_SUCCESS || out_res == NULL)
+    if (state.result.type != PERR_SUCCESS || out_res == NULL)
     {
-        if (error_token != NULL)
+        if (state.result.error_token == SIZE_MAX)
         {
-            *error_token = state.curr_tok;
+            state.result.error_token = state.curr_tok;
         }
 
         while (true)
@@ -454,8 +457,8 @@ Returns: True if success, False otherwise
 bool parse_input(const ParsingContext *ctx, const char *input, ParsingResult *out_res)
 {
     out_res->tokens = tokenize(input, &ctx->keywords_trie);
-    out_res->error = parse_tokens(ctx, vec_count(&out_res->tokens), out_res->tokens.buffer, &out_res->tree, &out_res->error_token);
-    return out_res->error == PERR_SUCCESS;
+    out_res->error = parse_tokens(ctx, vec_count(&out_res->tokens), out_res->tokens.buffer, &out_res->tree);
+    return out_res->error.type == PERR_SUCCESS;
 }
 
 Node *parse_easy(const ParsingContext *ctx, const char *input)
@@ -475,14 +478,14 @@ Node *parse_easy(const ParsingContext *ctx, const char *input)
 
 void free_result(ParsingResult *result, bool also_free_tree)
 {
-    if (result->error != PERR_NULL)
+    if (result->error.type != PERR_NULL)
     {
         free_tokens(&result->tokens);
-        if (also_free_tree && result->error == PERR_SUCCESS)
+        if (also_free_tree && result->error.type == PERR_SUCCESS)
         {
             free_tree(result->tree);
             result->tree = NULL;
         }
-        result->error = PERR_NULL;
+        result->error.type = PERR_NULL;
     }
 }
