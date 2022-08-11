@@ -8,6 +8,7 @@
 #include "../../engine/parsing/tokenizer.h"
 #include "../../engine/parsing/parser.h"
 #include "../../engine/transformation/rewrite_rule.h"
+#include "../../engine/transformation/matching.h"
 
 #include "cmd_definition.h"
 #include "../core/arith_context.h"
@@ -98,7 +99,7 @@ static bool add_function(char *name, char *left, char *right, bool is_constant)
     // the user would have to type "x() = 5" since dynamic arity functions require parameter lists
     if (!is_constant)
     {
-        ctx_add_op(g_ctx, op_get_function(name, OP_DYNAMIC_ARITY));
+        new_op = ctx_add_op(g_ctx, op_get_function(name, OP_DYNAMIC_ARITY));
     }
     else
     {
@@ -119,10 +120,24 @@ static bool add_function(char *name, char *left, char *right, bool is_constant)
         goto error;
     }
 
-    // Assign correct arity:
-    // Since operators are const, we can't change the arity directly
-    // A new operator with correct arity has to be created
-    if (!is_constant)
+    bool contains_list_param = false;
+    for (size_t i = 0; i < get_num_children(left_tree); i++)
+    {
+        if (get_var_name(get_child(left_tree, i))[0] == MATCHING_LIST_PREFIX)
+        {
+            contains_list_param = true;
+            break;
+        }
+    }
+
+    /*
+    Assign correct arity:
+    Since operators are const, we can't change the arity directly
+    A new operator with correct arity has to be created
+    If the operator is a constant or if it contains a list parameter,
+    it was created with the correct arity originally.
+    */
+    if (!is_constant && !contains_list_param)
     {
         ctx_delete_op(g_ctx, name, OP_PLACE_FUNCTION);
         new_op = ctx_add_op(g_ctx, op_get_function(name, get_num_children(left_tree)));
@@ -144,10 +159,18 @@ static bool add_function(char *name, char *left, char *right, bool is_constant)
     }
 
     // Since right expression was parsed raw to detect recursive definitions, do post processing
-    right_tree = arith_simplify(&right_result, (size_t)(right - left));
-    if (right_tree == NULL)
+    if (!contains_list_param)
     {
-        goto error;
+        right_tree = arith_simplify(&right_result, (size_t)(right - left));
+        if (right_tree == NULL)
+        {
+            goto error;
+        }
+    }
+    else
+    {
+        right_tree = right_result.tree;
+        free_result(&right_result, false);
     }
 
     // Add rule to eliminate operator before evaluation
