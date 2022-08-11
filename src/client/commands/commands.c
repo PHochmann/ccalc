@@ -16,8 +16,8 @@
 #include "cmd_definition.h"
 #include "cmd_table.h"
 
-#define COMMENT_PREFIX         '#'
-#define QUIT_COMMAND           "quit"
+#define COMMENT_PREFIX          '#'
+#define QUIT_COMMAND            "quit"
 
 #define SIMPLIFICATION_FILENAME "/simplification.ruleset"
 

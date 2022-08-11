@@ -28,11 +28,11 @@ int cmd_definition_check(const char *input)
     return strstr(input, DEFINITION_OP) != NULL;
 }
 
-static bool do_left_checks(Node *left_n, int strlen)
+static bool do_left_checks(Node *left_n, int strlen, size_t prompt_len)
 {
     if (get_type(left_n) != NTYPE_OPERATOR || get_op(left_n)->placement != OP_PLACE_FUNCTION)
     {
-        report_error_at(0, strlen, ERR_NOT_A_FUNC);
+        report_error_at(prompt_len, strlen, ERR_NOT_A_FUNC);
         return false;
     }
 
@@ -44,7 +44,7 @@ static bool do_left_checks(Node *left_n, int strlen)
         {
             if (get_type(get_child(left_n, i)) != NTYPE_VARIABLE)
             {
-                report_error_at(0, strlen, ERR_ARGS_NOT_VARS);
+                report_error_at(prompt_len, strlen, ERR_ARGS_NOT_VARS);
                 return false;
             }
         }
@@ -54,12 +54,12 @@ static bool do_left_checks(Node *left_n, int strlen)
         size_t num_vars = list_variables(left_n, MAX_MAPPED_VARS, vars, &sufficient_buff);
         if (!sufficient_buff)
         {
-            report_error_at(0, strlen, "Too many function parameters. Maximum is %zu.", MAX_MAPPED_VARS);
+            report_error_at(prompt_len, strlen, "Too many function parameters. Maximum is %zu.", MAX_MAPPED_VARS);
             return false;
         }
         if (num_vars != num_children)
         {
-            report_error_at(0, strlen, ERR_NOT_DISTINCT);
+            report_error_at(prompt_len, strlen, ERR_NOT_DISTINCT);
             return false;
         }
     }
@@ -67,7 +67,7 @@ static bool do_left_checks(Node *left_n, int strlen)
     return true;
 }
 
-static bool add_function(char *name, char *left, char *right, bool is_constant)
+static bool add_function(char *name, char *left, char *right, bool is_constant, size_t prompt_len)
 {
     // First check if function already exists
     const Operator *op = ctx_lookup_op(g_ctx, name, OP_PLACE_FUNCTION);
@@ -115,7 +115,7 @@ static bool add_function(char *name, char *left, char *right, bool is_constant)
     free_result(&left_result, false);
 
     // Check if left side is "function(var_1, ..., var_n)"
-    if (!do_left_checks(left_tree, strlen(left)))
+    if (!do_left_checks(left_tree, strlen(left), prompt_len))
     {
         goto error;
     }
@@ -145,7 +145,7 @@ static bool add_function(char *name, char *left, char *right, bool is_constant)
     }
 
     // Parse right expression raw to detect a recursive definition
-    if (!arith_parse_raw(right, (size_t)(right - left), &right_result))
+    if (!arith_parse_raw(right, (size_t)(right - left) + prompt_len, &right_result))
     {
         goto error;
     }
@@ -161,7 +161,7 @@ static bool add_function(char *name, char *left, char *right, bool is_constant)
     // Since right expression was parsed raw to detect recursive definitions, do post processing
     if (!contains_list_param)
     {
-        right_tree = arith_simplify(&right_result, (size_t)(right - left));
+        right_tree = arith_simplify(&right_result, (size_t)(right - left) + prompt_len);
         if (right_tree == NULL)
         {
             goto error;
@@ -220,6 +220,9 @@ bool cmd_definition_exec(char *input, __attribute__((unused)) int code)
     char *right_input = strstr(input, DEFINITION_OP);
     *right_input = '\0';
     right_input += strlen(DEFINITION_OP);
+
+    char *left_input = strip(input);
+    right_input = strip(right_input);
     
     // Tokenize function definition to get its name. Name is first token.
     Vector tokens = tokenize(input, &g_ctx->keywords_trie);
@@ -265,7 +268,13 @@ bool cmd_definition_exec(char *input, __attribute__((unused)) int code)
         }
         else
         {
-            return add_function(name, input, right_input, non_space_tokens == 1);
+            return add_function(
+                name,
+                left_input,
+                right_input,
+                non_space_tokens == 1,
+                (size_t)(left_input - input)
+            );
         }
     }
 }
