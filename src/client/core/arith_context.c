@@ -171,7 +171,7 @@ static void report_listener_error(const Vector *tokens, size_t token_index, int 
     size_t pos;
     size_t length;
     get_pos_and_length_from_tokenstream(tokens, token_index, &pos, &length);
-    length += prompt_len;
+    pos += prompt_len;
 
     switch (error_code)
     {
@@ -219,7 +219,7 @@ static void report_parser_error(const Vector *tokens, ParserError error, size_t 
     size_t pos;
     size_t length;
     get_pos_and_length_from_tokenstream(tokens, error.error_token, &pos, &length);
-    length += prompt_len;
+    pos += prompt_len;
 
     switch (error.type)
     {

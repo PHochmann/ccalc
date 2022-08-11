@@ -145,7 +145,7 @@ static bool add_function(char *name, char *left, char *right, bool is_constant)
 
     // Since right expression was parsed raw to detect recursive definitions, do post processing
     right_tree = arith_simplify(&right_result, (size_t)(right - left));
-    if (left_tree == NULL)
+    if (right_tree == NULL)
     {
         goto error;
     }

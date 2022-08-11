@@ -5,11 +5,14 @@
 #include "../../util/console_util.h"
 #include "../../engine/tree/tree_to_string.h"
 #include "../../engine/tree/tree_util.h"
+#include "../../util/string_util.h"
 
 #include "cmd_evaluation.h"
 #include "../core/arith_context.h"
 #include "../core/history.h"
 #include "../core/arith_evaluation.h"
+
+#define SHOW_CMD "show "
 
 int cmd_evaluation_check(__attribute__((unused)) const char *input)
 {
@@ -21,6 +24,14 @@ Summary: The evaluation command is executed when input is no other command (henc
 */
 bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
 {
+    bool show = false;
+
+    if (begins_with(SHOW_CMD, input))
+    {
+        input += strlen(SHOW_CMD);
+        show = true;
+    }
+
     Node *node;
     if (!arith_parse(input, 0, &node)) return false;
     whisper("= ");
@@ -30,6 +41,12 @@ bool cmd_evaluation_exec(char *input, __attribute__((unused)) int code)
     {
         history_add(get_const_value(node));
     }
+
+    if (show)
+    {
+        print_tree_visually(node);
+    }
+
     free_tree(node);
     return true;
 }
