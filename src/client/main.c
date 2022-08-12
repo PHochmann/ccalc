@@ -9,7 +9,8 @@
 #include "version.h"
 
 #define HELP_MESSAGE "Usage: ccalc [--help] [--version] [--interactive] [--quiet] [--commands [<commands>]]\n" \
-                     "Each switch can be abbreviated by -h, -v etc.\n"
+                     "Each switch can be abbreviated by -h, -v etc.\n" \
+                     "Install path: " INSTALL_PATH "\n"
 
 /*
 Params

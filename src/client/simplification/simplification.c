@@ -42,6 +42,7 @@ bool simplification_is_initialized()
     return initialized;
 }
 
+// Replaces single constant nodes of negative value by an "-"-operator node with child that is a positive constant node
 static void replace_negative_consts(Node **tree)
 {
     if (get_type(*tree) == NTYPE_CONSTANT)
@@ -120,7 +121,7 @@ void unload_simplification()
     initialized = false;
 }
 
-static void apply_simplification(Node **tree, Vector *ruleset)
+static void apply_ruleset_and_reduce(Node **tree, Vector *ruleset)
 {
     VectorIterator it = vec_get_iterator(ruleset);
     while (apply_ruleset_by_iterator(tree, (Iterator*)&it, propositional_checker, 1) != 0)
@@ -166,7 +167,8 @@ ListenerError apply_derivatives(Node **tree, const Node **errnode)
         return LISTENERERR_MALFORMED_DERIV_B;
     }
 
-    apply_simplification(tree, rulesets + 1);
+    apply_ruleset_and_reduce(tree, rulesets); // De-sugar again
+    apply_ruleset_and_reduce(tree, rulesets + 1); // Apply derivatives
 
     // If the tree still contains deriv-operators, the user attempted to derivate 
     // a subtree for which no reduction rule exists.
@@ -182,12 +184,12 @@ ListenerError apply_derivatives(Node **tree, const Node **errnode)
 
 void simplify_without_derivative(Node **tree)
 {
-    apply_simplification(tree, rulesets + 0);
-    apply_simplification(tree, rulesets + 2);
-    apply_simplification(tree, rulesets + 3);
-    apply_simplification(tree, rulesets + 4);
-    apply_simplification(tree, rulesets + 5);
-    apply_simplification(tree, rulesets + 6);
+    apply_ruleset_and_reduce(tree, rulesets + 0);
+    apply_ruleset_and_reduce(tree, rulesets + 2);
+    apply_ruleset_and_reduce(tree, rulesets + 3);
+    apply_ruleset_and_reduce(tree, rulesets + 4);
+    apply_ruleset_and_reduce(tree, rulesets + 5);
+    apply_ruleset_and_reduce(tree, rulesets + 6);
 }
 
 /*
@@ -210,9 +212,5 @@ ListenerError simplify(Node **tree, const Node **errnode)
     if (res != LISTENERERR_SUCCESS) return res;
     simplify_without_derivative(tree);
 
-    res = tree_reduce_constant_subtrees(tree, arith_op_evaluate, errnode);
-    if (res != LISTENERERR_SUCCESS) return res;
-    replace_negative_consts(tree);
-
-    return LISTENERERR_SUCCESS;
+    return tree_reduce_constant_subtrees(tree, arith_op_evaluate, errnode);
 }

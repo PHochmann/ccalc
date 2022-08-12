@@ -32,6 +32,7 @@ RULESET
     deriv(x, x)         -> 1
     deriv(x, z)         -> 0               WHERE type(x) != OP
     deriv(cx*y, y)      -> cx              WHERE type(cx) == CONST
+    deriv(y^cx, y)      -> cx*y^(cx-1)     WHERE type(cx) == CONST
     deriv(cx * z^cy, z) -> cx*cy*z^(cy-1)  WHERE type(cx) == CONST ; type(cy) == CONST
     deriv(-x, z)        -> -deriv(x, z)
     deriv(x + y, z)     -> deriv(x, z) + deriv(y, z)

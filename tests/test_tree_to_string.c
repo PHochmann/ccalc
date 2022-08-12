@@ -13,7 +13,7 @@ struct TreeToStringTest {
     char *expected_result;
 };
 
-static const size_t NUM_CASES = 11;
+static const size_t NUM_CASES = 13;
 static struct TreeToStringTest tests[] = {
     { "--a",      "-(-a)"},
     { "--b!!",    "(-(-b)!)!"},
@@ -27,6 +27,8 @@ static struct TreeToStringTest tests[] = {
     { "sum(--1)",   "sum(-(-1))" },
     { "-sqrt(abs(--a!!*--sum(-b+c-d+e, f^(g^h)-i, -sum(j, k), l+m)*--n!!))",
         "-sqrt(abs(((-(-a)!)!)*(-(-sum(-b+c-d+e,f^g^h-i,-sum(j,k),l+m)))*(-(-n)!)!))" },
+    { "10*x", "10x" },
+    { "10*x^8", "10x^8" }
 };
 
 bool tree_to_string_test(StringBuilder *error_builder)
@@ -39,7 +41,7 @@ bool tree_to_string_test(StringBuilder *error_builder)
             ERROR("Parser Error in '%s'\n", tests[i].input);
         }
 
-        char *result = tree_to_str(node);
+        char *result = tree_to_str_fancy(node, g_ctx, false);
 
         if (strcmp(tests[i].expected_result, result) != 0)
         {

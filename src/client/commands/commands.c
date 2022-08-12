@@ -71,13 +71,13 @@ void init_commands()
     init_propositional_ctx();
 
     #ifdef INSTALL_PATH
-        if (init_simplification(INSTALL_PATH SIMPLIFICATION_FILENAME) == -1)
+        if (init_simplification(INSTALL_PATH SIMPLIFICATION_FILENAME) < 0)
         {
             report_error("Error loading simplification ruleset: " INSTALL_PATH SIMPLIFICATION_FILENAME " not found or readable.\n"
                         "Use 'load simplification <path>' to load a ruleset.\n");
         }
     #else
-        whisper("No simplification loaded, use 'load simplification <path>' to load a ruleset.\n");
+        whisper("No simplification file loaded, use 'load simplification <path>' to load a ruleset.\n");
     #endif
     
     init_console_util();

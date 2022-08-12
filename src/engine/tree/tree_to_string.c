@@ -108,21 +108,23 @@ static void infix_to_str(StringBuilder *builder, bool color, const ParsingContex
         to_str(builder, color, ctx, left, l, true);
     }
 
+    bool r_needs_paren = get_type(right) == NTYPE_OPERATOR
+        && (get_op(right)->precedence < get_op(node)->precedence
+            || (get_op(right)->precedence == get_op(node)->precedence
+                && get_op(node)->assoc == OP_ASSOC_LEFT));
+
     // Print infix operator if it is not a glue op
     if (ctx == NULL
+        || r_needs_paren
         || ctx->glue_op->id != get_op(node)->id
         || get_type(left) != NTYPE_CONSTANT
-        || get_type(right) != NTYPE_VARIABLE
-        || strlen(get_var_name(right)) != 1)
+        || get_type(right) == NTYPE_CONSTANT)
     {
         strbuilder_append(builder, is_letter(get_op(node)->name[0]) ? " %s " : "%s", get_op(node)->name);
     }
 
     // Checks if right operand of infix operator needs to be wrapped in parentheses (see analog case for left operand)
-    if (get_type(right) == NTYPE_OPERATOR
-        && (get_op(right)->precedence < get_op(node)->precedence
-            || (get_op(right)->precedence == get_op(node)->precedence
-                && get_op(node)->assoc == OP_ASSOC_LEFT)))
+    if (r_needs_paren)
     {
         p_open(builder);
         to_str(builder, color, ctx, right, false, false);
