@@ -60,7 +60,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
     Node *fold_init = NULL;
     char *expr_string = NULL;
 
-    ParsingResult presult = { .error = PERR_NULL };
+    ParsingResult presult = { .error.type = PERR_NULL };
     if (!arith_parse_raw(args[0], (size_t)(args[0] - input), &presult))
     {
         free_result(&presult, false);
