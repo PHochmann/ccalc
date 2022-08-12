@@ -27,7 +27,7 @@ bool cmd_load_exec(char *input, __attribute__((unused)) int code)
         input += strlen(LOAD_SIMPLIFICATION);
         unload_simplification();
         ssize_t count = init_simplification(input);
-        if (count == -1)
+        if (count < 0)
         {
             report_error("File not found or readable\n");
             return false;
