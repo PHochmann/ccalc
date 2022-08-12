@@ -89,8 +89,8 @@ static bool add_function(char *name, char *left, char *right, bool is_constant, 
 
     // Add function operator to parse left input
     // Must be OP_DYNAMIC_ARITY because we do not know the actual arity yet
-    ParsingResult left_result = { .error = PERR_NULL };
-    ParsingResult right_result = { .error = PERR_NULL };
+    ParsingResult left_result = { .error.type = PERR_NULL };
+    ParsingResult right_result = { .error.type = PERR_NULL };
     Node *left_tree = NULL;
     Node *right_tree = NULL;
     const Operator *new_op = NULL;
