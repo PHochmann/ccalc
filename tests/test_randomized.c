@@ -27,7 +27,7 @@ bool randomized_test(StringBuilder *error_builder)
         get_random_tree(MAX_INNER_NODES, &random_tree);
 
         // Convert random tree to string
-        char *stringed_tree = tree_to_str(random_tree, false);
+        char *stringed_tree = tree_to_str(random_tree);
 
         // To test glue-op: replace some '*' by spaces
         while (rand() % 4 != 0)

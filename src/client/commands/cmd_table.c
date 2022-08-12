@@ -69,7 +69,7 @@ bool cmd_table_exec(char *input, __attribute__((unused)) int code)
 
     Vector builder = strbuilder_create(STRBUILDER_STARTSIZE);
     strbuilder_append(&builder, " ");
-    tree_append_to_strbuilder(&builder, presult.tree, true);
+    tree_append_to_strbuilder(&builder, presult.tree, g_ctx, true);
     strbuilder_append(&builder, " ");
     expr_string = strbuilder_to_str(&builder);
 

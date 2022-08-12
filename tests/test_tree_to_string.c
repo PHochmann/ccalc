@@ -39,7 +39,7 @@ bool tree_to_string_test(StringBuilder *error_builder)
             ERROR("Parser Error in '%s'\n", tests[i].input);
         }
 
-        char *result = tree_to_str(node, false);
+        char *result = tree_to_str(node);
 
         if (strcmp(tests[i].expected_result, result) != 0)
         {

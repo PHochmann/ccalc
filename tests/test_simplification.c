@@ -70,8 +70,8 @@ bool simplification_test(StringBuilder *error_builder)
         if (!tree_equals(left, right))
         {
             // Additional test: Double precision may cause problems, string tree and see if equals
-            char *wrong_result = tree_to_str(left, true);
-            char *right_result = tree_to_str(right, true);
+            char *wrong_result = tree_to_str(left);
+            char *right_result = tree_to_str(right);
 
             if (strcmp(wrong_result, right_result) != 0)
             {
@@ -112,11 +112,11 @@ bool simplification_test(StringBuilder *error_builder)
         if (before_result - after_result > EPS)
         {
             printf("Num variables: %zu\n", num_variables);
-            print_tree(cc, true);
+            print_tree(cc);
             printf("\n");
-            print_tree(tree, true);
+            print_tree(tree);
             printf("\n");
-            print_tree(copy, true);
+            print_tree(copy);
             printf("\n");
             ERROR("Fuzzing test failed\n");
         }

@@ -1,7 +1,9 @@
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "tree_to_string.h"
+#include "../parsing/context.h"
 #include "../../util/string_util.h"
 
 #define STRBUILDER_STARTSIZE 20
@@ -18,9 +20,9 @@ static void p_close(StringBuilder *builder)
     strbuilder_append(builder, CLOSING_P);
 }
 
-static void to_str(StringBuilder *builder, bool color, const Node *node, bool l, bool r);
+static void to_str(StringBuilder *builder, bool color, const ParsingContext *ctx, const Node *node, bool l, bool r);
 
-static void prefix_to_str(StringBuilder *builder, bool color, const Node *node, bool l, bool r)
+static void prefix_to_str(StringBuilder *builder, bool color, const ParsingContext *ctx, const Node *node, bool l, bool r)
 {
     if (l) p_open(builder);
     strbuilder_append(builder, get_op(node)->name);
@@ -29,20 +31,20 @@ static void prefix_to_str(StringBuilder *builder, bool color, const Node *node, 
         && get_op(get_child(node, 0))->precedence <= get_op(node)->precedence)
     {
         p_open(builder);
-        to_str(builder, color, get_child(node, 0), false, false);
+        to_str(builder, color, ctx, get_child(node, 0), false, false);
         p_close(builder);
     }
     else
     {
         // Subexpression needs to be right-protected when expression of 'node' is not encapsulated in parentheses
         // (!l, otherwise redundant parentheses would be printed) and itself needs to be right-protected
-        to_str(builder, color, get_child(node, 0), true, !l && r);
+        to_str(builder, color, ctx, get_child(node, 0), true, !l && r);
     }
     
     if (l) p_close(builder);
 }
 
-static void postfix_to_str(StringBuilder *builder, bool color, const Node *node, bool l, bool r)
+static void postfix_to_str(StringBuilder *builder, bool color, const ParsingContext *ctx, const Node *node, bool l, bool r)
 {
     if (r) p_open(builder);
 
@@ -51,27 +53,27 @@ static void postfix_to_str(StringBuilder *builder, bool color, const Node *node,
         && get_op(get_child(node, 0))->precedence < get_op(node)->precedence)
     {
         p_open(builder);
-        to_str(builder, color, get_child(node, 0), false, false);
+        to_str(builder, color, ctx, get_child(node, 0), false, false);
         p_close(builder);
     }
     else
     {
         // See analog case of infix operator for conditions for left-protection
-        to_str(builder, color, get_child(node, 0), l && !r, true);
+        to_str(builder, color, ctx, get_child(node, 0), l && !r, true);
     }
     
     strbuilder_append(builder, "%s", get_op(node)->name);
     if (r) p_close(builder);
 }
 
-static void function_to_str(StringBuilder *builder, bool color, const Node *node)
+static void function_to_str(StringBuilder *builder, bool color, const ParsingContext *ctx, const Node *node)
 {
     if (get_op(node)->arity != 0)
     {
         strbuilder_append(builder, "%s(", get_op(node)->name);
         for (size_t i = 0; i < get_num_children(node); i++)
         {
-            to_str(builder, color, get_child(node, i), false, false);
+            to_str(builder, color, ctx, get_child(node, i), false, false);
             if (i < get_num_children(node) - 1) strbuilder_append(builder, ",");
         }
         p_close(builder);
@@ -82,7 +84,7 @@ static void function_to_str(StringBuilder *builder, bool color, const Node *node
     }
 }
 
-static void infix_to_str(StringBuilder *builder, bool color, const Node *node, bool l, bool r)
+static void infix_to_str(StringBuilder *builder, bool color, const ParsingContext *ctx, const Node *node, bool l, bool r)
 {
     Node *left = get_child(node, 0);
     Node *right = get_child(node, 1);
@@ -98,16 +100,24 @@ static void infix_to_str(StringBuilder *builder, bool color, const Node *node, b
                 && get_op(node)->assoc == OP_ASSOC_RIGHT)))
     {
         p_open(builder);
-        to_str(builder, color, left, false, false);
+        to_str(builder, color, ctx, left, false, false);
         p_close(builder);
     }
     else
     {
-        to_str(builder, color, left, l, true);
+        to_str(builder, color, ctx, left, l, true);
     }
 
-    strbuilder_append(builder, is_letter(get_op(node)->name[0]) ? " %s " : "%s", get_op(node)->name);
-    
+    // Print infix operator if it is not a glue op
+    if (ctx == NULL
+        || ctx->glue_op->id != get_op(node)->id
+        || get_type(left) != NTYPE_CONSTANT
+        || get_type(right) != NTYPE_VARIABLE
+        || strlen(get_var_name(right)) != 1)
+    {
+        strbuilder_append(builder, is_letter(get_op(node)->name[0]) ? " %s " : "%s", get_op(node)->name);
+    }
+
     // Checks if right operand of infix operator needs to be wrapped in parentheses (see analog case for left operand)
     if (get_type(right) == NTYPE_OPERATOR
         && (get_op(right)->precedence < get_op(node)->precedence
@@ -115,12 +125,12 @@ static void infix_to_str(StringBuilder *builder, bool color, const Node *node, b
                 && get_op(node)->assoc == OP_ASSOC_LEFT)))
     {
         p_open(builder);
-        to_str(builder, color, right, false, false);
+        to_str(builder, color, ctx, right, false, false);
         p_close(builder);
     }
     else
     {
-        to_str(builder, color, right, true, r);
+        to_str(builder, color, ctx, right, true, r);
     }
 }
 
@@ -130,7 +140,7 @@ Params
         It needs to be protected when it is adjacent to an operator on this side.
         When the subexpression starts (ends) with an operator and needs to be protected to the left (right), a parenthesis is printed in between.
 */
-static void to_str(StringBuilder *builder, bool color, const Node *node, bool l, bool r)
+static void to_str(StringBuilder *builder, bool color, const ParsingContext *ctx, const Node *node, bool l, bool r)
 {
     switch (get_type(node))
     {
@@ -146,40 +156,53 @@ static void to_str(StringBuilder *builder, bool color, const Node *node, bool l,
             switch (get_op(node)->placement)
             {
                 case OP_PLACE_PREFIX:
-                    prefix_to_str(builder, color, node, l, r);
+                    prefix_to_str(builder, color, ctx, node, l, r);
                     break;
                 case OP_PLACE_POSTFIX:
-                    postfix_to_str(builder, color, node, l, r);
+                    postfix_to_str(builder, color, ctx, node, l, r);
                     break;
                 case OP_PLACE_FUNCTION:
-                    function_to_str(builder, color, node);
+                    function_to_str(builder, color, ctx, node);
                     break;
                 case OP_PLACE_INFIX:
-                    infix_to_str(builder, color, node, l, r);
+                    infix_to_str(builder, color, ctx, node, l, r);
                     break;
             }
-        }
+    }
 }
 
-void tree_append_to_strbuilder(StringBuilder *builder, const Node *node, bool color)
+void tree_append_to_strbuilder(StringBuilder *builder, const Node *node, const ParsingContext *ctx, bool color)
 {
-    to_str(builder, color, node, false, false);
+    to_str(builder, color, ctx, node, false, false);
 }
 
 // Summary: Returns string (on heap)
-char *tree_to_str(const Node *node, bool color)
+char *tree_to_str(const Node *node)
 {
     StringBuilder builder = strbuilder_create(STRBUILDER_STARTSIZE);
-    tree_append_to_strbuilder(&builder, node, color);
+    tree_append_to_strbuilder(&builder, node, NULL, false);
+    return strbuilder_to_str(&builder);
+}
+
+// Summary: Returns string (on heap)
+char *tree_to_str_fancy(const Node *node, const ParsingContext *ctx, bool color)
+{
+    StringBuilder builder = strbuilder_create(STRBUILDER_STARTSIZE);
+    tree_append_to_strbuilder(&builder, node, ctx, color);
     return strbuilder_to_str(&builder);
 }
 
 /*
 Summary: Prints result of tree_to_str to stdout
 */
-void print_tree(const Node *node, bool color)
+void print_tree(const Node *node)
 {
-    char *str = tree_to_str(node, color);
+    print_tree_fancy(node, NULL, false);
+}
+
+void print_tree_fancy(const Node *node, const ParsingContext *ctx, bool color)
+{
+    char *str = tree_to_str_fancy(node, ctx, color);
     printf("%s", str);
     free(str);
 }

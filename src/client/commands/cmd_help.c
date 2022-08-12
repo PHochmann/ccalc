@@ -299,9 +299,9 @@ void print_short_help()
         while (curr != NULL)
         {
             RewriteRule *rule = (RewriteRule*)listnode_get_data(curr);
-            add_cell_gc(table, tree_to_str(rule->pattern.pattern, true));
+            add_cell_gc(table, tree_to_str(rule->pattern.pattern));
             add_cell(table, " = ");
-            add_cell_gc(table, tree_to_str(rule->after, true));
+            add_cell_gc(table, tree_to_str(rule->after));
             next_row(table);
             curr = listnode_get_next(curr);
         }
