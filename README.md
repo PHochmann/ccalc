@@ -42,11 +42,11 @@ and be directly evaluated. See syntax rules and commands below.
 ### Available commands
 | Command                            | Description                                                          |
 | ---                                | ---                                                                  |
-| ```<func\|const> = <after>```      | Adds function or constant.                                           |
+| ```<func\|const> = <after>```      | Adds function or constant. E.g. `f(x)=3x^2` or `c=42`                |
 | ```table <expr> ; <from> ; <to> ; <step> [fold <expr> ; <init>]``` | Prints table of values and optionally folds them. In fold expression, ```x``` is replaced with the intermediate result (init in first step), ```y``` is replaced with the current value. Result of fold is stored in history. |
 | ```load [simplification] <path>``` | Loads file as if its content had been typed in or loads simplification rules. |
 | ```help [operators]```             | Lists available commands and operators.                              |
-| ```clear [<func>]```               | Clears all or one function or constant.                              |
+| ```clear [<func\|const>]``         | Clears all or one function or constant.                              |
 | ```license```                      | Shows information about ccalc's license.                             |
 | ```quit```                         | Closes application.                                                  |
 

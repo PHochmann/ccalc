@@ -27,6 +27,7 @@ static struct TreeToStringTest tests[] = {
     { "sum(--1)",   "sum(-(-1))" },
     { "-sqrt(abs(--a!!*--sum(-b+c-d+e, f^(g^h)-i, -sum(j, k), l+m)*--n!!))",
         "-sqrt(abs(((-(-a)!)!)*(-(-sum(-b+c-d+e,f^g^h-i,-sum(j,k),l+m)))*(-(-n)!)!))" },
+    // Test glue op truncation
     { "10*x", "10x" },
     { "10*x^8", "10x^8" }
 };
